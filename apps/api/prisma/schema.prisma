@@ -1,0 +1,71 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  name      String
+  role      UserRole @default(INSTRUCTOR)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  shifts Shift[]
+
+  @@map("users")
+}
+
+model Shift {
+  id          String     @id @default(uuid())
+  date        DateTime
+  startTime   DateTime
+  endTime     DateTime
+  skill       SkillLevel
+  description String?
+  maxSlots    Int        @default(1)
+  status      ShiftStatus @default(OPEN)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  assignments ShiftAssignment[]
+
+  @@map("shifts")
+}
+
+model ShiftAssignment {
+  id        String   @id @default(uuid())
+  shiftId   String
+  userId    String
+  assignedAt DateTime @default(now())
+
+  shift Shift @relation(fields: [shiftId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([shiftId, userId])
+  @@map("shift_assignments")
+}
+
+enum UserRole {
+  ADMIN
+  MANAGER
+  INSTRUCTOR
+}
+
+enum SkillLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+  EXPERT
+}
+
+enum ShiftStatus {
+  OPEN
+  ASSIGNED
+  COMPLETED
+  CANCELLED
+}
