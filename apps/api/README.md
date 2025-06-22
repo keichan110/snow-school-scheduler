@@ -82,12 +82,12 @@ Cloudflare Workers + Hono + Prisma を使用したREST APIサーバー。全テ�
 - `PUT /api/shifts/:id` - シフト更新
 - `DELETE /api/shifts/:id` - シフト削除
 
-### シフト割り当て管理 (`/api/shift-assignments`)
-- `GET /api/shift-assignments` - 割り当て一覧取得
-- `GET /api/shift-assignments/:id` - 割り当て詳細取得
-- `POST /api/shift-assignments` - 割り当て作成（重複チェック付き）
-- `PUT /api/shift-assignments/:id` - 割り当て更新
-- `DELETE /api/shift-assignments/:id` - 割り当て削除
+### シフト割り当て管理 (`/api/shifts/:id/assign`)
+- `GET /api/shifts/:id/assign` - 特定シフトの割り当て状況取得
+- `PUT /api/shifts/:id/assign` - シフト割り当て一括更新
+  - リクエストボディ: `{ "instructorIds": ["uuid1", "uuid2", "uuid3"] }`
+  - 機能: 指定されたインストラクターID配列でシフト割り当てを完全置換
+  - 自動処理: 追加・削除を同時実行、重複チェック、定員チェック
 
 ## API機能の特徴
 
@@ -100,6 +100,7 @@ Cloudflare Workers + Hono + Prisma を使用したREST APIサーバー。全テ�
 ### データ操作
 - **バリデーション**: Hono validator による入力データ検証
 - **重複チェック**: 同一シフトへの重複割り当て防止
+- **一括割り当て**: インストラクター配列による効率的な割り当て更新
 - **カスケード削除**: 関連データの整合性保持
 
 ### エラーハンドリング
@@ -172,6 +173,25 @@ npx prisma studio
   "assignedCount": 3,
   "remainingCount": 2,
   "isFullyAssigned": false
+}
+```
+
+### 一括割り当てレスポンス
+
+```json
+{
+  "success": true,
+  "data": {
+    "added": ["uuid1"],
+    "removed": ["uuid4"],
+    "unchanged": ["uuid2", "uuid3"],
+    "current": ["uuid1", "uuid2", "uuid3"],
+    "assignments": [...],
+    "assignedCount": 3,
+    "remainingCount": 0,
+    "isFullyAssigned": true
+  },
+  "message": "Shift assignments updated successfully"
 }
 ```
 

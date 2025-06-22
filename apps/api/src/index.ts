@@ -6,7 +6,6 @@ import instructors from './routes/instructors'
 import instructorCertifications from './routes/instructor-certifications'
 import shiftTypes from './routes/shift-types'
 import shifts from './routes/shifts'
-import shiftAssignments from './routes/shift-assignments'
 
 type Bindings = {
   DB: D1Database
@@ -27,7 +26,7 @@ app.get('/', (c) => {
       instructorCertifications: '/api/instructor-certifications',
       shiftTypes: '/api/shift-types',
       shifts: '/api/shifts',
-      shiftAssignments: '/api/shift-assignments'
+      shiftAssign: '/api/shifts/{id}/assign'
     }
   })
 })
@@ -42,6 +41,5 @@ app.route('/api/instructors', instructors)
 app.route('/api/instructor-certifications', instructorCertifications)
 app.route('/api/shift-types', shiftTypes)
 app.route('/api/shifts', shifts)
-app.route('/api/shift-assignments', shiftAssignments)
 
 export default app

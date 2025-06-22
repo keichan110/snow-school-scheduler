@@ -22,7 +22,7 @@ paths:
       tags:
         - システム
       responses:
-        '200':
+        "200":
           description: API情報
           content:
             application/json:
@@ -45,7 +45,7 @@ paths:
       tags:
         - システム
       responses:
-        '200':
+        "200":
           description: サーバー稼働中
           content:
             application/json:
@@ -66,16 +66,16 @@ paths:
       tags:
         - 部門管理
       responses:
-        '200':
+        "200":
           description: 部門一覧
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Department'
-        '500':
-          $ref: '#/components/responses/ServerError'
+                  $ref: "#/components/schemas/Department"
+        "500":
+          $ref: "#/components/responses/ServerError"
 
     post:
       summary: 部門作成
@@ -87,20 +87,20 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/DepartmentInput'
+              $ref: "#/components/schemas/DepartmentInput"
       responses:
-        '201':
+        "201":
           description: 部門作成成功
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Department'
-        '500':
-          $ref: '#/components/responses/ServerError'
+                $ref: "#/components/schemas/Department"
+        "500":
+          $ref: "#/components/responses/ServerError"
 
   /api/departments/{id}:
     parameters:
-      - $ref: '#/components/parameters/Id'
+      - $ref: "#/components/parameters/Id"
 
     get:
       summary: 部門詳細取得
@@ -108,16 +108,16 @@ paths:
       tags:
         - 部門管理
       responses:
-        '200':
+        "200":
           description: 部門詳細
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DepartmentDetail'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/ServerError'
+                $ref: "#/components/schemas/DepartmentDetail"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/ServerError"
 
     put:
       summary: 部門更新
@@ -129,18 +129,18 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/DepartmentInput'
+              $ref: "#/components/schemas/DepartmentInput"
       responses:
-        '200':
+        "200":
           description: 部門更新成功
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Department'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/ServerError'
+                $ref: "#/components/schemas/Department"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/ServerError"
 
     delete:
       summary: 部門削除
@@ -148,16 +148,16 @@ paths:
       tags:
         - 部門管理
       responses:
-        '200':
+        "200":
           description: 削除成功
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SuccessMessage'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/ServerError'
+                $ref: "#/components/schemas/SuccessMessage"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/ServerError"
 
   /api/certifications:
     get:
@@ -166,16 +166,16 @@ paths:
       tags:
         - 資格管理
       responses:
-        '200':
+        "200":
           description: 資格一覧
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Certification'
-        '500':
-          $ref: '#/components/responses/ServerError'
+                  $ref: "#/components/schemas/Certification"
+        "500":
+          $ref: "#/components/responses/ServerError"
 
     post:
       summary: 資格作成
@@ -187,20 +187,20 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CertificationInput'
+              $ref: "#/components/schemas/CertificationInput"
       responses:
-        '201':
+        "201":
           description: 資格作成成功
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Certification'
-        '500':
-          $ref: '#/components/responses/ServerError'
+                $ref: "#/components/schemas/Certification"
+        "500":
+          $ref: "#/components/responses/ServerError"
 
   /api/certifications/{id}:
     parameters:
-      - $ref: '#/components/parameters/Id'
+      - $ref: "#/components/parameters/Id"
 
     get:
       summary: 資格詳細取得
@@ -208,16 +208,16 @@ paths:
       tags:
         - 資格管理
       responses:
-        '200':
+        "200":
           description: 資格詳細
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CertificationDetail'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/ServerError'
+                $ref: "#/components/schemas/CertificationDetail"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/ServerError"
 
     put:
       summary: 資格更新
@@ -229,18 +229,18 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CertificationInput'
+              $ref: "#/components/schemas/CertificationInput"
       responses:
-        '200':
+        "200":
           description: 資格更新成功
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Certification'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/ServerError'
+                $ref: "#/components/schemas/Certification"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/ServerError"
 
     delete:
       summary: 資格削除
@@ -248,16 +248,16 @@ paths:
       tags:
         - 資格管理
       responses:
-        '200':
+        "200":
           description: 削除成功
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SuccessMessage'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/ServerError'
+                $ref: "#/components/schemas/SuccessMessage"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/ServerError"
 
   /api/instructors:
     get:
@@ -273,14 +273,14 @@ paths:
             type: string
             enum: [ACTIVE, INACTIVE, RETIRED]
       responses:
-        '200':
+        "200":
           description: インストラクター一覧
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InstructorListResponse'
-        '500':
-          $ref: '#/components/responses/ServerError'
+                $ref: "#/components/schemas/InstructorListResponse"
+        "500":
+          $ref: "#/components/responses/ServerError"
 
     post:
       summary: インストラクター作成
@@ -292,22 +292,22 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/InstructorInput'
+              $ref: "#/components/schemas/InstructorInput"
       responses:
-        '201':
+        "201":
           description: インストラクター作成成功
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InstructorResponse'
-        '400':
-          $ref: '#/components/responses/ValidationError'
-        '500':
-          $ref: '#/components/responses/ServerError'
+                $ref: "#/components/schemas/InstructorResponse"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "500":
+          $ref: "#/components/responses/ServerError"
 
   /api/instructors/{id}:
     parameters:
-      - $ref: '#/components/parameters/Id'
+      - $ref: "#/components/parameters/Id"
 
     get:
       summary: インストラクター詳細取得
@@ -315,16 +315,16 @@ paths:
       tags:
         - インストラクター管理
       responses:
-        '200':
+        "200":
           description: インストラクター詳細
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InstructorResponse'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/ServerError'
+                $ref: "#/components/schemas/InstructorResponse"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/ServerError"
 
     put:
       summary: インストラクター更新
@@ -336,20 +336,20 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/InstructorInput'
+              $ref: "#/components/schemas/InstructorInput"
       responses:
-        '200':
+        "200":
           description: インストラクター更新成功
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InstructorResponse'
-        '400':
-          $ref: '#/components/responses/ValidationError'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/ServerError'
+                $ref: "#/components/schemas/InstructorResponse"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/ServerError"
 
     delete:
       summary: インストラクター削除
@@ -357,16 +357,16 @@ paths:
       tags:
         - インストラクター管理
       responses:
-        '200':
+        "200":
           description: 削除成功
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InstructorDeleteResponse'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/ServerError'
+                $ref: "#/components/schemas/InstructorDeleteResponse"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/ServerError"
 
   /api/instructor-certifications:
     get:
@@ -375,16 +375,16 @@ paths:
       tags:
         - インストラクター資格関連
       responses:
-        '200':
+        "200":
           description: インストラクター資格関連一覧
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/InstructorCertification'
-        '500':
-          $ref: '#/components/responses/ServerError'
+                  $ref: "#/components/schemas/InstructorCertification"
+        "500":
+          $ref: "#/components/responses/ServerError"
 
     post:
       summary: インストラクター資格関連作成
@@ -396,20 +396,20 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/InstructorCertificationInput'
+              $ref: "#/components/schemas/InstructorCertificationInput"
       responses:
-        '201':
+        "201":
           description: インストラクター資格関連作成成功
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InstructorCertification'
-        '500':
-          $ref: '#/components/responses/ServerError'
+                $ref: "#/components/schemas/InstructorCertification"
+        "500":
+          $ref: "#/components/responses/ServerError"
 
   /api/instructor-certifications/{id}:
     parameters:
-      - $ref: '#/components/parameters/Id'
+      - $ref: "#/components/parameters/Id"
 
     get:
       summary: インストラクター資格関連詳細取得
@@ -417,16 +417,16 @@ paths:
       tags:
         - インストラクター資格関連
       responses:
-        '200':
+        "200":
           description: インストラクター資格関連詳細
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InstructorCertificationDetail'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/ServerError'
+                $ref: "#/components/schemas/InstructorCertificationDetail"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/ServerError"
 
     put:
       summary: インストラクター資格関連更新
@@ -438,18 +438,18 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/InstructorCertificationInput'
+              $ref: "#/components/schemas/InstructorCertificationInput"
       responses:
-        '200':
+        "200":
           description: インストラクター資格関連更新成功
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InstructorCertification'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/ServerError'
+                $ref: "#/components/schemas/InstructorCertification"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/ServerError"
 
     delete:
       summary: インストラクター資格関連削除
@@ -457,16 +457,16 @@ paths:
       tags:
         - インストラクター資格関連
       responses:
-        '200':
+        "200":
           description: 削除成功
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SuccessMessage'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/ServerError'
+                $ref: "#/components/schemas/SuccessMessage"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/ServerError"
 
   /api/shift-types:
     get:
@@ -475,16 +475,16 @@ paths:
       tags:
         - シフト種類管理
       responses:
-        '200':
+        "200":
           description: シフト種類一覧
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/ShiftType'
-        '500':
-          $ref: '#/components/responses/ServerError'
+                  $ref: "#/components/schemas/ShiftType"
+        "500":
+          $ref: "#/components/responses/ServerError"
 
     post:
       summary: シフト種類作成
@@ -496,20 +496,20 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ShiftTypeInput'
+              $ref: "#/components/schemas/ShiftTypeInput"
       responses:
-        '201':
+        "201":
           description: シフト種類作成成功
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ShiftType'
-        '500':
-          $ref: '#/components/responses/ServerError'
+                $ref: "#/components/schemas/ShiftType"
+        "500":
+          $ref: "#/components/responses/ServerError"
 
   /api/shift-types/{id}:
     parameters:
-      - $ref: '#/components/parameters/Id'
+      - $ref: "#/components/parameters/Id"
 
     get:
       summary: シフト種類詳細取得
@@ -517,16 +517,16 @@ paths:
       tags:
         - シフト種類管理
       responses:
-        '200':
+        "200":
           description: シフト種類詳細
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ShiftTypeDetail'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/ServerError'
+                $ref: "#/components/schemas/ShiftTypeDetail"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/ServerError"
 
     put:
       summary: シフト種類更新
@@ -538,18 +538,18 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ShiftTypeInput'
+              $ref: "#/components/schemas/ShiftTypeInput"
       responses:
-        '200':
+        "200":
           description: シフト種類更新成功
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ShiftType'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/ServerError'
+                $ref: "#/components/schemas/ShiftType"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/ServerError"
 
     delete:
       summary: シフト種類削除
@@ -557,16 +557,16 @@ paths:
       tags:
         - シフト種類管理
       responses:
-        '200':
+        "200":
           description: 削除成功
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SuccessMessage'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/ServerError'
+                $ref: "#/components/schemas/SuccessMessage"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/ServerError"
 
   /api/shifts:
     get:
@@ -598,14 +598,14 @@ paths:
             type: string
             format: date
       responses:
-        '200':
+        "200":
           description: シフト一覧
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ShiftListResponse'
-        '500':
-          $ref: '#/components/responses/ServerError'
+                $ref: "#/components/schemas/ShiftListResponse"
+        "500":
+          $ref: "#/components/responses/ServerError"
 
     post:
       summary: シフト作成
@@ -617,22 +617,22 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ShiftInput'
+              $ref: "#/components/schemas/ShiftInput"
       responses:
-        '201':
+        "201":
           description: シフト作成成功
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ShiftResponse'
-        '400':
-          $ref: '#/components/responses/ValidationError'
-        '500':
-          $ref: '#/components/responses/ServerError'
+                $ref: "#/components/schemas/ShiftResponse"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "500":
+          $ref: "#/components/responses/ServerError"
 
   /api/shifts/{id}:
     parameters:
-      - $ref: '#/components/parameters/Id'
+      - $ref: "#/components/parameters/Id"
 
     get:
       summary: シフト詳細取得
@@ -640,16 +640,16 @@ paths:
       tags:
         - シフト管理
       responses:
-        '200':
+        "200":
           description: シフト詳細
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ShiftResponse'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/ServerError'
+                $ref: "#/components/schemas/ShiftResponse"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/ServerError"
 
     put:
       summary: シフト更新
@@ -661,20 +661,20 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ShiftInput'
+              $ref: "#/components/schemas/ShiftInput"
       responses:
-        '200':
+        "200":
           description: シフト更新成功
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ShiftResponse'
-        '400':
-          $ref: '#/components/responses/ValidationError'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/ServerError'
+                $ref: "#/components/schemas/ShiftResponse"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/ServerError"
 
     delete:
       summary: シフト削除
@@ -682,116 +682,142 @@ paths:
       tags:
         - シフト管理
       responses:
-        '200':
+        "200":
           description: 削除成功
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ShiftDeleteResponse'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/ServerError'
+                $ref: "#/components/schemas/ShiftDeleteResponse"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/ServerError"
 
-  /api/shift-assignments:
-    get:
-      summary: シフト割り当て一覧取得
-      description: シフト割り当ての一覧を取得
-      tags:
-        - シフト割り当て管理
-      responses:
-        '200':
-          description: シフト割り当て一覧
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/ShiftAssignment'
-        '500':
-          $ref: '#/components/responses/ServerError'
-
-    post:
-      summary: シフト割り当て作成
-      description: 新しいシフト割り当てを作成（重複チェック付き）
-      tags:
-        - シフト割り当て管理
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ShiftAssignmentInput'
-      responses:
-        '201':
-          description: シフト割り当て作成成功
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ShiftAssignment'
-        '500':
-          $ref: '#/components/responses/ServerError'
-
-  /api/shift-assignments/{id}:
+  /api/shifts/{id}/assign:
     parameters:
-      - $ref: '#/components/parameters/Id'
+      - $ref: "#/components/parameters/Id"
 
     get:
-      summary: シフト割り当て詳細取得
-      description: 指定されたシフト割り当ての詳細情報を取得
+      summary: シフト割り当て状況取得
+      description: 指定されたシフトの割り当て状況を取得
       tags:
-        - シフト割り当て管理
+        - シフト管理
       responses:
-        '200':
-          description: シフト割り当て詳細
+        "200":
+          description: シフト割り当て状況
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ShiftAssignmentDetail'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/ServerError'
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      shiftId:
+                        type: string
+                        format: uuid
+                      assignments:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/ShiftAssignment"
+                      assignedCount:
+                        type: integer
+                        example: 2
+                      remainingCount:
+                        type: integer
+                        example: 1
+                      isFullyAssigned:
+                        type: boolean
+                        example: false
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/ServerError"
 
     put:
-      summary: シフト割り当て更新
-      description: 指定されたシフト割り当てを更新
+      summary: シフト割り当て一括更新
+      description: 指定されたシフトの割り当てを一括で更新（追加・削除を同時実行）
       tags:
-        - シフト割り当て管理
+        - シフト管理
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ShiftAssignmentInput'
+              type: object
+              required:
+                - instructorIds
+              properties:
+                instructorIds:
+                  type: array
+                  items:
+                    type: string
+                    format: uuid
+                  description: 割り当てるインストラクターのID配列
+                  example: ["uuid1", "uuid2", "uuid3"]
       responses:
-        '200':
-          description: シフト割り当て更新成功
+        "200":
+          description: 割り当て更新成功
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ShiftAssignment'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/ServerError'
-
-    delete:
-      summary: シフト割り当て削除
-      description: 指定されたシフト割り当てを削除
-      tags:
-        - シフト割り当て管理
-      responses:
-        '200':
-          description: 削除成功
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SuccessMessage'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/ServerError'
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      added:
+                        type: array
+                        items:
+                          type: string
+                        description: 新規追加されたインストラクターID
+                        example: ["uuid1"]
+                      removed:
+                        type: array
+                        items:
+                          type: string
+                        description: 削除されたインストラクターID
+                        example: ["uuid4"]
+                      unchanged:
+                        type: array
+                        items:
+                          type: string
+                        description: 変更されなかったインストラクターID
+                        example: ["uuid2", "uuid3"]
+                      current:
+                        type: array
+                        items:
+                          type: string
+                        description: 現在の割り当てインストラクターID
+                        example: ["uuid1", "uuid2", "uuid3"]
+                      assignments:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/ShiftAssignment"
+                      assignedCount:
+                        type: integer
+                        example: 3
+                      remainingCount:
+                        type: integer
+                        example: 0
+                      isFullyAssigned:
+                        type: boolean
+                        example: true
+                  message:
+                    type: string
+                    example: "Shift assignments updated successfully"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/ServerError"
 
 components:
   parameters:
@@ -810,7 +836,7 @@ components:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/ErrorResponse'
+            $ref: "#/components/schemas/ErrorResponse"
           example:
             error: "Resource not found"
 
@@ -819,7 +845,7 @@ components:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/ErrorResponse'
+            $ref: "#/components/schemas/ErrorResponse"
           example:
             error: "Validation failed"
 
@@ -828,7 +854,7 @@ components:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/ErrorResponse'
+            $ref: "#/components/schemas/ErrorResponse"
           example:
             error: "Internal server error"
 
@@ -895,17 +921,17 @@ components:
 
     DepartmentDetail:
       allOf:
-        - $ref: '#/components/schemas/Department'
+        - $ref: "#/components/schemas/Department"
         - type: object
           properties:
             certifications:
               type: array
               items:
-                $ref: '#/components/schemas/Certification'
+                $ref: "#/components/schemas/Certification"
             shifts:
               type: array
               items:
-                $ref: '#/components/schemas/Shift'
+                $ref: "#/components/schemas/Shift"
 
     # 資格関連
     Certification:
@@ -940,7 +966,7 @@ components:
           type: string
           format: date-time
         department:
-          $ref: '#/components/schemas/Department'
+          $ref: "#/components/schemas/Department"
 
     CertificationInput:
       type: object
@@ -971,7 +997,7 @@ components:
 
     CertificationDetail:
       allOf:
-        - $ref: '#/components/schemas/Certification'
+        - $ref: "#/components/schemas/Certification"
         - type: object
           properties:
             instructorCertifications:
@@ -983,7 +1009,7 @@ components:
                     type: string
                     format: uuid
                   instructor:
-                    $ref: '#/components/schemas/Instructor'
+                    $ref: "#/components/schemas/Instructor"
 
     # インストラクター関連
     Instructor:
@@ -1058,17 +1084,17 @@ components:
           type: array
           items:
             allOf:
-              - $ref: '#/components/schemas/Instructor'
+              - $ref: "#/components/schemas/Instructor"
               - type: object
                 properties:
                   certifications:
                     type: array
                     items:
-                      $ref: '#/components/schemas/InstructorCertification'
+                      $ref: "#/components/schemas/InstructorCertification"
                   shiftAssignments:
                     type: array
                     items:
-                      $ref: '#/components/schemas/ShiftAssignment'
+                      $ref: "#/components/schemas/ShiftAssignment"
         count:
           type: integer
 
@@ -1080,17 +1106,17 @@ components:
           example: true
         data:
           allOf:
-            - $ref: '#/components/schemas/Instructor'
+            - $ref: "#/components/schemas/Instructor"
             - type: object
               properties:
                 certifications:
                   type: array
                   items:
-                    $ref: '#/components/schemas/InstructorCertification'
+                    $ref: "#/components/schemas/InstructorCertification"
                 shiftAssignments:
                   type: array
                   items:
-                    $ref: '#/components/schemas/ShiftAssignment'
+                    $ref: "#/components/schemas/ShiftAssignment"
         message:
           type: string
           example: "Instructor created successfully"
@@ -1129,7 +1155,7 @@ components:
           type: string
           format: date-time
         certification:
-          $ref: '#/components/schemas/Certification'
+          $ref: "#/components/schemas/Certification"
 
     InstructorCertificationInput:
       type: object
@@ -1150,11 +1176,11 @@ components:
 
     InstructorCertificationDetail:
       allOf:
-        - $ref: '#/components/schemas/InstructorCertification'
+        - $ref: "#/components/schemas/InstructorCertification"
         - type: object
           properties:
             instructor:
-              $ref: '#/components/schemas/Instructor'
+              $ref: "#/components/schemas/Instructor"
 
     # シフト種類関連
     ShiftType:
@@ -1190,13 +1216,13 @@ components:
 
     ShiftTypeDetail:
       allOf:
-        - $ref: '#/components/schemas/ShiftType'
+        - $ref: "#/components/schemas/ShiftType"
         - type: object
           properties:
             shifts:
               type: array
               items:
-                $ref: '#/components/schemas/Shift'
+                $ref: "#/components/schemas/Shift"
 
     # シフト関連
     Shift:
@@ -1227,9 +1253,9 @@ components:
           type: string
           format: date-time
         department:
-          $ref: '#/components/schemas/Department'
+          $ref: "#/components/schemas/Department"
         shiftType:
-          $ref: '#/components/schemas/ShiftType'
+          $ref: "#/components/schemas/ShiftType"
 
     ShiftInput:
       type: object
@@ -1257,13 +1283,13 @@ components:
 
     ShiftWithStats:
       allOf:
-        - $ref: '#/components/schemas/Shift'
+        - $ref: "#/components/schemas/Shift"
         - type: object
           properties:
             assignments:
               type: array
               items:
-                $ref: '#/components/schemas/ShiftAssignment'
+                $ref: "#/components/schemas/ShiftAssignment"
             assignedCount:
               type: integer
             remainingCount:
@@ -1280,7 +1306,7 @@ components:
         data:
           type: array
           items:
-            $ref: '#/components/schemas/ShiftWithStats'
+            $ref: "#/components/schemas/ShiftWithStats"
         count:
           type: integer
 
@@ -1291,7 +1317,7 @@ components:
           type: boolean
           example: true
         data:
-          $ref: '#/components/schemas/ShiftWithStats'
+          $ref: "#/components/schemas/ShiftWithStats"
         message:
           type: string
           example: "Shift created successfully"
@@ -1323,9 +1349,9 @@ components:
           type: string
           format: date-time
         shift:
-          $ref: '#/components/schemas/Shift'
+          $ref: "#/components/schemas/Shift"
         instructor:
-          $ref: '#/components/schemas/Instructor'
+          $ref: "#/components/schemas/Instructor"
 
     ShiftAssignmentInput:
       type: object
@@ -1342,27 +1368,27 @@ components:
 
     ShiftAssignmentDetail:
       allOf:
-        - $ref: '#/components/schemas/ShiftAssignment'
+        - $ref: "#/components/schemas/ShiftAssignment"
         - type: object
           properties:
             shift:
               allOf:
-                - $ref: '#/components/schemas/Shift'
+                - $ref: "#/components/schemas/Shift"
                 - type: object
                   properties:
                     department:
-                      $ref: '#/components/schemas/Department'
+                      $ref: "#/components/schemas/Department"
                     shiftType:
-                      $ref: '#/components/schemas/ShiftType'
+                      $ref: "#/components/schemas/ShiftType"
             instructor:
               allOf:
-                - $ref: '#/components/schemas/Instructor'
+                - $ref: "#/components/schemas/Instructor"
                 - type: object
                   properties:
                     certifications:
                       type: array
                       items:
-                        $ref: '#/components/schemas/InstructorCertification'
+                        $ref: "#/components/schemas/InstructorCertification"
 
 tags:
   - name: システム
@@ -1379,5 +1405,3 @@ tags:
     description: シフト種類マスタの管理
   - name: シフト管理
     description: シフト枠の管理
-  - name: シフト割り当て管理
-    description: インストラクターのシフト割り当て管理

@@ -27,6 +27,20 @@ const createValidator = validator('json', (value, c) => {
   return value
 })
 
+const assignValidator = validator('json', (value, c) => {
+  const { instructorIds } = value
+  
+  if (!Array.isArray(instructorIds)) {
+    return c.json({ error: 'instructorIds is required and must be an array' }, 400)
+  }
+  
+  if (instructorIds.some(id => typeof id !== 'string')) {
+    return c.json({ error: 'All instructorIds must be strings' }, 400)
+  }
+  
+  return value
+})
+
 shifts.get('/', async (c) => {
   const prisma = new PrismaClient()
   try {
@@ -261,6 +275,175 @@ shifts.delete('/:id', async (c) => {
     return c.json({
       success: false,
       error: 'Failed to delete shift'
+    }, 500)
+  } finally {
+    await prisma.$disconnect()
+  }
+})
+
+shifts.get('/:id/assign', async (c) => {
+  const id = c.req.param('id')
+  const prisma = new PrismaClient()
+  try {
+    const shift = await prisma.shift.findUnique({
+      where: { id },
+      include: {
+        assignments: {
+          include: {
+            instructor: {
+              include: {
+                certifications: {
+                  include: {
+                    certification: {
+                      include: {
+                        department: true
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    })
+    
+    if (!shift) {
+      return c.json({
+        success: false,
+        error: 'Shift not found'
+      }, 404)
+    }
+    
+    return c.json({
+      success: true,
+      data: {
+        shiftId: shift.id,
+        assignments: shift.assignments,
+        assignedCount: shift.assignments.length,
+        remainingCount: shift.requiredCount - shift.assignments.length,
+        isFullyAssigned: shift.assignments.length >= shift.requiredCount
+      }
+    })
+  } catch (error) {
+    return c.json({
+      success: false,
+      error: 'Failed to fetch shift assignments'
+    }, 500)
+  } finally {
+    await prisma.$disconnect()
+  }
+})
+
+shifts.put('/:id/assign', assignValidator, async (c) => {
+  const id = c.req.param('id')
+  const prisma = new PrismaClient()
+  try {
+    const body = c.req.valid('json')
+    const { instructorIds } = body
+    
+    const shift = await prisma.shift.findUnique({
+      where: { id },
+      include: { assignments: true }
+    })
+    
+    if (!shift) {
+      return c.json({
+        success: false,
+        error: 'Shift not found'
+      }, 404)
+    }
+    
+    if (instructorIds.length > shift.requiredCount) {
+      return c.json({
+        success: false,
+        error: `Cannot assign ${instructorIds.length} instructors to a shift that requires only ${shift.requiredCount}`
+      }, 400)
+    }
+    
+    const instructors = await prisma.instructor.findMany({
+      where: {
+        id: { in: instructorIds },
+        status: 'ACTIVE'
+      }
+    })
+    
+    const activeInstructorIds = instructors.map((i: any) => i.id)
+    const inactiveIds = instructorIds.filter((id: string) => !activeInstructorIds.includes(id))
+    
+    if (inactiveIds.length > 0) {
+      return c.json({
+        success: false,
+        error: `Instructors not found or inactive: ${inactiveIds.join(', ')}`
+      }, 400)
+    }
+    
+    const currentAssignmentIds = shift.assignments.map((a: any) => a.instructorId)
+    const added = instructorIds.filter((id: string) => !currentAssignmentIds.includes(id))
+    const removed = currentAssignmentIds.filter((id: string) => !instructorIds.includes(id))
+    const unchanged = instructorIds.filter((id: string) => currentAssignmentIds.includes(id))
+    
+    await prisma.$transaction(async (tx) => {
+      if (removed.length > 0) {
+        await tx.shiftAssignment.deleteMany({
+          where: {
+            shiftId: id,
+            instructorId: { in: removed }
+          }
+        })
+      }
+      
+      if (added.length > 0) {
+        await tx.shiftAssignment.createMany({
+          data: added.map((instructorId: string) => ({
+            shiftId: id,
+            instructorId
+          }))
+        })
+      }
+    })
+    
+    const updatedShift = await prisma.shift.findUnique({
+      where: { id },
+      include: {
+        assignments: {
+          include: {
+            instructor: {
+              include: {
+                certifications: {
+                  include: {
+                    certification: {
+                      include: {
+                        department: true
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    })
+    
+    return c.json({
+      success: true,
+      data: {
+        added,
+        removed,
+        unchanged,
+        current: instructorIds,
+        assignments: updatedShift?.assignments || [],
+        assignedCount: instructorIds.length,
+        remainingCount: shift.requiredCount - instructorIds.length,
+        isFullyAssigned: instructorIds.length >= shift.requiredCount
+      },
+      message: 'Shift assignments updated successfully'
+    })
+  } catch (error) {
+    return c.json({
+      success: false,
+      error: 'Failed to update shift assignments'
     }, 500)
   } finally {
     await prisma.$disconnect()
