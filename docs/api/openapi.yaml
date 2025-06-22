@@ -1,0 +1,1383 @@
+openapi: 3.0.3
+info:
+  title: Snow School Scheduler API
+  description: スキー・スノーボードスクールのシフト管理システム API
+  version: 1.0.0
+  contact:
+    name: Snow School Scheduler
+  license:
+    name: MIT
+
+servers:
+  - url: http://localhost:8787
+    description: 開発環境
+  - url: https://snow-school-scheduler-api.example.com
+    description: 本番環境
+
+paths:
+  /:
+    get:
+      summary: API情報取得
+      description: API情報とエンドポイント一覧を取得
+      tags:
+        - システム
+      responses:
+        '200':
+          description: API情報
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Snow School Scheduler API"
+                  version:
+                    type: string
+                    example: "1.0.0"
+                  endpoints:
+                    type: object
+
+  /health:
+    get:
+      summary: ヘルスチェック
+      description: サーバーの稼働状況を確認
+      tags:
+        - システム
+      responses:
+        '200':
+          description: サーバー稼働中
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "ok"
+                  timestamp:
+                    type: string
+                    format: date-time
+
+  /api/departments:
+    get:
+      summary: 部門一覧取得
+      description: 全部門の一覧を取得
+      tags:
+        - 部門管理
+      responses:
+        '200':
+          description: 部門一覧
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Department'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+    post:
+      summary: 部門作成
+      description: 新しい部門を作成
+      tags:
+        - 部門管理
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DepartmentInput'
+      responses:
+        '201':
+          description: 部門作成成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Department'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /api/departments/{id}:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+
+    get:
+      summary: 部門詳細取得
+      description: 指定された部門の詳細情報を取得
+      tags:
+        - 部門管理
+      responses:
+        '200':
+          description: 部門詳細
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DepartmentDetail'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+    put:
+      summary: 部門更新
+      description: 指定された部門を更新
+      tags:
+        - 部門管理
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DepartmentInput'
+      responses:
+        '200':
+          description: 部門更新成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Department'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+    delete:
+      summary: 部門削除
+      description: 指定された部門を削除
+      tags:
+        - 部門管理
+      responses:
+        '200':
+          description: 削除成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /api/certifications:
+    get:
+      summary: 資格一覧取得
+      description: 全資格の一覧を取得
+      tags:
+        - 資格管理
+      responses:
+        '200':
+          description: 資格一覧
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Certification'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+    post:
+      summary: 資格作成
+      description: 新しい資格を作成
+      tags:
+        - 資格管理
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CertificationInput'
+      responses:
+        '201':
+          description: 資格作成成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Certification'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /api/certifications/{id}:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+
+    get:
+      summary: 資格詳細取得
+      description: 指定された資格の詳細情報を取得
+      tags:
+        - 資格管理
+      responses:
+        '200':
+          description: 資格詳細
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CertificationDetail'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+    put:
+      summary: 資格更新
+      description: 指定された資格を更新
+      tags:
+        - 資格管理
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CertificationInput'
+      responses:
+        '200':
+          description: 資格更新成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Certification'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+    delete:
+      summary: 資格削除
+      description: 指定された資格を削除
+      tags:
+        - 資格管理
+      responses:
+        '200':
+          description: 削除成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /api/instructors:
+    get:
+      summary: インストラクター一覧取得
+      description: インストラクターの一覧を取得（ステータス絞り込み可能）
+      tags:
+        - インストラクター管理
+      parameters:
+        - name: status
+          in: query
+          description: ステータスでフィルタリング
+          schema:
+            type: string
+            enum: [ACTIVE, INACTIVE, RETIRED]
+      responses:
+        '200':
+          description: インストラクター一覧
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InstructorListResponse'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+    post:
+      summary: インストラクター作成
+      description: 新しいインストラクターを作成
+      tags:
+        - インストラクター管理
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InstructorInput'
+      responses:
+        '201':
+          description: インストラクター作成成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InstructorResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /api/instructors/{id}:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+
+    get:
+      summary: インストラクター詳細取得
+      description: 指定されたインストラクターの詳細情報を取得
+      tags:
+        - インストラクター管理
+      responses:
+        '200':
+          description: インストラクター詳細
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InstructorResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+    put:
+      summary: インストラクター更新
+      description: 指定されたインストラクターを更新
+      tags:
+        - インストラクター管理
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InstructorInput'
+      responses:
+        '200':
+          description: インストラクター更新成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InstructorResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+    delete:
+      summary: インストラクター削除
+      description: 指定されたインストラクターを削除
+      tags:
+        - インストラクター管理
+      responses:
+        '200':
+          description: 削除成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InstructorDeleteResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /api/instructor-certifications:
+    get:
+      summary: インストラクター資格関連一覧取得
+      description: インストラクター資格関連の一覧を取得
+      tags:
+        - インストラクター資格関連
+      responses:
+        '200':
+          description: インストラクター資格関連一覧
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/InstructorCertification'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+    post:
+      summary: インストラクター資格関連作成
+      description: 新しいインストラクター資格関連を作成
+      tags:
+        - インストラクター資格関連
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InstructorCertificationInput'
+      responses:
+        '201':
+          description: インストラクター資格関連作成成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InstructorCertification'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /api/instructor-certifications/{id}:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+
+    get:
+      summary: インストラクター資格関連詳細取得
+      description: 指定されたインストラクター資格関連の詳細情報を取得
+      tags:
+        - インストラクター資格関連
+      responses:
+        '200':
+          description: インストラクター資格関連詳細
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InstructorCertificationDetail'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+    put:
+      summary: インストラクター資格関連更新
+      description: 指定されたインストラクター資格関連を更新
+      tags:
+        - インストラクター資格関連
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InstructorCertificationInput'
+      responses:
+        '200':
+          description: インストラクター資格関連更新成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InstructorCertification'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+    delete:
+      summary: インストラクター資格関連削除
+      description: 指定されたインストラクター資格関連を削除
+      tags:
+        - インストラクター資格関連
+      responses:
+        '200':
+          description: 削除成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /api/shift-types:
+    get:
+      summary: シフト種類一覧取得
+      description: 全シフト種類の一覧を取得
+      tags:
+        - シフト種類管理
+      responses:
+        '200':
+          description: シフト種類一覧
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ShiftType'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+    post:
+      summary: シフト種類作成
+      description: 新しいシフト種類を作成
+      tags:
+        - シフト種類管理
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ShiftTypeInput'
+      responses:
+        '201':
+          description: シフト種類作成成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShiftType'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /api/shift-types/{id}:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+
+    get:
+      summary: シフト種類詳細取得
+      description: 指定されたシフト種類の詳細情報を取得
+      tags:
+        - シフト種類管理
+      responses:
+        '200':
+          description: シフト種類詳細
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShiftTypeDetail'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+    put:
+      summary: シフト種類更新
+      description: 指定されたシフト種類を更新
+      tags:
+        - シフト種類管理
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ShiftTypeInput'
+      responses:
+        '200':
+          description: シフト種類更新成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShiftType'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+    delete:
+      summary: シフト種類削除
+      description: 指定されたシフト種類を削除
+      tags:
+        - シフト種類管理
+      responses:
+        '200':
+          description: 削除成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /api/shifts:
+    get:
+      summary: シフト一覧取得
+      description: シフトの一覧を取得（部門・種類・期間絞り込み可能）
+      tags:
+        - シフト管理
+      parameters:
+        - name: departmentId
+          in: query
+          description: 部門IDでフィルタリング
+          schema:
+            type: string
+        - name: shiftTypeId
+          in: query
+          description: シフト種類IDでフィルタリング
+          schema:
+            type: string
+        - name: dateFrom
+          in: query
+          description: 開始日でフィルタリング
+          schema:
+            type: string
+            format: date
+        - name: dateTo
+          in: query
+          description: 終了日でフィルタリング
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: シフト一覧
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShiftListResponse'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+    post:
+      summary: シフト作成
+      description: 新しいシフトを作成
+      tags:
+        - シフト管理
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ShiftInput'
+      responses:
+        '201':
+          description: シフト作成成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShiftResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /api/shifts/{id}:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+
+    get:
+      summary: シフト詳細取得
+      description: 指定されたシフトの詳細情報を取得（割り当て統計付き）
+      tags:
+        - シフト管理
+      responses:
+        '200':
+          description: シフト詳細
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShiftResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+    put:
+      summary: シフト更新
+      description: 指定されたシフトを更新
+      tags:
+        - シフト管理
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ShiftInput'
+      responses:
+        '200':
+          description: シフト更新成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShiftResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+    delete:
+      summary: シフト削除
+      description: 指定されたシフトを削除
+      tags:
+        - シフト管理
+      responses:
+        '200':
+          description: 削除成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShiftDeleteResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /api/shift-assignments:
+    get:
+      summary: シフト割り当て一覧取得
+      description: シフト割り当ての一覧を取得
+      tags:
+        - シフト割り当て管理
+      responses:
+        '200':
+          description: シフト割り当て一覧
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ShiftAssignment'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+    post:
+      summary: シフト割り当て作成
+      description: 新しいシフト割り当てを作成（重複チェック付き）
+      tags:
+        - シフト割り当て管理
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ShiftAssignmentInput'
+      responses:
+        '201':
+          description: シフト割り当て作成成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShiftAssignment'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /api/shift-assignments/{id}:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+
+    get:
+      summary: シフト割り当て詳細取得
+      description: 指定されたシフト割り当ての詳細情報を取得
+      tags:
+        - シフト割り当て管理
+      responses:
+        '200':
+          description: シフト割り当て詳細
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShiftAssignmentDetail'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+    put:
+      summary: シフト割り当て更新
+      description: 指定されたシフト割り当てを更新
+      tags:
+        - シフト割り当て管理
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ShiftAssignmentInput'
+      responses:
+        '200':
+          description: シフト割り当て更新成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShiftAssignment'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+    delete:
+      summary: シフト割り当て削除
+      description: 指定されたシフト割り当てを削除
+      tags:
+        - シフト割り当て管理
+      responses:
+        '200':
+          description: 削除成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+components:
+  parameters:
+    Id:
+      name: id
+      in: path
+      required: true
+      description: リソースのID
+      schema:
+        type: string
+        format: uuid
+
+  responses:
+    NotFound:
+      description: リソースが見つかりません
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: "Resource not found"
+
+    ValidationError:
+      description: バリデーションエラー
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: "Validation failed"
+
+    ServerError:
+      description: サーバーエラー
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: "Internal server error"
+
+  schemas:
+    # 基本レスポンス
+    SuccessMessage:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Operation completed successfully"
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Error message"
+
+    # 部門関連
+    Department:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        code:
+          type: string
+          example: "ski"
+        name:
+          type: string
+          example: "スキー"
+        description:
+          type: string
+          nullable: true
+        isActive:
+          type: boolean
+          default: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    DepartmentInput:
+      type: object
+      required:
+        - code
+        - name
+      properties:
+        code:
+          type: string
+          example: "ski"
+        name:
+          type: string
+          example: "スキー"
+        description:
+          type: string
+          nullable: true
+        isActive:
+          type: boolean
+          default: true
+
+    DepartmentDetail:
+      allOf:
+        - $ref: '#/components/schemas/Department'
+        - type: object
+          properties:
+            certifications:
+              type: array
+              items:
+                $ref: '#/components/schemas/Certification'
+            shifts:
+              type: array
+              items:
+                $ref: '#/components/schemas/Shift'
+
+    # 資格関連
+    Certification:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        departmentId:
+          type: string
+          format: uuid
+        name:
+          type: string
+          example: "スキー指導員"
+        shortName:
+          type: string
+          nullable: true
+          example: "指導員"
+        organization:
+          type: string
+          example: "SAJ"
+        description:
+          type: string
+          nullable: true
+        isActive:
+          type: boolean
+          default: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        department:
+          $ref: '#/components/schemas/Department'
+
+    CertificationInput:
+      type: object
+      required:
+        - departmentId
+        - name
+        - organization
+      properties:
+        departmentId:
+          type: string
+          format: uuid
+        name:
+          type: string
+          example: "スキー指導員"
+        shortName:
+          type: string
+          nullable: true
+          example: "指導員"
+        organization:
+          type: string
+          example: "SAJ"
+        description:
+          type: string
+          nullable: true
+        isActive:
+          type: boolean
+          default: true
+
+    CertificationDetail:
+      allOf:
+        - $ref: '#/components/schemas/Certification'
+        - type: object
+          properties:
+            instructorCertifications:
+              type: array
+              items:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                  instructor:
+                    $ref: '#/components/schemas/Instructor'
+
+    # インストラクター関連
+    Instructor:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        lastName:
+          type: string
+          example: "山田"
+        firstName:
+          type: string
+          example: "太郎"
+        lastNameKana:
+          type: string
+          nullable: true
+          example: "ヤマダ"
+        firstNameKana:
+          type: string
+          nullable: true
+          example: "タロウ"
+        status:
+          type: string
+          enum: [ACTIVE, INACTIVE, RETIRED]
+          default: ACTIVE
+        notes:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    InstructorInput:
+      type: object
+      required:
+        - lastName
+        - firstName
+      properties:
+        lastName:
+          type: string
+          example: "山田"
+        firstName:
+          type: string
+          example: "太郎"
+        lastNameKana:
+          type: string
+          nullable: true
+          example: "ヤマダ"
+        firstNameKana:
+          type: string
+          nullable: true
+          example: "タロウ"
+        status:
+          type: string
+          enum: [ACTIVE, INACTIVE, RETIRED]
+          default: ACTIVE
+        notes:
+          type: string
+          nullable: true
+
+    InstructorListResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: array
+          items:
+            allOf:
+              - $ref: '#/components/schemas/Instructor'
+              - type: object
+                properties:
+                  certifications:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/InstructorCertification'
+                  shiftAssignments:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ShiftAssignment'
+        count:
+          type: integer
+
+    InstructorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          allOf:
+            - $ref: '#/components/schemas/Instructor'
+            - type: object
+              properties:
+                certifications:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/InstructorCertification'
+                shiftAssignments:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/ShiftAssignment'
+        message:
+          type: string
+          example: "Instructor created successfully"
+
+    InstructorDeleteResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: "Instructor deleted successfully"
+
+    # インストラクター資格関連
+    InstructorCertification:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        instructorId:
+          type: string
+          format: uuid
+        certificationId:
+          type: string
+          format: uuid
+        expiryDate:
+          type: string
+          format: date-time
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        certification:
+          $ref: '#/components/schemas/Certification'
+
+    InstructorCertificationInput:
+      type: object
+      required:
+        - instructorId
+        - certificationId
+      properties:
+        instructorId:
+          type: string
+          format: uuid
+        certificationId:
+          type: string
+          format: uuid
+        expiryDate:
+          type: string
+          format: date-time
+          nullable: true
+
+    InstructorCertificationDetail:
+      allOf:
+        - $ref: '#/components/schemas/InstructorCertification'
+        - type: object
+          properties:
+            instructor:
+              $ref: '#/components/schemas/Instructor'
+
+    # シフト種類関連
+    ShiftType:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          example: "レッスン"
+        isActive:
+          type: boolean
+          default: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    ShiftTypeInput:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          example: "レッスン"
+        isActive:
+          type: boolean
+          default: true
+
+    ShiftTypeDetail:
+      allOf:
+        - $ref: '#/components/schemas/ShiftType'
+        - type: object
+          properties:
+            shifts:
+              type: array
+              items:
+                $ref: '#/components/schemas/Shift'
+
+    # シフト関連
+    Shift:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        date:
+          type: string
+          format: date-time
+        departmentId:
+          type: string
+          format: uuid
+        shiftTypeId:
+          type: string
+          format: uuid
+        requiredCount:
+          type: integer
+          minimum: 1
+        description:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        department:
+          $ref: '#/components/schemas/Department'
+        shiftType:
+          $ref: '#/components/schemas/ShiftType'
+
+    ShiftInput:
+      type: object
+      required:
+        - date
+        - departmentId
+        - shiftTypeId
+        - requiredCount
+      properties:
+        date:
+          type: string
+          format: date-time
+        departmentId:
+          type: string
+          format: uuid
+        shiftTypeId:
+          type: string
+          format: uuid
+        requiredCount:
+          type: integer
+          minimum: 1
+        description:
+          type: string
+          nullable: true
+
+    ShiftWithStats:
+      allOf:
+        - $ref: '#/components/schemas/Shift'
+        - type: object
+          properties:
+            assignments:
+              type: array
+              items:
+                $ref: '#/components/schemas/ShiftAssignment'
+            assignedCount:
+              type: integer
+            remainingCount:
+              type: integer
+            isFullyAssigned:
+              type: boolean
+
+    ShiftListResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ShiftWithStats'
+        count:
+          type: integer
+
+    ShiftResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          $ref: '#/components/schemas/ShiftWithStats'
+        message:
+          type: string
+          example: "Shift created successfully"
+
+    ShiftDeleteResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: "Shift deleted successfully"
+
+    # シフト割り当て関連
+    ShiftAssignment:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        shiftId:
+          type: string
+          format: uuid
+        instructorId:
+          type: string
+          format: uuid
+        assignedAt:
+          type: string
+          format: date-time
+        shift:
+          $ref: '#/components/schemas/Shift'
+        instructor:
+          $ref: '#/components/schemas/Instructor'
+
+    ShiftAssignmentInput:
+      type: object
+      required:
+        - shiftId
+        - instructorId
+      properties:
+        shiftId:
+          type: string
+          format: uuid
+        instructorId:
+          type: string
+          format: uuid
+
+    ShiftAssignmentDetail:
+      allOf:
+        - $ref: '#/components/schemas/ShiftAssignment'
+        - type: object
+          properties:
+            shift:
+              allOf:
+                - $ref: '#/components/schemas/Shift'
+                - type: object
+                  properties:
+                    department:
+                      $ref: '#/components/schemas/Department'
+                    shiftType:
+                      $ref: '#/components/schemas/ShiftType'
+            instructor:
+              allOf:
+                - $ref: '#/components/schemas/Instructor'
+                - type: object
+                  properties:
+                    certifications:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/InstructorCertification'
+
+tags:
+  - name: システム
+    description: システム関連のエンドポイント
+  - name: 部門管理
+    description: 部門（スキー・スノーボード）の管理
+  - name: 資格管理
+    description: 資格マスタの管理
+  - name: インストラクター管理
+    description: インストラクターの管理
+  - name: インストラクター資格関連
+    description: インストラクターと資格の関連管理
+  - name: シフト種類管理
+    description: シフト種類マスタの管理
+  - name: シフト管理
+    description: シフト枠の管理
+  - name: シフト割り当て管理
+    description: インストラクターのシフト割り当て管理
