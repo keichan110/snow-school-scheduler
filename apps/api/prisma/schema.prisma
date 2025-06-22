@@ -43,15 +43,15 @@ model Certification {
 
 // インストラクター
 model Instructor {
-  id            String           @id @default(uuid())
-  lastName      String           // 姓
-  firstName     String           // 名
-  lastNameKana  String?          // 姓（カナ）
-  firstNameKana String?          // 名（カナ）
-  status        InstructorStatus @default(ACTIVE)
-  notes         String?          // 備考
-  createdAt     DateTime         @default(now())
-  updatedAt     DateTime         @updatedAt
+  id            String  @id @default(uuid())
+  lastName      String  // 姓
+  firstName     String  // 名
+  lastNameKana  String? // 姓（カナ）
+  firstNameKana String? // 名（カナ）
+  status        String  @default("ACTIVE") // "ACTIVE", "INACTIVE", "RETIRED"
+  notes         String? // 備考
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   certifications   InstructorCertification[]
   shiftAssignments ShiftAssignment[]
@@ -99,8 +99,8 @@ model Shift {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
-  department Department        @relation(fields: [departmentId], references: [id])
-  shiftType  ShiftType         @relation(fields: [shiftTypeId], references: [id])
+  department  Department        @relation(fields: [departmentId], references: [id])
+  shiftType   ShiftType         @relation(fields: [shiftTypeId], references: [id])
   assignments ShiftAssignment[]
 
   @@map("shifts")
@@ -108,21 +108,14 @@ model Shift {
 
 // インストラクター割り当て
 model ShiftAssignment {
-  id           String    @id @default(uuid())
+  id           String   @id @default(uuid())
   shiftId      String
   instructorId String
-  assignedAt   DateTime  @default(now())
+  assignedAt   DateTime @default(now())
 
   shift      Shift      @relation(fields: [shiftId], references: [id], onDelete: Cascade)
   instructor Instructor @relation(fields: [instructorId], references: [id], onDelete: Cascade)
 
   @@unique([shiftId, instructorId])
   @@map("shift_assignments")
-}
-
-// インストラクターステータス
-enum InstructorStatus {
-  ACTIVE   // 勤務中
-  INACTIVE // 休職中
-  RETIRED  // 退職済み
 }
