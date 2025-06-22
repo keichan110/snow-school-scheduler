@@ -7,65 +7,122 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
+// 部門マスタ（スキー・スノーボード）
+model Department {
+  id          String   @id @default(uuid())
+  code        String   @unique // "ski", "snowboard"
+  name        String   // "スキー", "スノーボード"
+  description String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  certifications Certification[]
+  shifts         Shift[]
+
+  @@map("departments")
+}
+
+// 資格マスタ（SAJ等の資格）
+model Certification {
+  id            String     @id @default(uuid())
+  departmentId  String
+  name          String     // "スキー指導員", "スキー準指導員", "スキーA級検定員"
+  shortName     String?    // "指導員", "準指導員", "A級検定員"
+  organization  String     // "SAJ", "JSBA", "SIA"等
+  description   String?
+  isActive      Boolean    @default(true)
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  department             Department               @relation(fields: [departmentId], references: [id])
+  instructorCertifications InstructorCertification[]
+
+  @@map("certifications")
+}
+
+// インストラクター
+model Instructor {
+  id            String           @id @default(uuid())
+  lastName      String           // 姓
+  firstName     String           // 名
+  lastNameKana  String?          // 姓（カナ）
+  firstNameKana String?          // 名（カナ）
+  status        InstructorStatus @default(ACTIVE)
+  notes         String?          // 備考
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+
+  certifications   InstructorCertification[]
+  shiftAssignments ShiftAssignment[]
+
+  @@map("instructors")
+}
+
+// インストラクター資格関連
+model InstructorCertification {
+  id              String    @id @default(uuid())
+  instructorId    String
+  certificationId String
+  expiryDate      DateTime? // 有効期限（アプリ側で判定）
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  instructor    Instructor    @relation(fields: [instructorId], references: [id], onDelete: Cascade)
+  certification Certification @relation(fields: [certificationId], references: [id])
+
+  @@unique([instructorId, certificationId])
+  @@map("instructor_certifications")
+}
+
+// シフト種類マスタ
+model ShiftType {
   id        String   @id @default(uuid())
-  email     String   @unique
-  name      String
-  role      UserRole @default(INSTRUCTOR)
+  name      String   // "レッスン", "検定", "県連事業"
+  isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   shifts Shift[]
 
-  @@map("users")
+  @@map("shift_types")
 }
 
+// シフト枠
 model Shift {
-  id          String     @id @default(uuid())
-  date        DateTime
-  startTime   DateTime
-  endTime     DateTime
-  skill       SkillLevel
-  description String?
-  maxSlots    Int        @default(1)
-  status      ShiftStatus @default(OPEN)
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  id            String    @id @default(uuid())
+  date          DateTime  // 実施日（時間は固定のため日付のみ）
+  departmentId  String
+  shiftTypeId   String
+  requiredCount Int       // 必要人数（都度入力）
+  description   String?   // 備考
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 
+  department Department        @relation(fields: [departmentId], references: [id])
+  shiftType  ShiftType         @relation(fields: [shiftTypeId], references: [id])
   assignments ShiftAssignment[]
 
   @@map("shifts")
 }
 
+// インストラクター割り当て
 model ShiftAssignment {
-  id        String   @id @default(uuid())
-  shiftId   String
-  userId    String
-  assignedAt DateTime @default(now())
+  id           String    @id @default(uuid())
+  shiftId      String
+  instructorId String
+  assignedAt   DateTime  @default(now())
 
-  shift Shift @relation(fields: [shiftId], references: [id], onDelete: Cascade)
-  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  shift      Shift      @relation(fields: [shiftId], references: [id], onDelete: Cascade)
+  instructor Instructor @relation(fields: [instructorId], references: [id], onDelete: Cascade)
 
-  @@unique([shiftId, userId])
+  @@unique([shiftId, instructorId])
   @@map("shift_assignments")
 }
 
-enum UserRole {
-  ADMIN
-  MANAGER
-  INSTRUCTOR
-}
-
-enum SkillLevel {
-  BEGINNER
-  INTERMEDIATE
-  ADVANCED
-  EXPERT
-}
-
-enum ShiftStatus {
-  OPEN
-  ASSIGNED
-  COMPLETED
-  CANCELLED
+// インストラクターステータス
+enum InstructorStatus {
+  ACTIVE   // 勤務中
+  INACTIVE // 休職中
+  RETIRED  // 退職済み
 }
