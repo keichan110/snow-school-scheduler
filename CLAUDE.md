@@ -15,6 +15,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## コードスタイル・規約
 
+./docs/nextjs.md に従って実装して下さい
 
 ## 開発ワークフロー
 
