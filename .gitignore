@@ -43,3 +43,4 @@ prisma/dev.db-journal
 # IDE
 .vscode/
 .idea/
+/generated/prisma
