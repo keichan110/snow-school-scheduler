@@ -9,14 +9,14 @@ OpenAPI 仕様書（docs/api/openapi.yaml）に基づいて設計されていま
 
 - **データベース**: Cloudflare D1 (SQLite)
 - **ORM**: Prisma 6.12
-- **識別子**: cuid()による UUID 生成
+- **識別子**: INTEGER PRIMARY KEY (SQLiteネイティブのAUTOINCREMENT)
 
 ## エンティティ関係図（ER 図）
 
 ```mermaid
 erDiagram
     Department {
-        string id PK "部門ID"
+        integer id PK "部門ID"
         string code UK "部門コード"
         string name "部門名"
         string description "説明"
@@ -27,8 +27,8 @@ erDiagram
     }
 
     Certification {
-        string id PK "資格ID"
-        string department_id FK "部門ID"
+        integer id PK "資格ID"
+        integer department_id FK "部門ID"
         string name "資格名"
         string short_name "略称"
         string organization "発行組織"
@@ -39,7 +39,7 @@ erDiagram
     }
 
     Instructor {
-        string id PK "インストラクターID"
+        integer id PK "インストラクターID"
         string last_name "姓"
         string first_name "名"
         string last_name_kana "姓カナ"
@@ -51,15 +51,15 @@ erDiagram
     }
 
     InstructorCertification {
-        string id PK "関連ID"
-        string instructor_id FK "インストラクターID"
-        string certification_id FK "資格ID"
+        integer id PK "関連ID"
+        integer instructor_id FK "インストラクターID"
+        integer certification_id FK "資格ID"
         datetime created_at "作成日時"
         datetime updated_at "更新日時"
     }
 
     ShiftType {
-        string id PK "シフト種類ID"
+        integer id PK "シフト種類ID"
         string name "シフト種類名"
         boolean is_active "アクティブ状態"
         datetime created_at "作成日時"
@@ -67,19 +67,19 @@ erDiagram
     }
 
     Shift {
-        string id PK "シフトID"
+        integer id PK "シフトID"
         datetime date "シフト日時"
-        string department_id FK "部門ID"
-        string shift_type_id FK "シフト種類ID"
+        integer department_id FK "部門ID"
+        integer shift_type_id FK "シフト種類ID"
         string description "説明"
         datetime created_at "作成日時"
         datetime updated_at "更新日時"
     }
 
     ShiftAssignment {
-        string id PK "割り当てID"
-        string shift_id FK "シフトID"
-        string instructor_id FK "インストラクターID"
+        integer id PK "割り当てID"
+        integer shift_id FK "シフトID"
+        integer instructor_id FK "インストラクターID"
         datetime assigned_at "割り当て日時"
     }
 
@@ -115,16 +115,16 @@ erDiagram
 - スキー部門: `"blue"` → `bg-blue-500`, `text-blue-700`, `border-blue-300` など
 - スノーボード部門: `"emerald"` → `bg-emerald-500`, `text-emerald-700`, `border-emerald-300` など
 
-| カラム名      | データ型     | 制約                        | 説明                                                                    |
-| ------------- | ------------ | --------------------------- | ----------------------------------------------------------------------- |
-| id            | VARCHAR(25)  | PRIMARY KEY                 | 部門 ID                                                                 |
-| code          | VARCHAR(20)  | UNIQUE NOT NULL             | 部門コード（例: "ski", "snowboard"）                                    |
-| name          | VARCHAR(100) | NOT NULL                    | 部門名（例: "スキー", "スノーボード"）                                  |
-| description   | TEXT         |                             | 説明・備考                                                              |
-| is_active     | BOOLEAN      | DEFAULT TRUE                | アクティブ状態                                                          |
-| color_palette | VARCHAR(20)  | NOT NULL                    | Tailwind CSS カラーパレット名（例: "blue", "emerald", "red", "orange"） |
-| created_at    | DATETIME     | DEFAULT CURRENT_TIMESTAMP   | 作成日時                                                                |
-| updated_at    | DATETIME     | ON UPDATE CURRENT_TIMESTAMP | 更新日時                                                                |
+| カラム名      | データ型 | 制約                        | 説明                                                               |
+| ------------- | -------- | --------------------------- | ------------------------------------------------------------------ |
+| id            | INTEGER  | PRIMARY KEY AUTOINCREMENT   | 部門 ID                                                            |
+| code          | TEXT     | UNIQUE NOT NULL             | 部門コード（例: "ski", "snowboard"）                               |
+| name          | TEXT     | NOT NULL                    | 部門名（例: "スキー", "スノーボード"）                             |
+| description   | TEXT     |                             | 説明・備考                                                         |
+| is_active     | BOOLEAN  | DEFAULT TRUE                | アクティブ状態                                                     |
+| color_palette | TEXT     | NOT NULL                    | Tailwind CSS カラーパレット名（例: "blue", "emerald"） |
+| created_at    | DATETIME | DEFAULT CURRENT_TIMESTAMP   | 作成日時                                                           |
+| updated_at    | DATETIME | ON UPDATE CURRENT_TIMESTAMP | 更新日時                                                           |
 
 **インデックス:**
 
@@ -136,17 +136,17 @@ erDiagram
 
 インストラクター資格を管理するマスタテーブル。
 
-| カラム名      | データ型     | 制約                        | 説明                      |
-| ------------- | ------------ | --------------------------- | ------------------------- |
-| id            | VARCHAR(25)  | PRIMARY KEY                 | 資格 ID                   |
-| department_id | VARCHAR(25)  | NOT NULL                    | 部門 ID（FK）             |
-| name          | VARCHAR(200) | NOT NULL                    | 資格名                    |
-| short_name    | VARCHAR(50)  |                             | 略称                      |
-| organization  | VARCHAR(100) | NOT NULL                    | 発行組織（例: SAJ, JSBA） |
-| description   | TEXT         |                             | 説明・備考                |
-| is_active     | BOOLEAN      | DEFAULT TRUE                | アクティブ状態            |
-| created_at    | DATETIME     | DEFAULT CURRENT_TIMESTAMP   | 作成日時                  |
-| updated_at    | DATETIME     | ON UPDATE CURRENT_TIMESTAMP | 更新日時                  |
+| カラム名      | データ型 | 制約                        | 説明                      |
+| ------------- | -------- | --------------------------- | ------------------------- |
+| id            | INTEGER  | PRIMARY KEY AUTOINCREMENT   | 資格 ID                   |
+| department_id | INTEGER  | NOT NULL                    | 部門 ID（FK）             |
+| name          | TEXT     | NOT NULL                    | 資格名                    |
+| short_name    | TEXT     |                             | 略称                      |
+| organization  | TEXT     | NOT NULL                    | 発行組織（例: SAJ, JSBA） |
+| description   | TEXT     |                             | 説明・備考                |
+| is_active     | BOOLEAN  | DEFAULT TRUE                | アクティブ状態            |
+| created_at    | DATETIME | DEFAULT CURRENT_TIMESTAMP   | 作成日時                  |
+| updated_at    | DATETIME | ON UPDATE CURRENT_TIMESTAMP | 更新日時                  |
 
 **外部キー制約:**
 
@@ -163,17 +163,17 @@ erDiagram
 
 インストラクターの基本情報を管理するテーブル。
 
-| カラム名        | データ型    | 制約                        | 説明                                    |
-| --------------- | ----------- | --------------------------- | --------------------------------------- |
-| id              | VARCHAR(25) | PRIMARY KEY                 | インストラクター ID                     |
-| last_name       | VARCHAR(50) | NOT NULL                    | 姓                                      |
-| first_name      | VARCHAR(50) | NOT NULL                    | 名                                      |
-| last_name_kana  | VARCHAR(50) |                             | 姓（カナ）                              |
-| first_name_kana | VARCHAR(50) |                             | 名（カナ）                              |
-| status          | VARCHAR(20) | DEFAULT 'ACTIVE'            | ステータス（ACTIVE, INACTIVE, RETIRED） |
-| notes           | TEXT        |                             | 備考                                    |
-| created_at      | DATETIME    | DEFAULT CURRENT_TIMESTAMP   | 作成日時                                |
-| updated_at      | DATETIME    | ON UPDATE CURRENT_TIMESTAMP | 更新日時                                |
+| カラム名        | データ型 | 制約                        | 説明                                    |
+| --------------- | -------- | --------------------------- | --------------------------------------- |
+| id              | INTEGER  | PRIMARY KEY AUTOINCREMENT   | インストラクター ID                     |
+| last_name       | TEXT     | NOT NULL                    | 姓                                      |
+| first_name      | TEXT     | NOT NULL                    | 名                                      |
+| last_name_kana  | TEXT     |                             | 姓（カナ）                              |
+| first_name_kana | TEXT     |                             | 名（カナ）                              |
+| status          | TEXT     | DEFAULT 'ACTIVE'            | ステータス（ACTIVE, INACTIVE, RETIRED） |
+| notes           | TEXT     |                             | 備考                                    |
+| created_at      | DATETIME | DEFAULT CURRENT_TIMESTAMP   | 作成日時                                |
+| updated_at      | DATETIME | ON UPDATE CURRENT_TIMESTAMP | 更新日時                                |
 
 **チェック制約:**
 
@@ -190,13 +190,13 @@ erDiagram
 
 インストラクターと資格の多対多関係を管理する中間テーブル。
 
-| カラム名         | データ型    | 制約                        | 説明                      |
-| ---------------- | ----------- | --------------------------- | ------------------------- |
-| id               | VARCHAR(25) | PRIMARY KEY                 | 関連 ID                   |
-| instructor_id    | VARCHAR(25) | NOT NULL                    | インストラクター ID（FK） |
-| certification_id | VARCHAR(25) | NOT NULL                    | 資格 ID（FK）             |
-| created_at       | DATETIME    | DEFAULT CURRENT_TIMESTAMP   | 作成日時                  |
-| updated_at       | DATETIME    | ON UPDATE CURRENT_TIMESTAMP | 更新日時                  |
+| カラム名         | データ型 | 制約                        | 説明                      |
+| ---------------- | -------- | --------------------------- | ------------------------- |
+| id               | INTEGER  | PRIMARY KEY AUTOINCREMENT   | 関連 ID                   |
+| instructor_id    | INTEGER  | NOT NULL                    | インストラクター ID（FK） |
+| certification_id | INTEGER  | NOT NULL                    | 資格 ID（FK）             |
+| created_at       | DATETIME | DEFAULT CURRENT_TIMESTAMP   | 作成日時                  |
+| updated_at       | DATETIME | ON UPDATE CURRENT_TIMESTAMP | 更新日時                  |
 
 **外部キー制約:**
 
@@ -218,13 +218,13 @@ erDiagram
 
 シフトの種類を管理するマスタテーブル。
 
-| カラム名   | データ型     | 制約                        | 説明                                         |
-| ---------- | ------------ | --------------------------- | -------------------------------------------- |
-| id         | VARCHAR(25)  | PRIMARY KEY                 | シフト種類 ID                                |
-| name       | VARCHAR(100) | NOT NULL                    | シフト種類名（例: "レッスン", "パトロール"） |
-| is_active  | BOOLEAN      | DEFAULT TRUE                | アクティブ状態                               |
-| created_at | DATETIME     | DEFAULT CURRENT_TIMESTAMP   | 作成日時                                     |
-| updated_at | DATETIME     | ON UPDATE CURRENT_TIMESTAMP | 更新日時                                     |
+| カラム名   | データ型 | 制約                        | 説明                                         |
+| ---------- | -------- | --------------------------- | -------------------------------------------- |
+| id         | INTEGER  | PRIMARY KEY AUTOINCREMENT   | シフト種類 ID                                |
+| name       | TEXT     | NOT NULL                    | シフト種類名（例: "レッスン", "パトロール"） |
+| is_active  | BOOLEAN  | DEFAULT TRUE                | アクティブ状態                               |
+| created_at | DATETIME | DEFAULT CURRENT_TIMESTAMP   | 作成日時                                     |
+| updated_at | DATETIME | ON UPDATE CURRENT_TIMESTAMP | 更新日時                                     |
 
 **インデックス:**
 
@@ -235,15 +235,15 @@ erDiagram
 
 シフト枠を管理するテーブル。
 
-| カラム名       | データ型    | 制約                        | 説明                |
-| -------------- | ----------- | --------------------------- | ------------------- |
-| id             | VARCHAR(25) | PRIMARY KEY                 | シフト ID           |
-| date           | DATETIME    | NOT NULL                    | シフト日時          |
-| department_id  | VARCHAR(25) | NOT NULL                    | 部門 ID（FK）       |
-| shift_type_id  | VARCHAR(25) | NOT NULL                    | シフト種類 ID（FK） |
-| description    | TEXT        |                             | 説明・備考          |
-| created_at     | DATETIME    | DEFAULT CURRENT_TIMESTAMP   | 作成日時            |
-| updated_at     | DATETIME    | ON UPDATE CURRENT_TIMESTAMP | 更新日時            |
+| カラム名       | データ型 | 制約                        | 説明                |
+| -------------- | -------- | --------------------------- | ------------------- |
+| id             | INTEGER  | PRIMARY KEY AUTOINCREMENT   | シフト ID           |
+| date           | DATETIME | NOT NULL                    | シフト日時          |
+| department_id  | INTEGER  | NOT NULL                    | 部門 ID（FK）       |
+| shift_type_id  | INTEGER  | NOT NULL                    | シフト種類 ID（FK） |
+| description    | TEXT     |                             | 説明・備考          |
+| created_at     | DATETIME | DEFAULT CURRENT_TIMESTAMP   | 作成日時            |
+| updated_at     | DATETIME | ON UPDATE CURRENT_TIMESTAMP | 更新日時            |
 
 **外部キー制約:**
 
@@ -264,12 +264,12 @@ erDiagram
 
 シフトとインストラクターの多対多関係を管理する中間テーブル。
 
-| カラム名      | データ型    | 制約                      | 説明                      |
-| ------------- | ----------- | ------------------------- | ------------------------- |
-| id            | VARCHAR(25) | PRIMARY KEY               | 割り当て ID               |
-| shift_id      | VARCHAR(25) | NOT NULL                  | シフト ID（FK）           |
-| instructor_id | VARCHAR(25) | NOT NULL                  | インストラクター ID（FK） |
-| assigned_at   | DATETIME    | DEFAULT CURRENT_TIMESTAMP | 割り当て日時              |
+| カラム名      | データ型 | 制約                        | 説明                      |
+| ------------- | -------- | --------------------------- | ------------------------- |
+| id            | INTEGER  | PRIMARY KEY AUTOINCREMENT   | 割り当て ID               |
+| shift_id      | INTEGER  | NOT NULL                    | シフト ID（FK）           |
+| instructor_id | INTEGER  | NOT NULL                    | インストラクター ID（FK） |
+| assigned_at   | DATETIME | DEFAULT CURRENT_TIMESTAMP   | 割り当て日時              |
 
 **外部キー制約:**
 
@@ -311,7 +311,7 @@ erDiagram
 CREATE INDEX idx_shifts_date_type ON shifts(date, shift_type_id);
 
 -- SQLite用カバリングインデックス（INCLUDE句の代替）
-CREATE INDEX idx_shifts_covering ON shifts(date, department_id, shift_type_id, id, description);
+CREATE INDEX idx_shifts_covering ON shifts(date, department_id, shift_type_id);
 ```
 
 #### 2. インストラクター検索の最適化
@@ -356,7 +356,7 @@ CREATE INDEX idx_assignments_instructor_date ON shift_assignments(instructor_id,
 CREATE INDEX idx_assignments_date_instructor ON shift_assignments(assigned_at, instructor_id);
 
 -- SQLite用カバリングインデックス
-CREATE INDEX idx_assignments_shift_covering ON shift_assignments(shift_id, instructor_id, assigned_at);
+CREATE INDEX idx_assignments_shift_covering ON shift_assignments(shift_id, instructor_id);
 ```
 
 ### クエリ最適化指針
@@ -454,5 +454,10 @@ CREATE INDEX idx_assignments_shift_covering ON shift_assignments(shift_id, instr
 
 ---
 
-**最終更新日**: 2025-07-21  
-**バージョン**: 1.0.0
+**最終更新日**: 2025-07-22  
+**バージョン**: 1.1.0
+
+### 変更履歴
+
+- **v1.1.0 (2025-07-22)**: ID戦略をINTEGER PRIMARY KEY AUTOINCREMENTに変更（パフォーマンス最適化）
+- **v1.0.0 (2025-07-21)**: 初版リリース

@@ -1,5 +1,6 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
+// スキー・スノーボードスクールのシフト管理システム
+// Prisma スキーマ定義
+// docs/db.md に基づいて設計
 
 generator client {
   provider = "prisma-client-js"
@@ -9,4 +10,168 @@ generator client {
 datasource db {
   provider = "sqlite"
   url      = env("DATABASE_URL")
+}
+
+// ============================================
+// 部門管理
+// ============================================
+
+/// 部門テーブル（スキー・スノーボード等の部門を管理）
+model Department {
+  id           Int     @id @default(autoincrement())
+  code         String  @unique
+  name         String
+  description  String?
+  isActive     Boolean @default(true) @map("is_active")
+  colorPalette String  @map("color_palette")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  // リレーション
+  certifications Certification[]
+  shifts        Shift[]
+
+  @@index([isActive], map: "idx_departments_active")
+  @@map("departments")
+}
+
+/// 資格テーブル（インストラクター資格を管理）
+model Certification {
+  id           Int     @id @default(autoincrement())
+  departmentId Int     @map("department_id")
+  name         String
+  shortName    String? @map("short_name")
+  organization String
+  description  String?
+  isActive     Boolean @default(true) @map("is_active")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  // リレーション
+  department              Department                @relation(fields: [departmentId], references: [id])
+  instructorCertifications InstructorCertification[]
+
+  @@index([departmentId], map: "idx_certifications_department_id")
+  @@index([isActive], map: "idx_certifications_active")
+  @@index([organization], map: "idx_certifications_organization")
+  @@map("certifications")
+}
+
+// ============================================
+// インストラクター管理
+// ============================================
+
+/// インストラクターテーブル（インストラクター基本情報を管理）
+model Instructor {
+  id            Int     @id @default(autoincrement())
+  lastName      String  @map("last_name")
+  firstName     String  @map("first_name")
+  lastNameKana  String? @map("last_name_kana")
+  firstNameKana String? @map("first_name_kana")
+  status        InstructorStatus @default(ACTIVE)
+  notes         String?
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  // リレーション
+  certifications   InstructorCertification[]
+  shiftAssignments ShiftAssignment[]
+
+  @@index([status], map: "idx_instructors_status")
+  @@index([lastName, firstName], map: "idx_instructors_name")
+  @@index([lastNameKana, firstNameKana], map: "idx_instructors_kana")
+  @@index([status, lastName, firstName], map: "idx_instructors_status_name")
+  @@index([status, lastNameKana, firstNameKana], map: "idx_instructors_status_kana")
+  @@index([lastName, firstName], map: "idx_instructors_active_name")
+  @@map("instructors")
+}
+
+/// インストラクターステータス列挙型
+enum InstructorStatus {
+  ACTIVE
+  INACTIVE
+  RETIRED
+}
+
+/// インストラクター資格関連テーブル（多対多の中間テーブル）
+model InstructorCertification {
+  id              Int     @id @default(autoincrement())
+  instructorId    Int     @map("instructor_id")
+  certificationId Int     @map("certification_id")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  // リレーション
+  instructor    Instructor    @relation(fields: [instructorId], references: [id], onDelete: Cascade)
+  certification Certification @relation(fields: [certificationId], references: [id], onDelete: Cascade)
+
+  @@unique([instructorId, certificationId], map: "idx_instructor_cert_unique")
+  @@index([instructorId], map: "idx_instructor_cert_instructor_id")
+  @@index([certificationId], map: "idx_instructor_cert_certification_id")
+  @@map("instructor_certifications")
+}
+
+// ============================================
+// シフト管理
+// ============================================
+
+/// シフト種類テーブル（シフトの種類を管理するマスタ）
+model ShiftType {
+  id        Int      @id @default(autoincrement())
+  name      String
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // リレーション
+  shifts Shift[]
+
+  @@index([isActive], map: "idx_shift_types_active")
+  @@map("shift_types")
+}
+
+/// シフトテーブル（シフト枠を管理）
+model Shift {
+  id            Int      @id @default(autoincrement())
+  date          DateTime
+  departmentId  Int      @map("department_id")
+  shiftTypeId   Int      @map("shift_type_id")
+  description   String?
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  // リレーション
+  department       Department        @relation(fields: [departmentId], references: [id])
+  shiftType        ShiftType         @relation(fields: [shiftTypeId], references: [id])
+  shiftAssignments ShiftAssignment[]
+
+  @@index([departmentId], map: "idx_shifts_department_id")
+  @@index([shiftTypeId], map: "idx_shifts_shift_type_id")
+  @@index([date], map: "idx_shifts_date")
+  @@index([date, departmentId], map: "idx_shifts_date_department")
+  @@index([departmentId, shiftTypeId, date], map: "idx_shifts_department_type_date")
+  @@index([date, shiftTypeId], map: "idx_shifts_date_type")
+  @@index([date, departmentId, shiftTypeId], map: "idx_shifts_covering")
+  @@map("shifts")
+}
+
+/// シフト割り当てテーブル（シフトとインストラクターの多対多関係を管理）
+model ShiftAssignment {
+  id           Int      @id @default(autoincrement())
+  shiftId      Int      @map("shift_id")
+  instructorId Int      @map("instructor_id")
+  assignedAt   DateTime @default(now()) @map("assigned_at")
+
+  // リレーション
+  shift      Shift      @relation(fields: [shiftId], references: [id], onDelete: Cascade)
+  instructor Instructor @relation(fields: [instructorId], references: [id], onDelete: Cascade)
+
+  @@unique([shiftId, instructorId], map: "idx_shift_assignment_unique")
+  @@index([shiftId], map: "idx_shift_assignments_shift_id")
+  @@index([instructorId], map: "idx_shift_assignments_instructor_id")
+  @@index([assignedAt], map: "idx_shift_assignments_assigned_at")
+  @@index([instructorId, assignedAt], map: "idx_assignments_instructor_date")
+  @@index([assignedAt, instructorId], map: "idx_assignments_date_instructor")
+  @@index([shiftId, instructorId], map: "idx_assignments_shift_covering")
+  @@map("shift_assignments")
 }
