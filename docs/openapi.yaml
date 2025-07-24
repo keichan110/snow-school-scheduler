@@ -13,30 +13,7 @@ servers:
     description: 本番環境
 
 paths:
-  /:
-    get:
-      summary: API情報取得
-      description: API情報とエンドポイント一覧を取得
-      tags:
-        - システム
-      responses:
-        "200":
-          description: API情報
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    example: "Snow School Scheduler API"
-                  version:
-                    type: string
-                    example: "1.0.0"
-                  endpoints:
-                    type: object
-
-  /health:
+  /api/health:
     get:
       summary: ヘルスチェック
       description: サーバーの稼働状況を確認
@@ -53,9 +30,6 @@ paths:
                   status:
                     type: string
                     example: "ok"
-                  timestamp:
-                    type: string
-                    format: date-time
 
   /api/departments:
     get:
@@ -80,35 +54,6 @@ paths:
         "500":
           $ref: "#/components/responses/ServerError"
 
-    post:
-      summary: 部門作成
-      description: 新しい部門を作成
-      tags:
-        - 部門管理
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/DepartmentInput"
-      responses:
-        "201":
-          description: 部門作成成功
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: "#/components/schemas/ApiResponse"
-                  - type: object
-                    properties:
-                      data:
-                        $ref: "#/components/schemas/Department"
-                      message:
-                        type: string
-                        example: "Department created successfully"
-        "500":
-          $ref: "#/components/responses/ServerError"
-
   /api/departments/[id]:
     parameters:
       - $ref: "#/components/parameters/Id"
@@ -130,64 +75,6 @@ paths:
                     properties:
                       data:
                         $ref: "#/components/schemas/DepartmentDetail"
-        "404":
-          $ref: "#/components/responses/NotFound"
-        "500":
-          $ref: "#/components/responses/ServerError"
-
-    put:
-      summary: 部門更新
-      description: 指定された部門を更新
-      tags:
-        - 部門管理
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/DepartmentInput"
-      responses:
-        "200":
-          description: 部門更新成功
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: "#/components/schemas/ApiResponse"
-                  - type: object
-                    properties:
-                      data:
-                        $ref: "#/components/schemas/Department"
-                      message:
-                        type: string
-                        example: "Department updated successfully"
-        "404":
-          $ref: "#/components/responses/NotFound"
-        "500":
-          $ref: "#/components/responses/ServerError"
-
-    delete:
-      summary: 部門削除
-      description: 指定された部門を削除
-      tags:
-        - 部門管理
-      responses:
-        "200":
-          description: 削除成功
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: "#/components/schemas/ApiResponse"
-                  - type: object
-                    properties:
-                      data:
-                        type: object
-                        nullable: true
-                        example: null
-                      message:
-                        type: string
-                        example: "Operation completed successfully"
         "404":
           $ref: "#/components/responses/NotFound"
         "500":
@@ -289,33 +176,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Certification"
-        "404":
-          $ref: "#/components/responses/NotFound"
-        "500":
-          $ref: "#/components/responses/ServerError"
-
-    delete:
-      summary: 資格削除
-      description: 指定された資格を削除
-      tags:
-        - 資格管理
-      responses:
-        "200":
-          description: 削除成功
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: "#/components/schemas/ApiResponse"
-                  - type: object
-                    properties:
-                      data:
-                        type: object
-                        nullable: true
-                        example: null
-                      message:
-                        type: string
-                        example: "Operation completed successfully"
         "404":
           $ref: "#/components/responses/NotFound"
         "500":
@@ -485,34 +345,7 @@ paths:
           $ref: "#/components/responses/ValidationError"
         "404":
           $ref: "#/components/responses/NotFound"
-        "500":
-          $ref: "#/components/responses/ServerError"
-
-    delete:
-      summary: インストラクター削除
-      description: 指定されたインストラクターを削除
-      tags:
-        - インストラクター管理
-      responses:
-        "200":
-          description: 削除成功
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: "#/components/schemas/ApiResponse"
-                  - type: object
-                    properties:
-                      data:
-                        type: object
-                        nullable: true
-                        example: null
-                      message:
-                        type: string
-                        example: "Instructor deleted successfully"
-        "404":
-          $ref: "#/components/responses/NotFound"
-        "500":
+        "500":  
           $ref: "#/components/responses/ServerError"
 
   /api/instructor-certifications:
