@@ -74,7 +74,7 @@ paths:
                   - type: object
                     properties:
                       data:
-                        $ref: "#/components/schemas/DepartmentDetail"
+                        $ref: "#/components/schemas/Department"
         "404":
           $ref: "#/components/responses/NotFound"
         "500":
@@ -1002,19 +1002,6 @@ components:
           type: string
           example: "red"
 
-    DepartmentDetail:
-      allOf:
-        - $ref: "#/components/schemas/Department"
-        - type: object
-          properties:
-            certifications:
-              type: array
-              items:
-                $ref: "#/components/schemas/Certification"
-            shifts:
-              type: array
-              items:
-                $ref: "#/components/schemas/Shift"
 
     # 資格関連
     Certification:
