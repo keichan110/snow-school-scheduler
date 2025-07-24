@@ -44,3 +44,7 @@ prisma/dev.db-journal
 .vscode/
 .idea/
 /generated/prisma
+
+# TypeScript build info
+*.tsbuildinfo
+tsconfig.tsbuildinfo
