@@ -483,10 +483,20 @@ async function main() {
   for (const assignment of certificationAssignments) {
     const instructor = instructors[assignment.instructorIndex];
     
+    if (!instructor) {
+      console.warn(`Instructor not found at index: ${assignment.instructorIndex}`);
+      continue;
+    }
+    
     for (const cert of assignment.certifications) {
       const certificationId = cert.dept === 'ski' 
-        ? skiCertifications[cert.certIndex].id 
-        : snowboardCertifications[cert.certIndex].id;
+        ? skiCertifications[cert.certIndex]?.id 
+        : snowboardCertifications[cert.certIndex]?.id;
+      
+      if (!certificationId) {
+        console.warn(`Certification not found: dept=${cert.dept}, index=${cert.certIndex}`);
+        continue;
+      }
       
       await prisma.instructorCertification.create({
         data: {
@@ -525,7 +535,7 @@ async function main() {
       // スキー一般レッスン
       const ski1 = await prisma.shift.create({
         data: {
-          date: new Date(dateString),
+          date: new Date(dateString!),
           departmentId: skiDepartment.id,
           shiftTypeId: generalLessonType.id,
           description: `スキー一般レッスン`,
@@ -535,7 +545,7 @@ async function main() {
       
       const ski2 = await prisma.shift.create({
         data: {
-          date: new Date(dateString),
+          date: new Date(dateString!),
           departmentId: skiDepartment.id,
           shiftTypeId: generalLessonType.id,
           description: `スキー一般レッスン`,
@@ -546,7 +556,7 @@ async function main() {
       // スノーボード一般レッスン
       const snowboard1 = await prisma.shift.create({
         data: {
-          date: new Date(dateString),
+          date: new Date(dateString!),
           departmentId: snowboardDepartment.id,
           shiftTypeId: generalLessonType.id,
           description: `スノーボード一般レッスン`,
@@ -556,7 +566,7 @@ async function main() {
       
       const snowboard2 = await prisma.shift.create({
         data: {
-          date: new Date(dateString),
+          date: new Date(dateString!),
           departmentId: snowboardDepartment.id,
           shiftTypeId: generalLessonType.id,
           description: `スノーボード一般レッスン`,
@@ -572,7 +582,7 @@ async function main() {
       if (weekOfMonth === 1 || weekOfMonth === 3) {
         const groupLesson = await prisma.shift.create({
           data: {
-            date: new Date(dateString),
+            date: new Date(dateString!),
             departmentId: Math.random() > 0.5 ? skiDepartment.id : snowboardDepartment.id,
             shiftTypeId: groupLessonType.id,
             description: `団体レッスン`,
@@ -585,7 +595,7 @@ async function main() {
       if (weekOfMonth === 2 || weekOfMonth === 4) {
         const badgeTest = await prisma.shift.create({
           data: {
-            date: new Date(dateString),
+            date: new Date(dateString!),
             departmentId: Math.random() > 0.5 ? skiDepartment.id : snowboardDepartment.id,
             shiftTypeId: badgeTestType.id,
             description: `バッジテスト`,
@@ -598,7 +608,7 @@ async function main() {
       if (weekOfMonth === 1 && dayOfWeek === 6) { // 第1土曜日のみ
         const prefectureEvent = await prisma.shift.create({
           data: {
-            date: new Date(dateString),
+            date: new Date(dateString!),
             departmentId: Math.random() > 0.5 ? skiDepartment.id : snowboardDepartment.id,
             shiftTypeId: prefectureEventType.id,
             description: `県連事業`,
@@ -612,7 +622,7 @@ async function main() {
       
       const skiWeekday = await prisma.shift.create({
         data: {
-          date: new Date(dateString),
+          date: new Date(dateString!),
           departmentId: skiDepartment.id,
           shiftTypeId: generalLessonType.id,
           description: `スキー一般レッスン`,
