@@ -1,17 +1,30 @@
 import { NextResponse } from 'next/server'
+import { prisma } from '@/lib/db'
 
 export async function GET() {
   try {
-    // TODO: Implement department listing
-    return NextResponse.json({ 
+    const departments = await prisma.department.findMany({
+      orderBy: {
+        name: 'asc'
+      }
+    })
+
+    return NextResponse.json({
       success: true,
-      data: [],
-      message: 'Departments API endpoint - ready for implementation'
+      data: departments,
+      count: departments.length,
+      message: null,
+      error: null
     })
   } catch (error) {
     console.error('Departments API error:', error)
     return NextResponse.json(
-      { success: false, error: 'Internal server error' },
+      { 
+        success: false, 
+        data: null,
+        message: null,
+        error: 'Internal server error' 
+      },
       { status: 500 }
     )
   }
