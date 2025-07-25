@@ -214,11 +214,7 @@ paths:
                                 certifications:
                                   type: array
                                   items:
-                                    $ref: "#/components/schemas/InstructorCertification"
-                                shiftAssignments:
-                                  type: array
-                                  items:
-                                    $ref: "#/components/schemas/ShiftAssignment"
+                                    $ref: "#/components/schemas/CertificationSummary"
         "500":
           $ref: "#/components/responses/ServerError"
 
@@ -251,11 +247,7 @@ paths:
                               certifications:
                                 type: array
                                 items:
-                                  $ref: "#/components/schemas/InstructorCertification"
-                              shiftAssignments:
-                                type: array
-                                items:
-                                  $ref: "#/components/schemas/ShiftAssignment"
+                                  $ref: "#/components/schemas/CertificationSummary"
                       message:
                         type: string
                         example: "Instructor operation completed successfully"
@@ -291,11 +283,7 @@ paths:
                               certifications:
                                 type: array
                                 items:
-                                  $ref: "#/components/schemas/InstructorCertification"
-                              shiftAssignments:
-                                type: array
-                                items:
-                                  $ref: "#/components/schemas/ShiftAssignment"
+                                  $ref: "#/components/schemas/CertificationSummary"
                       message:
                         type: string
                         example: "Instructor operation completed successfully"
@@ -333,11 +321,7 @@ paths:
                               certifications:
                                 type: array
                                 items:
-                                  $ref: "#/components/schemas/InstructorCertification"
-                              shiftAssignments:
-                                type: array
-                                items:
-                                  $ref: "#/components/schemas/ShiftAssignment"
+                                  $ref: "#/components/schemas/CertificationSummary"
                       message:
                         type: string
                         example: "Instructor operation completed successfully"
@@ -346,116 +330,6 @@ paths:
         "404":
           $ref: "#/components/responses/NotFound"
         "500":  
-          $ref: "#/components/responses/ServerError"
-
-  /api/instructor-certifications:
-    get:
-      summary: インストラクター資格関連一覧取得
-      description: インストラクター資格関連の一覧を取得
-      tags:
-        - インストラクター資格関連
-      responses:
-        "200":
-          description: インストラクター資格関連一覧
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/InstructorCertification"
-        "500":
-          $ref: "#/components/responses/ServerError"
-
-    post:
-      summary: インストラクター資格関連作成
-      description: 新しいインストラクター資格関連を作成
-      tags:
-        - インストラクター資格関連
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/InstructorCertificationInput"
-      responses:
-        "201":
-          description: インストラクター資格関連作成成功
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/InstructorCertification"
-        "500":
-          $ref: "#/components/responses/ServerError"
-
-  /api/instructor-certifications/[id]:
-    parameters:
-      - $ref: "#/components/parameters/Id"
-
-    get:
-      summary: インストラクター資格関連詳細取得
-      description: 指定されたインストラクター資格関連の詳細情報を取得
-      tags:
-        - インストラクター資格関連
-      responses:
-        "200":
-          description: インストラクター資格関連詳細
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/InstructorCertificationDetail"
-        "404":
-          $ref: "#/components/responses/NotFound"
-        "500":
-          $ref: "#/components/responses/ServerError"
-
-    put:
-      summary: インストラクター資格関連更新
-      description: 指定されたインストラクター資格関連を更新
-      tags:
-        - インストラクター資格関連
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/InstructorCertificationInput"
-      responses:
-        "200":
-          description: インストラクター資格関連更新成功
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/InstructorCertification"
-        "404":
-          $ref: "#/components/responses/NotFound"
-        "500":
-          $ref: "#/components/responses/ServerError"
-
-    delete:
-      summary: インストラクター資格関連削除
-      description: 指定されたインストラクター資格関連を削除
-      tags:
-        - インストラクター資格関連
-      responses:
-        "200":
-          description: 削除成功
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: "#/components/schemas/ApiResponse"
-                  - type: object
-                    properties:
-                      data:
-                        type: object
-                        nullable: true
-                        example: null
-                      message:
-                        type: string
-                        example: "Operation completed successfully"
-        "404":
-          $ref: "#/components/responses/NotFound"
-        "500":
           $ref: "#/components/responses/ServerError"
 
   /api/shift-types:
@@ -923,6 +797,24 @@ components:
           enum: [ACTIVE, INACTIVE, RETIRED]
           default: ACTIVE
 
+    CertificationSummary:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+          example: "スキー指導員"
+        shortName:
+          type: string
+          nullable: true
+          example: "指導員"
+        organization:
+          type: string
+          example: "SAJ"
+        department:
+          $ref: "#/components/schemas/DepartmentSummary"
+
     # 基本レスポンス
     ApiResponse:
       type: object
@@ -1162,44 +1054,12 @@ components:
         notes:
           type: string
           nullable: true
-
-    # インストラクター資格関連
-    InstructorCertification:
-      type: object
-      properties:
-        id:
-          type: integer
-        instructorId:
-          type: integer
-        certificationId:
-          type: integer
-        createdAt:
-          type: string
-          format: date-time
-        updatedAt:
-          type: string
-          format: date-time
-        certification:
-          $ref: "#/components/schemas/Certification"
-
-    InstructorCertificationInput:
-      type: object
-      required:
-        - instructorId
-        - certificationId
-      properties:
-        instructorId:
-          type: integer
-        certificationId:
-          type: integer
-
-    InstructorCertificationDetail:
-      allOf:
-        - $ref: "#/components/schemas/InstructorCertification"
-        - type: object
-          properties:
-            instructor:
-              $ref: "#/components/schemas/Instructor"
+        certificationIds:
+          type: array
+          items:
+            type: integer
+          description: "割り当てる資格IDの配列"
+          example: [1, 3, 5]
 
     # シフト種類関連
     ShiftType:
@@ -1351,7 +1211,7 @@ components:
                     certifications:
                       type: array
                       items:
-                        $ref: "#/components/schemas/InstructorCertification"
+                        $ref: "#/components/schemas/CertificationSummary"
 
 tags:
   - name: システム
@@ -1362,8 +1222,6 @@ tags:
     description: 資格マスタの管理
   - name: インストラクター管理
     description: インストラクターの管理
-  - name: インストラクター資格関連
-    description: インストラクターと資格の関連管理
   - name: シフト種類管理
     description: シフト種類マスタの管理
   - name: シフト管理
