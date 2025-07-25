@@ -415,32 +415,6 @@ paths:
         "500":
           $ref: "#/components/responses/ServerError"
 
-    delete:
-      summary: シフト種類削除
-      description: 指定されたシフト種類を削除
-      tags:
-        - シフト種類管理
-      responses:
-        "200":
-          description: 削除成功
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: "#/components/schemas/ApiResponse"
-                  - type: object
-                    properties:
-                      data:
-                        type: object
-                        nullable: true
-                        example: null
-                      message:
-                        type: string
-                        example: "Operation completed successfully"
-        "404":
-          $ref: "#/components/responses/NotFound"
-        "500":
-          $ref: "#/components/responses/ServerError"
 
   /api/shifts:
     get:
@@ -1093,14 +1067,7 @@ components:
           default: true
 
     ShiftTypeDetail:
-      allOf:
-        - $ref: "#/components/schemas/ShiftType"
-        - type: object
-          properties:
-            shifts:
-              type: array
-              items:
-                $ref: "#/components/schemas/Shift"
+      $ref: "#/components/schemas/ShiftType"
 
     # シフト関連
     Shift:
