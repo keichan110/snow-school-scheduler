@@ -894,6 +894,35 @@ components:
             error: "Internal server error"
 
   schemas:
+    # 軽量版スキーマ
+    DepartmentSummary:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+          example: "スキー"
+        colorPalette:
+          type: string
+          example: "red"
+
+    InstructorSummary:
+      type: object
+      properties:
+        id:
+          type: integer
+        lastName:
+          type: string
+          example: "山田"
+        firstName:
+          type: string
+          example: "太郎"
+        status:
+          type: string
+          enum: [ACTIVE, INACTIVE, RETIRED]
+          default: ACTIVE
+
     # 基本レスポンス
     ApiResponse:
       type: object
@@ -1034,7 +1063,7 @@ components:
           type: string
           format: date-time
         department:
-          $ref: "#/components/schemas/Department"
+          $ref: "#/components/schemas/DepartmentSummary"
 
     CertificationInput:
       type: object
@@ -1067,15 +1096,10 @@ components:
         - $ref: "#/components/schemas/Certification"
         - type: object
           properties:
-            instructorCertifications:
+            instructors:
               type: array
               items:
-                type: object
-                properties:
-                  id:
-                    type: integer
-                  instructor:
-                    $ref: "#/components/schemas/Instructor"
+                $ref: "#/components/schemas/InstructorSummary"
 
     # インストラクター関連
     Instructor:
