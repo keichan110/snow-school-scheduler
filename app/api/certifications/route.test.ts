@@ -1,4 +1,4 @@
-import { GET } from './route'
+import { GET, POST } from './route'
 import { prisma } from '@/lib/db'
 import { NextResponse } from 'next/server'
 
@@ -24,6 +24,7 @@ jest.mock('@/lib/db', () => ({
   prisma: {
     certification: {
       findMany: jest.fn(),
+      create: jest.fn(),
     },
   },
 }))
@@ -37,6 +38,7 @@ jest.mock('next/server', () => ({
 
 const mockPrisma = prisma as jest.Mocked<typeof prisma>
 const mockCertificationFindMany = mockPrisma.certification.findMany as jest.MockedFunction<typeof prisma.certification.findMany>
+const mockCertificationCreate = mockPrisma.certification.create as jest.MockedFunction<typeof prisma.certification.create>
 const mockNextResponse = NextResponse as jest.Mocked<typeof NextResponse>
 
 describe('GET /api/certifications', () => {
@@ -349,6 +351,257 @@ describe('GET /api/certifications', () => {
           }
         })
       )
+    })
+  })
+})
+
+describe('POST /api/certifications', () => {
+  // NextRequest.jsonをモック化
+  const mockRequest = {
+    json: jest.fn(),
+  } as unknown as Request
+
+  beforeEach(() => {
+    jest.clearAllMocks()
+    // NextResponse.jsonのデフォルトモック実装
+    mockNextResponse.json.mockImplementation((data, init) => {
+      return {
+        status: init?.status || 200,
+        json: async () => data,
+        cookies: {},
+        headers: new Headers(),
+        ok: true,
+        redirected: false,
+        statusText: 'OK',
+        type: 'basic' as ResponseType,
+        url: '',
+        body: null,
+        bodyUsed: false,
+        clone: jest.fn(),
+        arrayBuffer: jest.fn(),
+        blob: jest.fn(),
+        formData: jest.fn(),
+        text: jest.fn(),
+        [Symbol.for('NextResponse')]: true,
+      } as unknown as NextResponse
+    })
+  })
+
+  describe('正常系', () => {
+    it('資格が正常に作成されること', async () => {
+      // Arrange
+      const inputData = {
+        departmentId: 1,
+        name: 'スキー指導員',
+        shortName: '指導員',
+        organization: 'SAJ',
+        description: 'スキー指導員資格',
+        isActive: true
+      }
+
+      const mockCreatedCertification: Certification = {
+        id: 1,
+        departmentId: 1,
+        name: 'スキー指導員',
+        shortName: '指導員',
+        organization: 'SAJ',
+        description: 'スキー指導員資格',
+        isActive: true,
+        createdAt: new Date('2024-01-01'),
+        updatedAt: new Date('2024-01-01'),
+        department: {
+          id: 1,
+          name: 'スキー',
+          colorPalette: 'red'
+        }
+      }
+
+      mockCertificationCreate.mockResolvedValue(mockCreatedCertification)
+      mockRequest.json = jest.fn().mockResolvedValue(inputData)
+
+      // Act
+      await POST(mockRequest)
+
+      // Assert
+      expect(mockCertificationCreate).toHaveBeenCalledWith({
+        data: {
+          departmentId: inputData.departmentId,
+          name: inputData.name,
+          shortName: inputData.shortName,
+          organization: inputData.organization,
+          description: inputData.description,
+          isActive: inputData.isActive
+        },
+        include: {
+          department: {
+            select: {
+              id: true,
+              name: true,
+              colorPalette: true
+            }
+          }
+        }
+      })
+
+      expect(mockNextResponse.json).toHaveBeenCalledWith(
+        {
+          success: true,
+          data: mockCreatedCertification,
+          message: 'Certification created successfully',
+          error: null
+        },
+        { status: 201 }
+      )
+    })
+
+    it('必須フィールドのみでも資格が作成されること', async () => {
+      // Arrange
+      const inputData = {
+        departmentId: 1,
+        name: 'スキー指導員',
+        organization: 'SAJ'
+      }
+
+      const mockCreatedCertification: Certification = {
+        id: 1,
+        departmentId: 1,
+        name: 'スキー指導員',
+        shortName: null,
+        organization: 'SAJ',
+        description: null,
+        isActive: true,
+        createdAt: new Date('2024-01-01'),
+        updatedAt: new Date('2024-01-01'),
+        department: {
+          id: 1,
+          name: 'スキー',
+          colorPalette: 'red'
+        }
+      }
+
+      mockCertificationCreate.mockResolvedValue(mockCreatedCertification)
+      mockRequest.json = jest.fn().mockResolvedValue(inputData)
+
+      // Act
+      await POST(mockRequest)
+
+      // Assert
+      expect(mockCertificationCreate).toHaveBeenCalledWith({
+        data: {
+          departmentId: inputData.departmentId,
+          name: inputData.name,
+          shortName: undefined,
+          organization: inputData.organization,
+          description: undefined,
+          isActive: true
+        },
+        include: {
+          department: {
+            select: {
+              id: true,
+              name: true,
+              colorPalette: true
+            }
+          }
+        }
+      })
+
+      expect(mockNextResponse.json).toHaveBeenCalledWith(
+        {
+          success: true,
+          data: mockCreatedCertification,
+          message: 'Certification created successfully',
+          error: null
+        },
+        { status: 201 }
+      )
+    })
+  })
+
+  describe('異常系', () => {
+    it('必須フィールドが不足している場合は400エラーが返されること', async () => {
+      // Arrange
+      const inputData = {
+        name: 'スキー指導員'
+        // departmentIdとorganizationが不足
+      }
+
+      mockRequest.json = jest.fn().mockResolvedValue(inputData)
+
+      // Act
+      await POST(mockRequest)
+
+      // Assert
+      expect(mockCertificationCreate).not.toHaveBeenCalled()
+
+      expect(mockNextResponse.json).toHaveBeenCalledWith(
+        {
+          success: false,
+          data: null,
+          message: null,
+          error: 'Missing required fields: departmentId, organization'
+        },
+        { status: 400 }
+      )
+    })
+
+    it('データベースエラーが発生した場合は500エラーが返されること', async () => {
+      // Arrange
+      const inputData = {
+        departmentId: 1,
+        name: 'スキー指導員',
+        organization: 'SAJ'
+      }
+
+      const mockError = new Error('Database error')
+      mockCertificationCreate.mockRejectedValue(mockError)
+      mockRequest.json = jest.fn().mockResolvedValue(inputData)
+
+      const consoleSpy = jest.spyOn(console, 'error').mockImplementation()
+
+      // Act
+      await POST(mockRequest)
+
+      // Assert
+      expect(consoleSpy).toHaveBeenCalledWith('Certifications API error:', mockError)
+
+      expect(mockNextResponse.json).toHaveBeenCalledWith(
+        {
+          success: false,
+          data: null,
+          message: null,
+          error: 'Internal server error'
+        },
+        { status: 500 }
+      )
+
+      consoleSpy.mockRestore()
+    })
+
+    it('不正なJSONデータの場合は400エラーが返されること', async () => {
+      // Arrange
+      const jsonError = new Error('Invalid JSON')
+      mockRequest.json = jest.fn().mockRejectedValue(jsonError)
+
+      const consoleSpy = jest.spyOn(console, 'error').mockImplementation()
+
+      // Act
+      await POST(mockRequest)
+
+      // Assert
+      expect(consoleSpy).toHaveBeenCalledWith('Certifications API error:', jsonError)
+
+      expect(mockNextResponse.json).toHaveBeenCalledWith(
+        {
+          success: false,
+          data: null,
+          message: null,
+          error: 'Internal server error'
+        },
+        { status: 500 }
+      )
+
+      consoleSpy.mockRestore()
     })
   })
 })
