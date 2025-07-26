@@ -2,28 +2,6 @@ import { GET } from './route'
 import { prisma } from '@/lib/db'
 import { NextResponse } from 'next/server'
 
-type CertificationDetail = {
-  id: number
-  departmentId: number
-  name: string
-  shortName: string | null
-  organization: string
-  description: string | null
-  isActive: boolean
-  createdAt: Date
-  updatedAt: Date
-  department: {
-    id: number
-    name: string
-    colorPalette: string
-  }
-  instructors: Array<{
-    id: number
-    lastName: string
-    firstName: string
-    status: 'ACTIVE' | 'INACTIVE' | 'RETIRED'
-  }>
-}
 
 // Prismaクライアントをモック化
 jest.mock('@/lib/db', () => ({
@@ -75,7 +53,42 @@ describe('GET /api/certifications/[id]', () => {
   describe('正常系', () => {
     it('資格詳細データがインストラクター情報付きで正しく返されること', async () => {
       // Arrange
-      const mockCertificationDetail: CertificationDetail = {
+      const mockCertificationFromDB = {
+        id: 1,
+        departmentId: 1,
+        name: 'スキー指導員',
+        shortName: '指導員',
+        organization: 'SAJ',
+        description: 'スキー指導員資格',
+        isActive: true,
+        createdAt: new Date('2024-01-01'),
+        updatedAt: new Date('2024-01-01'),
+        department: {
+          id: 1,
+          name: 'スキー',
+          colorPalette: 'red'
+        },
+        instructorCertifications: [
+          {
+            instructor: {
+              id: 1,
+              lastName: '山田',
+              firstName: '太郎',
+              status: 'ACTIVE'
+            }
+          },
+          {
+            instructor: {
+              id: 2,
+              lastName: '鈴木',
+              firstName: '花子',
+              status: 'ACTIVE'
+            }
+          }
+        ]
+      }
+
+      const expectedResponse = {
         id: 1,
         departmentId: 1,
         name: 'スキー指導員',
@@ -106,7 +119,7 @@ describe('GET /api/certifications/[id]', () => {
         ]
       }
 
-      mockCertificationFindUnique.mockResolvedValue(mockCertificationDetail)
+      mockCertificationFindUnique.mockResolvedValue(mockCertificationFromDB)
 
       // ルートパラメータを模擬
       const mockContext = {
@@ -144,7 +157,7 @@ describe('GET /api/certifications/[id]', () => {
 
       expect(mockNextResponse.json).toHaveBeenCalledWith({
         success: true,
-        data: mockCertificationDetail,
+        data: expectedResponse,
         message: null,
         error: null
       })
@@ -152,7 +165,25 @@ describe('GET /api/certifications/[id]', () => {
 
     it('インストラクターが関連付けられていない資格でも正しく返されること', async () => {
       // Arrange
-      const mockCertificationDetail: CertificationDetail = {
+      const mockCertificationFromDB = {
+        id: 2,
+        departmentId: 2,
+        name: 'スノーボード指導員',
+        shortName: '指導員',
+        organization: 'JSBA',
+        description: null,
+        isActive: true,
+        createdAt: new Date('2024-01-01'),
+        updatedAt: new Date('2024-01-01'),
+        department: {
+          id: 2,
+          name: 'スノーボード',
+          colorPalette: 'blue'
+        },
+        instructorCertifications: []
+      }
+
+      const expectedResponse = {
         id: 2,
         departmentId: 2,
         name: 'スノーボード指導員',
@@ -170,7 +201,7 @@ describe('GET /api/certifications/[id]', () => {
         instructors: []
       }
 
-      mockCertificationFindUnique.mockResolvedValue(mockCertificationDetail)
+      mockCertificationFindUnique.mockResolvedValue(mockCertificationFromDB)
 
       const mockContext = {
         params: Promise.resolve({ id: '2' })
@@ -182,7 +213,7 @@ describe('GET /api/certifications/[id]', () => {
       // Assert
       expect(mockNextResponse.json).toHaveBeenCalledWith({
         success: true,
-        data: mockCertificationDetail,
+        data: expectedResponse,
         message: null,
         error: null
       })
@@ -320,13 +351,20 @@ describe('GET /api/certifications/[id]', () => {
   describe('データベースクエリ', () => {
     it('findUniqueが正しいパラメータで呼ばれること', async () => {
       // Arrange
-      const mockCertificationDetail: Partial<CertificationDetail> = {
+      const mockCertificationFromDB = {
         id: 1,
+        departmentId: 1,
         name: 'Test Certification',
+        shortName: null,
+        organization: 'Test Org',
+        description: null,
+        isActive: true,
+        createdAt: new Date('2024-01-01'),
+        updatedAt: new Date('2024-01-01'),
         department: { id: 1, name: 'Test Dept', colorPalette: 'red' },
-        instructors: []
+        instructorCertifications: []
       }
-      mockCertificationFindUnique.mockResolvedValue(mockCertificationDetail as CertificationDetail)
+      mockCertificationFindUnique.mockResolvedValue(mockCertificationFromDB)
 
       const mockContext = {
         params: Promise.resolve({ id: '1' })
