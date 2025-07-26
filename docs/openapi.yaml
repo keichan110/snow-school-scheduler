@@ -597,23 +597,25 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                    example: true
-                  data:
-                    type: object
+                allOf:
+                  - $ref: "#/components/schemas/ApiResponse"
+                  - type: object
                     properties:
-                      shiftId:
-                        type: integer
-                      assignments:
-                        type: array
-                        items:
-                          $ref: "#/components/schemas/ShiftAssignment"
-                      assignedCount:
-                        type: integer
-                        example: 2
+                      data:
+                        type: object
+                        properties:
+                          shiftId:
+                            type: integer
+                          assignments:
+                            type: array
+                            items:
+                              $ref: "#/components/schemas/ShiftAssignment"
+                          assignedCount:
+                            type: integer
+                            example: 2
+                      message:
+                        type: string
+                        example: "Shift assignments retrieved successfully"
         "404":
           $ref: "#/components/responses/NotFound"
         "500":
@@ -645,48 +647,25 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                    example: true
-                  data:
-                    type: object
+                allOf:
+                  - $ref: "#/components/schemas/ApiResponse"
+                  - type: object
                     properties:
-                      added:
-                        type: array
-                        items:
-                          type: integer
-                        description: 新規追加されたインストラクターID
-                        example: [1]
-                      removed:
-                        type: array
-                        items:
-                          type: integer
-                        description: 削除されたインストラクターID
-                        example: [4]
-                      unchanged:
-                        type: array
-                        items:
-                          type: integer
-                        description: 変更されなかったインストラクターID
-                        example: [2, 3]
-                      current:
-                        type: array
-                        items:
-                          type: integer
-                        description: 現在の割り当てインストラクターID
-                        example: [1, 2, 3]
-                      assignments:
-                        type: array
-                        items:
-                          $ref: "#/components/schemas/ShiftAssignment"
-                      assignedCount:
-                        type: integer
-                        example: 3
-                  message:
-                    type: string
-                    example: "Shift assignments updated successfully"
+                      data:
+                        type: object
+                        properties:
+                          shiftId:
+                            type: integer
+                          assignments:
+                            type: array
+                            items:
+                              $ref: "#/components/schemas/ShiftAssignment"
+                          assignedCount:
+                            type: integer
+                            example: 3
+                      message:
+                        type: string
+                        example: "Shift assignments updated successfully"
         "400":
           $ref: "#/components/responses/ValidationError"
         "404":
@@ -1077,7 +1056,7 @@ components:
           type: integer
         date:
           type: string
-          format: date-time
+          format: date
         departmentId:
           type: integer
         shiftTypeId:
@@ -1105,7 +1084,7 @@ components:
       properties:
         date:
           type: string
-          format: date-time
+          format: date
         departmentId:
           type: integer
         shiftTypeId:
@@ -1140,10 +1119,8 @@ components:
         assignedAt:
           type: string
           format: date-time
-        shift:
-          $ref: "#/components/schemas/Shift"
         instructor:
-          $ref: "#/components/schemas/Instructor"
+          $ref: "#/components/schemas/InstructorSummary"
 
     ShiftAssignmentInput:
       type: object
