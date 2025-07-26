@@ -561,22 +561,8 @@ paths:
       tags:
         - シフト管理
       responses:
-        "200":
-          description: 削除成功
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: "#/components/schemas/ApiResponse"
-                  - type: object
-                    properties:
-                      data:
-                        type: object
-                        nullable: true
-                        example: null
-                      message:
-                        type: string
-                        example: "Shift deleted successfully"
+        "204":
+          description: 削除成功（レスポンス本文なし）
         "404":
           $ref: "#/components/responses/NotFound"
         "500":
