@@ -175,7 +175,15 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Certification"
+                allOf:
+                  - $ref: "#/components/schemas/ApiResponse"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/Certification"
+                      message:
+                        type: string
+                        example: "Certification updated successfully"
         "404":
           $ref: "#/components/responses/NotFound"
         "500":
@@ -344,9 +352,14 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/ShiftType"
+                allOf:
+                  - $ref: "#/components/schemas/ApiListResponse"
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/ShiftType"
         "500":
           $ref: "#/components/responses/ServerError"
 
