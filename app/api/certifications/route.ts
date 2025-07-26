@@ -1,17 +1,40 @@
 import { NextResponse } from 'next/server'
+import { prisma } from '@/lib/db'
 
 export async function GET() {
   try {
-    // TODO: Implement certification listing
-    return NextResponse.json({ 
+    const certifications = await prisma.certification.findMany({
+      include: {
+        department: {
+          select: {
+            id: true,
+            name: true,
+            colorPalette: true
+          }
+        }
+      },
+      orderBy: [
+        { department: { name: 'asc' } },
+        { name: 'asc' }
+      ]
+    })
+
+    return NextResponse.json({
       success: true,
-      data: [],
-      message: 'Certifications API endpoint - ready for implementation'
+      data: certifications,
+      count: certifications.length,
+      message: null,
+      error: null
     })
   } catch (error) {
     console.error('Certifications API error:', error)
     return NextResponse.json(
-      { success: false, error: 'Internal server error' },
+      { 
+        success: false, 
+        data: null,
+        message: null,
+        error: 'Internal server error' 
+      },
       { status: 500 }
     )
   }
