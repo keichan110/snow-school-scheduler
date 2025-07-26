@@ -582,96 +582,6 @@ paths:
         "500":
           $ref: "#/components/responses/ServerError"
 
-  /api/shifts/[id]/assign:
-    parameters:
-      - $ref: "#/components/parameters/Id"
-
-    get:
-      summary: シフト割り当て状況取得
-      description: 指定されたシフトの割り当て状況を取得
-      tags:
-        - シフト管理
-      responses:
-        "200":
-          description: シフト割り当て状況
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: "#/components/schemas/ApiResponse"
-                  - type: object
-                    properties:
-                      data:
-                        type: object
-                        properties:
-                          shiftId:
-                            type: integer
-                          assignments:
-                            type: array
-                            items:
-                              $ref: "#/components/schemas/ShiftAssignment"
-                          assignedCount:
-                            type: integer
-                            example: 2
-                      message:
-                        type: string
-                        example: "Shift assignments retrieved successfully"
-        "404":
-          $ref: "#/components/responses/NotFound"
-        "500":
-          $ref: "#/components/responses/ServerError"
-
-    put:
-      summary: シフト割り当て一括更新
-      description: 指定されたシフトの割り当てを一括で更新（追加・削除を同時実行）
-      tags:
-        - シフト管理
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - instructorIds
-              properties:
-                instructorIds:
-                  type: array
-                  items:
-                    type: integer
-                  description: 割り当てるインストラクターのID配列
-                  example: [1, 2, 3]
-      responses:
-        "200":
-          description: 割り当て更新成功
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: "#/components/schemas/ApiResponse"
-                  - type: object
-                    properties:
-                      data:
-                        type: object
-                        properties:
-                          shiftId:
-                            type: integer
-                          assignments:
-                            type: array
-                            items:
-                              $ref: "#/components/schemas/ShiftAssignment"
-                          assignedCount:
-                            type: integer
-                            example: 3
-                      message:
-                        type: string
-                        example: "Shift assignments updated successfully"
-        "400":
-          $ref: "#/components/responses/ValidationError"
-        "404":
-          $ref: "#/components/responses/NotFound"
-        "500":
-          $ref: "#/components/responses/ServerError"
 
 components:
   parameters:
@@ -1092,6 +1002,12 @@ components:
         description:
           type: string
           nullable: true
+        assignedInstructorIds:
+          type: array
+          items:
+            type: integer
+          description: "割り当てるインストラクターIDの配列"
+          example: [1, 2, 3]
 
     ShiftWithStats:
       allOf:
