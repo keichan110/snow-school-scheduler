@@ -25,6 +25,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 2. `npm run lint` - ESLint による静的解析
 3. 変更後は再度型チェックとリントを実行
 
+### 設計・実装フロー
+
+- **設計時**: `z/plan.md` ファイルを作成（既存の場合は内容を初期化）して作業内容を記載し、承認を得てから作業を開始
+- **実装時**: `z/todo.md` ファイルを作成（既存の場合は内容を初期化）してTODOリストを作成し、ステップ毎にチェックして進行
+
 ### Git コミット規約
 
 **YOU MUST** use Gitmoji for all commit messages:
