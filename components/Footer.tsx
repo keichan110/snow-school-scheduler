@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { SlidersHorizontal } from "@phosphor-icons/react/dist/ssr";
 
 export default function Footer() {
   return (
@@ -9,7 +10,8 @@ export default function Footer() {
             © 2025 Keisuke Ito. All rights reserved.
           </div>
           <div className="flex space-x-6 text-sm">
-            <Link href="/admin" className="text-gray-500 hover:text-gray-700 transition-colors">
+            <Link href="/admin" className="flex items-center text-gray-500 hover:text-gray-700 transition-colors">
+              <SlidersHorizontal className="w-4 h-4 mr-2" weight="regular" />
               管理者機能
             </Link>
           </div>
