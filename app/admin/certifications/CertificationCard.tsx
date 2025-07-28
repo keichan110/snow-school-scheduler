@@ -1,6 +1,6 @@
 "use client";
 
-import { PencilSimple, PersonSimpleSki, PersonSimpleSnowboard } from "@phosphor-icons/react";
+import { PersonSimpleSki, PersonSimpleSnowboard } from "@phosphor-icons/react";
 import type { CertificationCardProps } from "./types";
 import { getDepartmentType } from "./utils";
 
@@ -60,7 +60,18 @@ export default function CertificationCard({ certification, onEdit }: Certificati
   const statusBadgeClass = "px-2 py-1 rounded-xl text-xs font-semibold bg-red-100 text-red-600";
 
   return (
-    <div className={cardClasses}>
+    <div 
+      className={cardClasses}
+      onClick={() => onEdit(certification)}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onEdit(certification);
+        }
+      }}
+    >
       <div className="flex items-start justify-between mb-3">
         <div className={departmentBadgeClass}>
           <dept.icon className="w-4 h-4" weight="regular" />
@@ -81,21 +92,6 @@ export default function CertificationCard({ certification, onEdit }: Certificati
         <p className={`text-sm line-clamp-2 ${textClass}`}>
           {certification.description || "説明なし"}
         </p>
-      </div>
-
-      <div className="flex items-center justify-end text-sm">
-        <div className="flex items-center gap-1">
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onEdit(certification);
-            }}
-            className="p-1 text-gray-400 hover:text-blue-600 transition-colors"
-            title="編集"
-          >
-            <PencilSimple className="w-4 h-4" weight="regular" />
-          </button>
-        </div>
       </div>
 
       <style jsx>{`

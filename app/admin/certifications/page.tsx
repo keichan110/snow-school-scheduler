@@ -255,11 +255,11 @@ export default function CertificationsPage() {
       {/* フローティングアクションボタン */}
       <button
         onClick={() => handleOpenModal()}
-        className="fixed bottom-6 right-6 w-14 h-14 sm:bottom-4 sm:right-4 sm:w-12 sm:h-12 bg-gradient-to-tl from-blue-100 via-blue-300 to-indigo-400 rounded-full flex items-center justify-center shadow-lg hover:shadow-xl hover:scale-110 transition-all duration-300 z-50 border-none cursor-pointer"
+        className="fixed bottom-24 right-6 md:bottom-4 md:right-4 w-14 h-14 md:w-12 md:h-12 btn-gradient rounded-full flex items-center justify-center shadow-lg z-[60] border-none cursor-pointer"
         style={{ boxShadow: "0 4px 20px rgba(73, 81, 94, 0.3)" }}
         title="新しい資格を追加"
       >
-        <Plus className="w-6 h-6 sm:w-5 sm:h-5 text-white" weight="regular" />
+        <Plus className="w-6 h-6 md:w-5 md:h-5 text-white" weight="regular" />
       </button>
 
       {/* モーダル */}

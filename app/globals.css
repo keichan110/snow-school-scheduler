@@ -21,6 +21,34 @@
     @apply bg-gray-200 text-gray-900 hover:bg-gray-300 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2;
   }
   
+  .btn-gradient {
+    @apply bg-gradient-to-tl from-blue-100 via-blue-300 to-indigo-400 text-white rounded-lg transition-all duration-300;
+  }
+  
+  .btn-gradient:hover {
+    @apply shadow-xl scale-110;
+  }
+  
+  .text-gradient {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+  }
+  
+  .icon-active-color {
+    color: #6d7cf0; /* グラデーションの中間色 */
+  }
+  
+  .nav-active {
+    @apply bg-gray-50 border border-gray-200 shadow-sm;
+  }
+  
+  .nav-active-sidebar {
+    @apply bg-gray-50 border border-gray-200 shadow-sm;
+  }
+  
   .card {
     @apply bg-white rounded-lg shadow-md p-6;
   }

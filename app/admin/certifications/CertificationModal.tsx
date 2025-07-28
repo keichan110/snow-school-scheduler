@@ -237,7 +237,7 @@ export default function CertificationModal({
             </button>
             <button
               type="submit"
-              className="px-6 py-2 bg-gradient-to-tl from-blue-100 via-blue-300 to-indigo-400  text-white rounded-lg hover:shadow-xl hover:scale-110 transition-colors disabled:opacity-50"
+              className="px-6 py-2 btn-gradient disabled:opacity-50"
               disabled={isSubmitting}
             >
               {isSubmitting ? "保存中..." : "保存"}

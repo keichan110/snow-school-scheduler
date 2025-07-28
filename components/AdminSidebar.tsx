@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { usePathname } from "next/navigation";
 import { CalendarDots, Certificate, UsersThree, CaretLeft, CaretRight, Snowflake, SlidersHorizontal } from "@phosphor-icons/react";
 
 interface AdminSidebarProps {
@@ -10,6 +11,7 @@ interface AdminSidebarProps {
 
 export default function AdminSidebar({ className }: AdminSidebarProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const pathname = usePathname();
 
   const menuItems = [
     {
@@ -82,18 +84,28 @@ export default function AdminSidebar({ className }: AdminSidebarProps) {
       <nav className="py-4">
         {menuItems.map((item, index) => {
           const IconComponent = item.icon;
+          const isActive = pathname === item.href;
           
           return (
             <div key={item.href} className={`px-3 ${index > 0 ? "mt-1" : ""}`}>
               <Link 
                 href={item.href}
-                className="flex items-center px-3 py-3 text-gray-600 rounded-lg hover:bg-gray-50 hover:text-gray-900 transition-colors group relative"
+                className={`flex items-center px-3 py-3 rounded-lg transition-all duration-300 group relative ${
+                  isActive 
+                    ? "nav-active-sidebar" 
+                    : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                }`}
                 title={isCollapsed ? item.label : undefined}
               >
-                <IconComponent className={`w-5 h-5 ${isCollapsed ? "mx-auto" : "mr-3"}`} weight="regular" />
+                <IconComponent 
+                  className={`w-5 h-5 ${isCollapsed ? "mx-auto" : "mr-3"} ${isActive ? "icon-active-color" : "text-gray-600"}`} 
+                  weight={isActive ? "fill" : "regular"} 
+                />
                 
                 {!isCollapsed && (
-                  <span className="font-medium">{item.label}</span>
+                  <span className={`font-medium ${isActive ? "text-gradient" : ""}`}>
+                    {item.label}
+                  </span>
                 )}
                 
                 {/* 縮小時のツールチップ */}
