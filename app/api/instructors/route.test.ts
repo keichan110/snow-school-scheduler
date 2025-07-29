@@ -3,6 +3,7 @@ import { prisma } from '@/lib/db'
 import { NextResponse } from 'next/server'
 import { InstructorStatus } from '@prisma/client'
 
+
 type Instructor = {
   id: number
   lastName: string
@@ -509,6 +510,7 @@ describe('POST /api/instructors', () => {
           instructorCertification: {
             createMany: mockInstructorCertificationCreateMany
           }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } as any)
       })
 
@@ -604,7 +606,8 @@ describe('POST /api/instructors', () => {
         { id: 2, name: 'スノーボード指導員', isActive: true }
       ]
 
-      mockCertificationFindMany.mockResolvedValue(mockExistingCertifications)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      mockCertificationFindMany.mockResolvedValue(mockExistingCertifications as any)
       mockTransaction.mockImplementation(async (callback) => {
         return callback({
           instructor: {
@@ -614,6 +617,7 @@ describe('POST /api/instructors', () => {
           instructorCertification: {
             createMany: mockInstructorCertificationCreateMany.mockResolvedValue({ count: 2 })
           }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } as any)
       })
 
@@ -752,7 +756,8 @@ describe('POST /api/instructors', () => {
         { id: 2, name: 'スノーボード指導員', isActive: true }
       ]
 
-      mockCertificationFindMany.mockResolvedValue(mockExistingCertifications)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      mockCertificationFindMany.mockResolvedValue(mockExistingCertifications as any)
 
       const mockRequest = new Request('http://localhost:3000/api/instructors', {
         method: 'POST',
@@ -791,9 +796,10 @@ describe('POST /api/instructors', () => {
       }
 
       // 指定した資格が非アクティブな場合
-      const mockExistingCertifications: any[] = []
+      const mockExistingCertifications: Array<{ id: number; name: string; isActive: boolean }> = []
 
-      mockCertificationFindMany.mockResolvedValue(mockExistingCertifications)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      mockCertificationFindMany.mockResolvedValue(mockExistingCertifications as any)
 
       const mockRequest = new Request('http://localhost:3000/api/instructors', {
         method: 'POST',
@@ -949,6 +955,7 @@ describe('POST /api/instructors', () => {
           instructorCertification: {
             createMany: mockInstructorCertificationCreateMany
           }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } as any)
       })
 
@@ -1005,7 +1012,8 @@ describe('POST /api/instructors', () => {
             instructorCertification: {
               createMany: mockInstructorCertificationCreateMany
             }
-          } as any)
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } as any)
         })
 
         mockNextResponse.json.mockImplementation((data, init) => {
@@ -1081,11 +1089,12 @@ describe('POST /api/instructors', () => {
         { id: 1, name: 'スキー指導員', isActive: true }
       ]
 
-      mockCertificationFindMany.mockResolvedValue(mockExistingCertifications)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      mockCertificationFindMany.mockResolvedValue(mockExistingCertifications as any)
       
-      let txInstructorCreate: jest.MockedFunction<any>
-      let txInstructorCertificationCreateMany: jest.MockedFunction<any>
-      let txInstructorFindUnique: jest.MockedFunction<any>
+      let txInstructorCreate: jest.MockedFunction<typeof prisma.instructor.create>
+      let txInstructorCertificationCreateMany: jest.MockedFunction<typeof prisma.instructorCertification.createMany>
+      let txInstructorFindUnique: jest.MockedFunction<typeof prisma.instructor.findUnique>
 
       mockTransaction.mockImplementation(async (callback) => {
         txInstructorCreate = jest.fn().mockResolvedValue(mockCreatedInstructor)
@@ -1100,6 +1109,7 @@ describe('POST /api/instructors', () => {
           instructorCertification: {
             createMany: txInstructorCertificationCreateMany
           }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } as any)
       })
 
