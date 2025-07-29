@@ -8,7 +8,6 @@ type Department = {
   name: string
   description: string | null
   isActive: boolean
-  colorPalette: string
   createdAt: Date
   updatedAt: Date
 }
@@ -70,7 +69,6 @@ describe('GET /api/departments', () => {
           name: 'スキー',
           description: 'スキー部門',
           isActive: true,
-          colorPalette: '#FF0000',
           createdAt: new Date('2024-01-01'),
           updatedAt: new Date('2024-01-01'),
         },
@@ -80,7 +78,6 @@ describe('GET /api/departments', () => {
           name: 'スノーボード',
           description: 'スノーボード部門',
           isActive: true,
-          colorPalette: '#0000FF',
           createdAt: new Date('2024-01-01'),
           updatedAt: new Date('2024-01-01'),
         },
@@ -140,7 +137,6 @@ describe('GET /api/departments', () => {
           name: 'スキー',
           description: 'スキー部門',
           isActive: true,
-          colorPalette: '#FF0000',
           createdAt: new Date('2024-01-01'),
           updatedAt: new Date('2024-01-01'),
         },

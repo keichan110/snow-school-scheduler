@@ -637,9 +637,6 @@ components:
         name:
           type: string
           example: "スキー"
-        colorPalette:
-          type: string
-          example: "red"
 
     InstructorSummary:
       type: object
@@ -750,9 +747,6 @@ components:
         isActive:
           type: boolean
           default: true
-        colorPalette:
-          type: string
-          example: "red"
         createdAt:
           type: string
           format: date-time
@@ -765,7 +759,6 @@ components:
       required:
         - code
         - name
-        - colorPalette
       properties:
         code:
           type: string
@@ -779,9 +772,6 @@ components:
         isActive:
           type: boolean
           default: true
-        colorPalette:
-          type: string
-          example: "red"
 
     # 資格関連
     Certification:

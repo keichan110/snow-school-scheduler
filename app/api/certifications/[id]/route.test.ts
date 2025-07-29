@@ -68,7 +68,6 @@ describe('GET /api/certifications/[id]', () => {
         department: {
           id: 1,
           name: 'スキー',
-          colorPalette: 'red'
         },
         instructorCertifications: [
           {
@@ -103,7 +102,6 @@ describe('GET /api/certifications/[id]', () => {
         department: {
           id: 1,
           name: 'スキー',
-          colorPalette: 'red'
         },
         instructors: [
           {
@@ -138,8 +136,7 @@ describe('GET /api/certifications/[id]', () => {
           department: {
             select: {
               id: true,
-              name: true,
-              colorPalette: true
+              name: true
             }
           },
           instructorCertifications: {
@@ -180,7 +177,6 @@ describe('GET /api/certifications/[id]', () => {
         department: {
           id: 2,
           name: 'スノーボード',
-          colorPalette: 'blue'
         },
         instructorCertifications: []
       }
@@ -198,7 +194,6 @@ describe('GET /api/certifications/[id]', () => {
         department: {
           id: 2,
           name: 'スノーボード',
-          colorPalette: 'blue'
         },
         instructors: []
       }
@@ -241,8 +236,7 @@ describe('GET /api/certifications/[id]', () => {
           department: {
             select: {
               id: true,
-              name: true,
-              colorPalette: true
+              name: true
             }
           },
           instructorCertifications: {
@@ -315,8 +309,7 @@ describe('GET /api/certifications/[id]', () => {
           department: {
             select: {
               id: true,
-              name: true,
-              colorPalette: true
+              name: true
             }
           },
           instructorCertifications: {
@@ -363,7 +356,7 @@ describe('GET /api/certifications/[id]', () => {
         isActive: true,
         createdAt: new Date('2024-01-01'),
         updatedAt: new Date('2024-01-01'),
-        department: { id: 1, name: 'Test Dept', colorPalette: 'red' },
+        department: { id: 1, name: 'Test Dept' },
         instructorCertifications: []
       }
       mockCertificationFindUnique.mockResolvedValue(mockCertificationFromDB)
@@ -382,8 +375,7 @@ describe('GET /api/certifications/[id]', () => {
           department: {
             select: {
               id: true,
-              name: true,
-              colorPalette: true
+              name: true
             }
           },
           instructorCertifications: {
@@ -435,8 +427,7 @@ describe('GET /api/certifications/[id]', () => {
             department: {
               select: {
                 id: true,
-                name: true,
-                colorPalette: true
+                name: true
               }
             },
             instructorCertifications: {
@@ -515,7 +506,6 @@ describe('PUT /api/certifications/[id]', () => {
         department: {
           id: 1,
           name: 'スキー',
-          colorPalette: 'red'
         }
       }
 
@@ -544,8 +534,7 @@ describe('PUT /api/certifications/[id]', () => {
           department: {
             select: {
               id: true,
-              name: true,
-              colorPalette: true
+              name: true
             }
           }
         }
@@ -580,7 +569,6 @@ describe('PUT /api/certifications/[id]', () => {
         department: {
           id: 2,
           name: 'スノーボード',
-          colorPalette: 'blue'
         }
       }
 
@@ -609,8 +597,7 @@ describe('PUT /api/certifications/[id]', () => {
           department: {
             select: {
               id: true,
-              name: true,
-              colorPalette: true
+              name: true
             }
           }
         }
@@ -810,7 +797,6 @@ describe('PUT /api/certifications/[id]', () => {
         department: {
           id: 1,
           name: 'テスト部門',
-          colorPalette: 'red'
         }
       }
 
@@ -839,8 +825,7 @@ describe('PUT /api/certifications/[id]', () => {
           department: {
             select: {
               id: true,
-              name: true,
-              colorPalette: true
+              name: true
             }
           }
         }
@@ -868,7 +853,6 @@ describe('PUT /api/certifications/[id]', () => {
         department: {
           id: 1,
           name: 'テスト部門',
-          colorPalette: 'red'
         }
       }
 
@@ -907,7 +891,6 @@ describe('PUT /api/certifications/[id]', () => {
         department: {
           id: 1,
           name: 'テスト部門',
-          colorPalette: 'red'
         }
       }
 
@@ -928,8 +911,7 @@ describe('PUT /api/certifications/[id]', () => {
             department: {
               select: {
                 id: true,
-                name: true,
-                colorPalette: true
+                name: true
               }
             }
           }

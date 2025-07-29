@@ -23,7 +23,6 @@ model Department {
   name         String
   description  String?
   isActive     Boolean @default(true) @map("is_active")
-  colorPalette String  @map("color_palette")
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
 

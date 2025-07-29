@@ -30,7 +30,6 @@ export async function GET(request: Request, context: RouteContext) {
           select: {
             id: true,
             name: true,
-            colorPalette: true
           }
         },
         instructorCertifications: {
@@ -140,7 +139,6 @@ export async function PUT(request: Request, context: RouteContext) {
           select: {
             id: true,
             name: true,
-            colorPalette: true
           }
         }
       }
