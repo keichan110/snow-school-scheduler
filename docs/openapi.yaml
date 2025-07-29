@@ -7,7 +7,7 @@ info:
     name: Snow School Scheduler
 
 servers:
-  - url: http://localhost:8787
+  - url: http://localhost:3000
     description: 開発環境
   - url: https://snow-school-scheduler-api.example.com
     description: 本番環境
@@ -337,7 +337,7 @@ paths:
           $ref: "#/components/responses/ValidationError"
         "404":
           $ref: "#/components/responses/NotFound"
-        "500":  
+        "500":
           $ref: "#/components/responses/ServerError"
 
   /api/shift-types:
@@ -427,7 +427,6 @@ paths:
           $ref: "#/components/responses/NotFound"
         "500":
           $ref: "#/components/responses/ServerError"
-
 
   /api/shifts:
     get:
@@ -580,7 +579,6 @@ paths:
           $ref: "#/components/responses/NotFound"
         "500":
           $ref: "#/components/responses/ServerError"
-
 
 components:
   parameters:
@@ -784,7 +782,6 @@ components:
         colorPalette:
           type: string
           example: "red"
-
 
     # 資格関連
     Certification:

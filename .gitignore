@@ -48,3 +48,6 @@ prisma/dev.db-journal
 # TypeScript build info
 *.tsbuildinfo
 tsconfig.tsbuildinfo
+
+# AI work directory
+z

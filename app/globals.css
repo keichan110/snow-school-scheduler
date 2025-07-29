@@ -21,7 +21,186 @@
     @apply bg-gray-200 text-gray-900 hover:bg-gray-300 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2;
   }
   
+  .btn-gradient {
+    @apply bg-gradient-to-tl from-blue-100 via-blue-300 to-indigo-400 text-white rounded-lg transition-all duration-300;
+  }
+  
+  .btn-gradient:hover {
+    @apply shadow-xl scale-110;
+  }
+  
+  .text-gradient {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+  }
+  
+  .icon-active-color {
+    color: #6d7cf0; /* グラデーションの中間色 */
+  }
+  
+  .nav-active {
+    @apply bg-gray-50 border border-gray-200 shadow-sm;
+  }
+  
+  .nav-active-sidebar {
+    @apply bg-gray-50 border border-gray-200 shadow-sm;
+  }
+  
   .card {
     @apply bg-white rounded-lg shadow-md p-6;
+  }
+
+  /* カード ホバー効果 */
+  .card-hover {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .card-hover:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  }
+
+  /* ガラス効果 */
+  .glass-effect {
+    background: rgba(255, 255, 255, 0.25);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+  }
+
+  /* グラデーション ボーダー */
+  .gradient-border {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 1px;
+    border-radius: 1rem;
+  }
+
+  .gradient-border-inner {
+    background: white;
+    border-radius: calc(1rem - 1px);
+  }
+
+  /* 表示切り替えボタン */
+  .view-toggle-btn {
+    transition: all 0.2s ease;
+  }
+
+  .view-toggle-btn.active {
+    background: white;
+    color: #374151;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+
+  .view-toggle-btn:not(.active) {
+    background: transparent;
+    color: #6b7280;
+  }
+
+  /* モバイル表示切り替えボタン */
+  .mobile-view-toggle-btn {
+    transition: all 0.2s ease;
+  }
+
+  .mobile-view-toggle-btn.active {
+    background: white;
+    color: #374151;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+
+  .mobile-view-toggle-btn:not(.active) {
+    background: transparent;
+    color: #6b7280;
+  }
+
+  /* デイリーシフトカード */
+  .daily-shift-card {
+    transition: all 0.2s ease;
+    cursor: pointer;
+  }
+
+  .daily-shift-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+  }
+
+  /* ステータス インジケーター */
+  .status-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+
+  .status-complete {
+    background-color: #10b981;
+  }
+  .status-partial {
+    background-color: #f59e0b;
+  }
+  .status-empty {
+    background-color: #ef4444;
+  }
+
+  /* インストラクターチップ */
+  .instructor-chip {
+    font-size: 10px !important;
+    margin: 2px 0;
+    padding: 2px 6px !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+    display: block;
+  }
+
+  .instructor-chip:hover {
+    transform: scale(1.05) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    z-index: 10;
+    position: relative;
+  }
+
+  /* カレンダーグリッドの調整 */
+  .grid-cols-7 > * {
+    min-width: 0;
+  }
+
+  /* 土日の日付カラー */
+  .saturday-date {
+    color: #2563eb !important; /* 青色 */
+  }
+
+  .sunday-date {
+    color: #dc2626 !important; /* 赤色 */
+  }
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 768px) {
+  .instructor-chip {
+    font-size: 9px !important;
+    padding: 1px 4px !important;
+    margin: 1px 0;
+  }
+
+  .daily-shift-card {
+    min-height: 80px !important;
+    padding: 2px !important;
+  }
+
+  .daily-shift-card .text-lg {
+    font-size: 14px !important;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .instructor-chip {
+    font-size: 10px !important;
+  }
+
+  .daily-shift-card {
+    min-height: 100px !important;
   }
 }
