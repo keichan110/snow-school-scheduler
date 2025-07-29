@@ -4,7 +4,6 @@ export interface CertificationWithDepartment extends Certification {
   department: {
     id: number
     name: string
-    colorPalette: string
   }
 }
 

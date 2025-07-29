@@ -9,7 +9,7 @@ OpenAPI 仕様書（docs/api/openapi.yaml）に基づいて設計されていま
 
 - **データベース**: Cloudflare D1 (SQLite)
 - **ORM**: Prisma 6.12
-- **識別子**: INTEGER PRIMARY KEY (SQLiteネイティブのAUTOINCREMENT)
+- **識別子**: INTEGER PRIMARY KEY (SQLite ネイティブの AUTOINCREMENT)
 
 ## エンティティ関係図（ER 図）
 
@@ -115,16 +115,16 @@ erDiagram
 - スキー部門: `"blue"` → `bg-blue-500`, `text-blue-700`, `border-blue-300` など
 - スノーボード部門: `"emerald"` → `bg-emerald-500`, `text-emerald-700`, `border-emerald-300` など
 
-| カラム名      | データ型 | 制約                        | 説明                                                               |
-| ------------- | -------- | --------------------------- | ------------------------------------------------------------------ |
-| id            | INTEGER  | PRIMARY KEY AUTOINCREMENT   | 部門 ID                                                            |
-| code          | TEXT     | UNIQUE NOT NULL             | 部門コード（例: "ski", "snowboard"）                               |
-| name          | TEXT     | NOT NULL                    | 部門名（例: "スキー", "スノーボード"）                             |
-| description   | TEXT     |                             | 説明・備考                                                         |
-| is_active     | BOOLEAN  | DEFAULT TRUE                | アクティブ状態                                                     |
+| カラム名      | データ型 | 制約                        | 説明                                                   |
+| ------------- | -------- | --------------------------- | ------------------------------------------------------ |
+| id            | INTEGER  | PRIMARY KEY AUTOINCREMENT   | 部門 ID                                                |
+| code          | TEXT     | UNIQUE NOT NULL             | 部門コード（例: "ski", "snowboard"）                   |
+| name          | TEXT     | NOT NULL                    | 部門名（例: "スキー", "スノーボード"）                 |
+| description   | TEXT     |                             | 説明・備考                                             |
+| is_active     | BOOLEAN  | DEFAULT TRUE                | アクティブ状態                                         |
 | color_palette | TEXT     | NOT NULL                    | Tailwind CSS カラーパレット名（例: "blue", "emerald"） |
-| created_at    | DATETIME | DEFAULT CURRENT_TIMESTAMP   | 作成日時                                                           |
-| updated_at    | DATETIME | ON UPDATE CURRENT_TIMESTAMP | 更新日時                                                           |
+| created_at    | DATETIME | DEFAULT CURRENT_TIMESTAMP   | 作成日時                                               |
+| updated_at    | DATETIME | ON UPDATE CURRENT_TIMESTAMP | 更新日時                                               |
 
 **インデックス:**
 
@@ -235,21 +235,20 @@ erDiagram
 
 シフト枠を管理するテーブル。
 
-| カラム名       | データ型 | 制約                        | 説明                |
-| -------------- | -------- | --------------------------- | ------------------- |
-| id             | INTEGER  | PRIMARY KEY AUTOINCREMENT   | シフト ID           |
-| date           | DATETIME | NOT NULL                    | シフト日時          |
-| department_id  | INTEGER  | NOT NULL                    | 部門 ID（FK）       |
-| shift_type_id  | INTEGER  | NOT NULL                    | シフト種類 ID（FK） |
-| description    | TEXT     |                             | 説明・備考          |
-| created_at     | DATETIME | DEFAULT CURRENT_TIMESTAMP   | 作成日時            |
-| updated_at     | DATETIME | ON UPDATE CURRENT_TIMESTAMP | 更新日時            |
+| カラム名      | データ型 | 制約                        | 説明                |
+| ------------- | -------- | --------------------------- | ------------------- |
+| id            | INTEGER  | PRIMARY KEY AUTOINCREMENT   | シフト ID           |
+| date          | DATETIME | NOT NULL                    | シフト日時          |
+| department_id | INTEGER  | NOT NULL                    | 部門 ID（FK）       |
+| shift_type_id | INTEGER  | NOT NULL                    | シフト種類 ID（FK） |
+| description   | TEXT     |                             | 説明・備考          |
+| created_at    | DATETIME | DEFAULT CURRENT_TIMESTAMP   | 作成日時            |
+| updated_at    | DATETIME | ON UPDATE CURRENT_TIMESTAMP | 更新日時            |
 
 **外部キー制約:**
 
 - FOREIGN KEY (department_id) REFERENCES departments(id)
 - FOREIGN KEY (shift_type_id) REFERENCES shift_types(id)
-
 
 **インデックス:**
 
@@ -264,12 +263,12 @@ erDiagram
 
 シフトとインストラクターの多対多関係を管理する中間テーブル。
 
-| カラム名      | データ型 | 制約                        | 説明                      |
-| ------------- | -------- | --------------------------- | ------------------------- |
-| id            | INTEGER  | PRIMARY KEY AUTOINCREMENT   | 割り当て ID               |
-| shift_id      | INTEGER  | NOT NULL                    | シフト ID（FK）           |
-| instructor_id | INTEGER  | NOT NULL                    | インストラクター ID（FK） |
-| assigned_at   | DATETIME | DEFAULT CURRENT_TIMESTAMP   | 割り当て日時              |
+| カラム名      | データ型 | 制約                      | 説明                      |
+| ------------- | -------- | ------------------------- | ------------------------- |
+| id            | INTEGER  | PRIMARY KEY AUTOINCREMENT | 割り当て ID               |
+| shift_id      | INTEGER  | NOT NULL                  | シフト ID（FK）           |
+| instructor_id | INTEGER  | NOT NULL                  | インストラクター ID（FK） |
+| assigned_at   | DATETIME | DEFAULT CURRENT_TIMESTAMP | 割り当て日時              |
 
 **外部キー制約:**
 
@@ -288,7 +287,6 @@ erDiagram
 - INDEX idx_shift_assignments_instructor_id (instructor_id)
 - INDEX idx_shift_assignments_assigned_at (assigned_at)
 
-
 ## パフォーマンス設計
 
 ### 高頻度アクセスパターンとインデックス戦略
@@ -296,11 +294,13 @@ erDiagram
 #### 1. シフト検索の最適化
 
 **主要なクエリパターン:**
+
 - 日付範囲でのシフト一覧取得
 - 部門別・シフト種類別のフィルタリング
 - シフト割り当て状況の確認
 
 **最適化されたインデックス:**
+
 ```sql
 -- 基本インデックス（テーブル定義で既に定義済み）
 -- - idx_shifts_date (date)
@@ -317,11 +317,13 @@ CREATE INDEX idx_shifts_covering ON shifts(date, department_id, shift_type_id);
 #### 2. インストラクター検索の最適化
 
 **主要なクエリパターン:**
+
 - 名前検索（ひらがな・カタカナ・漢字）
 - ステータス別フィルタリング
 - 資格保有者検索
 
 **最適化されたインデックス:**
+
 ```sql
 -- 基本インデックス（テーブル定義で既に定義済み）
 -- - idx_instructors_name (last_name, first_name)
@@ -339,11 +341,13 @@ CREATE INDEX idx_instructors_active_name ON instructors(last_name, first_name) W
 #### 3. シフト割り当て検索の最適化
 
 **主要なクエリパターン:**
+
 - インストラクター別のシフト履歴
 - シフト別の割り当て一覧
 - 期間指定での割り当て統計
 
 **最適化されたインデックス:**
+
 ```sql
 -- 基本インデックス（テーブル定義で既に定義済み）
 -- - idx_shift_assignments_shift_id (shift_id)
@@ -361,9 +365,10 @@ CREATE INDEX idx_assignments_shift_covering ON shift_assignments(shift_id, instr
 
 ### クエリ最適化指針
 
-#### 効率的なJOIN戦略
+#### 効率的な JOIN 戦略
 
 1. **シフト一覧の取得（関連データ込み）**
+
    ```sql
    -- 最適化されたクエリ例
    SELECT s.*, d.name as department_name, st.name as shift_type_name,
@@ -390,11 +395,12 @@ CREATE INDEX idx_assignments_shift_covering ON shift_assignments(shift_id, instr
      AND c.is_active = true;
    ```
 
-### SQLite固有の最適化
+### SQLite 固有の最適化
 
-#### Cloudflare D1での最適化ポイント
+#### Cloudflare D1 での最適化ポイント
 
-1. **PRAGMA設定の活用**
+1. **PRAGMA 設定の活用**
+
    ```sql
    PRAGMA journal_mode = WAL;
    PRAGMA synchronous = NORMAL;
@@ -403,9 +409,10 @@ CREATE INDEX idx_assignments_shift_covering ON shift_assignments(shift_id, instr
    ```
 
 2. **効率的なページング**
+
    ```sql
    -- カーソルベースページング（OFFSET避ける）
-   SELECT * FROM shifts 
+   SELECT * FROM shifts
    WHERE date >= ?
    ORDER BY date, id
    LIMIT 20;
@@ -419,7 +426,6 @@ CREATE INDEX idx_assignments_shift_covering ON shift_assignments(shift_id, instr
    WHERE date >= date('now', 'start of month')
    GROUP BY department_id;
    ```
-
 
 ## データ整合性
 
@@ -439,18 +445,17 @@ CREATE INDEX idx_assignments_shift_covering ON shift_assignments(shift_id, instr
 - インストラクター・資格関連の重複防止
 - シフト割り当ての重複防止
 
-
 ## API 仕様との対応表
 
-| API エンティティ        | テーブル名                | 主な対応フィールド                                 |
-| ----------------------- | ------------------------- | -------------------------------------------------- |
-| Department              | departments               | id, code, name, description, isActive, colorPalette |
-| Certification           | certifications            | id, departmentId, name, shortName, organization    |
-| Instructor              | instructors               | id, lastName, firstName, status, notes             |
-| InstructorCertification | instructor_certifications | id, instructorId, certificationId                  |
-| ShiftType               | shift_types               | id, name, isActive                                 |
-| Shift                   | shifts                    | id, date, departmentId, shiftTypeId, description   |
-| ShiftAssignment         | shift_assignments         | id, shiftId, instructorId, assignedAt              |
+| API エンティティ        | テーブル名                | 主な対応フィールド                               |
+| ----------------------- | ------------------------- | ------------------------------------------------ |
+| Department              | departments               | id, code, name, description, isActive            |
+| Certification           | certifications            | id, departmentId, name, shortName, organization  |
+| Instructor              | instructors               | id, lastName, firstName, status, notes           |
+| InstructorCertification | instructor_certifications | id, instructorId, certificationId                |
+| ShiftType               | shift_types               | id, name, isActive                               |
+| Shift                   | shifts                    | id, date, departmentId, shiftTypeId, description |
+| ShiftAssignment         | shift_assignments         | id, shiftId, instructorId, assignedAt            |
 
 ---
 
@@ -459,5 +464,5 @@ CREATE INDEX idx_assignments_shift_covering ON shift_assignments(shift_id, instr
 
 ### 変更履歴
 
-- **v1.1.0 (2025-07-22)**: ID戦略をINTEGER PRIMARY KEY AUTOINCREMENTに変更（パフォーマンス最適化）
+- **v1.1.0 (2025-07-22)**: ID 戦略を INTEGER PRIMARY KEY AUTOINCREMENT に変更（パフォーマンス最適化）
 - **v1.0.0 (2025-07-21)**: 初版リリース

@@ -8,8 +8,7 @@ export async function GET() {
         department: {
           select: {
             id: true,
-            name: true,
-            colorPalette: true
+            name: true
           }
         }
       },
@@ -74,8 +73,7 @@ export async function POST(request: Request) {
         department: {
           select: {
             id: true,
-            name: true,
-            colorPalette: true
+            name: true
           }
         }
       }

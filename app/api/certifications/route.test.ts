@@ -15,7 +15,6 @@ type Certification = {
   department: {
     id: number
     name: string
-    colorPalette: string
   }
 }
 
@@ -84,8 +83,7 @@ describe('GET /api/certifications', () => {
           updatedAt: new Date('2024-01-01'),
           department: {
             id: 1,
-            name: 'スキー',
-            colorPalette: 'red'
+            name: 'スキー'
           }
         },
         {
@@ -100,8 +98,7 @@ describe('GET /api/certifications', () => {
           updatedAt: new Date('2024-01-01'),
           department: {
             id: 2,
-            name: 'スノーボード',
-            colorPalette: 'blue'
+            name: 'スノーボード'
           }
         },
       ]
@@ -117,8 +114,7 @@ describe('GET /api/certifications', () => {
           department: {
             select: {
               id: true,
-              name: true,
-              colorPalette: true
+              name: true
             }
           }
         },
@@ -151,8 +147,7 @@ describe('GET /api/certifications', () => {
           department: {
             select: {
               id: true,
-              name: true,
-              colorPalette: true
+              name: true
             }
           }
         },
@@ -186,8 +181,7 @@ describe('GET /api/certifications', () => {
           updatedAt: new Date('2024-01-01'),
           department: {
             id: 1,
-            name: 'スキー',
-            colorPalette: 'red'
+            name: 'スキー'
           }
         },
       ]
@@ -226,8 +220,7 @@ describe('GET /api/certifications', () => {
           department: {
             select: {
               id: true,
-              name: true,
-              colorPalette: true
+              name: true
             }
           }
         },
@@ -288,12 +281,12 @@ describe('GET /api/certifications', () => {
         { 
           id: 1, 
           name: 'スキー指導員',
-          department: { id: 1, name: 'スキー', colorPalette: 'red' }
+          department: { id: 1, name: 'スキー' }
         },
         { 
           id: 2, 
           name: 'スノーボード指導員',
-          department: { id: 2, name: 'スノーボード', colorPalette: 'blue' }
+          department: { id: 2, name: 'スノーボード' }
         },
       ]
       mockCertificationFindMany.mockResolvedValue(mockCertifications as Certification[])
@@ -307,8 +300,7 @@ describe('GET /api/certifications', () => {
           department: {
             select: {
               id: true,
-              name: true,
-              colorPalette: true
+              name: true
             }
           }
         },
@@ -344,8 +336,7 @@ describe('GET /api/certifications', () => {
             department: {
               select: {
                 id: true,
-                name: true,
-                colorPalette: true
+                name: true
               }
             }
           }
@@ -411,8 +402,7 @@ describe('POST /api/certifications', () => {
         updatedAt: new Date('2024-01-01'),
         department: {
           id: 1,
-          name: 'スキー',
-          colorPalette: 'red'
+          name: 'スキー'
         }
       }
 
@@ -436,8 +426,7 @@ describe('POST /api/certifications', () => {
           department: {
             select: {
               id: true,
-              name: true,
-              colorPalette: true
+              name: true
             }
           }
         }
@@ -474,8 +463,7 @@ describe('POST /api/certifications', () => {
         updatedAt: new Date('2024-01-01'),
         department: {
           id: 1,
-          name: 'スキー',
-          colorPalette: 'red'
+          name: 'スキー'
         }
       }
 
@@ -499,8 +487,7 @@ describe('POST /api/certifications', () => {
           department: {
             select: {
               id: true,
-              name: true,
-              colorPalette: true
+              name: true
             }
           }
         }

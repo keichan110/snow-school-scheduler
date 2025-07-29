@@ -25,7 +25,6 @@ async function main() {
       code: "ski",
       name: "スキー",
       description: "スキー部門",
-      colorPalette: "blue",
     },
   });
 
@@ -34,7 +33,6 @@ async function main() {
       code: "snowboard",
       name: "スノーボード",
       description: "スノーボード部門",
-      colorPalette: "amber",
     },
   });
 

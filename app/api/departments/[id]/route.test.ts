@@ -38,7 +38,6 @@ describe('/api/departments/[id] GET', () => {
       name: 'スキー',
       description: 'スキー部門',
       isActive: true,
-      colorPalette: 'red',
       createdAt: new Date('2024-01-01'),
       updatedAt: new Date('2024-01-01'),
     }
@@ -60,7 +59,6 @@ describe('/api/departments/[id] GET', () => {
         name: 'スキー',
         description: 'スキー部門',
         isActive: true,
-        colorPalette: 'red',
         createdAt: '2024-01-01T00:00:00.000Z',
         updatedAt: '2024-01-01T00:00:00.000Z',
       },
