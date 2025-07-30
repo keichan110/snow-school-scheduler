@@ -17,19 +17,16 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ./docs/nextjs.md に従って実装して下さい
 
-## 開発ワークフロー
+## 開発フロー
 
-**IMPORTANT**: 作業前に必ず以下の手順を実行：
-
-1. `npm run typecheck` - TypeScript エラーチェック
-2. `npm run lint` - ESLint による静的解析
-3. 変更後は再度型チェックとリントを実行
-
-### 設計・実装フロー
-
-- **設計時**: `z/plan.md` ファイルを作成（既存の場合は内容を初期化）して作業内容を記載し、承認を得てから作業を開始
-- **実装時**: `z/todo.md` ファイルを作成（既存の場合は内容を初期化）してTODOリストを作成し、ステップ毎にチェックして進行
-
-### Git コミット規約
-
-**YOU MUST** use Gitmoji for all commit messages:
+1. ユーザーからの要求を正確に理解し、 不明な点を完全に無くし、実行計画書を z/plan.md に作成する
+   1. 不具合が発生している場合は root-cause-analyzer によって原因の追求をする
+2. ユーザーの承認を受け、承認を得たら z/todo.md に TODO リストを作成する
+3. 実装にあたり以下の担当で実装する
+   1. バックエンド処理の変更は backend-engineer が実装をする
+   2. フロントエンドは frontend-ui-ux-expert が実装をする
+   3. DB に変わる箇所は sql-bigquery-analyst が DB の指示を仰ぐ
+4. typecheck と lint を実行し解決するまで繰り返す
+5. strict-code-reviewer にコードレビューを受ける
+   1. Critical な点は必ず修正する
+6. 実装が完了したら TODO リストにチェックをつける
