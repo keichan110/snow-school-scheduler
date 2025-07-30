@@ -1,25 +1,31 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
-import { InstructorStatus } from '@prisma/client'
 
-export async function GET(request: Request) {
+export async function GET(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
-    const { searchParams } = new URL(request.url)
-    const statusParam = searchParams.get('status')
+    const resolvedParams = await params
+    const id = resolvedParams.id
     
-    // statusパラメータのバリデーション
-    let statusFilter: InstructorStatus | undefined = undefined
-    if (statusParam) {
-      const validStatuses = ['ACTIVE', 'INACTIVE', 'RETIRED'] as const
-      if (validStatuses.includes(statusParam as InstructorStatus)) {
-        statusFilter = statusParam as InstructorStatus
-      }
+    // IDのバリデーション
+    const numericId = parseInt(id, 10)
+    if (isNaN(numericId) || numericId <= 0) {
+      return NextResponse.json(
+        {
+          success: false,
+          data: null,
+          message: null,
+          error: 'Invalid ID format'
+        },
+        { status: 400 }
+      )
     }
 
-    const whereClause = statusFilter ? { status: statusFilter } : {}
-    
-    const instructors = await prisma.instructor.findMany({
-      where: whereClause,
+    // インストラクター詳細情報を取得
+    const instructor = await prisma.instructor.findUnique({
+      where: { id: numericId },
       include: {
         certifications: {
           include: {
@@ -35,15 +41,24 @@ export async function GET(request: Request) {
             }
           }
         }
-      },
-      orderBy: [
-        { lastName: 'asc' },
-        { firstName: 'asc' }
-      ]
+      }
     })
 
+    // インストラクターが見つからない場合
+    if (!instructor) {
+      return NextResponse.json(
+        {
+          success: false,
+          data: null,
+          message: null,
+          error: 'Resource not found'
+        },
+        { status: 404 }
+      )
+    }
+
     // レスポンス形式をOpenAPI仕様に合わせて変換
-    const formattedInstructors = instructors.map(instructor => ({
+    const formattedInstructor = {
       id: instructor.id,
       lastName: instructor.lastName,
       firstName: instructor.firstName,
@@ -60,31 +75,50 @@ export async function GET(request: Request) {
         organization: ic.certification.organization,
         department: ic.certification.department
       }))
-    }))
+    }
 
     return NextResponse.json({
       success: true,
-      data: formattedInstructors,
-      count: formattedInstructors.length,
-      message: null,
+      data: formattedInstructor,
+      message: 'Instructor operation completed successfully',
       error: null
     })
   } catch (error) {
-    console.error('Instructors API error:', error)
+    console.error('Instructor API error:', error)
     return NextResponse.json(
-      { 
-        success: false, 
+      {
+        success: false,
         data: null,
         message: null,
-        error: 'Internal server error' 
+        error: 'Internal server error'
       },
       { status: 500 }
     )
   }
 }
 
-export async function POST(request: Request) {
+export async function PUT(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
+    const resolvedParams = await params
+    const id = resolvedParams.id
+    
+    // IDのバリデーション
+    const numericId = parseInt(id, 10)
+    if (isNaN(numericId) || numericId <= 0) {
+      return NextResponse.json(
+        {
+          success: false,
+          data: null,
+          message: null,
+          error: 'Invalid ID format'
+        },
+        { status: 400 }
+      )
+    }
+
     const body = await request.json()
     
     // 必須フィールドのバリデーション
@@ -116,6 +150,23 @@ export async function POST(request: Request) {
       )
     }
 
+    // インストラクターの存在確認
+    const existingInstructor = await prisma.instructor.findUnique({
+      where: { id: numericId }
+    })
+
+    if (!existingInstructor) {
+      return NextResponse.json(
+        {
+          success: false,
+          data: null,
+          message: null,
+          error: 'Resource not found'
+        },
+        { status: 404 }
+      )
+    }
+
     // 資格IDの存在確認（指定されている場合）
     if (body.certificationIds && Array.isArray(body.certificationIds)) {
       const existingCertifications = await prisma.certification.findMany({
@@ -138,33 +189,42 @@ export async function POST(request: Request) {
       }
     }
 
-    // トランザクション処理でインストラクターと資格の関連付けを作成
+    // トランザクション処理でインストラクターと資格の関連付けを更新
     const result = await prisma.$transaction(async (tx) => {
-      // インストラクター作成
-      const newInstructor = await tx.instructor.create({
+      // インストラクター更新
+      await tx.instructor.update({
+        where: { id: numericId },
         data: {
           lastName: body.lastName,
           firstName: body.firstName,
           lastNameKana: body.lastNameKana,
           firstNameKana: body.firstNameKana,
-          status: body.status || 'ACTIVE',
+          status: body.status || existingInstructor.status,
           notes: body.notes
         }
       })
 
-      // 資格の関連付け（指定されている場合）
+      // 資格の関連付け更新（指定されている場合）
       if (body.certificationIds && Array.isArray(body.certificationIds)) {
-        await tx.instructorCertification.createMany({
-          data: body.certificationIds.map((certId: number) => ({
-            instructorId: newInstructor.id,
-            certificationId: certId
-          }))
+        // 既存の資格関連付けを削除
+        await tx.instructorCertification.deleteMany({
+          where: { instructorId: numericId }
         })
+
+        // 新しい資格関連付けを作成
+        if (body.certificationIds.length > 0) {
+          await tx.instructorCertification.createMany({
+            data: body.certificationIds.map((certId: number) => ({
+              instructorId: numericId,
+              certificationId: certId
+            }))
+          })
+        }
       }
 
       // 関連データ付きでインストラクターを取得
       const instructorWithCertifications = await tx.instructor.findUnique({
-        where: { id: newInstructor.id },
+        where: { id: numericId },
         include: {
           certifications: {
             include: {
@@ -206,17 +266,14 @@ export async function POST(request: Request) {
       }))
     }
 
-    return NextResponse.json(
-      {
-        success: true,
-        data: formattedInstructor,
-        message: 'Instructor operation completed successfully',
-        error: null
-      },
-      { status: 201 }
-    )
+    return NextResponse.json({
+      success: true,
+      data: formattedInstructor,
+      message: 'Instructor operation completed successfully',
+      error: null
+    })
   } catch (error) {
-    console.error('Instructors API error:', error)
+    console.error('Instructor API error:', error)
     return NextResponse.json(
       {
         success: false,
