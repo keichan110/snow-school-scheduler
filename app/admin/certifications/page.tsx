@@ -5,6 +5,9 @@ import { Plus, PersonSimpleSki, PersonSimpleSnowboard } from "@phosphor-icons/re
 import CertificationCard from "./CertificationCard";
 import CertificationModal from "./CertificationModal";
 import { fetchCertifications, createCertification, updateCertification } from "./api";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
 import type {
   CertificationWithDepartment,
   CertificationFormData,
@@ -163,12 +166,9 @@ export default function CertificationsPage() {
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
             <p className="text-red-600 mb-4">{error}</p>
-            <button
-              onClick={loadCertifications}
-              className="px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors"
-            >
+            <Button onClick={loadCertifications}>
               再試行
-            </button>
+            </Button>
           </div>
         </div>
       </div>
@@ -192,20 +192,26 @@ export default function CertificationsPage() {
       {/* 統計情報 */}
       <div className="mb-6 md:mb-8">
         <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-          <div className="bg-white border border-gray-200 rounded-xl p-5 text-center transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg">
-            <div className="text-2xl md:text-3xl font-bold text-green-600 mb-1">{stats.active}</div>
-            <div className="text-sm text-gray-600">有効な資格</div>
-          </div>
-          <div className="bg-white border border-gray-200 rounded-xl p-5 text-center transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg">
-            <div className="text-2xl md:text-3xl font-bold text-blue-600 mb-1">{stats.ski}</div>
-            <div className="text-sm text-gray-600">スキー資格</div>
-          </div>
-          <div className="bg-white border border-gray-200 rounded-xl p-5 text-center transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg col-span-2 lg:col-span-1">
-            <div className="text-2xl md:text-3xl font-bold text-amber-600 mb-1">
-              {stats.snowboard}
-            </div>
-            <div className="text-sm text-gray-600">スノーボード資格</div>
-          </div>
+          <Card className="transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg">
+            <CardContent className="p-5 text-center">
+              <div className="text-2xl md:text-3xl font-bold text-green-600 mb-1">{stats.active}</div>
+              <div className="text-sm text-muted-foreground">有効な資格</div>
+            </CardContent>
+          </Card>
+          <Card className="transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg">
+            <CardContent className="p-5 text-center">
+              <div className="text-2xl md:text-3xl font-bold text-blue-600 mb-1">{stats.ski}</div>
+              <div className="text-sm text-muted-foreground">スキー資格</div>
+            </CardContent>
+          </Card>
+          <Card className="transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg col-span-2 lg:col-span-1">
+            <CardContent className="p-5 text-center">
+              <div className="text-2xl md:text-3xl font-bold text-amber-600 mb-1">
+                {stats.snowboard}
+              </div>
+              <div className="text-sm text-muted-foreground">スノーボード資格</div>
+            </CardContent>
+          </Card>
         </div>
       </div>
 
@@ -213,18 +219,15 @@ export default function CertificationsPage() {
       <div className="mb-6 md:mb-8">
         <div className="flex flex-wrap gap-2 justify-center md:justify-start">
           {filters.map((filter) => (
-            <button
+            <Badge
               key={filter.key}
+              variant={currentFilter === filter.key ? "default" : "outline"}
+              className="px-3 py-1.5 cursor-pointer transition-all duration-200 flex items-center gap-1.5 hover:bg-primary/90"
               onClick={() => handleFilterChange(filter.key)}
-              className={`px-3 py-1.5 rounded-full border text-sm transition-all duration-200 flex items-center gap-1.5 ${
-                currentFilter === filter.key
-                  ? "bg-blue-600 text-white border-blue-600"
-                  : "bg-white text-gray-700 border-gray-200 hover:border-blue-600 hover:bg-blue-50"
-              }`}
             >
               {filter.icon && <filter.icon className="w-4 h-4" weight="regular" />}
               {filter.label}
-            </button>
+            </Badge>
           ))}
         </div>
       </div>
@@ -253,14 +256,14 @@ export default function CertificationsPage() {
       </div>
 
       {/* フローティングアクションボタン */}
-      <button
+      <Button
         onClick={() => handleOpenModal()}
-        className="fixed bottom-24 right-6 md:bottom-4 md:right-4 w-14 h-14 md:w-12 md:h-12 btn-gradient rounded-full flex items-center justify-center shadow-lg z-[60] border-none cursor-pointer"
-        style={{ boxShadow: "0 4px 20px rgba(73, 81, 94, 0.3)" }}
+        size="icon"
+        className="fixed bottom-24 right-6 md:bottom-4 md:right-4 w-14 h-14 md:w-12 md:h-12 bg-gradient-to-r from-blue-600 via-blue-500 to-cyan-400 hover:shadow-lg hover:scale-105 transition-all duration-300 rounded-full z-[60]"
         title="新しい資格を追加"
       >
-        <Plus className="w-6 h-6 md:w-5 md:h-5 text-white" weight="regular" />
-      </button>
+        <Plus className="w-6 h-6 md:w-5 md:h-5" weight="regular" />
+      </Button>
 
       {/* モーダル */}
       <CertificationModal

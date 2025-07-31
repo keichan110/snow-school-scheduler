@@ -3,6 +3,9 @@
 import Image from "next/image";
 import type { CertificationCardProps } from "./types";
 import { getDepartmentType } from "./utils";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
 export default function CertificationCard({ certification, onEdit }: CertificationCardProps) {
   const departmentInfo = {
@@ -28,13 +31,11 @@ export default function CertificationCard({ certification, onEdit }: Certificati
   const isActive = certification.isActive;
 
   return (
-    <div
-      className={`
-        group relative overflow-hidden rounded-2xl cursor-pointer
-        transition-all duration-500 ease-out
-        hover:scale-[1.02] hover:shadow-2xl hover:shadow-black/20
-        ${isActive ? "opacity-100" : "opacity-75 grayscale"}
-      `}
+    <Card
+      className={cn(
+        "group relative overflow-hidden cursor-pointer transition-all duration-500 ease-out hover:scale-[1.02] hover:shadow-2xl hover:shadow-black/20",
+        isActive ? "opacity-100" : "opacity-75 grayscale"
+      )}
       onClick={() => onEdit(certification)}
       role="button"
       tabIndex={0}
@@ -46,7 +47,7 @@ export default function CertificationCard({ certification, onEdit }: Certificati
       }}
     >
       {/* Background Image with Overlay */}
-      <div className="relative h-36 md:h-40 w-full">
+      <CardHeader className="relative h-36 md:h-40 w-full p-0">
         <Image
           src={dept.image}
           alt={`${dept.name}の画像`}
@@ -71,49 +72,47 @@ export default function CertificationCard({ certification, onEdit }: Certificati
 
         {/* Top badges */}
         <div className="absolute top-3 left-3 right-3 flex justify-between items-start">
-          <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-white text-xs font-medium">
-            <div className="w-1.5 h-1.5 rounded-full bg-white" />
-            <span>{dept.name}</span>
-          </div>
+          <Badge variant="secondary" className="bg-white/20 backdrop-blur-md border border-white/30 text-white hover:bg-white/30">
+            <div className="w-1.5 h-1.5 rounded-full bg-white mr-2" />
+            {dept.name}
+          </Badge>
 
           {!isActive && (
-            <div className="px-2.5 py-1 rounded-full bg-gray-500/90 backdrop-blur-sm text-white text-xs font-semibold border border-gray-400/50">
+            <Badge variant="destructive" className="bg-gray-500/90 backdrop-blur-sm border border-gray-400/50">
               無効
-            </div>
+            </Badge>
           )}
         </div>
 
         {/* Title with enhanced visibility */}
         <div className="absolute bottom-0 left-0 right-0 p-4">
-          <div className="mb-2">
-            <h3 className="text-lg md:text-xl font-bold text-white mb-1 leading-tight line-clamp-2 drop-shadow-[2px_2px_4px_rgba(0,0,0,0.8)] [text-shadow:1px_1px_2px_rgba(0,0,0,0.6),0px_0px_8px_rgba(0,0,0,0.4)]">
-              {certification.name}
-            </h3>
-          </div>
+          <CardTitle className="text-lg md:text-xl font-bold text-white mb-1 leading-tight line-clamp-2 drop-shadow-[2px_2px_4px_rgba(0,0,0,0.8)] [text-shadow:1px_1px_2px_rgba(0,0,0,0.6),0px_0px_8px_rgba(0,0,0,0.4)]">
+            {certification.name}
+          </CardTitle>
         </div>
 
         {/* Enhanced bottom fade gradient for text readability */}
         <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
-      </div>
+      </CardHeader>
 
       {/* Compact Content Section */}
-      <div className="relative bg-white p-3 md:p-4">
+      <CardContent className="relative p-3 md:p-4">
         {/* Organization and metadata */}
         <div className="flex items-center justify-between mb-2">
           <div className="inline-flex items-center gap-2">
             <div className="w-1 h-3 bg-gradient-to-b from-blue-500 to-purple-600 rounded-full" />
-            <span className="text-sm font-medium text-gray-700">{certification.organization}</span>
+            <span className="text-sm font-medium text-card-foreground">{certification.organization}</span>
             {certification.shortName && (
               <>
-                <div className="w-1 h-1 bg-gray-300 rounded-full" />
-                <span className="text-xs text-gray-500 font-mono">{certification.shortName}</span>
+                <div className="w-1 h-1 bg-muted-foreground rounded-full" />
+                <span className="text-xs text-muted-foreground font-mono">{certification.shortName}</span>
               </>
             )}
           </div>
         </div>
 
         {/* Compact Description */}
-        <p className="text-gray-600 text-sm leading-relaxed line-clamp-2 mb-3">
+        <p className="text-muted-foreground text-sm leading-relaxed line-clamp-2 mb-3">
           {certification.description || "詳細な説明はまだ登録されていません。"}
         </p>
 
@@ -121,9 +120,8 @@ export default function CertificationCard({ certification, onEdit }: Certificati
         <div className={`h-0.5 w-full rounded-full bg-gradient-to-r ${dept.gradient} opacity-60`} />
 
         {/* Hover indicator */}
-        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-white to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-      </div>
-
-    </div>
+        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-card to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+      </CardContent>
+    </Card>
   );
 }
