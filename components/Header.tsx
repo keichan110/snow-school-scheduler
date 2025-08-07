@@ -3,8 +3,8 @@ import { Snowflake } from "@phosphor-icons/react/dist/ssr";
 
 export default function Header() {
   return (
-    <header className="fixed top-4 left-1/2 -translate-x-1/2 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 z-50">
-      <div className="bg-white/80 backdrop-blur-md shadow-lg border border-white/20 rounded-2xl">
+    <header className="w-full px-4 py-4 sm:fixed sm:top-4 sm:left-1/2 sm:-translate-x-1/2 sm:max-w-7xl sm:mx-auto sm:px-6 lg:px-8 z-50">
+      <div className="bg-slate-50/80 backdrop-blur-md shadow-lg border border-slate-50/20 rounded-2xl">
         <div className="px-6 py-3">
           <div className="flex justify-between items-center">
             <div className="flex items-center">
