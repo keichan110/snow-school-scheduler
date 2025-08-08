@@ -2,11 +2,16 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Snowflake, CalendarDots, Certificate, UsersThree } from "@phosphor-icons/react";
+import { Snowflake, CalendarDots, Certificate, UsersThree, List } from "@phosphor-icons/react";
+import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { useState } from "react";
 
 export default function Header() {
   const pathname = usePathname();
   const isAdminPath = pathname.startsWith('/admin');
+  const isMobile = useIsMobile();
+  const [sheetOpen, setSheetOpen] = useState(false);
   
   const adminMenuItems = [
     {
@@ -43,31 +48,73 @@ export default function Header() {
             </div>
             
             {isAdminPath && (
-              <nav className="flex items-center space-x-1">
-                {adminMenuItems.map((item) => {
-                  const IconComponent = item.icon;
-                  const isActive = pathname === item.href;
-                  
-                  return (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      title={item.label}
-                      className={`flex items-center justify-center sm:justify-start sm:space-x-2 sm:px-3 sm:py-2 w-10 h-10 sm:w-auto sm:h-auto rounded-lg transition-all duration-200 ${
-                        isActive
-                          ? "bg-primary/10 text-primary font-medium shadow-sm"
-                          : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
-                      }`}
-                    >
-                      <IconComponent 
-                        className="w-5 h-5" 
-                        weight={isActive ? "fill" : "regular"} 
-                      />
-                      <span className="hidden sm:inline text-sm">{item.label}</span>
-                    </Link>
-                  );
-                })}
-              </nav>
+              <>
+                {isMobile ? (
+                  <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
+                    <SheetTrigger asChild>
+                      <button className="flex items-center justify-center w-10 h-10 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-all duration-200">
+                        <List className="w-5 h-5" weight="regular" />
+                      </button>
+                    </SheetTrigger>
+                    <SheetContent side="right" className="w-[280px] sm:w-[400px]">
+                      <SheetTitle className="text-lg font-semibold mb-4">
+                        管理メニュー
+                      </SheetTitle>
+                      <nav className="flex flex-col space-y-2">
+                        {adminMenuItems.map((item) => {
+                          const IconComponent = item.icon;
+                          const isActive = pathname === item.href;
+                          
+                          return (
+                            <Link
+                              key={item.href}
+                              href={item.href}
+                              onClick={() => setSheetOpen(false)}
+                              className={`flex items-center space-x-3 px-3 py-3 rounded-lg transition-all duration-200 ${
+                                isActive
+                                  ? "bg-primary/10 text-primary font-medium shadow-sm"
+                                  : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
+                              }`}
+                            >
+                              <IconComponent 
+                                className="w-5 h-5" 
+                                weight={isActive ? "fill" : "regular"} 
+                              />
+                              <span className="text-sm">{item.label}</span>
+                            </Link>
+                          );
+                        })}
+                      </nav>
+                    </SheetContent>
+                  </Sheet>
+                ) : (
+                  <nav className="flex items-center space-x-1">
+                    {adminMenuItems.map((item) => {
+                      const IconComponent = item.icon;
+                      const isActive = pathname === item.href;
+                      
+                      return (
+                        <Link
+                          key={item.href}
+                          href={item.href}
+                          title={item.label}
+                          className={`flex items-center justify-center sm:justify-start sm:space-x-2 sm:px-3 sm:py-2 w-10 h-10 sm:w-auto sm:h-auto rounded-lg transition-all duration-200 ${
+                            isActive
+                              ? "bg-primary/10 text-primary font-medium shadow-sm"
+                              : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
+                          }`}
+                        >
+                          <IconComponent 
+                            className="w-5 h-5" 
+                            weight={isActive ? "fill" : "regular"} 
+                          />
+                          <span className="hidden sm:inline text-sm">{item.label}</span>
+                        </Link>
+                      );
+                    })}
+                  </nav>
+                )}
+              </>
             )}
           </div>
         </div>
