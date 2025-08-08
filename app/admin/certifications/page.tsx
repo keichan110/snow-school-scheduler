@@ -241,6 +241,16 @@ export default function CertificationsPage() {
 
       {/* 資格一覧テーブル */}
       <div className="rounded-lg border overflow-x-auto bg-white dark:bg-gray-900 shadow-lg">
+        <div className="flex justify-between items-center p-4 border-b">
+          <h2 className="text-lg font-semibold">資格一覧</h2>
+          <Button
+            onClick={() => handleOpenModal()}
+            className="flex items-center gap-2 bg-gradient-to-r from-blue-600 via-blue-500 to-cyan-400 hover:shadow-lg hover:scale-105 transition-all duration-300"
+          >
+            <Plus className="w-4 h-4" weight="regular" />
+            追加
+          </Button>
+        </div>
         <Table>
           <TableHeader>
             <TableRow className="bg-white dark:bg-gray-900">
@@ -330,15 +340,6 @@ export default function CertificationsPage() {
         </Table>
       </div>
 
-      {/* フローティングアクションボタン */}
-      <Button
-        onClick={() => handleOpenModal()}
-        size="icon"
-        className="fixed bottom-24 right-6 md:bottom-4 md:right-4 w-14 h-14 md:w-12 md:h-12 bg-gradient-to-r from-blue-600 via-blue-500 to-cyan-400 hover:shadow-lg hover:scale-105 transition-all duration-300 rounded-full z-[60]"
-        title="新しい資格を追加"
-      >
-        <Plus className="w-6 h-6 md:w-5 md:h-5" weight="regular" />
-      </Button>
 
       {/* モーダル */}
       <CertificationModal
