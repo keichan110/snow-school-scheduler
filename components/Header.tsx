@@ -1,9 +1,33 @@
+"use client";
+
 import Link from "next/link";
-import { Snowflake } from "@phosphor-icons/react/dist/ssr";
+import { usePathname } from "next/navigation";
+import { Snowflake, CalendarDots, Certificate, UsersThree } from "@phosphor-icons/react";
 
 export default function Header() {
+  const pathname = usePathname();
+  const isAdminPath = pathname.startsWith('/admin');
+  
+  const adminMenuItems = [
+    {
+      href: "/admin/shifts",
+      icon: CalendarDots,
+      label: "シフト管理",
+    },
+    {
+      href: "/admin/instructors", 
+      icon: UsersThree,
+      label: "インストラクター管理",
+    },
+    {
+      href: "/admin/certifications",
+      icon: Certificate,
+      label: "資格管理",
+    },
+  ];
+
   return (
-    <header className="w-full px-4 py-4 sm:fixed sm:top-4 sm:left-1/2 sm:-translate-x-1/2 sm:max-w-7xl sm:mx-auto sm:px-6 lg:px-8 z-50">
+    <header className="w-full fixed top-4 left-1/2 -translate-x-1/2 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 z-50">
       <div className="bg-slate-50/80 backdrop-blur-md shadow-lg border border-slate-50/20 rounded-2xl">
         <div className="px-6 py-3">
           <div className="flex justify-between items-center">
@@ -17,6 +41,34 @@ export default function Header() {
                 </h1>
               </Link>
             </div>
+            
+            {isAdminPath && (
+              <nav className="flex items-center space-x-1">
+                {adminMenuItems.map((item) => {
+                  const IconComponent = item.icon;
+                  const isActive = pathname === item.href;
+                  
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      title={item.label}
+                      className={`flex items-center justify-center sm:justify-start sm:space-x-2 sm:px-3 sm:py-2 w-10 h-10 sm:w-auto sm:h-auto rounded-lg transition-all duration-200 ${
+                        isActive
+                          ? "bg-white/80 text-blue-600 font-medium shadow-sm"
+                          : "text-gray-600 hover:text-gray-900 hover:bg-white/50"
+                      }`}
+                    >
+                      <IconComponent 
+                        className="w-5 h-5" 
+                        weight={isActive ? "fill" : "regular"} 
+                      />
+                      <span className="hidden sm:inline text-sm">{item.label}</span>
+                    </Link>
+                  );
+                })}
+              </nav>
+            )}
           </div>
         </div>
       </div>
