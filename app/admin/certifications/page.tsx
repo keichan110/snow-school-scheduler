@@ -5,8 +5,10 @@ import { Plus, PersonSimpleSki, PersonSimpleSnowboard, SealCheck } from "@phosph
 import CertificationModal from "./CertificationModal";
 import { fetchCertifications, createCertification, updateCertification } from "./api";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import {
   Table,
   TableBody,
@@ -18,7 +20,6 @@ import {
 import type {
   CertificationWithDepartment,
   CertificationFormData,
-  FilterType,
   CertificationStats,
 } from "./types";
 import { getDepartmentType } from "./utils";
@@ -28,7 +29,8 @@ export default function CertificationsPage() {
   const [filteredCertifications, setFilteredCertifications] = useState<
     CertificationWithDepartment[]
   >([]);
-  const [currentFilter, setCurrentFilter] = useState<FilterType>("all");
+  const [currentDepartment, setCurrentDepartment] = useState<"all" | "ski" | "snowboard">("all");
+  const [showActiveOnly, setShowActiveOnly] = useState<boolean>(true);
   const [stats, setStats] = useState<CertificationStats>({
     total: 0,
     active: 0,
@@ -58,7 +60,8 @@ export default function CertificationsPage() {
   const applyFilter = useCallback(() => {
     let filtered = [...certifications];
 
-    switch (currentFilter) {
+    // 部門フィルター
+    switch (currentDepartment) {
       case "ski":
         filtered = filtered.filter((cert) => getDepartmentType(cert.department.name) === "ski");
         break;
@@ -67,12 +70,14 @@ export default function CertificationsPage() {
           (cert) => getDepartmentType(cert.department.name) === "snowboard"
         );
         break;
-      case "active":
-        filtered = filtered.filter((cert) => cert.isActive);
-        break;
       case "all":
       default:
         break;
+    }
+
+    // 有効フィルター
+    if (showActiveOnly) {
+      filtered = filtered.filter((cert) => cert.isActive);
     }
 
     // ステータス順でソート（有効なものが先）
@@ -83,7 +88,7 @@ export default function CertificationsPage() {
     });
 
     setFilteredCertifications(filtered);
-  }, [certifications, currentFilter]);
+  }, [certifications, currentDepartment, showActiveOnly]);
 
   const updateStats = useCallback(() => {
     const total = filteredCertifications.length;
@@ -113,8 +118,12 @@ export default function CertificationsPage() {
     updateStats();
   }, [updateStats]);
 
-  const handleFilterChange = (filter: FilterType) => {
-    setCurrentFilter(filter);
+  const handleDepartmentChange = (department: string) => {
+    setCurrentDepartment(department as "all" | "ski" | "snowboard");
+  };
+
+  const handleActiveFilterChange = (checked: boolean) => {
+    setShowActiveOnly(checked);
   };
 
   const handleOpenModal = (certification?: CertificationWithDepartment) => {
@@ -147,12 +156,6 @@ export default function CertificationsPage() {
     }
   };
 
-  const filters = [
-    { key: "all" as const, label: "すべて", icon: null },
-    { key: "ski" as const, label: "スキー", icon: PersonSimpleSki },
-    { key: "snowboard" as const, label: "スノーボード", icon: PersonSimpleSnowboard },
-    { key: "active" as const, label: "有効のみ", icon: null },
-  ];
 
   if (isLoading) {
     return (
@@ -224,34 +227,52 @@ export default function CertificationsPage() {
         </Card>
       </div>
 
-      {/* フィルター */}
-      <div className="mb-4 md:mb-6">
-        <div className="flex flex-wrap gap-2 justify-center md:justify-start">
-          {filters.map((filter) => (
-            <Badge
-              key={filter.key}
-              variant={currentFilter === filter.key ? "default" : "outline"}
-              className="px-3 py-1.5 cursor-pointer transition-all duration-200 flex items-center gap-1.5 hover:bg-primary/90"
-              onClick={() => handleFilterChange(filter.key)}
-            >
-              {filter.icon && <filter.icon className="w-4 h-4" weight="regular" />}
-              {filter.label}
-            </Badge>
-          ))}
-        </div>
-      </div>
 
       {/* 資格一覧テーブル */}
       <div className="rounded-lg border overflow-x-auto bg-white dark:bg-gray-900 shadow-lg">
-        <div className="flex justify-between items-center p-4 border-b">
-          <h2 className="text-lg font-semibold">資格一覧</h2>
-          <Button
-            onClick={() => handleOpenModal()}
-            className="flex items-center gap-2 bg-gradient-to-r from-blue-600 via-blue-500 to-cyan-400 hover:shadow-lg hover:scale-105 transition-all duration-300"
-          >
-            <Plus className="w-4 h-4" weight="regular" />
-            追加
-          </Button>
+        <div className="p-4 border-b space-y-4">
+          <div className="flex justify-between items-center">
+            <h2 className="text-lg font-semibold">資格一覧</h2>
+            <Button
+              onClick={() => handleOpenModal()}
+              className="flex items-center gap-2 bg-gradient-to-r from-blue-600 via-blue-500 to-cyan-400 hover:shadow-lg hover:scale-105 transition-all duration-300"
+            >
+              <Plus className="w-4 h-4" weight="regular" />
+              追加
+            </Button>
+          </div>
+          
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+            {/* タブフィルター */}
+            <Tabs value={currentDepartment} onValueChange={handleDepartmentChange} className="w-full sm:w-auto">
+              <TabsList className="grid w-full grid-cols-3 sm:w-auto">
+                <TabsTrigger value="all" className="flex items-center gap-2">
+                  すべて
+                </TabsTrigger>
+                <TabsTrigger value="ski" className="flex items-center gap-2">
+                  <PersonSimpleSki className="w-4 h-4" weight="regular" />
+                  スキー
+                </TabsTrigger>
+                <TabsTrigger value="snowboard" className="flex items-center gap-2">
+                  <PersonSimpleSnowboard className="w-4 h-4" weight="regular" />
+                  スノーボード
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+            
+            {/* 有効のみスイッチ - モバイルでは非表示 */}
+            <div className="hidden sm:flex items-center space-x-2">
+              <Switch
+                id="active-only"
+                checked={showActiveOnly}
+                onCheckedChange={handleActiveFilterChange}
+              />
+              <Label htmlFor="active-only" className="cursor-pointer flex items-center gap-1">
+                <SealCheck className="w-4 h-4 text-green-600 dark:text-green-400" weight="regular" />
+                有効のみ
+              </Label>
+            </div>
+          </div>
         </div>
         <Table>
           <TableHeader>
@@ -267,9 +288,11 @@ export default function CertificationsPage() {
             {filteredCertifications.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
-                  {currentFilter === "all"
+                  {currentDepartment === "all" && !showActiveOnly
                     ? "資格が登録されていません"
-                    : "フィルター条件に一致する資格がありません"}
+                    : showActiveOnly 
+                      ? "有効な資格がありません"
+                      : "フィルター条件に一致する資格がありません"}
                 </TableCell>
               </TableRow>
             ) : (
