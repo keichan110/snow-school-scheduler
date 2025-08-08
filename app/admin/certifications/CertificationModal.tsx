@@ -97,6 +97,7 @@ export default function CertificationModal({
                   基本情報
                 </div>
 
+                {/* 部門選択（全幅） */}
                 <div className="space-y-2">
                   <Label className="text-sm font-medium">
                     部門 <span className="text-destructive">*</span>
@@ -125,54 +126,60 @@ export default function CertificationModal({
                   </RadioGroup>
                 </div>
 
+                {/* 資格名（幅制限） */}
                 <div className="space-y-2">
                   <Label htmlFor="shortName" className="text-sm font-medium">
                     資格名 <span className="text-destructive">*</span>
                   </Label>
-                  <Input
-                    id="shortName"
-                    placeholder="例: 指導員"
-                    value={formData.shortName}
-                    onChange={(e) =>
-                      setFormData((prev) => ({ ...prev, shortName: e.target.value }))
-                    }
-                    required
-                  />
+                  <div className="max-w-md">
+                    <Input
+                      id="shortName"
+                      placeholder="例: 指導員"
+                      value={formData.shortName}
+                      onChange={(e) =>
+                        setFormData((prev) => ({ ...prev, shortName: e.target.value }))
+                      }
+                      required
+                    />
+                  </div>
                   <p className="text-xs text-muted-foreground">
                     シフト表示などで使用する資格名を入力してください
                   </p>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="organization" className="text-sm font-medium">
-                    発行組織 <span className="text-destructive">*</span>
-                  </Label>
-                  <Input
-                    id="organization"
-                    placeholder="例: SAJ"
-                    value={formData.organization}
-                    onChange={(e) =>
-                      setFormData((prev) => ({ ...prev, organization: e.target.value }))
-                    }
-                    required
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    資格を発行した組織名を入力してください
-                  </p>
-                </div>
+                {/* 発行組織と正式名称を2カラム（発行組織は小さく） */}
+                <div className="grid grid-cols-1 lg:grid-cols-[200px_1fr] gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="organization" className="text-sm font-medium">
+                      発行組織 <span className="text-destructive">*</span>
+                    </Label>
+                    <Input
+                      id="organization"
+                      placeholder="例: SAJ"
+                      value={formData.organization}
+                      onChange={(e) =>
+                        setFormData((prev) => ({ ...prev, organization: e.target.value }))
+                      }
+                      required
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      資格を発行した組織名を入力してください
+                    </p>
+                  </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="certificationName" className="text-sm font-medium">
-                    正式名称 <span className="text-destructive">*</span>
-                  </Label>
-                  <Input
-                    id="certificationName"
-                    placeholder="例: 全日本スキー連盟公認スキー指導員"
-                    value={formData.name}
-                    onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
-                    required
-                  />
-                  <p className="text-xs text-muted-foreground">正式な資格名称を入力してください</p>
+                  <div className="space-y-2">
+                    <Label htmlFor="certificationName" className="text-sm font-medium">
+                      正式名称 <span className="text-destructive">*</span>
+                    </Label>
+                    <Input
+                      id="certificationName"
+                      placeholder="例: 全日本スキー連盟公認スキー指導員"
+                      value={formData.name}
+                      onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
+                      required
+                    />
+                    <p className="text-xs text-muted-foreground">正式な資格名称を入力してください</p>
+                  </div>
                 </div>
               </div>
 
