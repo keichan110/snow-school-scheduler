@@ -160,7 +160,7 @@ export default function CertificationsPage() {
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
             <div className="animate-spin w-8 h-8 border-4 border-primary-500 border-t-transparent rounded-full mx-auto mb-4"></div>
-            <p className="text-gray-600">データを読み込んでいます...</p>
+            <p className="text-muted-foreground">データを読み込んでいます...</p>
           </div>
         </div>
       </div>
@@ -172,7 +172,7 @@ export default function CertificationsPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 md:py-8">
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
-            <p className="text-red-600 mb-4">{error}</p>
+            <p className="text-destructive mb-4">{error}</p>
             <Button onClick={loadCertifications}>再試行</Button>
           </div>
         </div>
@@ -186,8 +186,8 @@ export default function CertificationsPage() {
       <div className="mb-6 md:mb-8">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between">
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">資格管理</h1>
-            <p className="text-sm md:text-base text-gray-600">
+            <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-2">資格管理</h1>
+            <p className="text-sm md:text-base text-muted-foreground">
               スキー・スノーボード資格の登録・管理を行います
             </p>
           </div>
