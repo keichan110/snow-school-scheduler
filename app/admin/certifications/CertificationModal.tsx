@@ -214,14 +214,6 @@ export default function CertificationModal({
 
           <DrawerFooter>
             <div className="flex gap-2 w-full">
-              <Button
-                type="submit"
-                form="certification-form"
-                disabled={isSubmitting}
-                className="bg-gradient-to-r from-blue-600 via-blue-500 to-cyan-400 hover:shadow-lg hover:scale-105 transition-all duration-300 flex-1"
-              >
-                {isSubmitting ? "保存中..." : "保存"}
-              </Button>
               <DrawerClose asChild>
                 <Button
                   type="button"
@@ -232,6 +224,14 @@ export default function CertificationModal({
                   キャンセル
                 </Button>
               </DrawerClose>
+              <Button
+                type="submit"
+                form="certification-form"
+                disabled={isSubmitting}
+                className="bg-gradient-to-r from-blue-600 via-blue-500 to-cyan-400 hover:shadow-lg hover:scale-105 transition-all duration-300 flex-1"
+              >
+                {isSubmitting ? "保存中..." : "保存"}
+              </Button>
             </div>
           </DrawerFooter>
         </div>
