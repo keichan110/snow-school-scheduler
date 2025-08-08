@@ -97,78 +97,86 @@ export default function CertificationModal({
                   基本情報
                 </div>
 
-            <div className="space-y-2">
-              <Label className="text-sm font-medium">
-                部門 <span className="text-destructive">*</span>
-              </Label>
-              <RadioGroup
-                value={formData.department}
-                onValueChange={(value) =>
-                  setFormData((prev) => ({ ...prev, department: value as "ski" | "snowboard" }))
-                }
-                className="flex gap-4"
-              >
-                <div className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-accent cursor-pointer has-[:checked]:border-primary has-[:checked]:bg-primary/5">
-                  <RadioGroupItem value="ski" id="ski" />
-                  <Label htmlFor="ski" className="flex items-center gap-2 cursor-pointer">
-                    <PersonSimpleSki className="w-5 h-5" weight="regular" />
-                    <span className="font-medium">スキー</span>
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium">
+                    部門 <span className="text-destructive">*</span>
                   </Label>
+                  <RadioGroup
+                    value={formData.department}
+                    onValueChange={(value) =>
+                      setFormData((prev) => ({ ...prev, department: value as "ski" | "snowboard" }))
+                    }
+                    className="flex gap-4"
+                  >
+                    <div className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-accent cursor-pointer has-[:checked]:border-primary has-[:checked]:bg-primary/5">
+                      <RadioGroupItem value="ski" id="ski" />
+                      <Label htmlFor="ski" className="flex items-center gap-2 cursor-pointer">
+                        <PersonSimpleSki className="w-5 h-5" weight="regular" />
+                        <span className="font-medium">スキー</span>
+                      </Label>
+                    </div>
+                    <div className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-accent cursor-pointer has-[:checked]:border-accent has-[:checked]:bg-accent/20">
+                      <RadioGroupItem value="snowboard" id="snowboard" />
+                      <Label htmlFor="snowboard" className="flex items-center gap-2 cursor-pointer">
+                        <PersonSimpleSnowboard className="w-5 h-5" weight="regular" />
+                        <span className="font-medium">スノーボード</span>
+                      </Label>
+                    </div>
+                  </RadioGroup>
                 </div>
-                <div className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-accent cursor-pointer has-[:checked]:border-accent has-[:checked]:bg-accent/20">
-                  <RadioGroupItem value="snowboard" id="snowboard" />
-                  <Label htmlFor="snowboard" className="flex items-center gap-2 cursor-pointer">
-                    <PersonSimpleSnowboard className="w-5 h-5" weight="regular" />
-                    <span className="font-medium">スノーボード</span>
+
+                <div className="space-y-2">
+                  <Label htmlFor="shortName" className="text-sm font-medium">
+                    資格名 <span className="text-destructive">*</span>
                   </Label>
+                  <Input
+                    id="shortName"
+                    placeholder="例: 指導員"
+                    value={formData.shortName}
+                    onChange={(e) =>
+                      setFormData((prev) => ({ ...prev, shortName: e.target.value }))
+                    }
+                    required
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    シフト表示などで使用する資格名を入力してください
+                  </p>
                 </div>
-              </RadioGroup>
-            </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="shortName" className="text-sm font-medium">
-                資格名 <span className="text-destructive">*</span>
-              </Label>
-              <Input
-                id="shortName"
-                placeholder="例: 指導員"
-                value={formData.shortName}
-                onChange={(e) => setFormData((prev) => ({ ...prev, shortName: e.target.value }))}
-                required
-              />
-              <p className="text-xs text-muted-foreground">シフト表示などで使用する資格名を入力してください</p>
-            </div>
+                <div className="space-y-2">
+                  <Label htmlFor="organization" className="text-sm font-medium">
+                    発行組織 <span className="text-destructive">*</span>
+                  </Label>
+                  <Input
+                    id="organization"
+                    placeholder="例: SAJ"
+                    value={formData.organization}
+                    onChange={(e) =>
+                      setFormData((prev) => ({ ...prev, organization: e.target.value }))
+                    }
+                    required
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    資格を発行した組織名を入力してください
+                  </p>
+                </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="organization" className="text-sm font-medium">
-                発行組織 <span className="text-destructive">*</span>
-              </Label>
-              <Input
-                id="organization"
-                placeholder="例: SAJ"
-                value={formData.organization}
-                onChange={(e) => setFormData((prev) => ({ ...prev, organization: e.target.value }))}
-                required
-              />
-              <p className="text-xs text-muted-foreground">資格を発行した組織名を入力してください</p>
-            </div>
+                <div className="space-y-2">
+                  <Label htmlFor="certificationName" className="text-sm font-medium">
+                    正式名称 <span className="text-destructive">*</span>
+                  </Label>
+                  <Input
+                    id="certificationName"
+                    placeholder="例: 全日本スキー連盟公認スキー指導員"
+                    value={formData.name}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
+                    required
+                  />
+                  <p className="text-xs text-muted-foreground">正式な資格名称を入力してください</p>
+                </div>
+              </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="certificationName" className="text-sm font-medium">
-                正式名称 <span className="text-destructive">*</span>
-              </Label>
-              <Input
-                id="certificationName"
-                placeholder="例: 全日本スキー連盟公認スキー指導員"
-                value={formData.name}
-                onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
-                required
-              />
-              <p className="text-xs text-muted-foreground">正式な資格名称を入力してください</p>
-            </div>
-          </div>
-
-          <Separator />
+              <Separator />
 
               {/* 詳細情報セクション */}
               <div className="space-y-4">
@@ -186,9 +194,13 @@ export default function CertificationModal({
                     rows={4}
                     placeholder="資格の詳細説明、取得条件、有効期限などを記載してください"
                     value={formData.description}
-                    onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
+                    onChange={(e) =>
+                      setFormData((prev) => ({ ...prev, description: e.target.value }))
+                    }
                   />
-                  <p className="text-xs text-muted-foreground">資格の詳細情報や注意事項などを記載（省略可）</p>
+                  <p className="text-xs text-muted-foreground">
+                    資格の詳細情報や注意事項などを記載（省略可）
+                  </p>
                 </div>
 
                 <div className="space-y-2">
@@ -207,21 +219,18 @@ export default function CertificationModal({
                       {formData.status === "active" ? "有効" : "無効"}
                     </Label>
                   </div>
-                  <p className="text-xs text-muted-foreground">無効にした資格は新規割り当てができなくなります</p>
+                  <p className="text-xs text-muted-foreground">
+                    無効にした資格は新規割り当てができなくなります
+                  </p>
                 </div>
               </div>
-          </form>
+            </form>
           </ScrollArea>
 
           <DrawerFooter>
             <div className="flex gap-2 w-full">
               <DrawerClose asChild>
-                <Button
-                  type="button"
-                  variant="outline"
-                  disabled={isSubmitting}
-                  className="flex-1"
-                >
+                <Button type="button" variant="outline" disabled={isSubmitting} className="flex-1">
                   キャンセル
                 </Button>
               </DrawerClose>
@@ -229,7 +238,7 @@ export default function CertificationModal({
                 type="submit"
                 form="certification-form"
                 disabled={isSubmitting}
-                className="bg-gradient-to-r from-blue-600 via-blue-500 to-cyan-400 hover:shadow-lg hover:scale-105 transition-all duration-300 flex-1"
+                className="flex-1"
               >
                 {isSubmitting ? "保存中..." : "保存"}
               </Button>

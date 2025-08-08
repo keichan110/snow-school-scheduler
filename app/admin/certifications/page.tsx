@@ -235,7 +235,7 @@ export default function CertificationsPage() {
             <h2 className="text-lg font-semibold">資格一覧</h2>
             <Button
               onClick={() => handleOpenModal()}
-              className="flex items-center gap-2 bg-gradient-to-r from-blue-600 via-blue-500 to-cyan-400 hover:shadow-lg hover:scale-105 transition-all duration-300"
+              className="flex items-center gap-2"
             >
               <Plus className="w-4 h-4" weight="regular" />
               追加
