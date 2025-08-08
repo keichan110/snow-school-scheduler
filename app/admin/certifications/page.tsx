@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Plus, PersonSimpleSki, PersonSimpleSnowboard } from "@phosphor-icons/react";
+import { Plus, PersonSimpleSki, PersonSimpleSnowboard, SealCheck } from "@phosphor-icons/react";
 import CertificationModal from "./CertificationModal";
 import { fetchCertifications, createCertification, updateCertification } from "./api";
 import { Button } from "@/components/ui/button";
@@ -195,35 +195,37 @@ export default function CertificationsPage() {
       </div>
 
       {/* 統計情報 */}
-      <div className="mb-6 md:mb-8">
-        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-          <Card className="transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg">
-            <CardContent className="p-5 text-center">
-              <div className="text-2xl md:text-3xl font-bold text-green-600 mb-1">
-                {stats.active}
+      <div className="mb-4 md:mb-6">
+        <Card className="w-full max-w-md mx-auto md:mx-0">
+          <CardContent className="px-3 py-2">
+            <div className="flex items-center justify-center divide-x divide-border">
+              <div className="flex items-center gap-2 px-4 py-1">
+                <SealCheck className="w-4 h-4 text-green-600 dark:text-green-400" weight="regular" />
+                <div className="text-base font-bold text-green-600 dark:text-green-400">
+                  {stats.active}
+                </div>
               </div>
-              <div className="text-sm text-muted-foreground">有効な資格</div>
-            </CardContent>
-          </Card>
-          <Card className="transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg">
-            <CardContent className="p-5 text-center">
-              <div className="text-2xl md:text-3xl font-bold text-blue-600 mb-1">{stats.ski}</div>
-              <div className="text-sm text-muted-foreground">スキー資格</div>
-            </CardContent>
-          </Card>
-          <Card className="transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg col-span-2 lg:col-span-1">
-            <CardContent className="p-5 text-center">
-              <div className="text-2xl md:text-3xl font-bold text-amber-600 mb-1">
-                {stats.snowboard}
+              
+              <div className="flex items-center gap-2 px-4 py-1">
+                <PersonSimpleSki className="w-4 h-4 text-blue-600 dark:text-blue-400" weight="regular" />
+                <div className="text-base font-bold text-blue-600 dark:text-blue-400">
+                  {stats.ski}
+                </div>
               </div>
-              <div className="text-sm text-muted-foreground">スノーボード資格</div>
-            </CardContent>
-          </Card>
-        </div>
+              
+              <div className="flex items-center gap-2 px-4 py-1">
+                <PersonSimpleSnowboard className="w-4 h-4 text-amber-600 dark:text-amber-400" weight="regular" />
+                <div className="text-base font-bold text-amber-600 dark:text-amber-400">
+                  {stats.snowboard}
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* フィルター */}
-      <div className="mb-6 md:mb-8">
+      <div className="mb-4 md:mb-6">
         <div className="flex flex-wrap gap-2 justify-center md:justify-start">
           {filters.map((filter) => (
             <Badge
