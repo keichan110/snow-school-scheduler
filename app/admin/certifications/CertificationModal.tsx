@@ -5,12 +5,13 @@ import { Info, FileText, PersonSimpleSki, PersonSimpleSnowboard } from "@phospho
 import type { CertificationModalProps, CertificationFormData } from "./types";
 import { getDepartmentType } from "./utils";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerFooter,
+} from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -77,17 +78,18 @@ export default function CertificationModal({
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="text-2xl flex items-center gap-2">
+    <Drawer open={isOpen} onOpenChange={onClose}>
+      <DrawerContent className="max-h-[96vh]">
+        <DrawerHeader>
+          <DrawerTitle className="text-2xl flex items-center gap-2">
             {certification ? "資格編集" : "新しい資格を追加"}
-          </DialogTitle>
-        </DialogHeader>
+          </DrawerTitle>
+        </DrawerHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* 基本情報セクション */}
-          <div className="space-y-4">
+        <div className="px-4 pb-4 overflow-y-auto flex-1">
+          <form id="certification-form" onSubmit={handleSubmit} className="space-y-6">
+            {/* 基本情報セクション */}
+            <div className="space-y-4">
             <div className="flex items-center gap-2 text-lg font-semibold">
               <Info className="w-5 h-5 text-primary" weight="regular" />
               基本情報
@@ -204,27 +206,33 @@ export default function CertificationModal({
               </div>
               <p className="text-xs text-muted-foreground">無効にした資格は新規割り当てができなくなります</p>
             </div>
-          </div>
+            </div>
+          </form>
+        </div>
 
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onClose}
-              disabled={isSubmitting}
-            >
-              キャンセル
-            </Button>
+        <DrawerFooter>
+          <div className="flex gap-2 w-full">
             <Button
               type="submit"
+              form="certification-form"
               disabled={isSubmitting}
-              className="bg-gradient-to-r from-blue-600 via-blue-500 to-cyan-400 hover:shadow-lg hover:scale-105 transition-all duration-300"
+              className="bg-gradient-to-r from-blue-600 via-blue-500 to-cyan-400 hover:shadow-lg hover:scale-105 transition-all duration-300 flex-1"
             >
               {isSubmitting ? "保存中..." : "保存"}
             </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
+            <DrawerClose asChild>
+              <Button
+                type="button"
+                variant="outline"
+                disabled={isSubmitting}
+                className="flex-1"
+              >
+                キャンセル
+              </Button>
+            </DrawerClose>
+          </div>
+        </DrawerFooter>
+      </DrawerContent>
+    </Drawer>
   );
 }
