@@ -18,7 +18,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           attribute="class"
           defaultTheme="system"
           enableSystem
-          disableTransitionOnChange
+          storageKey="snow-school-theme"
+          value={{
+            light: "light",
+            dark: "dark", 
+            system: "system"
+          }}
         >
           <Background />
           <div className="min-h-screen flex flex-col">
