@@ -9,10 +9,10 @@ import { useState } from "react";
 
 export default function Header() {
   const pathname = usePathname();
-  const isAdminPath = pathname.startsWith('/admin');
+  const isAdminPath = pathname.startsWith("/admin");
   const isMobile = useIsMobile();
   const [sheetOpen, setSheetOpen] = useState(false);
-  
+
   const adminMenuItems = [
     {
       href: "/admin/shifts",
@@ -20,7 +20,7 @@ export default function Header() {
       label: "シフト管理",
     },
     {
-      href: "/admin/instructors", 
+      href: "/admin/instructors",
       icon: UsersThree,
       label: "インストラクター管理",
     },
@@ -41,12 +41,17 @@ export default function Header() {
                 <div className="w-8 h-8 bg-gradient-to-br from-blue-100 via-blue-300 to-indigo-400 rounded-lg flex items-center justify-center">
                   <Snowflake className="w-6 h-6 text-white" weight="bold" />
                 </div>
-                <h1 className="text-xl font-bold text-foreground">
-                  Fuyugyō
-                </h1>
+                <div className="flex items-center space-x-2">
+                  <h1 className="text-xl font-bold text-foreground">Fuyugyō</h1>
+                  {isAdminPath && (
+                    <span className="px-2 py-1 text-xs font-medium bg-violet-500/90 text-white rounded-md shadow-sm">
+                      管理者
+                    </span>
+                  )}
+                </div>
               </Link>
             </div>
-            
+
             {isAdminPath && (
               <>
                 {isMobile ? (
@@ -57,14 +62,12 @@ export default function Header() {
                       </button>
                     </SheetTrigger>
                     <SheetContent side="right" className="w-[280px] sm:w-[400px]">
-                      <SheetTitle className="text-lg font-semibold mb-4">
-                        管理メニュー
-                      </SheetTitle>
+                      <SheetTitle className="text-lg font-semibold mb-4">管理メニュー</SheetTitle>
                       <nav className="flex flex-col space-y-2">
                         {adminMenuItems.map((item) => {
                           const IconComponent = item.icon;
                           const isActive = pathname === item.href;
-                          
+
                           return (
                             <Link
                               key={item.href}
@@ -76,9 +79,9 @@ export default function Header() {
                                   : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
                               }`}
                             >
-                              <IconComponent 
-                                className="w-5 h-5" 
-                                weight={isActive ? "fill" : "regular"} 
+                              <IconComponent
+                                className="w-5 h-5"
+                                weight={isActive ? "fill" : "regular"}
                               />
                               <span className="text-sm">{item.label}</span>
                             </Link>
@@ -92,7 +95,7 @@ export default function Header() {
                     {adminMenuItems.map((item) => {
                       const IconComponent = item.icon;
                       const isActive = pathname === item.href;
-                      
+
                       return (
                         <Link
                           key={item.href}
@@ -104,9 +107,9 @@ export default function Header() {
                               : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
                           }`}
                         >
-                          <IconComponent 
-                            className="w-5 h-5" 
-                            weight={isActive ? "fill" : "regular"} 
+                          <IconComponent
+                            className="w-5 h-5"
+                            weight={isActive ? "fill" : "regular"}
                           />
                           <span className="hidden sm:inline text-sm">{item.label}</span>
                         </Link>
