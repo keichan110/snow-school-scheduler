@@ -279,15 +279,14 @@ export default function CertificationsPage() {
             <TableRow className="bg-white dark:bg-gray-900">
               <TableHead className="w-12"></TableHead>
               <TableHead className="min-w-[80px]">資格名</TableHead>
-              <TableHead className="min-w-[120px]">主催団体</TableHead>
-              <TableHead className="min-w-[150px]">正式名称</TableHead>
-              <TableHead className="hidden md:table-cell">説明</TableHead>
+              <TableHead className="min-w-[200px]">正式名称</TableHead>
+              <TableHead className="hidden md:table-cell min-w-[300px]">説明</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {filteredCertifications.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
                   {currentDepartment === "all" && !showActiveOnly
                     ? "資格が登録されていません"
                     : showActiveOnly 
@@ -335,18 +334,16 @@ export default function CertificationsPage() {
                       </span>
                     </TableCell>
                     <TableCell
-                      className={`whitespace-nowrap md:whitespace-normal ${departmentStyles.text} ${
-                        !certification.isActive ? "line-through" : ""
-                      }`}
-                    >
-                      {certification.organization}
-                    </TableCell>
-                    <TableCell
                       className={`font-medium whitespace-nowrap md:whitespace-normal ${
                         departmentStyles.text
                       } ${!certification.isActive ? "line-through" : ""}`}
                     >
-                      {certification.name}
+                      <div className="flex items-center gap-2">
+                        <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-muted text-muted-foreground">
+                          {certification.organization}
+                        </span>
+                        <span>{certification.name}</span>
+                      </div>
                     </TableCell>
                     <TableCell
                       className={`hidden md:table-cell max-w-xs ${
