@@ -12,6 +12,7 @@ import {
   DrawerTitle,
   DrawerFooter,
 } from "@/components/ui/drawer";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -79,7 +80,7 @@ export default function CertificationModal({
 
   return (
     <Drawer open={isOpen} onOpenChange={onClose}>
-      <DrawerContent className="max-h-[96vh]">
+      <DrawerContent>
         <div className="max-w-7xl mx-auto w-full">
           <DrawerHeader>
             <DrawerTitle className="text-2xl flex items-center gap-2">
@@ -87,7 +88,7 @@ export default function CertificationModal({
             </DrawerTitle>
           </DrawerHeader>
 
-          <div className="px-4 pb-4 overflow-y-auto flex-1">
+          <ScrollArea className="h-auto overflow-y-auto p-4 max-h-[60vh] overflow-auto">
             <form id="certification-form" onSubmit={handleSubmit} className="space-y-6">
               {/* 基本情報セクション */}
               <div className="space-y-4">
@@ -210,7 +211,7 @@ export default function CertificationModal({
                 </div>
               </div>
           </form>
-        </div>
+          </ScrollArea>
 
           <DrawerFooter>
             <div className="flex gap-2 w-full">
