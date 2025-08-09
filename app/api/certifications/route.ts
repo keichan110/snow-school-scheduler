@@ -44,7 +44,7 @@ export async function POST(request: Request) {
     const body = await request.json()
     
     // 必須フィールドのバリデーション
-    const requiredFields = ['departmentId', 'name', 'organization']
+    const requiredFields = ['departmentId', 'name', 'shortName', 'organization']
     const missingFields = requiredFields.filter(field => !(field in body))
     
     if (missingFields.length > 0) {

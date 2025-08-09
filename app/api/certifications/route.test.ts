@@ -6,7 +6,7 @@ type Certification = {
   id: number
   departmentId: number
   name: string
-  shortName: string | null
+  shortName: string
   organization: string
   description: string | null
   isActive: boolean
@@ -448,6 +448,7 @@ describe('POST /api/certifications', () => {
       const inputData = {
         departmentId: 1,
         name: 'スキー指導員',
+        shortName: '指導員',
         organization: 'SAJ'
       }
 
@@ -455,7 +456,7 @@ describe('POST /api/certifications', () => {
         id: 1,
         departmentId: 1,
         name: 'スキー指導員',
-        shortName: null,
+        shortName: "指導員",
         organization: 'SAJ',
         description: null,
         isActive: true,
@@ -478,7 +479,7 @@ describe('POST /api/certifications', () => {
         data: {
           departmentId: inputData.departmentId,
           name: inputData.name,
-          shortName: undefined,
+          shortName: inputData.shortName,
           organization: inputData.organization,
           description: undefined,
           isActive: true
@@ -510,7 +511,7 @@ describe('POST /api/certifications', () => {
       // Arrange
       const inputData = {
         name: 'スキー指導員'
-        // departmentIdとorganizationが不足
+        // departmentId、shortName、organizationが不足
       }
 
       mockRequest.json = jest.fn().mockResolvedValue(inputData)
@@ -526,7 +527,7 @@ describe('POST /api/certifications', () => {
           success: false,
           data: null,
           message: null,
-          error: 'Missing required fields: departmentId, organization'
+          error: 'Missing required fields: departmentId, shortName, organization'
         },
         { status: 400 }
       )

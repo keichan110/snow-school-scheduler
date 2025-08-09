@@ -811,6 +811,7 @@ components:
       required:
         - departmentId
         - name
+        - shortName
         - organization
       properties:
         departmentId:

@@ -350,7 +350,7 @@ describe('GET /api/certifications/[id]', () => {
         id: 1,
         departmentId: 1,
         name: 'Test Certification',
-        shortName: null,
+        shortName: "テスト",
         organization: 'Test Org',
         description: null,
         isActive: true,
@@ -553,6 +553,7 @@ describe('PUT /api/certifications/[id]', () => {
       const inputData = {
         departmentId: 2,
         name: 'スノーボード検定員',
+        shortName: '検定員',
         organization: 'JSBA'
       }
 
@@ -560,7 +561,7 @@ describe('PUT /api/certifications/[id]', () => {
         id: 1,
         departmentId: 2,
         name: 'スノーボード検定員',
-        shortName: null,
+        shortName: "検定員",
         organization: 'JSBA',
         description: null,
         isActive: true,
@@ -588,7 +589,7 @@ describe('PUT /api/certifications/[id]', () => {
         data: {
           departmentId: inputData.departmentId,
           name: inputData.name,
-          shortName: undefined,
+          shortName: inputData.shortName,
           organization: inputData.organization,
           description: undefined,
           isActive: true
@@ -618,6 +619,7 @@ describe('PUT /api/certifications/[id]', () => {
       const inputData = {
         departmentId: 1,
         name: 'テスト資格',
+        shortName: 'テスト',
         organization: 'TEST'
       }
 
@@ -651,6 +653,7 @@ describe('PUT /api/certifications/[id]', () => {
       const inputData = {
         departmentId: 1,
         name: 'テスト資格',
+        shortName: 'テスト',
         organization: 'TEST'
       }
 
@@ -681,7 +684,7 @@ describe('PUT /api/certifications/[id]', () => {
       // Arrange
       const inputData = {
         name: 'テスト資格'
-        // departmentIdとorganizationが不足
+        // departmentId、shortName、organizationが不足
       }
 
       mockRequest.json = jest.fn().mockResolvedValue(inputData)
@@ -701,7 +704,7 @@ describe('PUT /api/certifications/[id]', () => {
           success: false,
           data: null,
           message: null,
-          error: 'Missing required fields: departmentId, organization'
+          error: 'Missing required fields: departmentId, shortName, organization'
         },
         { status: 400 }
       )
@@ -712,6 +715,7 @@ describe('PUT /api/certifications/[id]', () => {
       const inputData = {
         departmentId: 1,
         name: 'テスト資格',
+        shortName: 'テスト',
         organization: 'TEST'
       }
 
@@ -781,6 +785,7 @@ describe('PUT /api/certifications/[id]', () => {
       const inputData = {
         departmentId: 1,
         name: 'テスト資格',
+        shortName: 'テスト',
         organization: 'TEST'
       }
 
@@ -788,7 +793,7 @@ describe('PUT /api/certifications/[id]', () => {
         id: 1,
         departmentId: 1,
         name: 'テスト資格',
-        shortName: null,
+        shortName: "テスト",
         organization: 'TEST',
         description: null,
         isActive: true,
@@ -816,7 +821,7 @@ describe('PUT /api/certifications/[id]', () => {
         data: {
           departmentId: inputData.departmentId,
           name: inputData.name,
-          shortName: undefined,
+          shortName: inputData.shortName,
           organization: inputData.organization,
           description: undefined,
           isActive: true
@@ -837,6 +842,7 @@ describe('PUT /api/certifications/[id]', () => {
       const inputData = {
         departmentId: 1,
         name: 'テスト資格',
+        shortName: 'テスト',
         organization: 'TEST'
       }
 
@@ -844,7 +850,7 @@ describe('PUT /api/certifications/[id]', () => {
         id: 1,
         departmentId: 1,
         name: 'テスト資格',
-        shortName: null,
+        shortName: "テスト",
         organization: 'TEST',
         description: null,
         isActive: true,
@@ -875,6 +881,7 @@ describe('PUT /api/certifications/[id]', () => {
       const inputData = {
         departmentId: 1,
         name: 'テスト資格',
+        shortName: 'テスト',
         organization: 'TEST'
       }
 
@@ -882,7 +889,7 @@ describe('PUT /api/certifications/[id]', () => {
         id: 1,
         departmentId: 1,
         name: 'テスト資格',
-        shortName: null,
+        shortName: "テスト",
         organization: 'TEST',
         description: null,
         isActive: true,
