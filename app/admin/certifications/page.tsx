@@ -1,14 +1,25 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Plus, PersonSimpleSki, PersonSimpleSnowboard } from "@phosphor-icons/react";
-import CertificationCard from "./CertificationCard";
+import { Plus, PersonSimpleSki, PersonSimpleSnowboard, SealCheck } from "@phosphor-icons/react";
 import CertificationModal from "./CertificationModal";
 import { fetchCertifications, createCertification, updateCertification } from "./api";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import type {
   CertificationWithDepartment,
   CertificationFormData,
-  FilterType,
   CertificationStats,
 } from "./types";
 import { getDepartmentType } from "./utils";
@@ -18,7 +29,8 @@ export default function CertificationsPage() {
   const [filteredCertifications, setFilteredCertifications] = useState<
     CertificationWithDepartment[]
   >([]);
-  const [currentFilter, setCurrentFilter] = useState<FilterType>("all");
+  const [currentDepartment, setCurrentDepartment] = useState<"all" | "ski" | "snowboard">("all");
+  const [showActiveOnly, setShowActiveOnly] = useState<boolean>(true);
   const [stats, setStats] = useState<CertificationStats>({
     total: 0,
     active: 0,
@@ -48,7 +60,8 @@ export default function CertificationsPage() {
   const applyFilter = useCallback(() => {
     let filtered = [...certifications];
 
-    switch (currentFilter) {
+    // 部門フィルター
+    switch (currentDepartment) {
       case "ski":
         filtered = filtered.filter((cert) => getDepartmentType(cert.department.name) === "ski");
         break;
@@ -57,12 +70,14 @@ export default function CertificationsPage() {
           (cert) => getDepartmentType(cert.department.name) === "snowboard"
         );
         break;
-      case "active":
-        filtered = filtered.filter((cert) => cert.isActive);
-        break;
       case "all":
       default:
         break;
+    }
+
+    // 有効フィルター
+    if (showActiveOnly) {
+      filtered = filtered.filter((cert) => cert.isActive);
     }
 
     // ステータス順でソート（有効なものが先）
@@ -73,7 +88,7 @@ export default function CertificationsPage() {
     });
 
     setFilteredCertifications(filtered);
-  }, [certifications, currentFilter]);
+  }, [certifications, currentDepartment, showActiveOnly]);
 
   const updateStats = useCallback(() => {
     const total = filteredCertifications.length;
@@ -103,8 +118,12 @@ export default function CertificationsPage() {
     updateStats();
   }, [updateStats]);
 
-  const handleFilterChange = (filter: FilterType) => {
-    setCurrentFilter(filter);
+  const handleDepartmentChange = (department: string) => {
+    setCurrentDepartment(department as "all" | "ski" | "snowboard");
+  };
+
+  const handleActiveFilterChange = (checked: boolean) => {
+    setShowActiveOnly(checked);
   };
 
   const handleOpenModal = (certification?: CertificationWithDepartment) => {
@@ -137,12 +156,6 @@ export default function CertificationsPage() {
     }
   };
 
-  const filters = [
-    { key: "all" as const, label: "すべて", icon: null },
-    { key: "ski" as const, label: "スキー", icon: PersonSimpleSki },
-    { key: "snowboard" as const, label: "スノーボード", icon: PersonSimpleSnowboard },
-    { key: "active" as const, label: "有効のみ", icon: null },
-  ];
 
   if (isLoading) {
     return (
@@ -150,7 +163,7 @@ export default function CertificationsPage() {
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
             <div className="animate-spin w-8 h-8 border-4 border-primary-500 border-t-transparent rounded-full mx-auto mb-4"></div>
-            <p className="text-gray-600">データを読み込んでいます...</p>
+            <p className="text-muted-foreground">データを読み込んでいます...</p>
           </div>
         </div>
       </div>
@@ -162,13 +175,8 @@ export default function CertificationsPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 md:py-8">
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
-            <p className="text-red-600 mb-4">{error}</p>
-            <button
-              onClick={loadCertifications}
-              className="px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors"
-            >
-              再試行
-            </button>
+            <p className="text-destructive mb-4">{error}</p>
+            <Button onClick={loadCertifications}>再試行</Button>
           </div>
         </div>
       </div>
@@ -181,8 +189,8 @@ export default function CertificationsPage() {
       <div className="mb-6 md:mb-8">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between">
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">資格管理</h1>
-            <p className="text-sm md:text-base text-gray-600">
+            <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-2">資格管理</h1>
+            <p className="text-sm md:text-base text-muted-foreground">
               スキー・スノーボード資格の登録・管理を行います
             </p>
           </div>
@@ -190,77 +198,170 @@ export default function CertificationsPage() {
       </div>
 
       {/* 統計情報 */}
-      <div className="mb-6 md:mb-8">
-        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-          <div className="bg-white border border-gray-200 rounded-xl p-5 text-center transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg">
-            <div className="text-2xl md:text-3xl font-bold text-green-600 mb-1">{stats.active}</div>
-            <div className="text-sm text-gray-600">有効な資格</div>
-          </div>
-          <div className="bg-white border border-gray-200 rounded-xl p-5 text-center transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg">
-            <div className="text-2xl md:text-3xl font-bold text-blue-600 mb-1">{stats.ski}</div>
-            <div className="text-sm text-gray-600">スキー資格</div>
-          </div>
-          <div className="bg-white border border-gray-200 rounded-xl p-5 text-center transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg col-span-2 lg:col-span-1">
-            <div className="text-2xl md:text-3xl font-bold text-amber-600 mb-1">
-              {stats.snowboard}
+      <div className="mb-4 md:mb-6">
+        <Card className="w-full max-w-md mx-auto md:mx-0">
+          <CardContent className="px-3 py-2">
+            <div className="flex items-center justify-center divide-x divide-border">
+              <div className="flex items-center gap-2 px-4 py-1">
+                <SealCheck className="w-4 h-4 text-green-600 dark:text-green-400" weight="regular" />
+                <div className="text-base font-bold text-green-600 dark:text-green-400">
+                  {stats.active}
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-2 px-4 py-1">
+                <PersonSimpleSki className="w-4 h-4 text-blue-600 dark:text-blue-400" weight="regular" />
+                <div className="text-base font-bold text-blue-600 dark:text-blue-400">
+                  {stats.ski}
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-2 px-4 py-1">
+                <PersonSimpleSnowboard className="w-4 h-4 text-amber-600 dark:text-amber-400" weight="regular" />
+                <div className="text-base font-bold text-amber-600 dark:text-amber-400">
+                  {stats.snowboard}
+                </div>
+              </div>
             </div>
-            <div className="text-sm text-gray-600">スノーボード資格</div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       </div>
 
-      {/* フィルター */}
-      <div className="mb-6 md:mb-8">
-        <div className="flex flex-wrap gap-2 justify-center md:justify-start">
-          {filters.map((filter) => (
-            <button
-              key={filter.key}
-              onClick={() => handleFilterChange(filter.key)}
-              className={`px-3 py-1.5 rounded-full border text-sm transition-all duration-200 flex items-center gap-1.5 ${
-                currentFilter === filter.key
-                  ? "bg-blue-600 text-white border-blue-600"
-                  : "bg-white text-gray-700 border-gray-200 hover:border-blue-600 hover:bg-blue-50"
-              }`}
+
+      {/* 資格一覧テーブル */}
+      <div className="rounded-lg border overflow-x-auto bg-white dark:bg-gray-900 shadow-lg">
+        <div className="p-4 border-b space-y-4">
+          <div className="flex justify-between items-center">
+            <h2 className="text-lg font-semibold">資格一覧</h2>
+            <Button
+              onClick={() => handleOpenModal()}
+              className="flex items-center gap-2"
             >
-              {filter.icon && <filter.icon className="w-4 h-4" weight="regular" />}
-              {filter.label}
-            </button>
-          ))}
+              <Plus className="w-4 h-4" weight="regular" />
+              追加
+            </Button>
+          </div>
+          
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+            {/* タブフィルター */}
+            <Tabs value={currentDepartment} onValueChange={handleDepartmentChange} className="w-full sm:w-auto">
+              <TabsList className="grid w-full grid-cols-3 sm:w-auto">
+                <TabsTrigger value="all" className="flex items-center gap-2">
+                  すべて
+                </TabsTrigger>
+                <TabsTrigger value="ski" className="flex items-center gap-2">
+                  <PersonSimpleSki className="w-4 h-4" weight="regular" />
+                  スキー
+                </TabsTrigger>
+                <TabsTrigger value="snowboard" className="flex items-center gap-2">
+                  <PersonSimpleSnowboard className="w-4 h-4" weight="regular" />
+                  スノーボード
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+            
+            {/* 有効のみスイッチ - モバイルでは非表示 */}
+            <div className="hidden sm:flex items-center space-x-2">
+              <Switch
+                id="active-only"
+                checked={showActiveOnly}
+                onCheckedChange={handleActiveFilterChange}
+              />
+              <Label htmlFor="active-only" className="cursor-pointer flex items-center gap-1">
+                <SealCheck className="w-4 h-4 text-green-600 dark:text-green-400" weight="regular" />
+                有効のみ
+              </Label>
+            </div>
+          </div>
         </div>
+        <Table>
+          <TableHeader>
+            <TableRow className="bg-white dark:bg-gray-900">
+              <TableHead className="w-12"></TableHead>
+              <TableHead className="min-w-[80px]">資格名</TableHead>
+              <TableHead className="min-w-[200px]">正式名称</TableHead>
+              <TableHead className="hidden md:table-cell min-w-[300px]">説明</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {filteredCertifications.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
+                  {currentDepartment === "all" && !showActiveOnly
+                    ? "資格が登録されていません"
+                    : showActiveOnly 
+                      ? "有効な資格がありません"
+                      : "フィルター条件に一致する資格がありません"}
+                </TableCell>
+              </TableRow>
+            ) : (
+              filteredCertifications.map((certification) => {
+                const deptType = getDepartmentType(certification.department.name);
+                const DeptIcon = deptType === "ski" ? PersonSimpleSki : PersonSimpleSnowboard;
+
+                // 部門別の背景色とテキスト色を設定（微細な色味で控えめに）
+                const departmentStyles = {
+                  ski: {
+                    row: `bg-ski-50/30 hover:bg-ski-50/50 dark:bg-ski-900/5 dark:hover:bg-ski-900/10`,
+                    icon: "text-ski-600 dark:text-ski-400",
+                    text: "text-foreground",
+                  },
+                  snowboard: {
+                    row: `bg-snowboard-50/30 hover:bg-snowboard-50/50 dark:bg-snowboard-900/5 dark:hover:bg-snowboard-900/10`,
+                    icon: "text-snowboard-600 dark:text-snowboard-400",
+                    text: "text-foreground",
+                  },
+                }[deptType];
+
+                return (
+                  <TableRow
+                    key={certification.id}
+                    className={`cursor-pointer transition-colors ${departmentStyles.row} ${
+                      !certification.isActive ? "opacity-60" : ""
+                    }`}
+                    onClick={() => handleOpenModal(certification)}
+                  >
+                    <TableCell>
+                      <DeptIcon className={`w-5 h-5 ${departmentStyles.icon}`} weight="regular" />
+                    </TableCell>
+                    <TableCell>
+                      <span
+                        className={`text-xs font-mono whitespace-nowrap md:whitespace-normal ${
+                          departmentStyles.text
+                        } ${!certification.isActive ? "line-through" : ""}`}
+                      >
+                        {certification.shortName || "-"}
+                      </span>
+                    </TableCell>
+                    <TableCell
+                      className={`font-medium whitespace-nowrap md:whitespace-normal ${
+                        departmentStyles.text
+                      } ${!certification.isActive ? "line-through" : ""}`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-muted text-muted-foreground">
+                          {certification.organization}
+                        </span>
+                        <span>{certification.name}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell
+                      className={`hidden md:table-cell max-w-xs ${
+                        !certification.isActive ? "line-through" : ""
+                      }`}
+                    >
+                      <p className={`text-sm line-clamp-2 ${departmentStyles.text} opacity-70`}>
+                        {certification.description || "説明なし"}
+                      </p>
+                    </TableCell>
+                  </TableRow>
+                );
+              })
+            )}
+          </TableBody>
+        </Table>
       </div>
 
-      {/* 資格一覧 */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-        {filteredCertifications.map((certification, index) => (
-          <div
-            key={certification.id}
-            style={{ animationDelay: `${index * 0.1}s` }}
-            className="fade-in-animation"
-          >
-            <CertificationCard certification={certification} onEdit={handleOpenModal} />
-          </div>
-        ))}
-
-        {filteredCertifications.length === 0 && (
-          <div className="col-span-full text-center py-12">
-            <p className="text-gray-500">
-              {currentFilter === "all"
-                ? "資格が登録されていません"
-                : "フィルター条件に一致する資格がありません"}
-            </p>
-          </div>
-        )}
-      </div>
-
-      {/* フローティングアクションボタン */}
-      <button
-        onClick={() => handleOpenModal()}
-        className="fixed bottom-24 right-6 md:bottom-4 md:right-4 w-14 h-14 md:w-12 md:h-12 btn-gradient rounded-full flex items-center justify-center shadow-lg z-[60] border-none cursor-pointer"
-        style={{ boxShadow: "0 4px 20px rgba(73, 81, 94, 0.3)" }}
-        title="新しい資格を追加"
-      >
-        <Plus className="w-6 h-6 md:w-5 md:h-5 text-white" weight="regular" />
-      </button>
 
       {/* モーダル */}
       <CertificationModal
@@ -269,24 +370,6 @@ export default function CertificationsPage() {
         certification={editingCertification}
         onSave={handleSave}
       />
-
-      <style jsx>{`
-        .fade-in-animation {
-          animation: fadeIn 0.2s ease-out forwards;
-          opacity: 0;
-        }
-
-        @keyframes fadeIn {
-          0% {
-            opacity: 0;
-            transform: translateY(10px);
-          }
-          100% {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-      `}</style>
     </div>
   );
 }
