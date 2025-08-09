@@ -339,7 +339,7 @@ export default function CertificationsPage() {
                       } ${!certification.isActive ? "line-through" : ""}`}
                     >
                       <div className="flex items-center gap-2">
-                        <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-muted text-muted-foreground">
+                        <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium ${deptType === "ski" ? "badge-ski" : "badge-snowboard"}`}>
                           {certification.organization}
                         </span>
                         <span>{certification.name}</span>
