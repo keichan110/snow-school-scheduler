@@ -39,7 +39,7 @@ model Certification {
   id           Int     @id @default(autoincrement())
   departmentId Int     @map("department_id")
   name         String
-  shortName    String? @map("short_name")
+  shortName    String @map("short_name")
   organization String
   description  String?
   isActive     Boolean @default(true) @map("is_active")

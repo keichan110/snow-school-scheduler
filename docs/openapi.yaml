@@ -664,7 +664,6 @@ components:
           example: "スキー指導員"
         shortName:
           type: string
-          nullable: true
           example: "指導員"
         organization:
           type: string
@@ -786,7 +785,6 @@ components:
           example: "スキー指導員"
         shortName:
           type: string
-          nullable: true
           example: "指導員"
         organization:
           type: string
@@ -811,6 +809,7 @@ components:
       required:
         - departmentId
         - name
+        - shortName
         - organization
       properties:
         departmentId:
@@ -820,7 +819,6 @@ components:
           example: "スキー指導員"
         shortName:
           type: string
-          nullable: true
           example: "指導員"
         organization:
           type: string
