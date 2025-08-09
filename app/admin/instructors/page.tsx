@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Plus, SealCheck, UserGear, UserMinus } from "@phosphor-icons/react";
+import { Plus, SealCheck, PersonSimpleSki, PersonSimpleSnowboard, UserGear, UserMinus } from "@phosphor-icons/react";
 import InstructorModal from "./InstructorModal";
 import { fetchInstructors, createInstructor, updateInstructor } from "./api";
 import { Button } from "@/components/ui/button";
@@ -35,8 +35,8 @@ export default function InstructorsPage() {
   const [stats, setStats] = useState<InstructorStats>({
     total: 0,
     active: 0,
-    inactive: 0,
-    retired: 0,
+    skiInstructors: 0,
+    snowboardInstructors: 0,
   });
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingInstructor, setEditingInstructor] = useState<InstructorWithCertifications | null>(
@@ -113,19 +113,34 @@ export default function InstructorsPage() {
   }, [instructors, currentCategory, showActiveOnly]);
 
   const updateStats = useCallback(() => {
-    const total = filteredInstructors.length;
-    const active = filteredInstructors.filter(
+    // 有効なインストラクター（ACTIVEステータス）のみを対象とする
+    const activeInstructors = instructors.filter(
       (instructor) => instructor.status === "ACTIVE"
+    );
+    
+    const active = activeInstructors.length;
+    
+    // スキーの資格を持つ有効なインストラクター数
+    const skiInstructors = activeInstructors.filter((instructor) =>
+      instructor.certifications.some(
+        (cert) =>
+          cert.department.name.toLowerCase().includes("スキー") ||
+          cert.department.name.toLowerCase().includes("ski")
+      )
     ).length;
-    const inactive = filteredInstructors.filter(
-      (instructor) => instructor.status === "INACTIVE"
-    ).length;
-    const retired = filteredInstructors.filter(
-      (instructor) => instructor.status === "RETIRED"
+    
+    // スノーボードの資格を持つ有効なインストラクター数
+    const snowboardInstructors = activeInstructors.filter((instructor) =>
+      instructor.certifications.some(
+        (cert) =>
+          cert.department.name.toLowerCase().includes("スノーボード") ||
+          cert.department.name.toLowerCase().includes("snowboard") ||
+          cert.department.name.toLowerCase().includes("ボード")
+      )
     ).length;
 
-    setStats({ total, active, inactive, retired });
-  }, [filteredInstructors]);
+    setStats({ total: active, active, skiInstructors, snowboardInstructors });
+  }, [instructors]);
 
   // データ取得
   useEffect(() => {
@@ -238,19 +253,19 @@ export default function InstructorsPage() {
               </div>
 
               <div className="flex items-center gap-2 px-4 py-1">
-                <UserGear
-                  className="w-4 h-4 text-yellow-600 dark:text-yellow-400"
+                <PersonSimpleSki
+                  className="w-4 h-4 text-ski-600 dark:text-ski-400"
                   weight="regular"
                 />
-                <div className="text-base font-bold text-yellow-600 dark:text-yellow-400">
-                  {stats.inactive}
+                <div className="text-base font-bold text-ski-600 dark:text-ski-400">
+                  {stats.skiInstructors}
                 </div>
               </div>
 
               <div className="flex items-center gap-2 px-4 py-1">
-                <UserMinus className="w-4 h-4 text-gray-600 dark:text-gray-400" weight="regular" />
-                <div className="text-base font-bold text-gray-600 dark:text-gray-400">
-                  {stats.retired}
+                <PersonSimpleSnowboard className="w-4 h-4 text-snowboard-600 dark:text-snowboard-400" weight="regular" />
+                <div className="text-base font-bold text-snowboard-600 dark:text-snowboard-400">
+                  {stats.snowboardInstructors}
                 </div>
               </div>
             </div>

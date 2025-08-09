@@ -16,8 +16,8 @@ export interface InstructorWithCertifications extends Instructor {
 export interface InstructorStats {
   total: number
   active: number
-  inactive: number
-  retired: number
+  skiInstructors: number
+  snowboardInstructors: number
 }
 
 export interface InstructorFormData {
