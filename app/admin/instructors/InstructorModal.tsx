@@ -40,6 +40,9 @@ export default function InstructorModal({
   const [availableCertifications, setAvailableCertifications] = useState<CertificationWithDepartment[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoadingCertifications, setIsLoadingCertifications] = useState(false);
+  const [selectedDepartment, setSelectedDepartment] = useState<string>("");
+  const [selectedCertification, setSelectedCertification] = useState<string>("");
+  const [assignedCertifications, setAssignedCertifications] = useState<{id: number, name: string, shortName: string | null, organization: string, department: { name: string }}[]>([]);
 
   useEffect(() => {
     if (instructor) {
@@ -54,6 +57,7 @@ export default function InstructorModal({
         notes: instructor.notes || "",
         certificationIds: instructor.certifications.map(c => c.id),
       });
+      setAssignedCertifications(instructor.certifications);
     } else {
       // 新規追加モード
       setFormData({
@@ -65,7 +69,10 @@ export default function InstructorModal({
         notes: "",
         certificationIds: [],
       });
+      setAssignedCertifications([]);
     }
+    setSelectedDepartment("");
+    setSelectedCertification("");
   }, [instructor, isOpen]);
 
   useEffect(() => {
@@ -103,12 +110,59 @@ export default function InstructorModal({
     }
   };
 
-  const handleCertificationToggle = (certificationId: number, checked: boolean) => {
+  const handleDepartmentChange = (value: string) => {
+    setSelectedDepartment(value);
+    setSelectedCertification("");
+  };
+
+  const getFilteredCertifications = () => {
+    if (!selectedDepartment) return [];
+    
+    return availableCertifications.filter(cert => {
+      const deptType = getDepartmentType(cert.department.name);
+      return deptType === selectedDepartment;
+    });
+  };
+
+  const handleAddCertification = () => {
+    if (!selectedCertification) return;
+    
+    const certificationToAdd = availableCertifications.find(
+      cert => cert.id.toString() === selectedCertification
+    );
+    
+    if (!certificationToAdd) return;
+    
+    // 重複チェック
+    if (assignedCertifications.find(cert => cert.id === certificationToAdd.id)) {
+      alert('この資格は既に追加されています');
+      return;
+    }
+    
+    const newCertification = {
+      id: certificationToAdd.id,
+      name: certificationToAdd.name,
+      shortName: certificationToAdd.shortName,
+      organization: certificationToAdd.organization,
+      department: { name: certificationToAdd.department.name }
+    };
+    
+    setAssignedCertifications(prev => [...prev, newCertification]);
     setFormData(prev => ({
       ...prev,
-      certificationIds: checked 
-        ? [...(prev.certificationIds || []), certificationId]
-        : (prev.certificationIds || []).filter(id => id !== certificationId)
+      certificationIds: [...(prev.certificationIds || []), certificationToAdd.id]
+    }));
+    
+    // リセット
+    setSelectedDepartment("");
+    setSelectedCertification("");
+  };
+
+  const handleRemoveCertification = (certificationId: number) => {
+    setAssignedCertifications(prev => prev.filter(cert => cert.id !== certificationId));
+    setFormData(prev => ({
+      ...prev,
+      certificationIds: (prev.certificationIds || []).filter(id => id !== certificationId)
     }));
   };
 
@@ -263,58 +317,104 @@ export default function InstructorModal({
                 保有資格
               </div>
               
+              {/* 資格追加セクション */}
+              <div className="p-4 border border-dashed border-gray-300 rounded-lg bg-gray-50">
+                {/* PC: 1行配置, モバイル: 縦積み */}
+                <div className="flex flex-col md:flex-row gap-3 md:items-end">
+                  <div className="md:w-40">
+                    <Label className="text-sm font-medium">部門</Label>
+                    <select
+                      value={selectedDepartment}
+                      onChange={(e) => handleDepartmentChange(e.target.value)}
+                      className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+                    >
+                      <option value="">選択</option>
+                      <option value="ski">🎿 スキー</option>
+                      <option value="snowboard">🏂 スノーボード</option>
+                    </select>
+                  </div>
+                  <div className="flex-1">
+                    <Label className="text-sm font-medium">資格を選択</Label>
+                    <select
+                      value={selectedCertification}
+                      onChange={(e) => setSelectedCertification(e.target.value)}
+                      disabled={!selectedDepartment}
+                      className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary disabled:bg-gray-100"
+                    >
+                      <option value="">
+                        {selectedDepartment ? "資格を選択してください" : "部門を選択してから資格を選んでください"}
+                      </option>
+                      {getFilteredCertifications().map(cert => (
+                        <option key={cert.id} value={cert.id.toString()}>
+                          {cert.shortName || cert.name} ({cert.organization})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <Button
+                    type="button"
+                    onClick={handleAddCertification}
+                    disabled={!selectedCertification}
+                    className="md:mb-0"
+                  >
+                    追加
+                  </Button>
+                </div>
+              </div>
+
+              {/* 保有資格一覧 */}
               {isLoadingCertifications ? (
                 <div className="flex items-center justify-center py-8">
                   <div className="animate-spin w-6 h-6 border-2 border-primary border-t-transparent rounded-full"></div>
                   <span className="ml-2 text-sm text-muted-foreground">資格を読み込み中...</span>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-64 overflow-y-auto border rounded-lg p-3">
-                  {availableCertifications.length > 0 ? (
-                    availableCertifications.map((certification) => {
-                      const deptType = getDepartmentType(certification.department.name);
+                <div className="space-y-2">
+                  {assignedCertifications.length > 0 ? (
+                    assignedCertifications.map((cert) => {
+                      const deptType = getDepartmentType(cert.department.name);
                       const DeptIcon = deptType === "ski" ? PersonSimpleSki : PersonSimpleSnowboard;
-                      const isChecked = (formData.certificationIds || []).includes(certification.id);
                       
                       return (
                         <div
-                          key={certification.id}
-                          className="flex items-start space-x-3 p-2 rounded-lg hover:bg-accent"
+                          key={cert.id}
+                          className="flex items-center justify-between p-3 border border-gray-200 rounded-lg bg-gray-50"
                         >
-                          <input
-                            type="checkbox"
-                            id={`cert-${certification.id}`}
-                            checked={isChecked}
-                            onChange={(e) => 
-                              handleCertificationToggle(certification.id, e.target.checked)
-                            }
-                            className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
-                          />
-                          <div className="flex-1 space-y-1">
-                            <Label
-                              htmlFor={`cert-${certification.id}`}
-                              className="cursor-pointer flex items-center gap-2 text-sm font-medium"
-                            >
-                              <DeptIcon 
-                                className={`w-4 h-4 ${
-                                  deptType === "ski" 
-                                    ? "text-ski-600 dark:text-ski-400" 
-                                    : "text-snowboard-600 dark:text-snowboard-400"
-                                }`} 
-                                weight="regular" 
-                              />
-                              {certification.shortName || certification.name}
-                            </Label>
-                            <div className="text-xs text-muted-foreground">
-                              {certification.organization} - {certification.name}
+                          <div className="flex items-center gap-3">
+                            <DeptIcon 
+                              className={`w-4 h-4 ${
+                                deptType === "ski" 
+                                  ? "text-ski-600 dark:text-ski-400" 
+                                  : "text-snowboard-600 dark:text-snowboard-400"
+                              }`} 
+                              weight="regular" 
+                            />
+                            <div>
+                              <div className="font-medium text-sm">
+                                {cert.shortName || cert.name}
+                              </div>
+                              <div className="text-xs text-gray-600">
+                                {cert.organization}
+                              </div>
                             </div>
                           </div>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleRemoveCertification(cert.id)}
+                            className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                          </Button>
                         </div>
                       );
                     })
                   ) : (
-                    <div className="col-span-2 text-center py-4 text-muted-foreground">
-                      選択可能な資格がありません
+                    <div className="text-center py-4 text-muted-foreground">
+                      資格が登録されていません
                     </div>
                   )}
                 </div>
