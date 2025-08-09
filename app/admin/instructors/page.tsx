@@ -21,7 +21,7 @@ import type {
   InstructorWithCertifications,
   InstructorFormData,
   InstructorStats,
-  StatusFilterType,
+  CategoryFilterType,
 } from "./types";
 
 export default function InstructorsPage() {
@@ -29,7 +29,7 @@ export default function InstructorsPage() {
   const [filteredInstructors, setFilteredInstructors] = useState<
     InstructorWithCertifications[]
   >([]);
-  const [currentStatus, setCurrentStatus] = useState<StatusFilterType>("all");
+  const [currentCategory, setCurrentCategory] = useState<CategoryFilterType>("all");
   const [showActiveOnly, setShowActiveOnly] = useState<boolean>(true);
   const [stats, setStats] = useState<InstructorStats>({
     total: 0,
@@ -60,23 +60,31 @@ export default function InstructorsPage() {
   const applyFilter = useCallback(() => {
     let filtered = [...instructors];
 
-    // ステータスフィルター
-    switch (currentStatus) {
-      case "active":
-        filtered = filtered.filter((instructor) => instructor.status === "ACTIVE");
+    // 資格カテゴリフィルター
+    switch (currentCategory) {
+      case "ski":
+        filtered = filtered.filter((instructor) =>
+          instructor.certifications.some((cert) =>
+            cert.department.name.toLowerCase().includes("スキー") ||
+            cert.department.name.toLowerCase().includes("ski")
+          )
+        );
         break;
-      case "inactive":
-        filtered = filtered.filter((instructor) => instructor.status === "INACTIVE");
-        break;
-      case "retired":
-        filtered = filtered.filter((instructor) => instructor.status === "RETIRED");
+      case "snowboard":
+        filtered = filtered.filter((instructor) =>
+          instructor.certifications.some((cert) =>
+            cert.department.name.toLowerCase().includes("スノーボード") ||
+            cert.department.name.toLowerCase().includes("snowboard") ||
+            cert.department.name.toLowerCase().includes("ボード")
+          )
+        );
         break;
       case "all":
       default:
         break;
     }
 
-    // 有効フィルター（ACTIVEのみを有効として扱う）
+    // 有効のみフィルター（ONの場合はACTIVEのみ、OFFの場合はすべてのステータス）
     if (showActiveOnly) {
       filtered = filtered.filter((instructor) => instructor.status === "ACTIVE");
     }
@@ -98,7 +106,7 @@ export default function InstructorsPage() {
     });
 
     setFilteredInstructors(filtered);
-  }, [instructors, currentStatus, showActiveOnly]);
+  }, [instructors, currentCategory, showActiveOnly]);
 
   const updateStats = useCallback(() => {
     const total = filteredInstructors.length;
@@ -124,8 +132,8 @@ export default function InstructorsPage() {
     updateStats();
   }, [updateStats]);
 
-  const handleStatusChange = (status: string) => {
-    setCurrentStatus(status as StatusFilterType);
+  const handleCategoryChange = (category: string) => {
+    setCurrentCategory(category as CategoryFilterType);
   };
 
   const handleActiveFilterChange = (checked: boolean) => {
@@ -248,22 +256,16 @@ export default function InstructorsPage() {
           
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
             {/* タブフィルター */}
-            <Tabs value={currentStatus} onValueChange={handleStatusChange} className="w-full sm:w-auto">
-              <TabsList className="grid w-full grid-cols-4 sm:w-auto">
+            <Tabs value={currentCategory} onValueChange={handleCategoryChange} className="w-full sm:w-auto">
+              <TabsList className="grid w-full grid-cols-3 sm:w-auto">
                 <TabsTrigger value="all" className="flex items-center gap-2">
                   すべて
                 </TabsTrigger>
-                <TabsTrigger value="active" className="flex items-center gap-2">
-                  <SealCheck className="w-4 h-4" weight="regular" />
-                  有効
+                <TabsTrigger value="ski" className="flex items-center gap-2">
+                  スキー
                 </TabsTrigger>
-                <TabsTrigger value="inactive" className="flex items-center gap-2">
-                  <UserGear className="w-4 h-4" weight="regular" />
-                  休止
-                </TabsTrigger>
-                <TabsTrigger value="retired" className="flex items-center gap-2">
-                  <UserMinus className="w-4 h-4" weight="regular" />
-                  退職
+                <TabsTrigger value="snowboard" className="flex items-center gap-2">
+                  スノーボード
                 </TabsTrigger>
               </TabsList>
             </Tabs>
@@ -296,7 +298,7 @@ export default function InstructorsPage() {
             {filteredInstructors.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
-                  {currentStatus === "all" && !showActiveOnly
+                  {currentCategory === "all" && !showActiveOnly
                     ? "インストラクターが登録されていません"
                     : showActiveOnly 
                       ? "有効なインストラクターがいません"

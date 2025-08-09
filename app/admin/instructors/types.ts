@@ -42,4 +42,4 @@ export interface InstructorCardProps {
   onEdit: (instructor: InstructorWithCertifications) => void
 }
 
-export type StatusFilterType = 'all' | 'active' | 'inactive' | 'retired'
+export type CategoryFilterType = 'all' | 'ski' | 'snowboard'
