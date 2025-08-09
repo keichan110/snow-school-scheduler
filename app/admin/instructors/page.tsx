@@ -23,12 +23,13 @@ import type {
   InstructorStats,
   CategoryFilterType,
 } from "./types";
+import { getDepartmentType } from "../certifications/utils";
 
 export default function InstructorsPage() {
   const [instructors, setInstructors] = useState<InstructorWithCertifications[]>([]);
-  const [filteredInstructors, setFilteredInstructors] = useState<
-    InstructorWithCertifications[]
-  >([]);
+  const [filteredInstructors, setFilteredInstructors] = useState<InstructorWithCertifications[]>(
+    []
+  );
   const [currentCategory, setCurrentCategory] = useState<CategoryFilterType>("all");
   const [showActiveOnly, setShowActiveOnly] = useState<boolean>(true);
   const [stats, setStats] = useState<InstructorStats>({
@@ -38,8 +39,9 @@ export default function InstructorsPage() {
     retired: 0,
   });
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingInstructor, setEditingInstructor] =
-    useState<InstructorWithCertifications | null>(null);
+  const [editingInstructor, setEditingInstructor] = useState<InstructorWithCertifications | null>(
+    null
+  );
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -64,18 +66,20 @@ export default function InstructorsPage() {
     switch (currentCategory) {
       case "ski":
         filtered = filtered.filter((instructor) =>
-          instructor.certifications.some((cert) =>
-            cert.department.name.toLowerCase().includes("スキー") ||
-            cert.department.name.toLowerCase().includes("ski")
+          instructor.certifications.some(
+            (cert) =>
+              cert.department.name.toLowerCase().includes("スキー") ||
+              cert.department.name.toLowerCase().includes("ski")
           )
         );
         break;
       case "snowboard":
         filtered = filtered.filter((instructor) =>
-          instructor.certifications.some((cert) =>
-            cert.department.name.toLowerCase().includes("スノーボード") ||
-            cert.department.name.toLowerCase().includes("snowboard") ||
-            cert.department.name.toLowerCase().includes("ボード")
+          instructor.certifications.some(
+            (cert) =>
+              cert.department.name.toLowerCase().includes("スノーボード") ||
+              cert.department.name.toLowerCase().includes("snowboard") ||
+              cert.department.name.toLowerCase().includes("ボード")
           )
         );
         break;
@@ -94,15 +98,15 @@ export default function InstructorsPage() {
       const statusOrder = { ACTIVE: 0, INACTIVE: 1, RETIRED: 2 };
       const orderA = statusOrder[a.status];
       const orderB = statusOrder[b.status];
-      
+
       if (orderA !== orderB) {
         return orderA - orderB;
       }
-      
+
       // 同じステータス内では名前順
       const nameA = `${a.lastName} ${a.firstName}`;
       const nameB = `${b.lastName} ${b.firstName}`;
-      return nameA.localeCompare(nameB, 'ja');
+      return nameA.localeCompare(nameB, "ja");
     });
 
     setFilteredInstructors(filtered);
@@ -110,9 +114,15 @@ export default function InstructorsPage() {
 
   const updateStats = useCallback(() => {
     const total = filteredInstructors.length;
-    const active = filteredInstructors.filter((instructor) => instructor.status === "ACTIVE").length;
-    const inactive = filteredInstructors.filter((instructor) => instructor.status === "INACTIVE").length;
-    const retired = filteredInstructors.filter((instructor) => instructor.status === "RETIRED").length;
+    const active = filteredInstructors.filter(
+      (instructor) => instructor.status === "ACTIVE"
+    ).length;
+    const inactive = filteredInstructors.filter(
+      (instructor) => instructor.status === "INACTIVE"
+    ).length;
+    const retired = filteredInstructors.filter(
+      (instructor) => instructor.status === "RETIRED"
+    ).length;
 
     setStats({ total, active, inactive, retired });
   }, [filteredInstructors]);
@@ -202,7 +212,9 @@ export default function InstructorsPage() {
       <div className="mb-6 md:mb-8">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between">
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-2">インストラクター管理</h1>
+            <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-2">
+              インストラクター管理
+            </h1>
             <p className="text-sm md:text-base text-muted-foreground">
               インストラクターの登録・管理を行います
             </p>
@@ -216,19 +228,25 @@ export default function InstructorsPage() {
           <CardContent className="px-3 py-2">
             <div className="flex items-center justify-center divide-x divide-border">
               <div className="flex items-center gap-2 px-4 py-1">
-                <SealCheck className="w-4 h-4 text-green-600 dark:text-green-400" weight="regular" />
+                <SealCheck
+                  className="w-4 h-4 text-green-600 dark:text-green-400"
+                  weight="regular"
+                />
                 <div className="text-base font-bold text-green-600 dark:text-green-400">
                   {stats.active}
                 </div>
               </div>
-              
+
               <div className="flex items-center gap-2 px-4 py-1">
-                <UserGear className="w-4 h-4 text-yellow-600 dark:text-yellow-400" weight="regular" />
+                <UserGear
+                  className="w-4 h-4 text-yellow-600 dark:text-yellow-400"
+                  weight="regular"
+                />
                 <div className="text-base font-bold text-yellow-600 dark:text-yellow-400">
                   {stats.inactive}
                 </div>
               </div>
-              
+
               <div className="flex items-center gap-2 px-4 py-1">
                 <UserMinus className="w-4 h-4 text-gray-600 dark:text-gray-400" weight="regular" />
                 <div className="text-base font-bold text-gray-600 dark:text-gray-400">
@@ -245,18 +263,19 @@ export default function InstructorsPage() {
         <div className="p-4 border-b space-y-4">
           <div className="flex justify-between items-center">
             <h2 className="text-lg font-semibold">インストラクター一覧</h2>
-            <Button
-              onClick={() => handleOpenModal()}
-              className="flex items-center gap-2"
-            >
+            <Button onClick={() => handleOpenModal()} className="flex items-center gap-2">
               <Plus className="w-4 h-4" weight="regular" />
               追加
             </Button>
           </div>
-          
+
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
             {/* タブフィルター */}
-            <Tabs value={currentCategory} onValueChange={handleCategoryChange} className="w-full sm:w-auto">
+            <Tabs
+              value={currentCategory}
+              onValueChange={handleCategoryChange}
+              className="w-full sm:w-auto"
+            >
               <TabsList className="grid w-full grid-cols-3 sm:w-auto">
                 <TabsTrigger value="all" className="flex items-center gap-2">
                   すべて
@@ -269,7 +288,7 @@ export default function InstructorsPage() {
                 </TabsTrigger>
               </TabsList>
             </Tabs>
-            
+
             {/* 有効のみスイッチ - モバイルでは非表示 */}
             <div className="hidden sm:flex items-center space-x-2">
               <Switch
@@ -278,7 +297,10 @@ export default function InstructorsPage() {
                 onCheckedChange={handleActiveFilterChange}
               />
               <Label htmlFor="active-only" className="cursor-pointer flex items-center gap-1">
-                <SealCheck className="w-4 h-4 text-green-600 dark:text-green-400" weight="regular" />
+                <SealCheck
+                  className="w-4 h-4 text-green-600 dark:text-green-400"
+                  weight="regular"
+                />
                 有効のみ
               </Label>
             </div>
@@ -300,9 +322,9 @@ export default function InstructorsPage() {
                 <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
                   {currentCategory === "all" && !showActiveOnly
                     ? "インストラクターが登録されていません"
-                    : showActiveOnly 
-                      ? "有効なインストラクターがいません"
-                      : "フィルター条件に一致するインストラクターがいません"}
+                    : showActiveOnly
+                    ? "有効なインストラクターがいません"
+                    : "フィルター条件に一致するインストラクターがいません"}
                 </TableCell>
               </TableRow>
             ) : (
@@ -315,7 +337,7 @@ export default function InstructorsPage() {
                   },
                   INACTIVE: {
                     row: "bg-yellow-50/30 hover:bg-yellow-50/50 dark:bg-yellow-900/5 dark:hover:bg-yellow-900/10",
-                    icon: "text-yellow-600 dark:text-yellow-400", 
+                    icon: "text-yellow-600 dark:text-yellow-400",
                     text: "text-foreground",
                   },
                   RETIRED: {
@@ -325,8 +347,12 @@ export default function InstructorsPage() {
                   },
                 }[instructor.status];
 
-                const StatusIcon = instructor.status === "ACTIVE" ? SealCheck : 
-                                 instructor.status === "INACTIVE" ? UserGear : UserMinus;
+                const StatusIcon =
+                  instructor.status === "ACTIVE"
+                    ? SealCheck
+                    : instructor.status === "INACTIVE"
+                    ? UserGear
+                    : UserMinus;
 
                 return (
                   <TableRow
@@ -349,25 +375,30 @@ export default function InstructorsPage() {
                       </span>
                     </TableCell>
                     <TableCell
-                      className={`whitespace-nowrap md:whitespace-normal ${
-                        statusStyles.text
-                      } ${instructor.status !== "ACTIVE" ? "line-through" : ""}`}
+                      className={`whitespace-nowrap md:whitespace-normal ${statusStyles.text} ${
+                        instructor.status !== "ACTIVE" ? "line-through" : ""
+                      }`}
                     >
-                      {instructor.lastNameKana && instructor.firstNameKana 
+                      {instructor.lastNameKana && instructor.firstNameKana
                         ? `${instructor.lastNameKana} ${instructor.firstNameKana}`
                         : "-"}
                     </TableCell>
                     <TableCell>
                       <div className="flex flex-wrap gap-1">
                         {instructor.certifications.length > 0 ? (
-                          instructor.certifications.map((cert) => (
-                            <span
-                              key={cert.id}
-                              className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-muted text-muted-foreground"
-                            >
-                              {cert.shortName || cert.name}
-                            </span>
-                          ))
+                          instructor.certifications.map((cert) => {
+                            const deptType = getDepartmentType(cert.department.name);
+                            const badgeClass = deptType === "ski" ? "badge-ski" : "badge-snowboard";
+
+                            return (
+                              <span
+                                key={cert.id}
+                                className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium ${badgeClass}`}
+                              >
+                                {cert.shortName}
+                              </span>
+                            );
+                          })
                         ) : (
                           <span className="text-sm text-muted-foreground">なし</span>
                         )}

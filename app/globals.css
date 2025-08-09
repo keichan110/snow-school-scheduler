@@ -4,7 +4,8 @@
 
 @layer base {
   html {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
+      Arial, sans-serif;
   }
   :root {
     --background: 0 0% 100%;
@@ -86,9 +87,24 @@
     -webkit-text-fill-color: transparent;
     color: transparent;
   }
-  
+
   .icon-active-color {
     color: hsl(var(--primary));
+  }
+
+  /* 部門別バッジスタイル */
+  .badge-base {
+    @apply items-center rounded-md text-xs font-medium border;
+  }
+
+  .badge-ski {
+    @apply badge-base bg-ski-50 text-ski-700 ring-inset ring-1 ring-ski-600/10 
+           dark:bg-ski-400/10 dark:text-ski-400 dark:ring-ski-600/10;
+  }
+
+  .badge-snowboard {
+    @apply badge-base bg-snowboard-50 text-snowboard-700 ring-inset ring-1 ring-snowboard-600/10
+           dark:bg-snowboard-400/10 dark:text-snowboard-400 dark:ring-snowboard-600/10;
   }
 
   /* カード ホバー効果 */
@@ -242,8 +258,6 @@
     min-height: 100px !important;
   }
 }
-
-
 
 @layer base {
   * {
