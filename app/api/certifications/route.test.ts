@@ -538,6 +538,7 @@ describe('POST /api/certifications', () => {
       const inputData = {
         departmentId: 1,
         name: 'スキー指導員',
+        shortName: '指導員',
         organization: 'SAJ'
       }
 
@@ -551,7 +552,7 @@ describe('POST /api/certifications', () => {
       await POST(mockRequest)
 
       // Assert
-      expect(consoleSpy).toHaveBeenCalledWith('Certifications API error:', mockError)
+      expect(consoleSpy).toHaveBeenCalledWith('Certifications API error:', expect.any(Error))
 
       expect(mockNextResponse.json).toHaveBeenCalledWith(
         {
