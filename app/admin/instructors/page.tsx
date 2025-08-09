@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Plus, SealCheck, PersonSimpleSki, PersonSimpleSnowboard, UserGear, UserMinus } from "@phosphor-icons/react";
+import { Plus, SealCheck, PersonSimpleSki, PersonSimpleSnowboard } from "@phosphor-icons/react";
 import InstructorModal from "./InstructorModal";
 import { fetchInstructors, createInstructor, updateInstructor } from "./api";
 import { Button } from "@/components/ui/button";
@@ -324,7 +324,7 @@ export default function InstructorsPage() {
         <Table>
           <TableHeader>
             <TableRow className="bg-white dark:bg-gray-900">
-              <TableHead className="w-12"></TableHead>
+              <TableHead className="w-12">資格</TableHead>
               <TableHead className="min-w-[120px]">氏名</TableHead>
               <TableHead className="min-w-[120px]">フリガナ</TableHead>
               <TableHead className="min-w-[200px]">保有資格</TableHead>
@@ -347,27 +347,30 @@ export default function InstructorsPage() {
                 const statusStyles = {
                   ACTIVE: {
                     row: "bg-green-50/30 hover:bg-green-50/50 dark:bg-green-900/5 dark:hover:bg-green-900/10",
-                    icon: "text-green-600 dark:text-green-400",
                     text: "text-foreground",
                   },
                   INACTIVE: {
                     row: "bg-yellow-50/30 hover:bg-yellow-50/50 dark:bg-yellow-900/5 dark:hover:bg-yellow-900/10",
-                    icon: "text-yellow-600 dark:text-yellow-400",
                     text: "text-foreground",
                   },
                   RETIRED: {
                     row: "bg-gray-50/30 hover:bg-gray-50/50 dark:bg-gray-900/5 dark:hover:bg-gray-900/10",
-                    icon: "text-gray-600 dark:text-gray-400",
                     text: "text-foreground",
                   },
                 }[instructor.status];
 
-                const StatusIcon =
-                  instructor.status === "ACTIVE"
-                    ? SealCheck
-                    : instructor.status === "INACTIVE"
-                    ? UserGear
-                    : UserMinus;
+                // 資格に基づいてアイコンを決定
+                const hasSkiCert = instructor.certifications.some(
+                  (cert) =>
+                    cert.department.name.toLowerCase().includes("スキー") ||
+                    cert.department.name.toLowerCase().includes("ski")
+                );
+                const hasSnowboardCert = instructor.certifications.some(
+                  (cert) =>
+                    cert.department.name.toLowerCase().includes("スノーボード") ||
+                    cert.department.name.toLowerCase().includes("snowboard") ||
+                    cert.department.name.toLowerCase().includes("ボード")
+                );
 
                 return (
                   <TableRow
@@ -378,7 +381,23 @@ export default function InstructorsPage() {
                     onClick={() => handleOpenModal(instructor)}
                   >
                     <TableCell>
-                      <StatusIcon className={`w-5 h-5 ${statusStyles.icon}`} weight="regular" />
+                      <div className="flex items-center gap-1">
+                        {hasSkiCert && (
+                          <PersonSimpleSki 
+                            className="w-4 h-4 text-ski-600 dark:text-ski-400" 
+                            weight="regular" 
+                          />
+                        )}
+                        {hasSnowboardCert && (
+                          <PersonSimpleSnowboard 
+                            className="w-4 h-4 text-snowboard-600 dark:text-snowboard-400" 
+                            weight="regular" 
+                          />
+                        )}
+                        {!hasSkiCert && !hasSnowboardCert && (
+                          <div className="w-4 h-4"></div>
+                        )}
+                      </div>
                     </TableCell>
                     <TableCell>
                       <span
