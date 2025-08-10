@@ -17,6 +17,10 @@
         "."
       ],
       "cwd": "."
+    },
+    "container-use": {
+      "command": "container-use",
+      "args": ["stdio"]
     }
   }
 }
