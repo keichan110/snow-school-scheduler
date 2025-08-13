@@ -68,9 +68,9 @@ export function ShiftMobileList({
               "mobile-day-item cursor-pointer transition-all duration-300 border rounded-xl p-4",
               "hover:transform hover:-translate-y-0.5 hover:shadow-md",
               {
-                "bg-white border-gray-200 hover:border-blue-400": !isSelected && !isHoliday,
-                "bg-red-50 border-red-200": isHoliday && !isSelected,
-                "bg-blue-50 border-blue-400 transform -translate-y-0.5 shadow-md": isSelected,
+                "bg-background border-border hover:border-blue-400": !isSelected && !isHoliday,
+                "bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-800": isHoliday && !isSelected,
+                "bg-blue-50 dark:bg-blue-950/30 border-blue-400 dark:border-blue-600 transform -translate-y-0.5 shadow-md": isSelected,
                 "opacity-60": !hasShifts && !isHoliday,
               }
             )}
@@ -79,13 +79,13 @@ export function ShiftMobileList({
             <div className="flex items-center gap-3 mb-3">
               <div
                 className={cn("text-2xl font-bold", {
-                  "text-red-600": isHoliday,
-                  "text-gray-900": !isHoliday,
+                  "text-red-600 dark:text-red-400": isHoliday,
+                  "text-foreground": !isHoliday,
                 })}
               >
                 {day}
               </div>
-              <div className="text-sm text-gray-500">{dayOfWeek}</div>
+              <div className="text-sm text-muted-foreground">{dayOfWeek}</div>
             </div>
 
             {/* シフト詳細（横並び） */}
@@ -167,7 +167,7 @@ export function ShiftMobileList({
                 )}
               </div>
             ) : (
-              <div className="text-center py-2 text-gray-400 text-sm">
+              <div className="text-center py-2 text-muted-foreground text-sm">
                 {isHoliday ? "祝日" : "シフトなし"}
               </div>
             )}

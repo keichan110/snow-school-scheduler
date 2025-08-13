@@ -42,13 +42,13 @@ export function ShiftCalendarGrid({
   const getDepartmentBgClass = (department: string): string => {
     switch (department) {
       case "ski":
-        return "bg-ski-200";
+        return "bg-ski-200 dark:bg-ski-800";
       case "snowboard":
-        return "bg-snowboard-200";
+        return "bg-snowboard-200 dark:bg-snowboard-800";
       case "mixed":
-        return "bg-gray-300";
+        return "bg-gray-200 dark:bg-gray-800";
       default:
-        return "bg-gray-300";
+        return "bg-gray-200 dark:bg-gray-800";
     }
   };
 
@@ -63,7 +63,7 @@ export function ShiftCalendarGrid({
         {/* 前月の空白セル */}
         {Array.from({ length: firstDayOfWeek }).map((_, index) => (
           <div key={`empty-${index}`} className="opacity-30 pointer-events-none">
-            <div className="day-card bg-white border-2 border-gray-200 rounded-xl p-3 min-h-[120px] md:min-h-[140px] shadow-lg" />
+            <div className="day-card bg-background border-2 border-border rounded-xl p-3 min-h-[120px] md:min-h-[140px] shadow-lg" />
           </div>
         ))}
 
@@ -85,9 +85,11 @@ export function ShiftCalendarGrid({
                 "day-card cursor-pointer transition-all duration-300 border-2 rounded-xl p-3 min-h-[120px] md:min-h-[140px] flex flex-col shadow-lg",
                 "hover:transform hover:-translate-y-1 hover:shadow-xl",
                 {
-                  "bg-white border-gray-200 hover:border-blue-400": !isSelected && !isHoliday,
-                  "bg-red-50 border-red-200": isHoliday && !isSelected,
-                  "bg-blue-50 border-blue-400 transform -translate-y-1 shadow-xl": isSelected,
+                  "bg-background border-border hover:border-blue-400": !isSelected && !isHoliday,
+                  "bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-800":
+                    isHoliday && !isSelected,
+                  "bg-blue-50 dark:bg-blue-950/30 border-blue-400 dark:border-blue-600 transform -translate-y-1 shadow-xl":
+                    isSelected,
                   "opacity-60": !hasShifts && !isHoliday,
                 }
               )}
@@ -96,13 +98,13 @@ export function ShiftCalendarGrid({
               <div className="flex items-center gap-2 mb-2">
                 <div
                   className={cn("text-lg font-bold", {
-                    "text-red-600": isHoliday,
-                    "text-gray-900": !isHoliday,
+                    "text-red-600 dark:text-red-400": isHoliday,
+                    "text-foreground": !isHoliday,
                   })}
                 >
                   {day}
                 </div>
-                <div className="text-xs text-gray-400 font-medium">{dayOfWeek}</div>
+                <div className="text-xs text-muted-foreground font-medium">{dayOfWeek}</div>
               </div>
 
               {/* シフト詳細表示 */}
@@ -118,19 +120,22 @@ export function ShiftCalendarGrid({
                     >
                       <div className="flex items-center gap-2">
                         {shift.department === "ski" && (
-                          <PersonSimpleSki className="w-3 h-3 text-gray-900" weight="fill" />
+                          <PersonSimpleSki className="w-3 h-3 text-foreground" weight="fill" />
                         )}
                         {shift.department === "snowboard" && (
-                          <PersonSimpleSnowboard className="w-3 h-3 text-gray-900" weight="fill" />
+                          <PersonSimpleSnowboard
+                            className="w-3 h-3 text-foreground"
+                            weight="fill"
+                          />
                         )}
                         {shift.department === "mixed" && (
-                          <Calendar className="w-3 h-3 text-gray-900" weight="fill" />
+                          <Calendar className="w-3 h-3 text-foreground" weight="fill" />
                         )}
-                        <span className="text-gray-900 font-medium text-xs">
+                        <span className="text-foreground font-medium text-xs">
                           {getShiftTypeShort(shift.type)}
                         </span>
                       </div>
-                      <span className="bg-white/90 px-2 py-1 rounded-full text-gray-800 font-bold text-xs min-w-[1.5rem] text-center shadow-sm">
+                      <span className="bg-background/90 px-2 py-1 rounded-full text-foreground font-bold text-xs min-w-[1.5rem] text-center shadow-sm border border-border">
                         {shift.count}
                       </span>
                     </div>
@@ -138,7 +143,7 @@ export function ShiftCalendarGrid({
                 </div>
               ) : (
                 <div className="flex-1 flex items-center justify-center">
-                  <div className="text-center text-xs text-gray-400">
+                  <div className="text-center text-xs text-muted-foreground">
                     {isHoliday ? "祝日" : "シフトなし"}
                   </div>
                 </div>

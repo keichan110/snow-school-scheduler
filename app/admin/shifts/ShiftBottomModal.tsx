@@ -53,13 +53,13 @@ export function ShiftBottomModal({
     // カレンダーグリッドと同じ背景色を使用
     switch (department) {
       case "ski":
-        return "bg-ski-200 text-gray-900";
+        return "bg-ski-200 dark:bg-ski-800";
       case "snowboard":
-        return "bg-snowboard-200 text-gray-900";
+        return "bg-snowboard-200 dark:bg-snowboard-800";
       case "mixed":
-        return "bg-gray-300 text-gray-900";
+        return "bg-gray-200 dark:bg-gray-800";
       default:
-        return "bg-gray-300 text-gray-900";
+        return "bg-gray-200 dark:bg-gray-800";
     }
   };
 
@@ -162,7 +162,7 @@ export function ShiftBottomModal({
                   <div className="flex items-center justify-between mb-2 md:mb-3">
                     <div
                       className={cn(
-                        "px-3 py-2 rounded-lg font-medium text-sm",
+                        "px-3 py-2 rounded-lg font-medium text-sm text-foreground",
                         getShiftBadgeClass(shift.type, shift.department)
                       )}
                     >

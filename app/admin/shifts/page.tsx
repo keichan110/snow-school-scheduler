@@ -170,8 +170,8 @@ export default function ShiftsPage() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <div className="text-red-600 text-lg font-medium mb-2">エラーが発生しました</div>
-          <div className="text-gray-600 text-sm">{error}</div>
+          <div className="text-red-600 dark:text-red-400 text-lg font-medium mb-2">エラーが発生しました</div>
+          <div className="text-muted-foreground text-sm">{error}</div>
           <Button onClick={() => window.location.reload()} className="mt-4">
             再読み込み
           </Button>
@@ -187,8 +187,8 @@ export default function ShiftsPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 md:py-8">
         {/* ページタイトル */}
         <div className="mb-6 md:mb-8 text-center">
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">シフト状況確認</h1>
-          <p className="text-sm md:text-base text-gray-600 px-2">
+          <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-2">シフト状況確認</h1>
+          <p className="text-sm md:text-base text-muted-foreground px-2">
             現在のシフト状況を確認して、新しいシフトが必要な日を選択してください
           </p>
         </div>
@@ -196,7 +196,7 @@ export default function ShiftsPage() {
         {/* 月間シフト状況 */}
         <div className="mb-8">
           {/* 月ナビゲーション - 固定ヘッダー */}
-          <div className="sticky top-20 z-40 backdrop-blur-sm border-b border-gray-200/30 -mx-4 px-4 mb-4">
+          <div className="sticky top-20 z-40 backdrop-blur-sm border-b border-border/30 -mx-4 px-4 mb-4">
             <div className="flex items-center justify-between py-3">
               <Button
                 variant="outline"
@@ -207,7 +207,7 @@ export default function ShiftsPage() {
                 <span className="hidden sm:inline text-sm font-medium">前月</span>
               </Button>
 
-              <h2 className="text-lg md:text-xl font-bold text-gray-900">
+              <h2 className="text-lg md:text-xl font-bold text-foreground">
                 {currentYear}年{currentMonth}月
               </h2>
 
@@ -226,7 +226,7 @@ export default function ShiftsPage() {
             <div className="flex items-center justify-center py-8">
               <div className="text-center">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-                <div className="text-gray-600 mt-2">読み込み中...</div>
+                <div className="text-muted-foreground mt-2">読み込み中...</div>
               </div>
             </div>
           ) : (
