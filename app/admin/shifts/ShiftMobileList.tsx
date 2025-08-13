@@ -1,8 +1,15 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { ShiftStats } from "./types";
+import { ShiftStats, DepartmentType } from "./types";
 import { PersonSimpleSki, PersonSimpleSnowboard, Calendar } from "@phosphor-icons/react";
+import { 
+  getShiftTypeShort, 
+  getDepartmentBgClass, 
+  formatDate,
+  getDaysInMonth
+} from "./utils/shiftUtils";
+import { WEEKDAYS } from "./constants/shiftConstants";
 
 interface ShiftMobileListProps {
   year: number;
@@ -13,7 +20,6 @@ interface ShiftMobileListProps {
   onDateSelect: (date: string) => void;
 }
 
-const weekdays = ["日", "月", "火", "水", "木", "金", "土"];
 
 export function ShiftMobileList({
   year,
@@ -23,36 +29,10 @@ export function ShiftMobileList({
   selectedDate,
   onDateSelect,
 }: ShiftMobileListProps) {
-  const daysInMonth = new Date(year, month, 0).getDate();
+  const daysInMonth = getDaysInMonth(year, month);
 
-  const getShiftTypeShort = (type: string): string => {
-    const typeMap: Record<string, string> = {
-      スキーレッスン: "レッスン",
-      スノーボードレッスン: "レッスン",
-      スキー検定: "検定",
-      スノーボード検定: "検定",
-      県連事業: "県連",
-      月末イベント: "イベント",
-    };
-    return typeMap[type] || type;
-  };
 
-  const getDepartmentBgClass = (department: string): string => {
-    switch (department) {
-      case "ski":
-        return "bg-ski-200 dark:bg-ski-800";
-      case "snowboard":
-        return "bg-snowboard-200 dark:bg-snowboard-800";
-      case "mixed":
-        return "bg-gray-200 dark:bg-gray-800";
-      default:
-        return "bg-gray-200 dark:bg-gray-800";
-    }
-  };
 
-  const formatDate = (year: number, month: number, day: number): string => {
-    return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-  };
 
   return (
     <div className="block sm:hidden space-y-3">
@@ -63,7 +43,7 @@ export function ShiftMobileList({
         const isHoliday = holidays[date] || false;
         const isSelected = selectedDate === date;
         const hasShifts = dayData && dayData.shifts.length > 0;
-        const dayOfWeek = weekdays[new Date(year, month - 1, day).getDay()];
+        const dayOfWeek = WEEKDAYS[new Date(year, month - 1, day).getDay()];
 
         return (
           <div
@@ -101,7 +81,7 @@ export function ShiftMobileList({
                     key={idx}
                     className={cn(
                       "flex items-center justify-between gap-2 rounded-lg px-3 py-2",
-                      getDepartmentBgClass(shift.department)
+                      getDepartmentBgClass(shift.department as DepartmentType)
                     )}
                   >
                     <div className="flex items-center gap-2">

@@ -62,6 +62,8 @@ export interface ShiftSummary {
   count: number
 }
 
+export type DepartmentType = 'ski' | 'snowboard' | 'mixed'
+
 export interface DayData {
   date: string
   shifts: ShiftSummary[]

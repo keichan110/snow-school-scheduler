@@ -6,20 +6,13 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { fetchShifts, fetchDepartments } from "./api";
-import { Shift, Department, ShiftStats, DayData } from "./types";
+import { Shift, Department, ShiftStats, DayData, DepartmentType } from "./types";
 import { ShiftCalendarGrid } from "./ShiftCalendarGrid";
 import { ShiftMobileList } from "./ShiftMobileList";
 import { ShiftBottomModal } from "./ShiftBottomModal";
+import { getDepartmentTypeById } from "./utils/shiftUtils";
+import { HOLIDAYS } from "./constants/shiftConstants";
 
-const holidays = {
-  "2024-01-01": true, // 元日
-  "2024-01-08": true, // 成人の日
-  "2024-02-11": true, // 建国記念の日
-  "2024-02-12": true, // 振替休日
-  "2024-02-23": true, // 天皇誕生日
-  "2023-12-29": true, // 年末休業
-  "2023-12-31": true, // 大晦日
-} as Record<string, boolean>;
 
 export default function ShiftsPage() {
   const now = new Date();
@@ -72,16 +65,10 @@ export default function ShiftsPage() {
         stats[date] = { shifts: [] };
       }
 
-      const department = departments.find((d) => d.id === shift.departmentId);
-      let departmentType: "ski" | "snowboard" | "mixed" = "mixed";
-
-      if (department) {
-        if (department.name.includes("スキー")) {
-          departmentType = "ski";
-        } else if (department.name.includes("スノーボード")) {
-          departmentType = "snowboard";
-        }
-      }
+      const departmentType: DepartmentType = getDepartmentTypeById(
+        shift.departmentId,
+        departments
+      );
 
       // 同じ部門・シフト種別の組み合わせが既に存在するかチェック
       const existingShift = stats[date].shifts.find(
@@ -142,7 +129,7 @@ export default function ShiftsPage() {
     return {
       date,
       shifts: shiftStats[date]?.shifts || [],
-      isHoliday: holidays[date] || false,
+      isHoliday: HOLIDAYS[date] || false,
     };
   };
 
@@ -170,7 +157,9 @@ export default function ShiftsPage() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <div className="text-red-600 dark:text-red-400 text-lg font-medium mb-2">エラーが発生しました</div>
+          <div className="text-red-600 dark:text-red-400 text-lg font-medium mb-2">
+            エラーが発生しました
+          </div>
           <div className="text-muted-foreground text-sm">{error}</div>
           <Button onClick={() => window.location.reload()} className="mt-4">
             再読み込み
@@ -238,7 +227,7 @@ export default function ShiftsPage() {
                     year={currentYear}
                     month={currentMonth}
                     shiftStats={shiftStats}
-                    holidays={holidays}
+                    holidays={HOLIDAYS}
                     selectedDate={selectedDate}
                     onDateSelect={handleDateSelect}
                   />
@@ -250,7 +239,7 @@ export default function ShiftsPage() {
                     year={currentYear}
                     month={currentMonth}
                     shiftStats={shiftStats}
-                    holidays={holidays}
+                    holidays={HOLIDAYS}
                     selectedDate={selectedDate}
                     onDateSelect={handleDateSelect}
                   />

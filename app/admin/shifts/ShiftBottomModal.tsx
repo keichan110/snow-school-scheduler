@@ -13,7 +13,13 @@ import {
   DrawerTitle,
 } from "@/components/ui/drawer";
 import { cn } from "@/lib/utils";
-import { DayData } from "./types";
+import { DayData, DepartmentType } from "./types";
+import { getDepartmentBgClass } from "./utils/shiftUtils";
+import { 
+  SAMPLE_INSTRUCTOR_NAMES, 
+  DEPARTMENT_STYLES, 
+  DEPARTMENT_NAMES 
+} from "./constants/shiftConstants";
 
 interface ShiftBottomModalProps {
   isOpen: boolean;
@@ -49,45 +55,12 @@ export function ShiftBottomModal({
     }
   };
 
-  const getShiftBadgeClass = (type: string, department: string): string => {
-    // カレンダーグリッドと同じ背景色を使用
-    switch (department) {
-      case "ski":
-        return "bg-ski-200 dark:bg-ski-800";
-      case "snowboard":
-        return "bg-snowboard-200 dark:bg-snowboard-800";
-      case "mixed":
-        return "bg-gray-200 dark:bg-gray-800";
-      default:
-        return "bg-gray-200 dark:bg-gray-800";
-    }
-  };
 
   const generateInstructorChips = (
     count: number,
-    departmentType: "ski" | "snowboard" | "mixed"
+    departmentType: DepartmentType
   ) => {
-    const instructorNames = [
-      "田中太郎",
-      "佐藤花子",
-      "鈴木次郎",
-      "高橋美咲",
-      "木村健太",
-      "中村優子",
-      "山田一郎",
-      "伊藤智子",
-      "小林直美",
-      "渡辺大介",
-    ];
-
-    let chipClass = "bg-muted text-muted-foreground hover:bg-muted/80";
-    if (departmentType === "ski") {
-      chipClass =
-        "bg-blue-50 text-blue-700 hover:bg-blue-100 dark:bg-blue-950 dark:text-blue-300 dark:hover:bg-blue-900";
-    } else if (departmentType === "snowboard") {
-      chipClass =
-        "bg-amber-50 text-amber-700 hover:bg-amber-100 dark:bg-amber-950 dark:text-amber-300 dark:hover:bg-amber-900";
-    }
+    const chipClass = DEPARTMENT_STYLES[departmentType].chipClass;
 
     return Array.from({ length: count }).map((_, i) => (
       <div
@@ -98,30 +71,19 @@ export function ShiftBottomModal({
         )}
       >
         <User className="w-3 h-3" weight="fill" />
-        {instructorNames[i % instructorNames.length]}
+        {SAMPLE_INSTRUCTOR_NAMES[i % SAMPLE_INSTRUCTOR_NAMES.length]}
       </div>
     ));
   };
 
   const createDepartmentSection = (
-    departmentName: string,
-    departmentType: "ski" | "snowboard" | "mixed",
+    departmentType: DepartmentType,
     shifts: typeof dayData.shifts,
     icon: React.ReactNode
   ) => {
-    let bgClass = "bg-card";
-    let borderClass = "border-border";
-    let textClass = "text-foreground";
-
-    if (departmentType === "ski") {
-      bgClass = "bg-ski-50/50 dark:bg-ski-950/20";
-      borderClass = "border-ski-200 dark:border-ski-800";
-      textClass = "text-ski-900 dark:text-ski-100";
-    } else if (departmentType === "snowboard") {
-      bgClass = "bg-snowboard-50/50 dark:bg-snowboard-950/20";
-      borderClass = "border-snowboard-200 dark:border-snowboard-800";
-      textClass = "text-snowboard-900 dark:text-snowboard-100";
-    }
+    const departmentName = DEPARTMENT_NAMES[departmentType];
+    const styles = DEPARTMENT_STYLES[departmentType];
+    const { sectionBgClass: bgClass, sectionBorderClass: borderClass, sectionTextClass: textClass } = styles;
 
     return (
       <div
@@ -141,11 +103,7 @@ export function ShiftBottomModal({
                 {departmentName}
               </h4>
               <p className="text-xs text-muted-foreground">
-                {departmentName === "スキー"
-                  ? "Ski"
-                  : departmentName === "スノーボード"
-                  ? "Snowboard"
-                  : "Common"}
+                {styles.label}
               </p>
             </div>
           </div>
@@ -163,7 +121,7 @@ export function ShiftBottomModal({
                     <div
                       className={cn(
                         "px-3 py-2 rounded-lg font-medium text-sm text-foreground",
-                        getShiftBadgeClass(shift.type, shift.department)
+                        getDepartmentBgClass(shift.department as DepartmentType)
                       )}
                     >
                       {shift.type}
@@ -206,28 +164,25 @@ export function ShiftBottomModal({
                 {/* スキー部門 */}
                 {dayData.shifts.filter((s) => s.department === "ski").length > 0 &&
                   createDepartmentSection(
-                    "スキー",
                     "ski",
                     dayData.shifts,
-                    <PersonSimpleSki className="w-5 h-5 text-ski-600" weight="fill" />
+                    <PersonSimpleSki className={cn("w-5 h-5", DEPARTMENT_STYLES.ski.iconColor)} weight="fill" />
                   )}
 
                 {/* スノーボード部門 */}
                 {dayData.shifts.filter((s) => s.department === "snowboard").length > 0 &&
                   createDepartmentSection(
-                    "スノーボード",
                     "snowboard",
                     dayData.shifts,
-                    <PersonSimpleSnowboard className="w-5 h-5 text-snowboard-600" weight="fill" />
+                    <PersonSimpleSnowboard className={cn("w-5 h-5", DEPARTMENT_STYLES.snowboard.iconColor)} weight="fill" />
                   )}
 
                 {/* 共通部門 */}
                 {dayData.shifts.filter((s) => s.department === "mixed").length > 0 &&
                   createDepartmentSection(
-                    "共通",
                     "mixed",
                     dayData.shifts,
-                    <Calendar className="w-5 h-5 text-muted-foreground" weight="fill" />
+                    <Calendar className={cn("w-5 h-5", DEPARTMENT_STYLES.mixed.iconColor)} weight="fill" />
                   )}
               </>
             )}
