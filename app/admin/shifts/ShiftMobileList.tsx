@@ -37,12 +37,17 @@ export function ShiftMobileList({
     return typeMap[type] || type;
   };
 
-  const getShiftBadgeClass = (type: string): string => {
-    if (type.includes("レッスン")) return "bg-emerald-500 hover:bg-emerald-600";
-    if (type.includes("検定")) return "bg-violet-500 hover:bg-violet-600";
-    if (type.includes("県連") || type.includes("イベント"))
-      return "bg-amber-500 hover:bg-amber-600";
-    return "bg-emerald-500 hover:bg-emerald-600";
+  const getDepartmentBgClass = (department: string): string => {
+    switch (department) {
+      case "ski":
+        return "bg-ski-200 dark:bg-ski-800";
+      case "snowboard":
+        return "bg-snowboard-200 dark:bg-snowboard-800";
+      case "mixed":
+        return "bg-gray-200 dark:bg-gray-800";
+      default:
+        return "bg-gray-200 dark:bg-gray-800";
+    }
   };
 
   const formatDate = (year: number, month: number, day: number): string => {
@@ -88,83 +93,39 @@ export function ShiftMobileList({
               <div className="text-sm text-muted-foreground">{dayOfWeek}</div>
             </div>
 
-            {/* シフト詳細（横並び） */}
+            {/* シフト詳細 */}
             {hasShifts ? (
               <div className="space-y-2">
-                {/* スキー部門 */}
-                {dayData.shifts.filter((s) => s.department === "ski").length > 0 && (
-                  <div className="flex items-center gap-2 text-sm">
-                    <PersonSimpleSki className="w-4 h-4 text-ski-600" weight="fill" />
-                    <div className="flex flex-wrap gap-1">
-                      {dayData.shifts
-                        .filter((s) => s.department === "ski")
-                        .map((shift, idx) => (
-                          <div
-                            key={idx}
-                            className={cn(
-                              "inline-flex items-center justify-between px-2 py-1 rounded text-xs font-medium text-white transition-colors",
-                              getShiftBadgeClass(shift.type)
-                            )}
-                          >
-                            <span>{getShiftTypeShort(shift.type)}</span>
-                            <span className="ml-1 bg-background text-foreground px-1 rounded font-bold border border-border">
-                              {shift.count}
-                            </span>
-                          </div>
-                        ))}
+                {dayData.shifts.map((shift, idx) => (
+                  <div
+                    key={idx}
+                    className={cn(
+                      "flex items-center justify-between gap-2 rounded-lg px-3 py-2",
+                      getDepartmentBgClass(shift.department)
+                    )}
+                  >
+                    <div className="flex items-center gap-2">
+                      {shift.department === "ski" && (
+                        <PersonSimpleSki className="w-4 h-4 text-foreground" weight="fill" />
+                      )}
+                      {shift.department === "snowboard" && (
+                        <PersonSimpleSnowboard
+                          className="w-4 h-4 text-foreground"
+                          weight="fill"
+                        />
+                      )}
+                      {shift.department === "mixed" && (
+                        <Calendar className="w-4 h-4 text-foreground" weight="fill" />
+                      )}
+                      <span className="text-foreground font-medium text-sm">
+                        {getShiftTypeShort(shift.type)}
+                      </span>
                     </div>
+                    <span className="bg-background/90 px-2 py-1 rounded-full text-foreground font-bold text-xs min-w-[1.5rem] text-center shadow-sm border border-border">
+                      {shift.count}
+                    </span>
                   </div>
-                )}
-
-                {/* スノーボード部門 */}
-                {dayData.shifts.filter((s) => s.department === "snowboard").length > 0 && (
-                  <div className="flex items-center gap-2 text-sm">
-                    <PersonSimpleSnowboard className="w-4 h-4 text-snowboard-600" weight="fill" />
-                    <div className="flex flex-wrap gap-1">
-                      {dayData.shifts
-                        .filter((s) => s.department === "snowboard")
-                        .map((shift, idx) => (
-                          <div
-                            key={idx}
-                            className={cn(
-                              "inline-flex items-center justify-between px-2 py-1 rounded text-xs font-medium text-white transition-colors",
-                              getShiftBadgeClass(shift.type)
-                            )}
-                          >
-                            <span>{getShiftTypeShort(shift.type)}</span>
-                            <span className="ml-1 bg-background text-foreground px-1 rounded font-bold border border-border">
-                              {shift.count}
-                            </span>
-                          </div>
-                        ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* 共通部門 */}
-                {dayData.shifts.filter((s) => s.department === "mixed").length > 0 && (
-                  <div className="flex items-center gap-2 text-sm">
-                    <Calendar className="w-4 h-4 text-muted-foreground" weight="fill" />
-                    <div className="flex flex-wrap gap-1">
-                      {dayData.shifts
-                        .filter((s) => s.department === "mixed")
-                        .map((shift, idx) => (
-                          <div
-                            key={idx}
-                            className={cn(
-                              "inline-flex items-center justify-between px-2 py-1 rounded text-xs font-medium text-white transition-colors",
-                              getShiftBadgeClass(shift.type)
-                            )}
-                          >
-                            <span>{getShiftTypeShort(shift.type)}</span>
-                            <span className="ml-1 bg-background text-foreground px-1 rounded font-bold border border-border">
-                              {shift.count}
-                            </span>
-                          </div>
-                        ))}
-                    </div>
-                  </div>
-                )}
+                ))}
               </div>
             ) : (
               <div className="text-center py-2 text-muted-foreground text-sm">
