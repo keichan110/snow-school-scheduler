@@ -1,23 +1,23 @@
-import { NextResponse } from 'next/server'
-import { prisma } from '@/lib/db'
-import { InstructorStatus } from '@prisma/client'
+import { NextResponse } from 'next/server';
+import { prisma } from '@/lib/db';
+import { InstructorStatus } from '@prisma/client';
 
 export async function GET(request: Request) {
   try {
-    const { searchParams } = new URL(request.url)
-    const statusParam = searchParams.get('status')
-    
+    const { searchParams } = new URL(request.url);
+    const statusParam = searchParams.get('status');
+
     // statusパラメータのバリデーション
-    let statusFilter: InstructorStatus | undefined = undefined
+    let statusFilter: InstructorStatus | undefined = undefined;
     if (statusParam) {
-      const validStatuses = ['ACTIVE', 'INACTIVE', 'RETIRED'] as const
+      const validStatuses = ['ACTIVE', 'INACTIVE', 'RETIRED'] as const;
       if (validStatuses.includes(statusParam as InstructorStatus)) {
-        statusFilter = statusParam as InstructorStatus
+        statusFilter = statusParam as InstructorStatus;
       }
     }
 
-    const whereClause = statusFilter ? { status: statusFilter } : {}
-    
+    const whereClause = statusFilter ? { status: statusFilter } : {};
+
     const instructors = await prisma.instructor.findMany({
       where: whereClause,
       include: {
@@ -28,22 +28,19 @@ export async function GET(request: Request) {
                 department: {
                   select: {
                     id: true,
-                    name: true
-                  }
-                }
-              }
-            }
-          }
-        }
+                    name: true,
+                  },
+                },
+              },
+            },
+          },
+        },
       },
-      orderBy: [
-        { lastName: 'asc' },
-        { firstName: 'asc' }
-      ]
-    })
+      orderBy: [{ lastName: 'asc' }, { firstName: 'asc' }],
+    });
 
     // レスポンス形式をOpenAPI仕様に合わせて変換
-    const formattedInstructors = instructors.map(instructor => ({
+    const formattedInstructors = instructors.map((instructor) => ({
       id: instructor.id,
       lastName: instructor.lastName,
       firstName: instructor.firstName,
@@ -58,49 +55,49 @@ export async function GET(request: Request) {
         name: ic.certification.name,
         shortName: ic.certification.shortName,
         organization: ic.certification.organization,
-        department: ic.certification.department
-      }))
-    }))
+        department: ic.certification.department,
+      })),
+    }));
 
     return NextResponse.json({
       success: true,
       data: formattedInstructors,
       count: formattedInstructors.length,
       message: null,
-      error: null
-    })
+      error: null,
+    });
   } catch (error) {
-    console.error('Instructors API error:', error)
+    console.error('Instructors API error:', error);
     return NextResponse.json(
-      { 
-        success: false, 
+      {
+        success: false,
         data: null,
         message: null,
-        error: 'Internal server error' 
+        error: 'Internal server error',
       },
       { status: 500 }
-    )
+    );
   }
 }
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json()
-    
+    const body = await request.json();
+
     // 必須フィールドのバリデーション
-    const requiredFields = ['lastName', 'firstName']
-    const missingFields = requiredFields.filter(field => !(field in body))
-    
+    const requiredFields = ['lastName', 'firstName'];
+    const missingFields = requiredFields.filter((field) => !(field in body));
+
     if (missingFields.length > 0) {
       return NextResponse.json(
         {
           success: false,
           data: null,
           message: null,
-          error: `Missing required fields: ${missingFields.join(', ')}`
+          error: `Missing required fields: ${missingFields.join(', ')}`,
         },
         { status: 400 }
-      )
+      );
     }
 
     // statusのバリデーション
@@ -110,10 +107,10 @@ export async function POST(request: Request) {
           success: false,
           data: null,
           message: null,
-          error: 'Invalid status value'
+          error: 'Invalid status value',
         },
         { status: 400 }
-      )
+      );
     }
 
     // 資格IDの存在確認（指定されている場合）
@@ -121,20 +118,20 @@ export async function POST(request: Request) {
       const existingCertifications = await prisma.certification.findMany({
         where: {
           id: { in: body.certificationIds },
-          isActive: true
-        }
-      })
-      
+          isActive: true,
+        },
+      });
+
       if (existingCertifications.length !== body.certificationIds.length) {
         return NextResponse.json(
           {
             success: false,
             data: null,
             message: null,
-            error: 'Some certification IDs are invalid or inactive'
+            error: 'Some certification IDs are invalid or inactive',
           },
           { status: 400 }
-        )
+        );
       }
     }
 
@@ -148,18 +145,18 @@ export async function POST(request: Request) {
           lastNameKana: body.lastNameKana,
           firstNameKana: body.firstNameKana,
           status: body.status || 'ACTIVE',
-          notes: body.notes
-        }
-      })
+          notes: body.notes,
+        },
+      });
 
       // 資格の関連付け（指定されている場合）
       if (body.certificationIds && Array.isArray(body.certificationIds)) {
         await tx.instructorCertification.createMany({
           data: body.certificationIds.map((certId: number) => ({
             instructorId: newInstructor.id,
-            certificationId: certId
-          }))
-        })
+            certificationId: certId,
+          })),
+        });
       }
 
       // 関連データ付きでインストラクターを取得
@@ -173,18 +170,18 @@ export async function POST(request: Request) {
                   department: {
                     select: {
                       id: true,
-                      name: true
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      })
+                      name: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      });
 
-      return instructorWithCertifications
-    })
+      return instructorWithCertifications;
+    });
 
     // レスポンス形式をOpenAPI仕様に合わせて変換
     const formattedInstructor = {
@@ -202,29 +199,29 @@ export async function POST(request: Request) {
         name: ic.certification.name,
         shortName: ic.certification.shortName,
         organization: ic.certification.organization,
-        department: ic.certification.department
-      }))
-    }
+        department: ic.certification.department,
+      })),
+    };
 
     return NextResponse.json(
       {
         success: true,
         data: formattedInstructor,
         message: 'Instructor operation completed successfully',
-        error: null
+        error: null,
       },
       { status: 201 }
-    )
+    );
   } catch (error) {
-    console.error('Instructors API error:', error)
+    console.error('Instructors API error:', error);
     return NextResponse.json(
       {
         success: false,
         data: null,
         message: null,
-        error: 'Internal server error'
+        error: 'Internal server error',
       },
       { status: 500 }
-    )
+    );
   }
 }

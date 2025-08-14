@@ -1,14 +1,14 @@
-import { NextResponse } from 'next/server'
-import { prisma } from '@/lib/db'
+import { NextResponse } from 'next/server';
+import { prisma } from '@/lib/db';
 
 interface Params {
-  params: Promise<{ id: string }>
+  params: Promise<{ id: string }>;
 }
 
 export async function GET(request: Request, context: Params) {
   try {
-    const { id } = await context.params
-    const shiftTypeId = parseInt(id)
+    const { id } = await context.params;
+    const shiftTypeId = parseInt(id);
 
     if (isNaN(shiftTypeId)) {
       return NextResponse.json(
@@ -16,17 +16,17 @@ export async function GET(request: Request, context: Params) {
           success: false,
           data: null,
           message: null,
-          error: 'Resource not found'
+          error: 'Resource not found',
         },
         { status: 404 }
-      )
+      );
     }
 
     const shiftType = await prisma.shiftType.findUnique({
       where: {
-        id: shiftTypeId
-      }
-    })
+        id: shiftTypeId,
+      },
+    });
 
     if (!shiftType) {
       return NextResponse.json(
@@ -34,31 +34,31 @@ export async function GET(request: Request, context: Params) {
           success: false,
           data: null,
           message: null,
-          error: 'Resource not found'
+          error: 'Resource not found',
         },
         { status: 404 }
-      )
+      );
     }
 
-    return NextResponse.json(shiftType)
+    return NextResponse.json(shiftType);
   } catch (error) {
-    console.error('ShiftTypes GET API error:', error)
+    console.error('ShiftTypes GET API error:', error);
     return NextResponse.json(
-      { 
-        success: false, 
+      {
+        success: false,
         data: null,
         message: null,
-        error: 'Internal server error' 
+        error: 'Internal server error',
       },
       { status: 500 }
-    )
+    );
   }
 }
 
 export async function PUT(request: Request, context: Params) {
   try {
-    const { id } = await context.params
-    const shiftTypeId = parseInt(id)
+    const { id } = await context.params;
+    const shiftTypeId = parseInt(id);
 
     if (isNaN(shiftTypeId)) {
       return NextResponse.json(
@@ -66,14 +66,14 @@ export async function PUT(request: Request, context: Params) {
           success: false,
           data: null,
           message: null,
-          error: 'Resource not found'
+          error: 'Resource not found',
         },
         { status: 404 }
-      )
+      );
     }
 
-    const body = await request.json()
-    const { name, isActive = true } = body
+    const body = await request.json();
+    const { name, isActive = true } = body;
 
     if (!name) {
       return NextResponse.json(
@@ -81,18 +81,18 @@ export async function PUT(request: Request, context: Params) {
           success: false,
           data: null,
           message: null,
-          error: 'Validation failed'
+          error: 'Validation failed',
         },
         { status: 400 }
-      )
+      );
     }
 
     // Check if shift type exists
     const existingShiftType = await prisma.shiftType.findUnique({
       where: {
-        id: shiftTypeId
-      }
-    })
+        id: shiftTypeId,
+      },
+    });
 
     if (!existingShiftType) {
       return NextResponse.json(
@@ -100,33 +100,33 @@ export async function PUT(request: Request, context: Params) {
           success: false,
           data: null,
           message: null,
-          error: 'Resource not found'
+          error: 'Resource not found',
         },
         { status: 404 }
-      )
+      );
     }
 
     const shiftType = await prisma.shiftType.update({
       where: {
-        id: shiftTypeId
+        id: shiftTypeId,
       },
       data: {
         name,
-        isActive
-      }
-    })
+        isActive,
+      },
+    });
 
-    return NextResponse.json(shiftType)
+    return NextResponse.json(shiftType);
   } catch (error) {
-    console.error('ShiftTypes PUT API error:', error)
+    console.error('ShiftTypes PUT API error:', error);
     return NextResponse.json(
-      { 
-        success: false, 
+      {
+        success: false,
         data: null,
         message: null,
-        error: 'Internal server error' 
+        error: 'Internal server error',
       },
       { status: 500 }
-    )
+    );
   }
 }

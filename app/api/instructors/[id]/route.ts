@@ -1,26 +1,23 @@
-import { NextResponse } from 'next/server'
-import { prisma } from '@/lib/db'
+import { NextResponse } from 'next/server';
+import { prisma } from '@/lib/db';
 
-export async function GET(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const resolvedParams = await params
-    const id = resolvedParams.id
-    
+    const resolvedParams = await params;
+    const id = resolvedParams.id;
+
     // IDのバリデーション
-    const numericId = parseInt(id, 10)
+    const numericId = parseInt(id, 10);
     if (isNaN(numericId) || numericId <= 0) {
       return NextResponse.json(
         {
           success: false,
           data: null,
           message: null,
-          error: 'Invalid ID format'
+          error: 'Invalid ID format',
         },
         { status: 400 }
-      )
+      );
     }
 
     // インストラクター詳細情報を取得
@@ -34,15 +31,15 @@ export async function GET(
                 department: {
                   select: {
                     id: true,
-                    name: true
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    })
+                    name: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
 
     // インストラクターが見つからない場合
     if (!instructor) {
@@ -51,10 +48,10 @@ export async function GET(
           success: false,
           data: null,
           message: null,
-          error: 'Resource not found'
+          error: 'Resource not found',
         },
         { status: 404 }
-      )
+      );
     }
 
     // レスポンス形式をOpenAPI仕様に合わせて変換
@@ -73,68 +70,65 @@ export async function GET(
         name: ic.certification.name,
         shortName: ic.certification.shortName,
         organization: ic.certification.organization,
-        department: ic.certification.department
-      }))
-    }
+        department: ic.certification.department,
+      })),
+    };
 
     return NextResponse.json({
       success: true,
       data: formattedInstructor,
       message: 'Instructor operation completed successfully',
-      error: null
-    })
+      error: null,
+    });
   } catch (error) {
-    console.error('Instructor API error:', error)
+    console.error('Instructor API error:', error);
     return NextResponse.json(
       {
         success: false,
         data: null,
         message: null,
-        error: 'Internal server error'
+        error: 'Internal server error',
       },
       { status: 500 }
-    )
+    );
   }
 }
 
-export async function PUT(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const resolvedParams = await params
-    const id = resolvedParams.id
-    
+    const resolvedParams = await params;
+    const id = resolvedParams.id;
+
     // IDのバリデーション
-    const numericId = parseInt(id, 10)
+    const numericId = parseInt(id, 10);
     if (isNaN(numericId) || numericId <= 0) {
       return NextResponse.json(
         {
           success: false,
           data: null,
           message: null,
-          error: 'Invalid ID format'
+          error: 'Invalid ID format',
         },
         { status: 400 }
-      )
+      );
     }
 
-    const body = await request.json()
-    
+    const body = await request.json();
+
     // 必須フィールドのバリデーション
-    const requiredFields = ['lastName', 'firstName']
-    const missingFields = requiredFields.filter(field => !(field in body))
-    
+    const requiredFields = ['lastName', 'firstName'];
+    const missingFields = requiredFields.filter((field) => !(field in body));
+
     if (missingFields.length > 0) {
       return NextResponse.json(
         {
           success: false,
           data: null,
           message: null,
-          error: `Missing required fields: ${missingFields.join(', ')}`
+          error: `Missing required fields: ${missingFields.join(', ')}`,
         },
         { status: 400 }
-      )
+      );
     }
 
     // statusのバリデーション
@@ -144,16 +138,16 @@ export async function PUT(
           success: false,
           data: null,
           message: null,
-          error: 'Invalid status value'
+          error: 'Invalid status value',
         },
         { status: 400 }
-      )
+      );
     }
 
     // インストラクターの存在確認
     const existingInstructor = await prisma.instructor.findUnique({
-      where: { id: numericId }
-    })
+      where: { id: numericId },
+    });
 
     if (!existingInstructor) {
       return NextResponse.json(
@@ -161,10 +155,10 @@ export async function PUT(
           success: false,
           data: null,
           message: null,
-          error: 'Resource not found'
+          error: 'Resource not found',
         },
         { status: 404 }
-      )
+      );
     }
 
     // 資格IDの存在確認（指定されている場合）
@@ -172,20 +166,20 @@ export async function PUT(
       const existingCertifications = await prisma.certification.findMany({
         where: {
           id: { in: body.certificationIds },
-          isActive: true
-        }
-      })
-      
+          isActive: true,
+        },
+      });
+
       if (existingCertifications.length !== body.certificationIds.length) {
         return NextResponse.json(
           {
             success: false,
             data: null,
             message: null,
-            error: 'Some certification IDs are invalid or inactive'
+            error: 'Some certification IDs are invalid or inactive',
           },
           { status: 400 }
-        )
+        );
       }
     }
 
@@ -200,25 +194,25 @@ export async function PUT(
           lastNameKana: body.lastNameKana,
           firstNameKana: body.firstNameKana,
           status: body.status || existingInstructor.status,
-          notes: body.notes
-        }
-      })
+          notes: body.notes,
+        },
+      });
 
       // 資格の関連付け更新（指定されている場合）
       if (body.certificationIds && Array.isArray(body.certificationIds)) {
         // 既存の資格関連付けを削除
         await tx.instructorCertification.deleteMany({
-          where: { instructorId: numericId }
-        })
+          where: { instructorId: numericId },
+        });
 
         // 新しい資格関連付けを作成
         if (body.certificationIds.length > 0) {
           await tx.instructorCertification.createMany({
             data: body.certificationIds.map((certId: number) => ({
               instructorId: numericId,
-              certificationId: certId
-            }))
-          })
+              certificationId: certId,
+            })),
+          });
         }
       }
 
@@ -233,18 +227,18 @@ export async function PUT(
                   department: {
                     select: {
                       id: true,
-                      name: true
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      })
+                      name: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      });
 
-      return instructorWithCertifications
-    })
+      return instructorWithCertifications;
+    });
 
     // レスポンス形式をOpenAPI仕様に合わせて変換
     const formattedInstructor = {
@@ -262,26 +256,26 @@ export async function PUT(
         name: ic.certification.name,
         shortName: ic.certification.shortName,
         organization: ic.certification.organization,
-        department: ic.certification.department
-      }))
-    }
+        department: ic.certification.department,
+      })),
+    };
 
     return NextResponse.json({
       success: true,
       data: formattedInstructor,
       message: 'Instructor operation completed successfully',
-      error: null
-    })
+      error: null,
+    });
   } catch (error) {
-    console.error('Instructor API error:', error)
+    console.error('Instructor API error:', error);
     return NextResponse.json(
       {
         success: false,
         data: null,
         message: null,
-        error: 'Internal server error'
+        error: 'Internal server error',
       },
       { status: 500 }
-    )
+    );
   }
 }

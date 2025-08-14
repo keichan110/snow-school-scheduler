@@ -1,5 +1,5 @@
-import { NextResponse } from 'next/server'
-import { prisma } from '@/lib/db'
+import { NextResponse } from 'next/server';
+import { prisma } from '@/lib/db';
 
 export async function GET() {
   try {
@@ -8,55 +8,52 @@ export async function GET() {
         department: {
           select: {
             id: true,
-            name: true
-          }
-        }
+            name: true,
+          },
+        },
       },
-      orderBy: [
-        { department: { name: 'asc' } },
-        { name: 'asc' }
-      ]
-    })
+      orderBy: [{ department: { name: 'asc' } }, { name: 'asc' }],
+    });
 
     return NextResponse.json({
       success: true,
       data: certifications,
       count: certifications.length,
       message: null,
-      error: null
-    })
+      error: null,
+    });
   } catch (error) {
-    console.error('Certifications API error:', error)
+    console.error('Certifications API error:', error);
     return NextResponse.json(
-      { 
-        success: false, 
+      {
+        success: false,
         data: null,
         message: null,
-        error: 'Internal server error' 
+        error: 'Internal server error',
       },
       { status: 500 }
-    )
+    );
   }
 }
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json()
-    
+    const body = await request.json();
+
     // 必須フィールドのバリデーション
-    const requiredFields = ['departmentId', 'name', 'shortName', 'organization']
-    const missingFields = requiredFields.filter(field => !(field in body))
-    
+    const requiredFields = ['departmentId', 'name', 'shortName', 'organization'];
+    const missingFields = requiredFields.filter((field) => !(field in body));
+
     if (missingFields.length > 0) {
       return NextResponse.json(
         {
           success: false,
           data: null,
           message: null,
-          error: `Missing required fields: ${missingFields.join(', ')}`
+          error: `Missing required fields: ${missingFields.join(', ')}`,
         },
         { status: 400 }
-      )
+      );
     }
 
     // 資格作成
@@ -67,37 +64,37 @@ export async function POST(request: Request) {
         shortName: body.shortName,
         organization: body.organization,
         description: body.description,
-        isActive: body.isActive ?? true
+        isActive: body.isActive ?? true,
       },
       include: {
         department: {
           select: {
             id: true,
-            name: true
-          }
-        }
-      }
-    })
+            name: true,
+          },
+        },
+      },
+    });
 
     return NextResponse.json(
       {
         success: true,
         data: certification,
         message: 'Certification created successfully',
-        error: null
+        error: null,
       },
       { status: 201 }
-    )
+    );
   } catch (error) {
-    console.error('Certifications API error:', error)
+    console.error('Certifications API error:', error);
     return NextResponse.json(
       {
         success: false,
         data: null,
         message: null,
-        error: 'Internal server error'
+        error: 'Internal server error',
       },
       { status: 500 }
-    )
+    );
   }
 }

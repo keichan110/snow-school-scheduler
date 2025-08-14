@@ -1,24 +1,26 @@
-import type { InstructorWithCertifications, InstructorFormData } from './types'
+import type { InstructorWithCertifications, InstructorFormData } from './types';
 
 export interface ApiResponse<T> {
-  success: boolean
-  data: T | null
-  message: string | null
-  error: string | null
+  success: boolean;
+  data: T | null;
+  message: string | null;
+  error: string | null;
 }
 
 export async function fetchInstructors(): Promise<InstructorWithCertifications[]> {
-  const response = await fetch('/api/instructors')
-  const result: ApiResponse<InstructorWithCertifications[]> = await response.json()
-  
+  const response = await fetch('/api/instructors');
+  const result: ApiResponse<InstructorWithCertifications[]> = await response.json();
+
   if (!result.success || !result.data) {
-    throw new Error(result.error || 'Failed to fetch instructors')
+    throw new Error(result.error || 'Failed to fetch instructors');
   }
-  
-  return result.data
+
+  return result.data;
 }
 
-export async function createInstructor(data: InstructorFormData): Promise<InstructorWithCertifications> {
+export async function createInstructor(
+  data: InstructorFormData
+): Promise<InstructorWithCertifications> {
   const requestData = {
     lastName: data.lastName,
     firstName: data.firstName,
@@ -26,8 +28,8 @@ export async function createInstructor(data: InstructorFormData): Promise<Instru
     firstNameKana: data.firstNameKana || null,
     status: mapStatusToApi(data.status),
     notes: data.notes || null,
-    certificationIds: data.certificationIds || []
-  }
+    certificationIds: data.certificationIds || [],
+  };
 
   const response = await fetch('/api/instructors', {
     method: 'POST',
@@ -35,18 +37,21 @@ export async function createInstructor(data: InstructorFormData): Promise<Instru
       'Content-Type': 'application/json',
     },
     body: JSON.stringify(requestData),
-  })
+  });
 
-  const result: ApiResponse<InstructorWithCertifications> = await response.json()
-  
+  const result: ApiResponse<InstructorWithCertifications> = await response.json();
+
   if (!result.success || !result.data) {
-    throw new Error(result.error || 'Failed to create instructor')
+    throw new Error(result.error || 'Failed to create instructor');
   }
-  
-  return result.data
+
+  return result.data;
 }
 
-export async function updateInstructor(id: number, data: InstructorFormData): Promise<InstructorWithCertifications> {
+export async function updateInstructor(
+  id: number,
+  data: InstructorFormData
+): Promise<InstructorWithCertifications> {
   const requestData = {
     lastName: data.lastName,
     firstName: data.firstName,
@@ -54,8 +59,8 @@ export async function updateInstructor(id: number, data: InstructorFormData): Pr
     firstNameKana: data.firstNameKana || null,
     status: mapStatusToApi(data.status),
     notes: data.notes || null,
-    certificationIds: data.certificationIds || []
-  }
+    certificationIds: data.certificationIds || [],
+  };
 
   const response = await fetch(`/api/instructors/${id}`, {
     method: 'PUT',
@@ -63,27 +68,29 @@ export async function updateInstructor(id: number, data: InstructorFormData): Pr
       'Content-Type': 'application/json',
     },
     body: JSON.stringify(requestData),
-  })
+  });
 
-  const result: ApiResponse<InstructorWithCertifications> = await response.json()
-  
+  const result: ApiResponse<InstructorWithCertifications> = await response.json();
+
   if (!result.success || !result.data) {
-    throw new Error(result.error || 'Failed to update instructor')
+    throw new Error(result.error || 'Failed to update instructor');
   }
-  
-  return result.data
+
+  return result.data;
 }
 
 // ステータスをAPIフォーマットにマッピング
-function mapStatusToApi(status: 'active' | 'inactive' | 'retired'): 'ACTIVE' | 'INACTIVE' | 'RETIRED' {
+function mapStatusToApi(
+  status: 'active' | 'inactive' | 'retired'
+): 'ACTIVE' | 'INACTIVE' | 'RETIRED' {
   switch (status) {
     case 'active':
-      return 'ACTIVE'
+      return 'ACTIVE';
     case 'inactive':
-      return 'INACTIVE'
+      return 'INACTIVE';
     case 'retired':
-      return 'RETIRED'
+      return 'RETIRED';
     default:
-      return 'ACTIVE'
+      return 'ACTIVE';
   }
 }

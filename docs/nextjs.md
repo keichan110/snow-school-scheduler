@@ -145,7 +145,7 @@ Next.jsは環境変数を適切に処理するため、server-only/client-only�
 
 ```typescript
 // lib/server-api.ts
-import 'server-only'
+import 'server-only';
 
 export async function getSecretData() {
   // サーバーでのみ実行される処理
@@ -153,21 +153,21 @@ export async function getSecretData() {
     headers: {
       authorization: process.env.API_SECRET, // サーバーでのみ利用可能
     },
-  })
-  return response.json()
+  });
+  return response.json();
 }
 ```
 
 ```typescript
 // lib/client-utils.ts
-import 'client-only'
+import 'client-only';
 
 export function getClientSideData() {
   // クライアントでのみ実行される処理
   if (typeof window !== 'undefined') {
-    return localStorage.getItem('user-preference')
+    return localStorage.getItem('user-preference');
   }
-  return null
+  return null;
 }
 ```
 
@@ -230,7 +230,7 @@ Container-Presentationalパターンにより、ロジックとUIを分離して
 async function UserProfileContainer({ userId }: { userId: string }) {
   const user = await fetchUser(userId)
   const posts = await fetchUserPosts(userId)
-  
+
   return <UserProfilePresentation user={user} posts={posts} />
 }
 
@@ -244,7 +244,7 @@ interface Props {
 
 export function UserProfilePresentation({ user, posts }: Props) {
   const [selectedTab, setSelectedTab] = useState('posts')
-  
+
   return (
     <div>
       <UserInfo user={user} />
@@ -276,21 +276,21 @@ export function ContactForm({ onSubmit, defaultValues }: FormProps) {
   // 4. Hooks（状態とエフェクト）
   const [formData, setFormData] = useState(defaultValues || {})
   const [errors, setErrors] = useState<Record<string, string>>({})
-  
+
   useEffect(() => {
     // エフェクトロジック
   }, [])
-  
+
   // 5. Event handlers and methods
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault()
     // バリデーションとsubmitロジック
   }
-  
+
   const validateField = (name: string, value: string) => {
     // バリデーションロジック
   }
-  
+
   // 6. Render logic (JSX)
   return (
     <form onSubmit={handleSubmit}>
@@ -320,7 +320,8 @@ components/
 
 ```typescript
 // user-profile.tsx
-export function UserProfile() {    // コンポーネント名: PascalCase
+export function UserProfile() {
+  // コンポーネント名: PascalCase
   // ...
 }
 ```
@@ -340,14 +341,14 @@ async function ProductPage({ params }: { params: { id: string } }) {
   const productPromise = getProduct(params.id)
   const reviewsPromise = getProductReviews(params.id)
   const recommendationsPromise = getRecommendations(params.id)
-  
+
   // Promise.allで並列実行
   const [product, reviews, recommendations] = await Promise.all([
     productPromise,
     reviewsPromise,
     recommendationsPromise
   ])
-  
+
   return (
     <div>
       <ProductDetails product={product} />
@@ -370,11 +371,11 @@ async function Dashboard() {
       <Suspense fallback={<UserInfoSkeleton />}>
         <UserInfo />
       </Suspense>
-      
+
       <Suspense fallback={<ChartsSkeleton />}>
         <DashboardCharts />
       </Suspense>
-      
+
       <Suspense fallback={<ActivitySkeleton />}>
         <RecentActivity />
       </Suspense>
@@ -392,16 +393,16 @@ async function UserInfo() {
 
 ```typescript
 // lib/preload.ts
-const cache = new Map()
+const cache = new Map();
 
 export function preloadUser(id: string) {
   if (!cache.has(id)) {
-    cache.set(id, fetchUser(id))
+    cache.set(id, fetchUser(id));
   }
 }
 
 export function getUser(id: string) {
-  return cache.get(id) ?? fetchUser(id)
+  return cache.get(id) ?? fetchUser(id);
 }
 ```
 
@@ -425,26 +426,26 @@ export function getUser(id: string) {
 ```typescript
 // ✅ 推奨: 粒度の細かい状態分割
 function UserProfile({ userId }: { userId: string }) {
-  const [userName, setUserName] = useState("")
-  const [userStats, setUserStats] = useState(null)
-  const [activities, setActivities] = useState([])
-  const [friends, setFriends] = useState([])
-  
+  const [userName, setUserName] = useState('');
+  const [userStats, setUserStats] = useState(null);
+  const [activities, setActivities] = useState([]);
+  const [friends, setFriends] = useState([]);
+
   useEffect(() => {
     fetchUserData(userId).then((userData) => {
-      setUserName(userData.name)
-      setUserStats(userData.stats)
-      setActivities(userData.recentActivities)
-      setFriends(userData.friends)
-    })
-  }, [userId])
-  
+      setUserName(userData.name);
+      setUserStats(userData.stats);
+      setActivities(userData.recentActivities);
+      setFriends(userData.friends);
+    });
+  }, [userId]);
+
   // ...
 }
 
 // ❌ 避ける: 単一の巨大な状態
 function UserProfile({ userId }: { userId: string }) {
-  const [user, setUser] = useState({}) // 巨大なオブジェクト
+  const [user, setUser] = useState({}); // 巨大なオブジェクト
   // 一部の変更で全体が再レンダリング
 }
 ```
@@ -460,13 +461,13 @@ const ThemeContext = createContext<{
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setTheme] = useState<'light' | 'dark'>('light')
-  
+
   const toggleTheme = useCallback(() => {
     setTheme(prev => prev === 'light' ? 'dark' : 'light')
   }, [])
-  
+
   const value = useMemo(() => ({ theme, toggleTheme }), [theme, toggleTheme])
-  
+
   return (
     <ThemeContext.Provider value={value}>
       {children}
@@ -515,33 +516,32 @@ Server Actionsではtry/catchでエラーを適切に処理：
 
 ```typescript
 // app/actions/user.ts
-"use server"
+'use server';
 
 export async function updateUser(formData: FormData) {
   try {
-    const userId = formData.get('userId') as string
-    const name = formData.get('name') as string
-    
+    const userId = formData.get('userId') as string;
+    const name = formData.get('name') as string;
+
     // バリデーション
     if (!userId || !name) {
-      return { success: false, error: '必須項目が不足しています' }
+      return { success: false, error: '必須項目が不足しています' };
     }
-    
+
     // データベース更新
     await db.user.update({
       where: { id: userId },
-      data: { name }
-    })
-    
-    revalidatePath('/dashboard/profile')
-    return { success: true }
-    
+      data: { name },
+    });
+
+    revalidatePath('/dashboard/profile');
+    return { success: true };
   } catch (error) {
-    console.error('User update error:', error)
-    return { 
-      success: false, 
-      error: 'ユーザー情報の更新に失敗しました。再度お試しください。' 
-    }
+    console.error('User update error:', error);
+    return {
+      success: false,
+      error: 'ユーザー情報の更新に失敗しました。再度お試しください。',
+    };
   }
 }
 ```
@@ -554,31 +554,27 @@ API routesでは一貫したエラーレスポンス形式を使用：
 // app/api/users/route.ts
 export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url)
-    const page = searchParams.get('page') || '1'
-    
+    const { searchParams } = new URL(request.url);
+    const page = searchParams.get('page') || '1';
+
     // 入力値検証
     if (isNaN(Number(page))) {
       return NextResponse.json(
         { success: false, error: 'Invalid page parameter' },
         { status: 400 }
-      )
+      );
     }
-    
-    const users = await getUsersWithPagination(Number(page))
-    
+
+    const users = await getUsersWithPagination(Number(page));
+
     return NextResponse.json({
       success: true,
       data: users,
-      meta: { page: Number(page) }
-    })
-    
+      meta: { page: Number(page) },
+    });
   } catch (error) {
-    console.error('Users API error:', error)
-    return NextResponse.json(
-      { success: false, error: 'Internal server error' },
-      { status: 500 }
-    )
+    console.error('Users API error:', error);
+    return NextResponse.json({ success: false, error: 'Internal server error' }, { status: 500 });
   }
 }
 ```
@@ -592,11 +588,11 @@ import { notFound } from 'next/navigation'
 
 async function ProductPage({ params }: { params: { id: string } }) {
   const product = await getProduct(params.id)
-  
+
   if (!product) {
     notFound() // not-found.tsxページを表示
   }
-  
+
   return <ProductDetails product={product} />
 }
 ```
@@ -625,7 +621,7 @@ const MapComponent = dynamic(() => import('./MapComponent'), {
 
 function Dashboard() {
   const [showChart, setShowChart] = useState(false)
-  
+
   return (
     <div>
       <button onClick={() => setShowChart(true)}>
@@ -652,7 +648,7 @@ function ScrollToTopButton() {
       smooth: true
     })
   }
-  
+
   return (
     <button onClick={handleScrollToTop}>
       ↑ トップへ戻る
@@ -669,20 +665,16 @@ function ScrollToTopButton() {
 // next.config.js
 const withBundleAnalyzer = require('@next/bundle-analyzer')({
   enabled: process.env.ANALYZE === 'true',
-})
+});
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   experimental: {
-    optimizePackageImports: [
-      'lucide-react',
-      '@heroicons/react',
-      'date-fns'
-    ],
+    optimizePackageImports: ['lucide-react', '@heroicons/react', 'date-fns'],
   },
-}
+};
 
-module.exports = withBundleAnalyzer(nextConfig)
+module.exports = withBundleAnalyzer(nextConfig);
 ```
 
 ### 画像最適化
@@ -723,18 +715,18 @@ function ProductGrid({ products }: { products: Product[] }) {
 
 ```typescript
 // app/actions/admin.ts
-"use server"
+'use server';
 
-import { auth } from '@/lib/auth'
-import { redirect } from 'next/navigation'
+import { auth } from '@/lib/auth';
+import { redirect } from 'next/navigation';
 
 export async function adminAction(formData: FormData) {
-  const session = await auth()
-  
+  const session = await auth();
+
   if (!session?.user || session.user.role !== 'admin') {
-    redirect('/unauthorized')
+    redirect('/unauthorized');
   }
-  
+
   // 管理者のみが実行可能な処理
   // ...
 }
@@ -746,32 +738,26 @@ APIルートではトークン検証やIPフィルタリングを実装：
 
 ```typescript
 // middleware.ts
-import { NextResponse } from 'next/server'
-import type { NextRequest } from 'next/server'
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
 
 export function middleware(request: NextRequest) {
   // API routes認証
   if (request.nextUrl.pathname.startsWith('/api/admin')) {
-    const token = request.headers.get('authorization')
-    
+    const token = request.headers.get('authorization');
+
     if (!token || !verifyAdminToken(token)) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      )
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
   }
-  
+
   // レート制限
-  const ip = request.ip ?? '127.0.0.1'
+  const ip = request.ip ?? '127.0.0.1';
   if (isRateLimited(ip)) {
-    return NextResponse.json(
-      { error: 'Too many requests' },
-      { status: 429 }
-    )
+    return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
   }
-  
-  return NextResponse.next()
+
+  return NextResponse.next();
 }
 ```
 
@@ -781,14 +767,14 @@ SQLインジェクションを防ぐためパラメータ化クエリを使用�
 
 ```typescript
 // lib/db.ts
-import { sql } from '@vercel/postgres'
+import { sql } from '@vercel/postgres';
 
 export async function getUserById(id: string) {
   // ✅ 推奨: パラメータ化クエリ
   const result = await sql`
     SELECT id, name, email FROM users WHERE id = ${id}
-  `
-  return result.rows[0]
+  `;
+  return result.rows[0];
 }
 
 // ❌ 避ける: 文字列結合
@@ -826,24 +812,24 @@ pages/
 ```typescript
 // types/user.ts
 export interface UserProfile {
-  id: string
-  userName: string          // camelCase
-  emailAddress: string
-  createdAt: Date
-  lastLoginAt?: Date
+  id: string;
+  userName: string; // camelCase
+  emailAddress: string;
+  createdAt: Date;
+  lastLoginAt?: Date;
 }
 
 export interface ApiResponse<T> {
-  success: boolean
-  data?: T
-  errorMessage?: string     // camelCase
+  success: boolean;
+  data?: T;
+  errorMessage?: string; // camelCase
 }
 
 // props/methods
 interface ComponentProps {
-  onSubmit: (data: FormData) => void    // camelCase
-  initialValue?: string
-  isLoading?: boolean
+  onSubmit: (data: FormData) => void; // camelCase
+  initialValue?: string;
+  isLoading?: boolean;
 }
 ```
 
@@ -875,22 +861,26 @@ Server/Client Componentを明確に区別する命名：
 
 ```typescript
 // ✅ 推奨: 機能的な命名で区別
-function ServerUserList() {      // Server Component
+function ServerUserList() {
+  // Server Component
   // サーバーサイド処理
 }
 
-function InteractiveUserList() { // Client Component  
-  "use client"
+function InteractiveUserList() {
+  // Client Component
+  'use client';
   // クライアントサイド処理
 }
 
 // または具体的な命名
-function UserListContainer() {   // Server Component
+function UserListContainer() {
+  // Server Component
   // データフェッチ
 }
 
-function UserListPresentation() { // Client Component
-  "use client"
+function UserListPresentation() {
+  // Client Component
+  'use client';
   // インタラクティブUI
 }
 ```
@@ -922,27 +912,27 @@ function UserListPresentation() { // Client Component
 ```typescript
 // types/api.ts
 export interface ApiSuccessResponse<T> {
-  success: true
-  data: T
+  success: true;
+  data: T;
   meta?: {
-    pagination?: PaginationMeta
-    requestId: string
-  }
+    pagination?: PaginationMeta;
+    requestId: string;
+  };
 }
 
 export interface ApiErrorResponse {
-  success: false
-  error: string
-  code?: string
-  details?: Record<string, string[]>
+  success: false;
+  error: string;
+  code?: string;
+  details?: Record<string, string[]>;
 }
 
-export type ApiResponse<T> = ApiSuccessResponse<T> | ApiErrorResponse
+export type ApiResponse<T> = ApiSuccessResponse<T> | ApiErrorResponse;
 
 // 使用例
 async function fetchUsers(): Promise<ApiResponse<User[]>> {
-  const response = await fetch('/api/users')
-  return response.json()
+  const response = await fetch('/api/users');
+  return response.json();
 }
 ```
 
@@ -950,46 +940,44 @@ async function fetchUsers(): Promise<ApiResponse<User[]>> {
 
 ```typescript
 // lib/action-types.ts
-export type ActionResult<T = void> = 
+export type ActionResult<T = void> =
   | { success: true; data: T }
-  | { success: false; error: string; field?: string }
+  | { success: false; error: string; field?: string };
 
 // app/actions/user.ts
-"use server"
+('use server');
 
-import { z } from 'zod'
+import { z } from 'zod';
 
 const UpdateUserSchema = z.object({
   name: z.string().min(1, '名前は必須です'),
   email: z.string().email('有効なメールアドレスを入力してください'),
-})
+});
 
-export async function updateUser(
-  formData: FormData
-): Promise<ActionResult<User>> {
+export async function updateUser(formData: FormData): Promise<ActionResult<User>> {
   try {
     const validatedFields = UpdateUserSchema.safeParse({
       name: formData.get('name'),
       email: formData.get('email'),
-    })
+    });
 
     if (!validatedFields.success) {
       return {
         success: false,
         error: validatedFields.error.errors[0].message,
         field: validatedFields.error.errors[0].path[0] as string,
-      }
+      };
     }
 
     const updatedUser = await db.user.update({
       where: { id: userId },
       data: validatedFields.data,
-    })
+    });
 
-    revalidatePath('/profile')
-    return { success: true, data: updatedUser }
+    revalidatePath('/profile');
+    return { success: true, data: updatedUser };
   } catch (error) {
-    return { success: false, error: 'ユーザー更新に失敗しました' }
+    return { success: false, error: 'ユーザー更新に失敗しました' };
   }
 }
 ```
@@ -1006,48 +994,48 @@ Next.js 15では、GETルートハンドラとクライアントルーターキ�
 // app/api/products/route.ts
 // ✅ 推奨: 明示的なキャッシュ設定
 export async function GET() {
-  const products = await fetchProducts()
-  
+  const products = await fetchProducts();
+
   return Response.json(products, {
     headers: {
-      'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400'
-    }
-  })
+      'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400',
+    },
+  });
 }
 
 // 静的なルートハンドラとして強制する場合
-export const dynamic = 'force-static'
+export const dynamic = 'force-static';
 ```
 
 ### データキャッシュ戦略
 
 ```typescript
 // lib/cache.ts
-import { unstable_cache } from 'next/cache'
+import { unstable_cache } from 'next/cache';
 
 // 長期間キャッシュ（商品情報など）
 export const getCachedProducts = unstable_cache(
   async () => {
-    return await fetchProducts()
+    return await fetchProducts();
   },
   ['products'],
   {
     revalidate: 3600, // 1時間
-    tags: ['products']
+    tags: ['products'],
   }
-)
+);
 
 // 短期間キャッシュ（ユーザー情報など）
 export const getCachedUser = unstable_cache(
   async (userId: string) => {
-    return await fetchUser(userId)
+    return await fetchUser(userId);
   },
   ['user'],
   {
     revalidate: 300, // 5分
-    tags: ['user']
+    tags: ['user'],
   }
-)
+);
 ```
 
 ### ISR（Incremental Static Regeneration）
@@ -1063,11 +1051,11 @@ export async function generateStaticParams() {
 
 export default async function BlogPost({ params }: { params: { slug: string } }) {
   const post = await getPost(params.slug)
-  
+
   if (!post) {
     notFound()
   }
-  
+
   return <BlogPostContent post={post} />
 }
 
@@ -1090,9 +1078,9 @@ const nextConfig = {
     defaultLocale: 'ja',
     localeDetection: true,
   },
-}
+};
 
-module.exports = nextConfig
+module.exports = nextConfig;
 ```
 
 ```typescript
@@ -1109,7 +1097,7 @@ export default async function LocaleLayout({
   params: { locale: string }
 }) {
   const messages = await getMessages(locale)
-  
+
   return (
     <html lang={locale}>
       <body>
@@ -1183,22 +1171,22 @@ describe('UserProfile', () => {
       name: 'テストユーザー',
       email: 'test@example.com'
     }
-    
+
     render(<UserProfile user={mockUser} />)
-    
+
     expect(screen.getByText('テストユーザー')).toBeInTheDocument()
     expect(screen.getByText('test@example.com')).toBeInTheDocument()
   })
-  
+
   it('編集モードの切り替えが動作する', async () => {
     const user = userEvent.setup()
     const mockUser = { id: '1', name: 'テストユーザー', email: 'test@example.com' }
-    
+
     render(<UserProfile user={mockUser} />)
-    
+
     const editButton = screen.getByRole('button', { name: '編集' })
     await user.click(editButton)
-    
+
     expect(screen.getByDisplayValue('テストユーザー')).toBeInTheDocument()
   })
 })
@@ -1208,66 +1196,66 @@ describe('UserProfile', () => {
 
 ```typescript
 // __tests__/actions/user.test.ts
-import { updateUser } from '@/app/actions/user'
+import { updateUser } from '@/app/actions/user';
 
 // Server Actionsのテスト
 describe('updateUser', () => {
   it('有効なデータでユーザーを更新する', async () => {
-    const formData = new FormData()
-    formData.append('userId', '1')
-    formData.append('name', '更新されたユーザー')
-    formData.append('email', 'updated@example.com')
-    
-    const result = await updateUser(formData)
-    
-    expect(result.success).toBe(true)
+    const formData = new FormData();
+    formData.append('userId', '1');
+    formData.append('name', '更新されたユーザー');
+    formData.append('email', 'updated@example.com');
+
+    const result = await updateUser(formData);
+
+    expect(result.success).toBe(true);
     if (result.success) {
-      expect(result.data.name).toBe('更新されたユーザー')
+      expect(result.data.name).toBe('更新されたユーザー');
     }
-  })
-  
+  });
+
   it('無効なメールアドレスでエラーを返す', async () => {
-    const formData = new FormData()
-    formData.append('userId', '1')
-    formData.append('name', 'テストユーザー')
-    formData.append('email', 'invalid-email')
-    
-    const result = await updateUser(formData)
-    
-    expect(result.success).toBe(false)
+    const formData = new FormData();
+    formData.append('userId', '1');
+    formData.append('name', 'テストユーザー');
+    formData.append('email', 'invalid-email');
+
+    const result = await updateUser(formData);
+
+    expect(result.success).toBe(false);
     if (!result.success) {
-      expect(result.error).toContain('有効なメールアドレス')
+      expect(result.error).toContain('有効なメールアドレス');
     }
-  })
-})
+  });
+});
 ```
 
 ### E2Eテスト（Playwright）
 
 ```typescript
 // tests/e2e/user-management.spec.ts
-import { test, expect } from '@playwright/test'
+import { test, expect } from '@playwright/test';
 
 test.describe('ユーザー管理', () => {
   test('ユーザープロフィールの更新', async ({ page }) => {
-    await page.goto('/profile')
-    
+    await page.goto('/profile');
+
     // 編集ボタンをクリック
-    await page.click('[data-testid="edit-profile-button"]')
-    
+    await page.click('[data-testid="edit-profile-button"]');
+
     // 名前を変更
-    await page.fill('[data-testid="name-input"]', '新しい名前')
-    
+    await page.fill('[data-testid="name-input"]', '新しい名前');
+
     // 保存ボタンをクリック
-    await page.click('[data-testid="save-button"]')
-    
+    await page.click('[data-testid="save-button"]');
+
     // 成功メッセージを確認
-    await expect(page.locator('[data-testid="success-message"]')).toBeVisible()
-    
+    await expect(page.locator('[data-testid="success-message"]')).toBeVisible();
+
     // 新しい名前が表示されることを確認
-    await expect(page.locator('[data-testid="user-name"]')).toHaveText('新しい名前')
-  })
-})
+    await expect(page.locator('[data-testid="user-name"]')).toHaveText('新しい名前');
+  });
+});
 ```
 
 ---
@@ -1278,7 +1266,7 @@ test.describe('ユーザー管理', () => {
 
 ```typescript
 // lib/web-vitals.ts
-import { getCLS, getFID, getFCP, getLCP, getTTFB } from 'web-vitals'
+import { getCLS, getFID, getFCP, getLCP, getTTFB } from 'web-vitals';
 
 function sendToAnalytics(metric: any) {
   // Google Analytics、Vercel Analytics等に送信
@@ -1287,15 +1275,15 @@ function sendToAnalytics(metric: any) {
     event_category: 'Web Vitals',
     event_label: metric.id,
     non_interaction: true,
-  })
+  });
 }
 
 export function reportWebVitals() {
-  getCLS(sendToAnalytics)
-  getFID(sendToAnalytics) // または getINP
-  getFCP(sendToAnalytics)
-  getLCP(sendToAnalytics)
-  getTTFB(sendToAnalytics)
+  getCLS(sendToAnalytics);
+  getFID(sendToAnalytics); // または getINP
+  getFCP(sendToAnalytics);
+  getLCP(sendToAnalytics);
+  getTTFB(sendToAnalytics);
 }
 ```
 
@@ -1326,7 +1314,7 @@ export default function RootLayout({
 // next.config.js
 const withBundleAnalyzer = require('@next/bundle-analyzer')({
   enabled: process.env.ANALYZE === 'true',
-})
+});
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -1335,21 +1323,21 @@ const nextConfig = {
     bundlePagesExternals: false,
     outputFileTracingRoot: path.join(__dirname, '../../'),
   },
-  
+
   // webpack設定でサイズ制限
   webpack: (config, { dev, isServer }) => {
     if (!dev && !isServer) {
       config.performance = {
         maxAssetSize: 250000, // 250KB
         maxEntrypointSize: 250000,
-        hints: 'error'
-      }
+        hints: 'error',
+      };
     }
-    return config
+    return config;
   },
-}
+};
 
-module.exports = withBundleAnalyzer(nextConfig)
+module.exports = withBundleAnalyzer(nextConfig);
 ```
 
 ---
@@ -1409,33 +1397,33 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '18'
           cache: 'npm'
-      
+
       - name: Install dependencies
         run: npm ci
-      
+
       - name: Type check
         run: npm run type-check
-      
+
       - name: Lint
         run: npm run lint
-      
+
       - name: Test
         run: npm run test
-      
+
       - name: E2E tests
         run: npm run test:e2e
-      
+
       - name: Build
         run: npm run build
         env:
           ANALYZE: true
-      
+
       - name: Bundle size check
         run: npm run size-check
 
@@ -1481,59 +1469,56 @@ const nextConfig = {
           },
         ],
       },
-    ]
+    ];
   },
-}
+};
 ```
 
 ### 環境変数の安全な管理
 
 ```typescript
 // lib/env.ts
-import { z } from 'zod'
+import { z } from 'zod';
 
 const envSchema = z.object({
   // サーバーサイドのみ
   DATABASE_URL: z.string().url(),
   API_SECRET: z.string().min(32),
-  
+
   // クライアントサイド（NEXT_PUBLIC_プレフィックス必須）
   NEXT_PUBLIC_APP_URL: z.string().url(),
   NEXT_PUBLIC_ANALYTICS_ID: z.string().optional(),
-})
+});
 
-export const env = envSchema.parse(process.env)
+export const env = envSchema.parse(process.env);
 
 // 使用例
 // サーバーサイドでのみ利用可能
-const dbConnection = env.DATABASE_URL
+const dbConnection = env.DATABASE_URL;
 
 // クライアントサイドでも利用可能
-const analyticsId = env.NEXT_PUBLIC_ANALYTICS_ID
+const analyticsId = env.NEXT_PUBLIC_ANALYTICS_ID;
 ```
 
 ### CSRF対策
 
 ```typescript
 // middleware.ts
-import { NextResponse } from 'next/server'
-import type { NextRequest } from 'next/server'
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
 
 export function middleware(request: NextRequest) {
   // API routesのCSRF保護
   if (request.method !== 'GET' && request.nextUrl.pathname.startsWith('/api/')) {
-    const origin = request.headers.get('origin')
-    const host = request.headers.get('host')
-    
+    const origin = request.headers.get('origin');
+    const host = request.headers.get('host');
+
     if (!origin || new URL(origin).host !== host) {
-      return NextResponse.json(
-        { error: 'CSRF token mismatch' },
-        { status: 403 }
-      )
+      return NextResponse.json({ error: 'CSRF token mismatch' }, { status: 403 });
     }
   }
-  
-  return NextResponse.next()
+
+  return NextResponse.next();
 }
 ```
 

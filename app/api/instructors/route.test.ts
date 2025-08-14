@@ -1,32 +1,31 @@
-import { GET, POST } from './route'
-import { prisma } from '@/lib/db'
-import { NextResponse } from 'next/server'
-import { InstructorStatus } from '@prisma/client'
-
+import { GET, POST } from './route';
+import { prisma } from '@/lib/db';
+import { NextResponse } from 'next/server';
+import { InstructorStatus } from '@prisma/client';
 
 type Instructor = {
-  id: number
-  lastName: string
-  firstName: string
-  lastNameKana: string | null
-  firstNameKana: string | null
-  status: InstructorStatus
-  notes: string | null
-  createdAt: Date
-  updatedAt: Date
+  id: number;
+  lastName: string;
+  firstName: string;
+  lastNameKana: string | null;
+  firstNameKana: string | null;
+  status: InstructorStatus;
+  notes: string | null;
+  createdAt: Date;
+  updatedAt: Date;
   certifications: {
     certification: {
-      id: number
-      name: string
-      shortName: string | null
-      organization: string
+      id: number;
+      name: string;
+      shortName: string | null;
+      organization: string;
       department: {
-        id: number
-        name: string
-      }
-    }
-  }[]
-}
+        id: number;
+        name: string;
+      };
+    };
+  }[];
+};
 
 // Prismaクライアントをモック化
 jest.mock('@/lib/db', () => ({
@@ -44,27 +43,36 @@ jest.mock('@/lib/db', () => ({
     },
     $transaction: jest.fn(),
   },
-}))
+}));
 
 // NextResponseをモック化
 jest.mock('next/server', () => ({
   NextResponse: {
     json: jest.fn(),
   },
-}))
+}));
 
-const mockPrisma = prisma as jest.Mocked<typeof prisma>
-const mockInstructorFindMany = mockPrisma.instructor.findMany as jest.MockedFunction<typeof prisma.instructor.findMany>
-const mockInstructorCreate = mockPrisma.instructor.create as jest.MockedFunction<typeof prisma.instructor.create>
-const mockInstructorFindUnique = mockPrisma.instructor.findUnique as jest.MockedFunction<typeof prisma.instructor.findUnique>
-const mockCertificationFindMany = mockPrisma.certification.findMany as jest.MockedFunction<typeof prisma.certification.findMany>
-const mockInstructorCertificationCreateMany = mockPrisma.instructorCertification.createMany as jest.MockedFunction<typeof prisma.instructorCertification.createMany>
-const mockTransaction = mockPrisma.$transaction as jest.MockedFunction<typeof prisma.$transaction>
-const mockNextResponse = NextResponse as jest.Mocked<typeof NextResponse>
+const mockPrisma = prisma as jest.Mocked<typeof prisma>;
+const mockInstructorFindMany = mockPrisma.instructor.findMany as jest.MockedFunction<
+  typeof prisma.instructor.findMany
+>;
+const mockInstructorCreate = mockPrisma.instructor.create as jest.MockedFunction<
+  typeof prisma.instructor.create
+>;
+const mockInstructorFindUnique = mockPrisma.instructor.findUnique as jest.MockedFunction<
+  typeof prisma.instructor.findUnique
+>;
+const mockCertificationFindMany = mockPrisma.certification.findMany as jest.MockedFunction<
+  typeof prisma.certification.findMany
+>;
+const mockInstructorCertificationCreateMany = mockPrisma.instructorCertification
+  .createMany as jest.MockedFunction<typeof prisma.instructorCertification.createMany>;
+const mockTransaction = mockPrisma.$transaction as jest.MockedFunction<typeof prisma.$transaction>;
+const mockNextResponse = NextResponse as jest.Mocked<typeof NextResponse>;
 
 describe('GET /api/instructors', () => {
   beforeEach(() => {
-    jest.clearAllMocks()
+    jest.clearAllMocks();
     // NextResponse.jsonのデフォルトモック実装
     mockNextResponse.json.mockImplementation((data, init) => {
       return {
@@ -85,9 +93,9 @@ describe('GET /api/instructors', () => {
         formData: jest.fn(),
         text: jest.fn(),
         [Symbol.for('NextResponse')]: true,
-      } as unknown as NextResponse
-    })
-  })
+      } as unknown as NextResponse;
+    });
+  });
 
   describe('正常系', () => {
     it('インストラクターデータが資格情報付きで正しく返されること', async () => {
@@ -112,11 +120,11 @@ describe('GET /api/instructors', () => {
                 organization: 'SAJ',
                 department: {
                   id: 1,
-                  name: 'スキー'
-                }
-              }
-            }
-          ]
+                  name: 'スキー',
+                },
+              },
+            },
+          ],
         },
         {
           id: 2,
@@ -137,20 +145,20 @@ describe('GET /api/instructors', () => {
                 organization: 'JSBA',
                 department: {
                   id: 2,
-                  name: 'スノーボード'
-                }
-              }
-            }
-          ]
-        }
-      ]
+                  name: 'スノーボード',
+                },
+              },
+            },
+          ],
+        },
+      ];
 
-      mockInstructorFindMany.mockResolvedValue(mockInstructors)
+      mockInstructorFindMany.mockResolvedValue(mockInstructors);
 
-      const mockRequest = new Request('http://localhost:3000/api/instructors')
+      const mockRequest = new Request('http://localhost:3000/api/instructors');
 
       // Act
-      await GET(mockRequest)
+      await GET(mockRequest);
 
       // Assert
       expect(mockInstructorFindMany).toHaveBeenCalledWith({
@@ -163,19 +171,16 @@ describe('GET /api/instructors', () => {
                   department: {
                     select: {
                       id: true,
-                      name: true
-                    }
-                  }
-                }
-              }
-            }
-          }
+                      name: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
         },
-        orderBy: [
-          { lastName: 'asc' },
-          { firstName: 'asc' }
-        ]
-      })
+        orderBy: [{ lastName: 'asc' }, { firstName: 'asc' }],
+      });
 
       expect(mockNextResponse.json).toHaveBeenCalledWith({
         success: true,
@@ -198,10 +203,10 @@ describe('GET /api/instructors', () => {
                 organization: 'SAJ',
                 department: {
                   id: 1,
-                  name: 'スキー'
-                }
-              }
-            ]
+                  name: 'スキー',
+                },
+              },
+            ],
           },
           {
             id: 2,
@@ -221,17 +226,17 @@ describe('GET /api/instructors', () => {
                 organization: 'JSBA',
                 department: {
                   id: 2,
-                  name: 'スノーボード'
-                }
-              }
-            ]
-          }
+                  name: 'スノーボード',
+                },
+              },
+            ],
+          },
         ],
         count: 2,
         message: null,
-        error: null
-      })
-    })
+        error: null,
+      });
+    });
 
     it('statusパラメータでフィルタリングされること', async () => {
       // Arrange
@@ -246,16 +251,16 @@ describe('GET /api/instructors', () => {
           notes: null,
           createdAt: new Date('2024-01-01'),
           updatedAt: new Date('2024-01-01'),
-          certifications: []
-        }
-      ]
+          certifications: [],
+        },
+      ];
 
-      mockInstructorFindMany.mockResolvedValue(mockInstructors)
+      mockInstructorFindMany.mockResolvedValue(mockInstructors);
 
-      const mockRequest = new Request('http://localhost:3000/api/instructors?status=ACTIVE')
+      const mockRequest = new Request('http://localhost:3000/api/instructors?status=ACTIVE');
 
       // Act
-      await GET(mockRequest)
+      await GET(mockRequest);
 
       // Assert
       expect(mockInstructorFindMany).toHaveBeenCalledWith({
@@ -268,30 +273,27 @@ describe('GET /api/instructors', () => {
                   department: {
                     select: {
                       id: true,
-                      name: true
-                    }
-                  }
-                }
-              }
-            }
-          }
+                      name: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
         },
-        orderBy: [
-          { lastName: 'asc' },
-          { firstName: 'asc' }
-        ]
-      })
-    })
+        orderBy: [{ lastName: 'asc' }, { firstName: 'asc' }],
+      });
+    });
 
     it('無効なstatusパラメータは無視されること', async () => {
       // Arrange
-      const mockInstructors: Instructor[] = []
-      mockInstructorFindMany.mockResolvedValue(mockInstructors)
+      const mockInstructors: Instructor[] = [];
+      mockInstructorFindMany.mockResolvedValue(mockInstructors);
 
-      const mockRequest = new Request('http://localhost:3000/api/instructors?status=INVALID')
+      const mockRequest = new Request('http://localhost:3000/api/instructors?status=INVALID');
 
       // Act
-      await GET(mockRequest)
+      await GET(mockRequest);
 
       // Assert
       expect(mockInstructorFindMany).toHaveBeenCalledWith({
@@ -304,30 +306,27 @@ describe('GET /api/instructors', () => {
                   department: {
                     select: {
                       id: true,
-                      name: true
-                    }
-                  }
-                }
-              }
-            }
-          }
+                      name: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
         },
-        orderBy: [
-          { lastName: 'asc' },
-          { firstName: 'asc' }
-        ]
-      })
-    })
+        orderBy: [{ lastName: 'asc' }, { firstName: 'asc' }],
+      });
+    });
 
     it('インストラクターデータが空の場合でも正しく処理されること', async () => {
       // Arrange
-      const mockInstructors: Instructor[] = []
-      mockInstructorFindMany.mockResolvedValue(mockInstructors)
+      const mockInstructors: Instructor[] = [];
+      mockInstructorFindMany.mockResolvedValue(mockInstructors);
 
-      const mockRequest = new Request('http://localhost:3000/api/instructors')
+      const mockRequest = new Request('http://localhost:3000/api/instructors');
 
       // Act
-      await GET(mockRequest)
+      await GET(mockRequest);
 
       // Assert
       expect(mockNextResponse.json).toHaveBeenCalledWith({
@@ -335,48 +334,48 @@ describe('GET /api/instructors', () => {
         data: [],
         count: 0,
         message: null,
-        error: null
-      })
-    })
-  })
+        error: null,
+      });
+    });
+  });
 
   describe('異常系', () => {
     it('データベースエラーが発生した場合に500エラーが返されること', async () => {
       // Arrange
-      const mockError = new Error('Database connection failed')
-      mockInstructorFindMany.mockRejectedValue(mockError)
-      
-      const consoleSpy = jest.spyOn(console, 'error').mockImplementation()
-      const mockRequest = new Request('http://localhost:3000/api/instructors')
+      const mockError = new Error('Database connection failed');
+      mockInstructorFindMany.mockRejectedValue(mockError);
+
+      const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
+      const mockRequest = new Request('http://localhost:3000/api/instructors');
 
       // Act
-      await GET(mockRequest)
+      await GET(mockRequest);
 
       // Assert
-      expect(consoleSpy).toHaveBeenCalledWith('Instructors API error:', mockError)
+      expect(consoleSpy).toHaveBeenCalledWith('Instructors API error:', mockError);
 
       expect(mockNextResponse.json).toHaveBeenCalledWith(
         {
           success: false,
           data: null,
           message: null,
-          error: 'Internal server error'
+          error: 'Internal server error',
         },
         { status: 500 }
-      )
+      );
 
-      consoleSpy.mockRestore()
-    })
-  })
+      consoleSpy.mockRestore();
+    });
+  });
 
   describe('データベースクエリ', () => {
     it('インストラクターデータが姓名順（昇順）でソートされて取得されること', async () => {
       // Arrange
-      mockInstructorFindMany.mockResolvedValue([])
-      const mockRequest = new Request('http://localhost:3000/api/instructors')
+      mockInstructorFindMany.mockResolvedValue([]);
+      const mockRequest = new Request('http://localhost:3000/api/instructors');
 
       // Act
-      await GET(mockRequest)
+      await GET(mockRequest);
 
       // Assert
       expect(mockInstructorFindMany).toHaveBeenCalledWith({
@@ -389,40 +388,37 @@ describe('GET /api/instructors', () => {
                   department: {
                     select: {
                       id: true,
-                      name: true
-                    }
-                  }
-                }
-              }
-            }
-          }
+                      name: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
         },
-        orderBy: [
-          { lastName: 'asc' },
-          { firstName: 'asc' }
-        ]
-      })
-    })
+        orderBy: [{ lastName: 'asc' }, { firstName: 'asc' }],
+      });
+    });
 
     it('findManyが1回だけ呼ばれること', async () => {
       // Arrange
-      mockInstructorFindMany.mockResolvedValue([])
-      const mockRequest = new Request('http://localhost:3000/api/instructors')
+      mockInstructorFindMany.mockResolvedValue([]);
+      const mockRequest = new Request('http://localhost:3000/api/instructors');
 
       // Act
-      await GET(mockRequest)
+      await GET(mockRequest);
 
       // Assert
-      expect(mockInstructorFindMany).toHaveBeenCalledTimes(1)
-    })
+      expect(mockInstructorFindMany).toHaveBeenCalledTimes(1);
+    });
 
     it('資格情報が適切にincludeされていること', async () => {
       // Arrange
-      mockInstructorFindMany.mockResolvedValue([])
-      const mockRequest = new Request('http://localhost:3000/api/instructors')
+      mockInstructorFindMany.mockResolvedValue([]);
+      const mockRequest = new Request('http://localhost:3000/api/instructors');
 
       // Act
-      await GET(mockRequest)
+      await GET(mockRequest);
 
       // Assert
       expect(mockInstructorFindMany).toHaveBeenCalledWith(
@@ -435,23 +431,23 @@ describe('GET /api/instructors', () => {
                     department: {
                       select: {
                         id: true,
-                        name: true
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
+                        name: true,
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
         })
-      )
-    })
-  })
-})
+      );
+    });
+  });
+});
 
 describe('POST /api/instructors', () => {
   beforeEach(() => {
-    jest.clearAllMocks()
+    jest.clearAllMocks();
     // NextResponse.jsonのデフォルトモック実装
     mockNextResponse.json.mockImplementation((data, init) => {
       return {
@@ -472,17 +468,17 @@ describe('POST /api/instructors', () => {
         formData: jest.fn(),
         text: jest.fn(),
         [Symbol.for('NextResponse')]: true,
-      } as unknown as NextResponse
-    })
-  })
+      } as unknown as NextResponse;
+    });
+  });
 
   describe('正常系', () => {
     it('必須項目のみでインストラクターが作成されること', async () => {
       // Arrange
       const requestBody = {
         lastName: '山田',
-        firstName: '太郎'
-      }
+        firstName: '太郎',
+      };
 
       const mockCreatedInstructor = {
         id: 1,
@@ -493,38 +489,40 @@ describe('POST /api/instructors', () => {
         status: 'ACTIVE' as InstructorStatus,
         notes: null,
         createdAt: new Date('2024-01-01'),
-        updatedAt: new Date('2024-01-01')
-      }
+        updatedAt: new Date('2024-01-01'),
+      };
 
       const mockInstructorWithCertifications = {
         ...mockCreatedInstructor,
-        certifications: []
-      }
+        certifications: [],
+      };
 
       mockTransaction.mockImplementation(async (callback) => {
         return callback({
           instructor: {
             create: mockInstructorCreate.mockResolvedValue(mockCreatedInstructor),
-            findUnique: mockInstructorFindUnique.mockResolvedValue(mockInstructorWithCertifications)
+            findUnique: mockInstructorFindUnique.mockResolvedValue(
+              mockInstructorWithCertifications
+            ),
           },
           instructorCertification: {
-            createMany: mockInstructorCertificationCreateMany
-          }
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } as any)
-      })
+            createMany: mockInstructorCertificationCreateMany,
+          },
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } as any);
+      });
 
       const mockRequest = new Request('http://localhost:3000/api/instructors', {
         method: 'POST',
         body: JSON.stringify(requestBody),
-        headers: { 'Content-Type': 'application/json' }
-      })
+        headers: { 'Content-Type': 'application/json' },
+      });
 
       // Act
-      await POST(mockRequest)
+      await POST(mockRequest);
 
       // Assert
-      expect(mockTransaction).toHaveBeenCalledTimes(1)
+      expect(mockTransaction).toHaveBeenCalledTimes(1);
       expect(mockNextResponse.json).toHaveBeenCalledWith(
         {
           success: true,
@@ -538,14 +536,14 @@ describe('POST /api/instructors', () => {
             notes: null,
             createdAt: new Date('2024-01-01'),
             updatedAt: new Date('2024-01-01'),
-            certifications: []
+            certifications: [],
           },
           message: 'Instructor operation completed successfully',
-          error: null
+          error: null,
         },
         { status: 201 }
-      )
-    })
+      );
+    });
 
     it('全項目を指定してインストラクターが作成されること', async () => {
       // Arrange
@@ -556,8 +554,8 @@ describe('POST /api/instructors', () => {
         firstNameKana: 'ハナコ',
         status: 'INACTIVE',
         notes: 'テストメモ',
-        certificationIds: [1, 2]
-      }
+        certificationIds: [1, 2],
+      };
 
       const mockCreatedInstructor = {
         id: 2,
@@ -568,8 +566,8 @@ describe('POST /api/instructors', () => {
         status: 'INACTIVE' as InstructorStatus,
         notes: 'テストメモ',
         createdAt: new Date('2024-01-02'),
-        updatedAt: new Date('2024-01-02')
-      }
+        updatedAt: new Date('2024-01-02'),
+      };
 
       const mockInstructorWithCertifications = {
         ...mockCreatedInstructor,
@@ -582,9 +580,9 @@ describe('POST /api/instructors', () => {
               organization: 'SAJ',
               department: {
                 id: 1,
-                name: 'スキー'
-              }
-            }
+                name: 'スキー',
+              },
+            },
           },
           {
             certification: {
@@ -594,52 +592,54 @@ describe('POST /api/instructors', () => {
               organization: 'JSBA',
               department: {
                 id: 2,
-                name: 'スノーボード'
-              }
-            }
-          }
-        ]
-      }
+                name: 'スノーボード',
+              },
+            },
+          },
+        ],
+      };
 
       const mockExistingCertifications = [
         { id: 1, name: 'スキー指導員', isActive: true },
-        { id: 2, name: 'スノーボード指導員', isActive: true }
-      ]
+        { id: 2, name: 'スノーボード指導員', isActive: true },
+      ];
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      mockCertificationFindMany.mockResolvedValue(mockExistingCertifications as any)
+      mockCertificationFindMany.mockResolvedValue(mockExistingCertifications as any);
       mockTransaction.mockImplementation(async (callback) => {
         return callback({
           instructor: {
             create: mockInstructorCreate.mockResolvedValue(mockCreatedInstructor),
-            findUnique: mockInstructorFindUnique.mockResolvedValue(mockInstructorWithCertifications)
+            findUnique: mockInstructorFindUnique.mockResolvedValue(
+              mockInstructorWithCertifications
+            ),
           },
           instructorCertification: {
-            createMany: mockInstructorCertificationCreateMany.mockResolvedValue({ count: 2 })
-          }
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } as any)
-      })
+            createMany: mockInstructorCertificationCreateMany.mockResolvedValue({ count: 2 }),
+          },
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } as any);
+      });
 
       const mockRequest = new Request('http://localhost:3000/api/instructors', {
         method: 'POST',
         body: JSON.stringify(requestBody),
-        headers: { 'Content-Type': 'application/json' }
-      })
+        headers: { 'Content-Type': 'application/json' },
+      });
 
       // Act
-      await POST(mockRequest)
+      await POST(mockRequest);
 
       // Assert
       expect(mockCertificationFindMany).toHaveBeenCalledWith({
         where: {
           id: { in: [1, 2] },
-          isActive: true
-        }
-      })
+          isActive: true,
+        },
+      });
 
-      expect(mockTransaction).toHaveBeenCalledTimes(1)
-      
+      expect(mockTransaction).toHaveBeenCalledTimes(1);
+
       expect(mockNextResponse.json).toHaveBeenCalledWith(
         {
           success: true,
@@ -661,8 +661,8 @@ describe('POST /api/instructors', () => {
                 organization: 'SAJ',
                 department: {
                   id: 1,
-                  name: 'スキー'
-                }
+                  name: 'スキー',
+                },
               },
               {
                 id: 2,
@@ -671,35 +671,35 @@ describe('POST /api/instructors', () => {
                 organization: 'JSBA',
                 department: {
                   id: 2,
-                  name: 'スノーボード'
-                }
-              }
-            ]
+                  name: 'スノーボード',
+                },
+              },
+            ],
           },
           message: 'Instructor operation completed successfully',
-          error: null
+          error: null,
         },
         { status: 201 }
-      )
-    })
-  })
+      );
+    });
+  });
 
   describe('異常系', () => {
     it('必須フィールドが不足している場合に400エラーが返されること', async () => {
       // Arrange
       const requestBody = {
-        firstName: '太郎'
+        firstName: '太郎',
         // lastName が不足
-      }
+      };
 
       const mockRequest = new Request('http://localhost:3000/api/instructors', {
         method: 'POST',
         body: JSON.stringify(requestBody),
-        headers: { 'Content-Type': 'application/json' }
-      })
+        headers: { 'Content-Type': 'application/json' },
+      });
 
       // Act
-      await POST(mockRequest)
+      await POST(mockRequest);
 
       // Assert
       expect(mockNextResponse.json).toHaveBeenCalledWith(
@@ -707,28 +707,28 @@ describe('POST /api/instructors', () => {
           success: false,
           data: null,
           message: null,
-          error: 'Missing required fields: lastName'
+          error: 'Missing required fields: lastName',
         },
         { status: 400 }
-      )
-    })
+      );
+    });
 
     it('無効なstatusが指定された場合に400エラーが返されること', async () => {
       // Arrange
       const requestBody = {
         lastName: '山田',
         firstName: '太郎',
-        status: 'INVALID_STATUS'
-      }
+        status: 'INVALID_STATUS',
+      };
 
       const mockRequest = new Request('http://localhost:3000/api/instructors', {
         method: 'POST',
         body: JSON.stringify(requestBody),
-        headers: { 'Content-Type': 'application/json' }
-      })
+        headers: { 'Content-Type': 'application/json' },
+      });
 
       // Act
-      await POST(mockRequest)
+      await POST(mockRequest);
 
       // Assert
       expect(mockNextResponse.json).toHaveBeenCalledWith(
@@ -736,79 +736,79 @@ describe('POST /api/instructors', () => {
           success: false,
           data: null,
           message: null,
-          error: 'Invalid status value'
+          error: 'Invalid status value',
         },
         { status: 400 }
-      )
-    })
+      );
+    });
 
     it('存在しない資格IDが指定された場合に400エラーが返されること', async () => {
       // Arrange
       const requestBody = {
         lastName: '山田',
         firstName: '太郎',
-        certificationIds: [1, 2, 999]
-      }
+        certificationIds: [1, 2, 999],
+      };
 
       // IDが1と2の資格のみ存在する場合
       const mockExistingCertifications = [
         { id: 1, name: 'スキー指導員', isActive: true },
-        { id: 2, name: 'スノーボード指導員', isActive: true }
-      ]
+        { id: 2, name: 'スノーボード指導員', isActive: true },
+      ];
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      mockCertificationFindMany.mockResolvedValue(mockExistingCertifications as any)
+      mockCertificationFindMany.mockResolvedValue(mockExistingCertifications as any);
 
       const mockRequest = new Request('http://localhost:3000/api/instructors', {
         method: 'POST',
         body: JSON.stringify(requestBody),
-        headers: { 'Content-Type': 'application/json' }
-      })
+        headers: { 'Content-Type': 'application/json' },
+      });
 
       // Act
-      await POST(mockRequest)
+      await POST(mockRequest);
 
       // Assert
       expect(mockCertificationFindMany).toHaveBeenCalledWith({
         where: {
           id: { in: [1, 2, 999] },
-          isActive: true
-        }
-      })
+          isActive: true,
+        },
+      });
 
       expect(mockNextResponse.json).toHaveBeenCalledWith(
         {
           success: false,
           data: null,
           message: null,
-          error: 'Some certification IDs are invalid or inactive'
+          error: 'Some certification IDs are invalid or inactive',
         },
         { status: 400 }
-      )
-    })
+      );
+    });
 
     it('非アクティブな資格IDが指定された場合に400エラーが返されること', async () => {
       // Arrange
       const requestBody = {
         lastName: '山田',
         firstName: '太郎',
-        certificationIds: [1]
-      }
+        certificationIds: [1],
+      };
 
       // 指定した資格が非アクティブな場合
-      const mockExistingCertifications: Array<{ id: number; name: string; isActive: boolean }> = []
+      const mockExistingCertifications: Array<{ id: number; name: string; isActive: boolean }> = [];
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      mockCertificationFindMany.mockResolvedValue(mockExistingCertifications as any)
+      mockCertificationFindMany.mockResolvedValue(mockExistingCertifications as any);
 
       const mockRequest = new Request('http://localhost:3000/api/instructors', {
         method: 'POST',
         body: JSON.stringify(requestBody),
-        headers: { 'Content-Type': 'application/json' }
-      })
+        headers: { 'Content-Type': 'application/json' },
+      });
 
       // Act
-      await POST(mockRequest)
+      await POST(mockRequest);
 
       // Assert
       expect(mockNextResponse.json).toHaveBeenCalledWith(
@@ -816,98 +816,98 @@ describe('POST /api/instructors', () => {
           success: false,
           data: null,
           message: null,
-          error: 'Some certification IDs are invalid or inactive'
+          error: 'Some certification IDs are invalid or inactive',
         },
         { status: 400 }
-      )
-    })
+      );
+    });
 
     it('データベースエラーが発生した場合に500エラーが返されること', async () => {
       // Arrange
       const requestBody = {
         lastName: '山田',
-        firstName: '太郎'
-      }
+        firstName: '太郎',
+      };
 
-      const mockError = new Error('Database connection failed')
-      mockTransaction.mockRejectedValue(mockError)
-      
-      const consoleSpy = jest.spyOn(console, 'error').mockImplementation()
+      const mockError = new Error('Database connection failed');
+      mockTransaction.mockRejectedValue(mockError);
+
+      const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
       const mockRequest = new Request('http://localhost:3000/api/instructors', {
         method: 'POST',
         body: JSON.stringify(requestBody),
-        headers: { 'Content-Type': 'application/json' }
-      })
+        headers: { 'Content-Type': 'application/json' },
+      });
 
       // Act
-      await POST(mockRequest)
+      await POST(mockRequest);
 
       // Assert
-      expect(consoleSpy).toHaveBeenCalledWith('Instructors API error:', mockError)
+      expect(consoleSpy).toHaveBeenCalledWith('Instructors API error:', mockError);
 
       expect(mockNextResponse.json).toHaveBeenCalledWith(
         {
           success: false,
           data: null,
           message: null,
-          error: 'Internal server error'
+          error: 'Internal server error',
         },
         { status: 500 }
-      )
+      );
 
-      consoleSpy.mockRestore()
-    })
+      consoleSpy.mockRestore();
+    });
 
     it('JSONパースエラーが発生した場合に500エラーが返されること', async () => {
       // Arrange
-      const consoleSpy = jest.spyOn(console, 'error').mockImplementation()
+      const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
       const mockRequest = new Request('http://localhost:3000/api/instructors', {
         method: 'POST',
         body: 'invalid json',
-        headers: { 'Content-Type': 'application/json' }
-      })
+        headers: { 'Content-Type': 'application/json' },
+      });
 
       // Act
-      await POST(mockRequest)
+      await POST(mockRequest);
 
       // Assert
       expect(consoleSpy).toHaveBeenCalledWith(
-        'Instructors API error:', 
+        'Instructors API error:',
         expect.objectContaining({
-          name: 'SyntaxError'
+          name: 'SyntaxError',
         })
-      )
+      );
 
       expect(mockNextResponse.json).toHaveBeenCalledWith(
         {
           success: false,
           data: null,
           message: null,
-          error: 'Internal server error'
+          error: 'Internal server error',
         },
         { status: 500 }
-      )
+      );
 
-      consoleSpy.mockRestore()
-    })
-  })
+      consoleSpy.mockRestore();
+    });
+  });
 
   describe('バリデーション', () => {
     it('複数の必須フィールドが不足している場合にすべて報告されること', async () => {
       // Arrange
       const requestBody = {
-        notes: 'メモのみ'
+        notes: 'メモのみ',
         // lastName, firstName が不足
-      }
+      };
 
       const mockRequest = new Request('http://localhost:3000/api/instructors', {
         method: 'POST',
         body: JSON.stringify(requestBody),
-        headers: { 'Content-Type': 'application/json' }
-      })
+        headers: { 'Content-Type': 'application/json' },
+      });
 
       // Act
-      await POST(mockRequest)
+      await POST(mockRequest);
 
       // Assert
       expect(mockNextResponse.json).toHaveBeenCalledWith(
@@ -915,19 +915,19 @@ describe('POST /api/instructors', () => {
           success: false,
           data: null,
           message: null,
-          error: 'Missing required fields: lastName, firstName'
+          error: 'Missing required fields: lastName, firstName',
         },
         { status: 400 }
-      )
-    })
+      );
+    });
 
     it('certificationIdsが配列でない場合に資格の検証がスキップされること', async () => {
       // Arrange
       const requestBody = {
         lastName: '山田',
         firstName: '太郎',
-        certificationIds: 'not-array'
-      }
+        certificationIds: 'not-array',
+      };
 
       const mockCreatedInstructor = {
         id: 1,
@@ -938,53 +938,55 @@ describe('POST /api/instructors', () => {
         status: 'ACTIVE' as InstructorStatus,
         notes: null,
         createdAt: new Date('2024-01-01'),
-        updatedAt: new Date('2024-01-01')
-      }
+        updatedAt: new Date('2024-01-01'),
+      };
 
       const mockInstructorWithCertifications = {
         ...mockCreatedInstructor,
-        certifications: []
-      }
+        certifications: [],
+      };
 
       mockTransaction.mockImplementation(async (callback) => {
         return callback({
           instructor: {
             create: mockInstructorCreate.mockResolvedValue(mockCreatedInstructor),
-            findUnique: mockInstructorFindUnique.mockResolvedValue(mockInstructorWithCertifications)
+            findUnique: mockInstructorFindUnique.mockResolvedValue(
+              mockInstructorWithCertifications
+            ),
           },
           instructorCertification: {
-            createMany: mockInstructorCertificationCreateMany
-          }
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } as any)
-      })
+            createMany: mockInstructorCertificationCreateMany,
+          },
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } as any);
+      });
 
       const mockRequest = new Request('http://localhost:3000/api/instructors', {
         method: 'POST',
         body: JSON.stringify(requestBody),
-        headers: { 'Content-Type': 'application/json' }
-      })
+        headers: { 'Content-Type': 'application/json' },
+      });
 
       // Act
-      await POST(mockRequest)
+      await POST(mockRequest);
 
       // Assert
-      expect(mockCertificationFindMany).not.toHaveBeenCalled()
-      expect(mockTransaction).toHaveBeenCalledTimes(1)
-    })
+      expect(mockCertificationFindMany).not.toHaveBeenCalled();
+      expect(mockTransaction).toHaveBeenCalledTimes(1);
+    });
 
     it('有効なstatus値（ACTIVE, INACTIVE, RETIRED）が受け入れられること', async () => {
       // Arrange
-      const statuses = ['ACTIVE', 'INACTIVE', 'RETIRED']
-      
+      const statuses = ['ACTIVE', 'INACTIVE', 'RETIRED'];
+
       for (const status of statuses) {
-        jest.clearAllMocks()
-        
+        jest.clearAllMocks();
+
         const requestBody = {
           lastName: '山田',
           firstName: '太郎',
-          status
-        }
+          status,
+        };
 
         const mockCreatedInstructor = {
           id: 1,
@@ -995,56 +997,58 @@ describe('POST /api/instructors', () => {
           status: status as InstructorStatus,
           notes: null,
           createdAt: new Date('2024-01-01'),
-          updatedAt: new Date('2024-01-01')
-        }
+          updatedAt: new Date('2024-01-01'),
+        };
 
         const mockInstructorWithCertifications = {
           ...mockCreatedInstructor,
-          certifications: []
-        }
+          certifications: [],
+        };
 
         mockTransaction.mockImplementation(async (callback) => {
           return callback({
             instructor: {
               create: mockInstructorCreate.mockResolvedValue(mockCreatedInstructor),
-              findUnique: mockInstructorFindUnique.mockResolvedValue(mockInstructorWithCertifications)
+              findUnique: mockInstructorFindUnique.mockResolvedValue(
+                mockInstructorWithCertifications
+              ),
             },
             instructorCertification: {
-              createMany: mockInstructorCertificationCreateMany
-            }
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } as any)
-        })
+              createMany: mockInstructorCertificationCreateMany,
+            },
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          } as any);
+        });
 
         mockNextResponse.json.mockImplementation((data, init) => {
           return {
             status: init?.status || 200,
-          } as unknown as NextResponse
-        })
+          } as unknown as NextResponse;
+        });
 
         const mockRequest = new Request('http://localhost:3000/api/instructors', {
           method: 'POST',
           body: JSON.stringify(requestBody),
-          headers: { 'Content-Type': 'application/json' }
-        })
+          headers: { 'Content-Type': 'application/json' },
+        });
 
         // Act
-        await POST(mockRequest)
+        await POST(mockRequest);
 
         // Assert
-        expect(mockTransaction).toHaveBeenCalledTimes(1)
+        expect(mockTransaction).toHaveBeenCalledTimes(1);
         expect(mockNextResponse.json).toHaveBeenCalledWith(
           expect.objectContaining({
             success: true,
             data: expect.objectContaining({
-              status
-            })
+              status,
+            }),
           }),
           { status: 201 }
-        )
+        );
       }
-    })
-  })
+    });
+  });
 
   describe('トランザクション処理', () => {
     it('インストラクター作成と資格関連付けがトランザクション内で実行されること', async () => {
@@ -1052,8 +1056,8 @@ describe('POST /api/instructors', () => {
       const requestBody = {
         lastName: '田中',
         firstName: '次郎',
-        certificationIds: [1]
-      }
+        certificationIds: [1],
+      };
 
       const mockCreatedInstructor = {
         id: 3,
@@ -1064,8 +1068,8 @@ describe('POST /api/instructors', () => {
         status: 'ACTIVE' as InstructorStatus,
         notes: null,
         createdAt: new Date('2024-01-03'),
-        updatedAt: new Date('2024-01-03')
-      }
+        updatedAt: new Date('2024-01-03'),
+      };
 
       const mockInstructorWithCertifications = {
         ...mockCreatedInstructor,
@@ -1078,53 +1082,53 @@ describe('POST /api/instructors', () => {
               organization: 'SAJ',
               department: {
                 id: 1,
-                name: 'スキー'
-              }
-            }
-          }
-        ]
-      }
+                name: 'スキー',
+              },
+            },
+          },
+        ],
+      };
 
-      const mockExistingCertifications = [
-        { id: 1, name: 'スキー指導員', isActive: true }
-      ]
+      const mockExistingCertifications = [{ id: 1, name: 'スキー指導員', isActive: true }];
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      mockCertificationFindMany.mockResolvedValue(mockExistingCertifications as any)
-      
-      let txInstructorCreate: jest.MockedFunction<typeof prisma.instructor.create>
-      let txInstructorCertificationCreateMany: jest.MockedFunction<typeof prisma.instructorCertification.createMany>
-      let txInstructorFindUnique: jest.MockedFunction<typeof prisma.instructor.findUnique>
+      mockCertificationFindMany.mockResolvedValue(mockExistingCertifications as any);
+
+      let txInstructorCreate: jest.MockedFunction<typeof prisma.instructor.create>;
+      let txInstructorCertificationCreateMany: jest.MockedFunction<
+        typeof prisma.instructorCertification.createMany
+      >;
+      let txInstructorFindUnique: jest.MockedFunction<typeof prisma.instructor.findUnique>;
 
       mockTransaction.mockImplementation(async (callback) => {
-        txInstructorCreate = jest.fn().mockResolvedValue(mockCreatedInstructor)
-        txInstructorCertificationCreateMany = jest.fn().mockResolvedValue({ count: 1 })
-        txInstructorFindUnique = jest.fn().mockResolvedValue(mockInstructorWithCertifications)
+        txInstructorCreate = jest.fn().mockResolvedValue(mockCreatedInstructor);
+        txInstructorCertificationCreateMany = jest.fn().mockResolvedValue({ count: 1 });
+        txInstructorFindUnique = jest.fn().mockResolvedValue(mockInstructorWithCertifications);
 
         return callback({
           instructor: {
             create: txInstructorCreate,
-            findUnique: txInstructorFindUnique
+            findUnique: txInstructorFindUnique,
           },
           instructorCertification: {
-            createMany: txInstructorCertificationCreateMany
-          }
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } as any)
-      })
+            createMany: txInstructorCertificationCreateMany,
+          },
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } as any);
+      });
 
       const mockRequest = new Request('http://localhost:3000/api/instructors', {
         method: 'POST',
         body: JSON.stringify(requestBody),
-        headers: { 'Content-Type': 'application/json' }
-      })
+        headers: { 'Content-Type': 'application/json' },
+      });
 
       // Act
-      await POST(mockRequest)
+      await POST(mockRequest);
 
       // Assert
-      expect(mockTransaction).toHaveBeenCalledTimes(1)
-      expect(mockTransaction).toHaveBeenCalledWith(expect.any(Function))
-    })
-  })
-})
+      expect(mockTransaction).toHaveBeenCalledTimes(1);
+      expect(mockTransaction).toHaveBeenCalledWith(expect.any(Function));
+    });
+  });
+});

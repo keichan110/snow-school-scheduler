@@ -1,40 +1,40 @@
-import { NextResponse } from 'next/server'
-import { prisma } from '@/lib/db'
-import { NextRequest } from 'next/server'
+import { NextResponse } from 'next/server';
+import { prisma } from '@/lib/db';
+import { NextRequest } from 'next/server';
 
 export async function GET(request: NextRequest) {
   try {
-    const searchParams = request.nextUrl.searchParams
-    const departmentId = searchParams.get('departmentId')
-    const shiftTypeId = searchParams.get('shiftTypeId')
-    const dateFrom = searchParams.get('dateFrom')
-    const dateTo = searchParams.get('dateTo')
+    const searchParams = request.nextUrl.searchParams;
+    const departmentId = searchParams.get('departmentId');
+    const shiftTypeId = searchParams.get('shiftTypeId');
+    const dateFrom = searchParams.get('dateFrom');
+    const dateTo = searchParams.get('dateTo');
 
     // フィルター条件を構築
     const where: {
-      departmentId?: number
-      shiftTypeId?: number
+      departmentId?: number;
+      shiftTypeId?: number;
       date?: {
-        gte?: Date
-        lte?: Date
-      }
-    } = {}
+        gte?: Date;
+        lte?: Date;
+      };
+    } = {};
 
     if (departmentId) {
-      where.departmentId = parseInt(departmentId)
+      where.departmentId = parseInt(departmentId);
     }
 
     if (shiftTypeId) {
-      where.shiftTypeId = parseInt(shiftTypeId)
+      where.shiftTypeId = parseInt(shiftTypeId);
     }
 
     if (dateFrom || dateTo) {
-      where.date = {}
+      where.date = {};
       if (dateFrom) {
-        where.date.gte = new Date(dateFrom)
+        where.date.gte = new Date(dateFrom);
       }
       if (dateTo) {
-        where.date.lte = new Date(dateTo)
+        where.date.lte = new Date(dateTo);
       }
     }
 
@@ -45,19 +45,15 @@ export async function GET(request: NextRequest) {
         shiftType: true,
         shiftAssignments: {
           include: {
-            instructor: true
-          }
-        }
+            instructor: true,
+          },
+        },
       },
-      orderBy: [
-        { date: 'asc' },
-        { departmentId: 'asc' },
-        { shiftTypeId: 'asc' }
-      ]
-    })
+      orderBy: [{ date: 'asc' }, { departmentId: 'asc' }, { shiftTypeId: 'asc' }],
+    });
 
     // ShiftWithStats形式に変換
-    const shiftsWithStats = shifts.map(shift => ({
+    const shiftsWithStats = shifts.map((shift) => ({
       id: shift.id,
       date: shift.date.toISOString().split('T')[0], // date形式
       departmentId: shift.departmentId,
@@ -67,7 +63,7 @@ export async function GET(request: NextRequest) {
       updatedAt: shift.updatedAt.toISOString(),
       department: shift.department,
       shiftType: shift.shiftType,
-      assignments: shift.shiftAssignments.map(assignment => ({
+      assignments: shift.shiftAssignments.map((assignment) => ({
         id: assignment.id,
         shiftId: assignment.shiftId,
         instructorId: assignment.instructorId,
@@ -76,49 +72,49 @@ export async function GET(request: NextRequest) {
           id: assignment.instructor.id,
           lastName: assignment.instructor.lastName,
           firstName: assignment.instructor.firstName,
-          status: assignment.instructor.status
-        }
+          status: assignment.instructor.status,
+        },
       })),
-      assignedCount: shift.shiftAssignments.length
-    }))
+      assignedCount: shift.shiftAssignments.length,
+    }));
 
     return NextResponse.json({
       success: true,
       data: shiftsWithStats,
       count: shiftsWithStats.length,
       message: null,
-      error: null
-    })
+      error: null,
+    });
   } catch (error) {
-    console.error('Shifts API error:', error)
+    console.error('Shifts API error:', error);
     return NextResponse.json(
-      { 
-        success: false, 
+      {
+        success: false,
         data: null,
         message: null,
-        error: 'Internal server error' 
+        error: 'Internal server error',
       },
       { status: 500 }
-    )
+    );
   }
 }
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json()
-    const { date, departmentId, shiftTypeId, description, assignedInstructorIds = [] } = body
+    const body = await request.json();
+    const { date, departmentId, shiftTypeId, description, assignedInstructorIds = [] } = body;
 
     // バリデーション
     if (!date || !departmentId || !shiftTypeId) {
       return NextResponse.json(
-        { 
-          success: false, 
+        {
+          success: false,
           data: null,
           message: null,
-          error: 'Required fields: date, departmentId, shiftTypeId' 
+          error: 'Required fields: date, departmentId, shiftTypeId',
         },
         { status: 400 }
-      )
+      );
     }
 
     // トランザクションでシフトと割り当てを同時作成
@@ -129,31 +125,31 @@ export async function POST(request: NextRequest) {
           date: new Date(date),
           departmentId: parseInt(departmentId),
           shiftTypeId: parseInt(shiftTypeId),
-          description: description || null
+          description: description || null,
         },
         include: {
           department: true,
-          shiftType: true
-        }
-      })
+          shiftType: true,
+        },
+      });
 
       // インストラクター割り当て
       const assignmentPromises = assignedInstructorIds.map((instructorId: number) =>
         tx.shiftAssignment.create({
           data: {
             shiftId: shift.id,
-            instructorId
+            instructorId,
           },
           include: {
-            instructor: true
-          }
+            instructor: true,
+          },
         })
-      )
+      );
 
-      const assignments = await Promise.all(assignmentPromises)
+      const assignments = await Promise.all(assignmentPromises);
 
-      return { shift, assignments }
-    })
+      return { shift, assignments };
+    });
 
     // レスポンス用データを整形
     const shiftWithStats = {
@@ -166,7 +162,7 @@ export async function POST(request: NextRequest) {
       updatedAt: result.shift.updatedAt.toISOString(),
       department: result.shift.department,
       shiftType: result.shift.shiftType,
-      assignments: result.assignments.map(assignment => ({
+      assignments: result.assignments.map((assignment) => ({
         id: assignment.id,
         shiftId: assignment.shiftId,
         instructorId: assignment.instructorId,
@@ -175,31 +171,31 @@ export async function POST(request: NextRequest) {
           id: assignment.instructor.id,
           lastName: assignment.instructor.lastName,
           firstName: assignment.instructor.firstName,
-          status: assignment.instructor.status
-        }
+          status: assignment.instructor.status,
+        },
       })),
-      assignedCount: result.assignments.length
-    }
+      assignedCount: result.assignments.length,
+    };
 
     return NextResponse.json(
       {
         success: true,
         data: shiftWithStats,
         message: 'Shift operation completed successfully',
-        error: null
+        error: null,
       },
       { status: 201 }
-    )
+    );
   } catch (error) {
-    console.error('Shift creation error:', error)
+    console.error('Shift creation error:', error);
     return NextResponse.json(
-      { 
-        success: false, 
+      {
+        success: false,
         data: null,
         message: null,
-        error: 'Internal server error' 
+        error: 'Internal server error',
       },
       { status: 500 }
-    )
+    );
   }
 }
