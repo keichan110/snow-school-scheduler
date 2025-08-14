@@ -86,7 +86,7 @@ export interface CreateShiftData {
   readonly date: string
   readonly departmentId: number
   readonly shiftTypeId: number
-  readonly description?: string
+  readonly description?: string | null
   readonly assignedInstructorIds?: readonly number[]
 }
 
