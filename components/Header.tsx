@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Snowflake, CalendarDots, Certificate, UsersThree, List } from '@phosphor-icons/react';
+import { Snowflake, CalendarDots, Certificate, UsersThree, List, Tag } from '@phosphor-icons/react';
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useState } from 'react';
@@ -23,6 +23,11 @@ export default function Header() {
       href: '/admin/instructors',
       icon: UsersThree,
       label: 'インストラクター管理',
+    },
+    {
+      href: '/admin/shift-types',
+      icon: Tag,
+      label: 'シフト種類管理',
     },
     {
       href: '/admin/certifications',
