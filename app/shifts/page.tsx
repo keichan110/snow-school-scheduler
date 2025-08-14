@@ -1,29 +1,45 @@
 'use client';
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Header from '@/components/Header';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { fetchShifts, fetchDepartments, ApiError } from '../admin/shifts/api';
-import { Shift, Department, ShiftStats, ShiftQueryParams, DayData } from '../admin/shifts/types';
+import { Shift, Department, ShiftStats, ShiftQueryParams } from '../admin/shifts/types';
 import { PublicShiftCalendarGrid } from './components/PublicShiftCalendarGrid';
 import { PublicShiftMobileList } from './components/PublicShiftMobileList';
-import { PublicShiftBottomModal } from './components/PublicShiftBottomModal';
+import { WeeklyShiftList } from './components/WeeklyShiftList';
+import { ViewToggle } from './components/ViewToggle';
+import { WeekNavigation } from './components/WeekNavigation';
 import { getDepartmentTypeById } from '../admin/shifts/utils/shiftUtils';
 import { HOLIDAYS } from '../admin/shifts/constants/shiftConstants';
 
+type ViewMode = 'monthly' | 'weekly';
+
 export default function PublicShiftsPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
   const now = new Date();
   const [currentYear, setCurrentYear] = useState(now.getFullYear());
   const [currentMonth, setCurrentMonth] = useState(now.getMonth() + 1);
+  const [currentWeek, setCurrentWeek] = useState(1);
+  const [viewMode, setViewMode] = useState<ViewMode>('monthly');
   const [, setShifts] = useState<Shift[]>([]);
   const [, setDepartments] = useState<Department[]>([]);
   const [shiftStats, setShiftStats] = useState<ShiftStats>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedDate, setSelectedDate] = useState<string | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // URLパラメータからビューモードを設定
+  useEffect(() => {
+    const view = searchParams.get('view') as ViewMode;
+    if (view === 'weekly' || view === 'monthly') {
+      setViewMode(view);
+    }
+  }, [searchParams]);
 
   // Memoized query parameters
   const queryParams = useMemo<ShiftQueryParams>(
@@ -114,6 +130,28 @@ export default function PublicShiftsPage() {
     };
   }, [queryParams, transformShiftsToStats]);
 
+  // ビュー変更ハンドラー
+  const handleViewChange = useCallback(
+    (newView: ViewMode) => {
+      setViewMode(newView);
+      router.push(`/shifts?view=${newView}`, { scroll: false });
+    },
+    [router]
+  );
+
+  // 週間ナビゲーションハンドラー
+  const navigateWeek = useCallback((direction: number) => {
+    setCurrentWeek((prev) => Math.max(1, Math.min(5, prev + direction)));
+  }, []);
+
+  // 現在週に戻るハンドラー
+  const goToCurrentWeek = useCallback(() => {
+    const now = new Date();
+    setCurrentYear(now.getFullYear());
+    setCurrentMonth(now.getMonth() + 1);
+    setCurrentWeek(1);
+  }, []);
+
   // Memoized month navigation
   const navigateMonth = useCallback(
     (direction: number) => {
@@ -133,32 +171,6 @@ export default function PublicShiftsPage() {
     },
     [currentMonth, currentYear]
   );
-
-  // Handle date selection
-  const handleDateSelect = useCallback((date: string) => {
-    setSelectedDate(date);
-    setIsModalOpen(true);
-  }, []);
-
-  // Handle modal close
-  const handleModalOpenChange = useCallback((open: boolean) => {
-    setIsModalOpen(open);
-    if (!open) {
-      setSelectedDate(null);
-    }
-  }, []);
-
-  // Get day data for modal
-  const dayData = useMemo((): DayData | null => {
-    if (!selectedDate || !shiftStats[selectedDate]) {
-      return null;
-    }
-    return {
-      date: selectedDate,
-      shifts: shiftStats[selectedDate].shifts,
-      isHoliday: HOLIDAYS[selectedDate] || false,
-    };
-  }, [selectedDate, shiftStats]);
 
   if (error) {
     return (
@@ -189,34 +201,52 @@ export default function PublicShiftsPage() {
           </p>
         </div>
 
-        {/* 月間シフト状況 */}
+        {/* ビュー切り替えボタン */}
+        <div className="mb-6 flex justify-center">
+          <ViewToggle currentView={viewMode} onViewChange={handleViewChange} />
+        </div>
+
+        {/* シフト状況 */}
         <div className="mb-8">
-          {/* 月ナビゲーション - 固定ヘッダー */}
-          <div className="sticky top-20 z-40 -mx-4 mb-4 border-b border-border/30 px-4 backdrop-blur-sm">
-            <div className="flex items-center justify-between py-3">
-              <Button
-                variant="outline"
-                onClick={() => navigateMonth(-1)}
-                className="flex touch-manipulation items-center gap-1 px-2 py-2 hover:shadow-md md:gap-2 md:px-4"
-              >
-                <ChevronLeft className="h-4 w-4" />
-                <span className="hidden text-sm font-medium sm:inline">前月</span>
-              </Button>
+          {viewMode === 'monthly' ? (
+            <>
+              {/* 月ナビゲーション - 固定ヘッダー */}
+              <div className="sticky top-20 z-40 -mx-4 mb-4 border-b border-border/30 px-4 backdrop-blur-sm">
+                <div className="flex items-center justify-between py-3">
+                  <Button
+                    variant="outline"
+                    onClick={() => navigateMonth(-1)}
+                    className="flex touch-manipulation items-center gap-1 px-2 py-2 hover:shadow-md md:gap-2 md:px-4"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                    <span className="hidden text-sm font-medium sm:inline">前月</span>
+                  </Button>
 
-              <h2 className="text-lg font-bold text-foreground md:text-xl">
-                {currentYear}年{currentMonth}月
-              </h2>
+                  <h2 className="text-lg font-bold text-foreground md:text-xl">
+                    {currentYear}年{currentMonth}月
+                  </h2>
 
-              <Button
-                variant="outline"
-                onClick={() => navigateMonth(1)}
-                className="flex touch-manipulation items-center gap-1 px-2 py-2 hover:shadow-md md:gap-2 md:px-4"
-              >
-                <span className="hidden text-sm font-medium sm:inline">翌月</span>
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
+                  <Button
+                    variant="outline"
+                    onClick={() => navigateMonth(1)}
+                    className="flex touch-manipulation items-center gap-1 px-2 py-2 hover:shadow-md md:gap-2 md:px-4"
+                  >
+                    <span className="hidden text-sm font-medium sm:inline">翌月</span>
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            </>
+          ) : (
+            /* 週間ナビゲーション */
+            <WeekNavigation
+              year={currentYear}
+              month={currentMonth}
+              week={currentWeek}
+              onNavigate={navigateWeek}
+              onCurrentWeek={goToCurrentWeek}
+            />
+          )}
 
           {loading ? (
             <div className="flex items-center justify-center py-8">
@@ -228,42 +258,49 @@ export default function PublicShiftsPage() {
           ) : (
             <ScrollArea className="h-[calc(100vh-20rem)]">
               <div className="pb-8">
-                {/* デスクトップ・タブレット用カレンダー */}
-                <div className="hidden sm:block">
-                  <PublicShiftCalendarGrid
-                    year={currentYear}
-                    month={currentMonth}
-                    shiftStats={shiftStats}
-                    holidays={HOLIDAYS}
-                    selectedDate={selectedDate}
-                    onDateSelect={handleDateSelect}
-                  />
-                </div>
+                {viewMode === 'monthly' ? (
+                  <>
+                    {/* デスクトップ・タブレット用カレンダー */}
+                    <div className="hidden sm:block">
+                      <PublicShiftCalendarGrid
+                        year={currentYear}
+                        month={currentMonth}
+                        shiftStats={shiftStats}
+                        holidays={HOLIDAYS}
+                        selectedDate={null}
+                        onDateSelect={() => {}}
+                      />
+                    </div>
 
-                {/* モバイル用リスト表示 */}
-                <div className="block px-4 sm:hidden">
-                  <PublicShiftMobileList
-                    year={currentYear}
-                    month={currentMonth}
-                    shiftStats={shiftStats}
-                    holidays={HOLIDAYS}
-                    selectedDate={selectedDate}
-                    onDateSelect={handleDateSelect}
-                  />
-                </div>
+                    {/* モバイル用リスト表示 */}
+                    <div className="block px-4 sm:hidden">
+                      <PublicShiftMobileList
+                        year={currentYear}
+                        month={currentMonth}
+                        shiftStats={shiftStats}
+                        holidays={HOLIDAYS}
+                        selectedDate={null}
+                        onDateSelect={() => {}}
+                      />
+                    </div>
+                  </>
+                ) : (
+                  /* 週間ビュー */
+                  <div className="px-4">
+                    <WeeklyShiftList
+                      year={currentYear}
+                      month={currentMonth}
+                      week={currentWeek}
+                      shiftStats={shiftStats}
+                      holidays={HOLIDAYS}
+                    />
+                  </div>
+                )}
               </div>
             </ScrollArea>
           )}
         </div>
       </div>
-
-      {/* 読み取り専用モーダル */}
-      <PublicShiftBottomModal
-        isOpen={isModalOpen}
-        onOpenChange={handleModalOpenChange}
-        selectedDate={selectedDate}
-        dayData={dayData}
-      />
     </div>
   );
 }

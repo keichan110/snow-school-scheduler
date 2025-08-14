@@ -61,9 +61,22 @@ export interface ShiftSummary {
   count: number;
 }
 
+export interface DetailedShiftSummary {
+  type: string;
+  department: DepartmentType;
+  count: number;
+  instructors: string[]; // インストラクター名の配列
+}
+
 export interface ShiftStats {
   [date: string]: {
     shifts: ShiftSummary[];
+  };
+}
+
+export interface DetailedShiftStats {
+  [date: string]: {
+    shifts: DetailedShiftSummary[];
   };
 }
 
@@ -93,6 +106,12 @@ export interface CreateShiftData {
 export interface DayData {
   readonly date: string;
   readonly shifts: readonly ShiftSummary[];
+  readonly isHoliday: boolean;
+}
+
+export interface DetailedDayData {
+  readonly date: string;
+  readonly shifts: readonly DetailedShiftSummary[];
   readonly isHoliday: boolean;
 }
 
