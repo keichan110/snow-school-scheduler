@@ -42,6 +42,7 @@ export interface Instructor {
   status: string
 }
 
+// Base API response type
 export interface ApiResponse<T> {
   success: boolean
   data: T | null
@@ -50,27 +51,64 @@ export interface ApiResponse<T> {
   error: string | null
 }
 
+// Department types
+export type DepartmentType = 'ski' | 'snowboard' | 'mixed'
+
+// Shift summary and statistics
+export interface ShiftSummary {
+  type: string
+  department: DepartmentType
+  count: number
+}
+
 export interface ShiftStats {
   [date: string]: {
     shifts: ShiftSummary[]
   }
 }
 
-export interface ShiftSummary {
-  type: string
-  department: 'ski' | 'snowboard' | 'mixed'
-  count: number
+// Readonly entity interfaces for better immutability
+export interface ReadonlyShift extends Omit<Shift, 'department' | 'shiftType' | 'assignments'> {
+  readonly department: Department
+  readonly shiftType: ShiftType
+  readonly assignments: readonly ShiftAssignment[]
 }
 
-export type DepartmentType = 'ski' | 'snowboard' | 'mixed'
+// Query parameter types for better type safety
+export interface ShiftQueryParams {
+  readonly departmentId?: number
+  readonly shiftTypeId?: number
+  readonly dateFrom?: string
+  readonly dateTo?: string
+}
+
+export interface CreateShiftData {
+  readonly date: string
+  readonly departmentId: number
+  readonly shiftTypeId: number
+  readonly description?: string
+  readonly assignedInstructorIds?: readonly number[]
+}
 
 export interface DayData {
-  date: string
-  shifts: ShiftSummary[]
-  isHoliday: boolean
+  readonly date: string
+  readonly shifts: readonly ShiftSummary[]
+  readonly isHoliday: boolean
 }
 
+// Form data interfaces
 export interface ShiftFormData {
-  selectedDate: string
-  dateFormatted: string
+  readonly selectedDate: string
+  readonly dateFormatted: string
+}
+
+// Calendar related types
+export interface CalendarDate {
+  readonly year: number
+  readonly month: number
+  readonly day: number
+  readonly date: string
+  readonly weekday: number
+  readonly isHoliday: boolean
+  readonly isToday: boolean
 }

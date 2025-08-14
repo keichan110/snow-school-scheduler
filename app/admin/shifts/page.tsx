@@ -1,17 +1,17 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { fetchShifts, fetchDepartments } from "./api";
-import { Shift, Department, ShiftStats, DayData, DepartmentType } from "./types";
+import { fetchShifts, fetchDepartments, ApiError } from "./api";
+import { Shift, Department, ShiftStats, DayData, DepartmentType, ShiftQueryParams } from "./types";
 import { ShiftCalendarGrid } from "./ShiftCalendarGrid";
 import { ShiftMobileList } from "./ShiftMobileList";
 import { ShiftBottomModal } from "./ShiftBottomModal";
 import { getDepartmentTypeById } from "./utils/shiftUtils";
-import { HOLIDAYS } from "./constants/shiftConstants";
+import { HOLIDAYS, isHoliday } from "./constants/shiftConstants";
 
 
 export default function ShiftsPage() {
@@ -20,43 +20,20 @@ export default function ShiftsPage() {
   const [currentMonth, setCurrentMonth] = useState(now.getMonth() + 1);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [_shifts, setShifts] = useState<Shift[]>([]);
-  const [_departments, setDepartments] = useState<Department[]>([]);
+  const [, setShifts] = useState<Shift[]>([]);
+  const [, setDepartments] = useState<Department[]>([]);
   const [shiftStats, setShiftStats] = useState<ShiftStats>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // データ取得
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        setLoading(true);
-        setError(null);
+  // Memoized query parameters
+  const queryParams = useMemo<ShiftQueryParams>(() => ({
+    dateFrom: `${currentYear}-${String(currentMonth).padStart(2, "0")}-01`,
+    dateTo: `${currentYear}-${String(currentMonth).padStart(2, "0")}-31`,
+  }), [currentYear, currentMonth]);
 
-        const [shiftsData, departmentsData] = await Promise.all([
-          fetchShifts({
-            dateFrom: `${currentYear}-${String(currentMonth).padStart(2, "0")}-01`,
-            dateTo: `${currentYear}-${String(currentMonth).padStart(2, "0")}-31`,
-          }),
-          fetchDepartments(),
-        ]);
-
-        setShifts(shiftsData);
-        setDepartments(departmentsData);
-        setShiftStats(transformShiftsToStats(shiftsData, departmentsData));
-      } catch (error) {
-        console.error("Failed to load data:", error);
-        setError(error instanceof Error ? error.message : "データの読み込みに失敗しました");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadData();
-  }, [currentYear, currentMonth]);
-
-  // シフトデータを統計データに変換
-  const transformShiftsToStats = (shifts: Shift[], departments: Department[]): ShiftStats => {
+  // Memoized data transformation
+  const transformShiftsToStats = useCallback((shifts: Shift[], departments: Department[]): ShiftStats => {
     const stats: ShiftStats = {};
 
     shifts.forEach((shift) => {
@@ -89,10 +66,54 @@ export default function ShiftsPage() {
     });
 
     return stats;
-  };
+  }, []);
 
-  // 月移動
-  const navigateMonth = (direction: number) => {
+  // データ取得
+  useEffect(() => {
+    let isCancelled = false;
+
+    const loadData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        const [shiftsData, departmentsData] = await Promise.all([
+          fetchShifts(queryParams),
+          fetchDepartments(),
+        ]);
+
+        if (!isCancelled) {
+          setShifts(shiftsData);
+          setDepartments(departmentsData);
+          setShiftStats(transformShiftsToStats(shiftsData, departmentsData));
+        }
+      } catch (error) {
+        if (!isCancelled) {
+          console.error("Failed to load data:", error);
+          const errorMessage = error instanceof ApiError 
+            ? error.message 
+            : error instanceof Error 
+              ? error.message 
+              : "データの読み込みに失敗しました";
+          setError(errorMessage);
+        }
+      } finally {
+        if (!isCancelled) {
+          setLoading(false);
+        }
+      }
+    };
+
+    loadData();
+    
+    return () => {
+      isCancelled = true;
+    };
+  }, [queryParams, transformShiftsToStats]);
+
+
+  // Memoized month navigation
+  const navigateMonth = useCallback((direction: number) => {
     let newMonth = currentMonth + direction;
     let newYear = currentYear;
 
@@ -108,33 +129,33 @@ export default function ShiftsPage() {
     setCurrentYear(newYear);
     setSelectedDate(null);
     setIsModalOpen(false);
-  };
+  }, [currentMonth, currentYear]);
 
-  // 日付選択
-  const handleDateSelect = (date: string) => {
+  // Memoized date selection
+  const handleDateSelect = useCallback((date: string) => {
     setSelectedDate(date);
     setIsModalOpen(true);
-  };
+  }, []);
 
-  // Drawerの開閉状態を管理
-  const handleDrawerOpenChange = (open: boolean) => {
+  // Memoized drawer state management
+  const handleDrawerOpenChange = useCallback((open: boolean) => {
     setIsModalOpen(open);
     if (!open) {
       setSelectedDate(null);
     }
-  };
+  }, []);
 
-  // 日付データを取得
-  const getDayData = (date: string): DayData => {
+  // Memoized day data retrieval
+  const getDayData = useCallback((date: string): DayData => {
     return {
       date,
       shifts: shiftStats[date]?.shifts || [],
-      isHoliday: HOLIDAYS[date] || false,
+      isHoliday: isHoliday(date),
     };
-  };
+  }, [shiftStats]);
 
-  // シフト作成を開始
-  const handleStartShiftCreation = () => {
+  // Memoized shift creation handler
+  const handleStartShiftCreation = useCallback(() => {
     if (!selectedDate) return;
 
     const shiftFormData = {
@@ -147,11 +168,15 @@ export default function ShiftsPage() {
       }),
     };
 
-    localStorage.setItem("shiftFormData", JSON.stringify(shiftFormData));
-
-    // TODO: 次のステップの画面に遷移（仮実装）
-    alert("シフト作成画面への遷移（仮実装）");
-  };
+    try {
+      localStorage.setItem("shiftFormData", JSON.stringify(shiftFormData));
+      // TODO: 次のステップの画面に遷移（仮実装）
+      alert("シフト作成画面への遷移（仮実装）");
+    } catch (error) {
+      console.error("Failed to save shift form data:", error);
+      alert("データの保存に失敗しました");
+    }
+  }, [selectedDate]);
 
   if (error) {
     return (
@@ -161,7 +186,11 @@ export default function ShiftsPage() {
             エラーが発生しました
           </div>
           <div className="text-muted-foreground text-sm">{error}</div>
-          <Button onClick={() => window.location.reload()} className="mt-4">
+          <Button 
+            onClick={() => window.location.reload()} 
+            className="mt-4"
+            type="button"
+          >
             再読み込み
           </Button>
         </div>
