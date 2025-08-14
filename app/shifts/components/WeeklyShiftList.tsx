@@ -5,33 +5,26 @@ import { ShiftStats, DayData } from '../../admin/shifts/types';
 import { ShiftDayCard } from './ShiftDayCard';
 
 interface WeeklyShiftListProps {
-  year: number;
-  month: number;
-  week: number; // 週番号 (1-5)
+  baseDate: Date;
   shiftStats: ShiftStats;
   holidays: Record<string, boolean>;
 }
 
-export function WeeklyShiftList({ year, month, week, shiftStats, holidays }: WeeklyShiftListProps) {
+export function WeeklyShiftList({ baseDate, shiftStats, holidays }: WeeklyShiftListProps) {
   // 週の開始日と終了日を計算
   const weekDays = useMemo(() => {
-    const firstDayOfMonth = new Date(year, month - 1, 1);
-    const firstDayOfWeek = firstDayOfMonth.getDay(); // 0 = Sunday, 1 = Monday, ...
+    // 週の開始日（月曜日）を計算
+    const dayOfWeek = baseDate.getDay(); // 0 = Sunday, 1 = Monday, ...
+    const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek; // 月曜日までの日数
 
-    // その月の第1週の月曜日を基準とする
-    const firstMonday = new Date(firstDayOfMonth);
-    const daysToFirstMonday = firstDayOfWeek === 0 ? 1 : 8 - firstDayOfWeek;
-    firstMonday.setDate(firstMonday.getDate() + daysToFirstMonday);
-
-    // 指定された週の開始日を計算
-    const weekStart = new Date(firstMonday);
-    weekStart.setDate(weekStart.getDate() + (week - 1) * 7);
+    const monday = new Date(baseDate);
+    monday.setDate(baseDate.getDate() + mondayOffset);
 
     const days: { date: Date; dateString: string; dayData: DayData | null }[] = [];
 
     for (let i = 0; i < 7; i++) {
-      const currentDay = new Date(weekStart);
-      currentDay.setDate(weekStart.getDate() + i);
+      const currentDay = new Date(monday);
+      currentDay.setDate(monday.getDate() + i);
 
       const dateString = `${currentDay.getFullYear()}-${String(currentDay.getMonth() + 1).padStart(2, '0')}-${String(currentDay.getDate()).padStart(2, '0')}`;
 
@@ -51,7 +44,7 @@ export function WeeklyShiftList({ year, month, week, shiftStats, holidays }: Wee
     }
 
     return days;
-  }, [year, month, week, shiftStats, holidays]);
+  }, [baseDate, shiftStats, holidays]);
 
   // 週の期間を表示用にフォーマット
   const weekPeriod = useMemo(() => {
@@ -72,12 +65,16 @@ export function WeeklyShiftList({ year, month, week, shiftStats, holidays }: Wee
     return `${formatDate(start)} - ${formatDate(end)}`;
   }, [weekDays]);
 
+  // 年月情報を取得
+  const year = baseDate.getFullYear();
+  const month = baseDate.getMonth() + 1;
+
   return (
     <div className="space-y-6">
       {/* 週間ヘッダー */}
       <div className="text-center">
         <h2 className="text-lg font-bold text-foreground md:text-xl">
-          {year}年{month}月 第{week}週
+          {year}年{month}月
         </h2>
         <p className="text-sm text-muted-foreground">{weekPeriod}</p>
       </div>

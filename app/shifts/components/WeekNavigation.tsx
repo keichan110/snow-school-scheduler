@@ -1,39 +1,38 @@
 'use client';
 
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight, RotateCcw } from 'lucide-react';
+import { Calendar } from '@/components/ui/calendar';
+import { ChevronLeft, ChevronRight, RotateCcw, CalendarIcon } from 'lucide-react';
 
 interface WeekNavigationProps {
-  year: number;
-  month: number;
-  week: number;
+  baseDate: Date;
   onNavigate: (direction: number) => void;
   onCurrentWeek: () => void;
+  onDateSelect: (date: Date) => void;
 }
 
 export function WeekNavigation({
-  year,
-  month,
-  week,
+  baseDate,
   onNavigate,
   onCurrentWeek,
+  onDateSelect,
 }: WeekNavigationProps) {
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(baseDate);
+
   // 週の期間を表示用にフォーマット
   const getWeekPeriod = () => {
-    const firstDayOfMonth = new Date(year, month - 1, 1);
-    const firstDayOfWeek = firstDayOfMonth.getDay();
+    // 週の開始日（月曜日）を計算
+    const dayOfWeek = baseDate.getDay(); // 0 = Sunday, 1 = Monday, ...
+    const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek; // 月曜日までの日数
 
-    // その月の第1週の月曜日を基準とする
-    const firstMonday = new Date(firstDayOfMonth);
-    const daysToFirstMonday = firstDayOfWeek === 0 ? 1 : 8 - firstDayOfWeek;
-    firstMonday.setDate(firstMonday.getDate() + daysToFirstMonday);
+    const monday = new Date(baseDate);
+    monday.setDate(baseDate.getDate() + mondayOffset);
 
-    // 指定された週の開始日を計算
-    const weekStart = new Date(firstMonday);
-    weekStart.setDate(weekStart.getDate() + (week - 1) * 7);
-
-    const weekEnd = new Date(weekStart);
-    weekEnd.setDate(weekStart.getDate() + 6);
+    // 週の終了日（日曜日）を計算
+    const sunday = new Date(monday);
+    sunday.setDate(monday.getDate() + 6);
 
     const formatDate = (date: Date) => {
       const m = date.getMonth() + 1;
@@ -43,7 +42,20 @@ export function WeekNavigation({
       return `${m}/${d}(${dayName})`;
     };
 
-    return `${formatDate(weekStart)} - ${formatDate(weekEnd)}`;
+    return `${formatDate(monday)} - ${formatDate(sunday)}`;
+  };
+
+  // 年月情報を取得
+  const year = baseDate.getFullYear();
+  const month = baseDate.getMonth() + 1;
+
+  // 日付選択時の処理（即座に移動）
+  const handleDateSelect = (date: Date | undefined) => {
+    if (date) {
+      onDateSelect(date);
+      setSelectedDate(date);
+      setIsCalendarOpen(false);
+    }
   };
 
   return (
@@ -64,7 +76,7 @@ export function WeekNavigation({
 
             <div className="text-center">
               <h2 className="text-base font-bold text-foreground">
-                {year}年{month}月 第{week}週
+                {year}年{month}月
               </h2>
               <p className="text-xs text-muted-foreground">{getWeekPeriod()}</p>
             </div>
@@ -80,8 +92,8 @@ export function WeekNavigation({
             </Button>
           </div>
 
-          {/* 2行目: 今週に戻るボタン */}
-          <div className="flex justify-center">
+          {/* 2行目: 今週に戻るボタンとカレンダーボタン */}
+          <div className="relative flex justify-center gap-2">
             <Button
               variant="default"
               size="sm"
@@ -91,6 +103,29 @@ export function WeekNavigation({
               <RotateCcw className="h-3 w-3" />
               今週に戻る
             </Button>
+
+            <div className="relative">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsCalendarOpen(!isCalendarOpen)}
+                className="flex items-center gap-2"
+              >
+                <CalendarIcon className="h-3 w-3" />
+                日付選択
+              </Button>
+
+              {isCalendarOpen && (
+                <div className="absolute right-0 top-full z-50 mt-2 rounded-md border bg-white p-3 shadow-lg">
+                  <Calendar
+                    mode="single"
+                    selected={selectedDate}
+                    onSelect={handleDateSelect}
+                    className="rounded-md border-0"
+                  />
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
@@ -108,7 +143,7 @@ export function WeekNavigation({
 
             <div className="text-center">
               <h2 className="text-lg font-bold text-foreground">
-                {year}年{month}月 第{week}週
+                {year}年{month}月
               </h2>
               <p className="text-sm text-muted-foreground">{getWeekPeriod()}</p>
             </div>
@@ -126,6 +161,28 @@ export function WeekNavigation({
               <RotateCcw className="h-4 w-4" />
               今週に戻る
             </Button>
+
+            <div className="relative">
+              <Button
+                variant="outline"
+                onClick={() => setIsCalendarOpen(!isCalendarOpen)}
+                className="flex items-center gap-2"
+              >
+                <CalendarIcon className="h-4 w-4" />
+                日付選択
+              </Button>
+
+              {isCalendarOpen && (
+                <div className="absolute left-0 top-full z-50 mt-2 rounded-md border bg-white p-3 shadow-lg">
+                  <Calendar
+                    mode="single"
+                    selected={selectedDate}
+                    onSelect={handleDateSelect}
+                    className="rounded-md border-0"
+                  />
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>

@@ -25,7 +25,7 @@ export default function PublicShiftsPage() {
   const now = new Date();
   const [currentYear, setCurrentYear] = useState(now.getFullYear());
   const [currentMonth, setCurrentMonth] = useState(now.getMonth() + 1);
-  const [currentWeek, setCurrentWeek] = useState(1);
+  const [weeklyBaseDate, setWeeklyBaseDate] = useState(now); // 週間ビューの基準日
   const [viewMode, setViewMode] = useState<ViewMode>('monthly');
   const [, setShifts] = useState<Shift[]>([]);
   const [, setDepartments] = useState<Department[]>([]);
@@ -41,14 +41,43 @@ export default function PublicShiftsPage() {
     }
   }, [searchParams]);
 
+  // 週間ビュー用のクエリパラメータ計算
+  const weeklyQueryParams = useMemo<ShiftQueryParams>(() => {
+    // 週の開始日（月曜日）を計算
+    const baseDate = new Date(weeklyBaseDate);
+    const dayOfWeek = baseDate.getDay(); // 0 = Sunday, 1 = Monday, ...
+    const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek; // 月曜日までの日数
+
+    const monday = new Date(baseDate);
+    monday.setDate(baseDate.getDate() + mondayOffset);
+
+    // 週の終了日（日曜日）を計算
+    const sunday = new Date(monday);
+    sunday.setDate(monday.getDate() + 6);
+
+    const formatDate = (date: Date) => {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    };
+
+    return {
+      dateFrom: formatDate(monday),
+      dateTo: formatDate(sunday),
+    };
+  }, [weeklyBaseDate]);
+
   // Memoized query parameters
-  const queryParams = useMemo<ShiftQueryParams>(
-    () => ({
+  const queryParams = useMemo<ShiftQueryParams>(() => {
+    if (viewMode === 'weekly') {
+      return weeklyQueryParams;
+    }
+    return {
       dateFrom: `${currentYear}-${String(currentMonth).padStart(2, '0')}-01`,
       dateTo: `${currentYear}-${String(currentMonth).padStart(2, '0')}-31`,
-    }),
-    [currentYear, currentMonth]
-  );
+    };
+  }, [currentYear, currentMonth, viewMode, weeklyQueryParams]);
 
   // Memoized data transformation
   const transformShiftsToStats = useCallback(
@@ -139,17 +168,24 @@ export default function PublicShiftsPage() {
     [router]
   );
 
-  // 週間ナビゲーションハンドラー
-  const navigateWeek = useCallback((direction: number) => {
-    setCurrentWeek((prev) => Math.max(1, Math.min(5, prev + direction)));
+  // 週間ナビゲーションハンドラー（任意の日付ベース）
+  const navigateWeek = useCallback(
+    (direction: number) => {
+      const newDate = new Date(weeklyBaseDate);
+      newDate.setDate(weeklyBaseDate.getDate() + direction * 7);
+      setWeeklyBaseDate(newDate);
+    },
+    [weeklyBaseDate]
+  );
+
+  // 今週に戻るハンドラー
+  const goToCurrentWeek = useCallback(() => {
+    setWeeklyBaseDate(new Date());
   }, []);
 
-  // 現在週に戻るハンドラー
-  const goToCurrentWeek = useCallback(() => {
-    const now = new Date();
-    setCurrentYear(now.getFullYear());
-    setCurrentMonth(now.getMonth() + 1);
-    setCurrentWeek(1);
+  // カレンダーで日付選択ハンドラー
+  const handleDateSelect = useCallback((selectedDate: Date) => {
+    setWeeklyBaseDate(selectedDate);
   }, []);
 
   // Memoized month navigation
@@ -240,11 +276,10 @@ export default function PublicShiftsPage() {
           ) : (
             /* 週間ナビゲーション */
             <WeekNavigation
-              year={currentYear}
-              month={currentMonth}
-              week={currentWeek}
+              baseDate={weeklyBaseDate}
               onNavigate={navigateWeek}
               onCurrentWeek={goToCurrentWeek}
+              onDateSelect={handleDateSelect}
             />
           )}
 
@@ -288,9 +323,7 @@ export default function PublicShiftsPage() {
                   /* 週間ビュー */
                   <div className="px-4">
                     <WeeklyShiftList
-                      year={currentYear}
-                      month={currentMonth}
-                      week={currentWeek}
+                      baseDate={weeklyBaseDate}
                       shiftStats={shiftStats}
                       holidays={HOLIDAYS}
                     />
