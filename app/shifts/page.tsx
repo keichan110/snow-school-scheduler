@@ -1,0 +1,269 @@
+'use client';
+
+import { useState, useEffect, useMemo, useCallback } from 'react';
+import Header from '@/components/Header';
+import { Button } from '@/components/ui/button';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { fetchShifts, fetchDepartments, ApiError } from '../admin/shifts/api';
+import { Shift, Department, ShiftStats, ShiftQueryParams, DayData } from '../admin/shifts/types';
+import { PublicShiftCalendarGrid } from './components/PublicShiftCalendarGrid';
+import { PublicShiftMobileList } from './components/PublicShiftMobileList';
+import { PublicShiftBottomModal } from './components/PublicShiftBottomModal';
+import { getDepartmentTypeById } from '../admin/shifts/utils/shiftUtils';
+import { HOLIDAYS } from '../admin/shifts/constants/shiftConstants';
+
+export default function PublicShiftsPage() {
+  const now = new Date();
+  const [currentYear, setCurrentYear] = useState(now.getFullYear());
+  const [currentMonth, setCurrentMonth] = useState(now.getMonth() + 1);
+  const [, setShifts] = useState<Shift[]>([]);
+  const [, setDepartments] = useState<Department[]>([]);
+  const [shiftStats, setShiftStats] = useState<ShiftStats>({});
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Memoized query parameters
+  const queryParams = useMemo<ShiftQueryParams>(
+    () => ({
+      dateFrom: `${currentYear}-${String(currentMonth).padStart(2, '0')}-01`,
+      dateTo: `${currentYear}-${String(currentMonth).padStart(2, '0')}-31`,
+    }),
+    [currentYear, currentMonth]
+  );
+
+  // Memoized data transformation
+  const transformShiftsToStats = useCallback(
+    (shifts: Shift[], departments: Department[]): ShiftStats => {
+      const stats: ShiftStats = {};
+
+      shifts.forEach((shift) => {
+        const date = shift.date;
+        if (!stats[date]) {
+          stats[date] = { shifts: [] };
+        }
+
+        const departmentType = getDepartmentTypeById(shift.departmentId, departments);
+
+        // 同じ部門・シフト種別の組み合わせが既に存在するかチェック
+        const existingShift = stats[date].shifts.find(
+          (s) => s.type === shift.shiftType.name && s.department === departmentType
+        );
+
+        if (existingShift) {
+          // 既存のシフトに人数を加算
+          existingShift.count += shift.assignedCount;
+        } else {
+          // 新しいシフトエントリを追加
+          stats[date].shifts.push({
+            type: shift.shiftType.name,
+            department: departmentType,
+            count: shift.assignedCount,
+          });
+        }
+      });
+
+      return stats;
+    },
+    []
+  );
+
+  // データ取得
+  useEffect(() => {
+    let isCancelled = false;
+
+    const loadData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        const [shiftsData, departmentsData] = await Promise.all([
+          fetchShifts(queryParams),
+          fetchDepartments(),
+        ]);
+
+        if (!isCancelled) {
+          setShifts(shiftsData);
+          setDepartments(departmentsData);
+          setShiftStats(transformShiftsToStats(shiftsData, departmentsData));
+        }
+      } catch (error) {
+        if (!isCancelled) {
+          console.error('Failed to load data:', error);
+          const errorMessage =
+            error instanceof ApiError
+              ? error.message
+              : error instanceof Error
+                ? error.message
+                : 'データの読み込みに失敗しました';
+          setError(errorMessage);
+        }
+      } finally {
+        if (!isCancelled) {
+          setLoading(false);
+        }
+      }
+    };
+
+    loadData();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [queryParams, transformShiftsToStats]);
+
+  // Memoized month navigation
+  const navigateMonth = useCallback(
+    (direction: number) => {
+      let newMonth = currentMonth + direction;
+      let newYear = currentYear;
+
+      if (newMonth > 12) {
+        newMonth = 1;
+        newYear++;
+      } else if (newMonth < 1) {
+        newMonth = 12;
+        newYear--;
+      }
+
+      setCurrentMonth(newMonth);
+      setCurrentYear(newYear);
+    },
+    [currentMonth, currentYear]
+  );
+
+  // Handle date selection
+  const handleDateSelect = useCallback((date: string) => {
+    setSelectedDate(date);
+    setIsModalOpen(true);
+  }, []);
+
+  // Handle modal close
+  const handleModalOpenChange = useCallback((open: boolean) => {
+    setIsModalOpen(open);
+    if (!open) {
+      setSelectedDate(null);
+    }
+  }, []);
+
+  // Get day data for modal
+  const dayData = useMemo((): DayData | null => {
+    if (!selectedDate || !shiftStats[selectedDate]) {
+      return null;
+    }
+    return {
+      date: selectedDate,
+      shifts: shiftStats[selectedDate].shifts,
+      isHoliday: HOLIDAYS[selectedDate] || false,
+    };
+  }, [selectedDate, shiftStats]);
+
+  if (error) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="text-center">
+          <div className="mb-2 text-lg font-medium text-red-600 dark:text-red-400">
+            エラーが発生しました
+          </div>
+          <div className="text-sm text-muted-foreground">{error}</div>
+          <Button onClick={() => window.location.reload()} className="mt-4" type="button">
+            再読み込み
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen">
+      <Header />
+
+      <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 md:py-8 lg:px-8">
+        {/* ページタイトル */}
+        <div className="mb-6 text-center md:mb-8">
+          <h1 className="mb-2 text-2xl font-bold text-foreground md:text-3xl">シフト状況確認</h1>
+          <p className="px-2 text-sm text-muted-foreground md:text-base">
+            現在のシフト状況をご確認いただけます
+          </p>
+        </div>
+
+        {/* 月間シフト状況 */}
+        <div className="mb-8">
+          {/* 月ナビゲーション - 固定ヘッダー */}
+          <div className="sticky top-20 z-40 -mx-4 mb-4 border-b border-border/30 px-4 backdrop-blur-sm">
+            <div className="flex items-center justify-between py-3">
+              <Button
+                variant="outline"
+                onClick={() => navigateMonth(-1)}
+                className="flex touch-manipulation items-center gap-1 px-2 py-2 hover:shadow-md md:gap-2 md:px-4"
+              >
+                <ChevronLeft className="h-4 w-4" />
+                <span className="hidden text-sm font-medium sm:inline">前月</span>
+              </Button>
+
+              <h2 className="text-lg font-bold text-foreground md:text-xl">
+                {currentYear}年{currentMonth}月
+              </h2>
+
+              <Button
+                variant="outline"
+                onClick={() => navigateMonth(1)}
+                className="flex touch-manipulation items-center gap-1 px-2 py-2 hover:shadow-md md:gap-2 md:px-4"
+              >
+                <span className="hidden text-sm font-medium sm:inline">翌月</span>
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+
+          {loading ? (
+            <div className="flex items-center justify-center py-8">
+              <div className="text-center">
+                <div className="mx-auto h-8 w-8 animate-spin rounded-full border-b-2 border-blue-600"></div>
+                <div className="mt-2 text-muted-foreground">読み込み中...</div>
+              </div>
+            </div>
+          ) : (
+            <ScrollArea className="h-[calc(100vh-20rem)]">
+              <div className="pb-8">
+                {/* デスクトップ・タブレット用カレンダー */}
+                <div className="hidden sm:block">
+                  <PublicShiftCalendarGrid
+                    year={currentYear}
+                    month={currentMonth}
+                    shiftStats={shiftStats}
+                    holidays={HOLIDAYS}
+                    selectedDate={selectedDate}
+                    onDateSelect={handleDateSelect}
+                  />
+                </div>
+
+                {/* モバイル用リスト表示 */}
+                <div className="block px-4 sm:hidden">
+                  <PublicShiftMobileList
+                    year={currentYear}
+                    month={currentMonth}
+                    shiftStats={shiftStats}
+                    holidays={HOLIDAYS}
+                    selectedDate={selectedDate}
+                    onDateSelect={handleDateSelect}
+                  />
+                </div>
+              </div>
+            </ScrollArea>
+          )}
+        </div>
+      </div>
+
+      {/* 読み取り専用モーダル */}
+      <PublicShiftBottomModal
+        isOpen={isModalOpen}
+        onOpenChange={handleModalOpenChange}
+        selectedDate={selectedDate}
+        dayData={dayData}
+      />
+    </div>
+  );
+}
