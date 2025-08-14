@@ -372,7 +372,7 @@ describe('Shifts API', () => {
             shiftAssignment: {
               create: jest.fn().mockResolvedValue(createdAssignment),
             },
-          } as Parameters<typeof callback>[0])
+          } as unknown as Parameters<typeof callback>[0])
         })
 
         const request = createMockPostRequest(requestBody)
@@ -445,7 +445,7 @@ describe('Shifts API', () => {
             shiftAssignment: {
               create: jest.fn(),
             },
-          } as Parameters<typeof callback>[0])
+          } as unknown as Parameters<typeof callback>[0])
         })
 
         const request = createMockPostRequest(requestBody)

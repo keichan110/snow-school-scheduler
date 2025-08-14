@@ -81,7 +81,8 @@ jest.mock('next/server', () => ({
 
 // NextResponseをjsonとコンストラクタの両方でモック化
 const MockedNextResponse = NextResponse as jest.MockedClass<typeof NextResponse>
-MockedNextResponse.json = jest.fn()
+const mockNextResponseJson = jest.fn()
+MockedNextResponse.json = mockNextResponseJson
 
 const mockPrisma = prisma as jest.Mocked<typeof prisma>
 const mockShiftFindUnique = mockPrisma.shift.findUnique as jest.MockedFunction<typeof prisma.shift.findUnique>
@@ -143,7 +144,7 @@ describe('Shifts [id] API', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     // NextResponse.jsonのデフォルトモック実装
-    MockedNextResponse.json.mockImplementation((data, init) => {
+    mockNextResponseJson.mockImplementation((data: Parameters<typeof NextResponse.json>[0], init?: Parameters<typeof NextResponse.json>[1]) => {
       return {
         status: init?.status || 200,
         json: async () => data,
@@ -357,7 +358,7 @@ describe('Shifts [id] API', () => {
                 assignedAt: new Date('2024-01-02T10:00:00Z'),
               }),
             },
-          } as Parameters<typeof callback>[0])
+          } as unknown as Parameters<typeof callback>[0])
         })
 
         const request = createMockPutRequest(requestBody)
@@ -449,7 +450,7 @@ describe('Shifts [id] API', () => {
             shift: {
               delete: jest.fn(),
             },
-          } as Parameters<typeof callback>[0])
+          } as unknown as Parameters<typeof callback>[0])
         })
 
         const request = createMockDeleteRequest()
