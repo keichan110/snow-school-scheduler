@@ -1,26 +1,26 @@
-import { NextResponse } from 'next/server'
-import { prisma } from '@/lib/db'
+import { NextResponse } from 'next/server';
+import { prisma } from '@/lib/db';
 
 interface RouteContext {
-  params: Promise<{ id: string }>
+  params: Promise<{ id: string }>;
 }
 
 export async function GET(request: Request, context: RouteContext) {
   try {
-    const { id } = await context.params
-    
+    const { id } = await context.params;
+
     // IDが数値でない場合は404を返す
-    const certificationId = parseInt(id, 10)
+    const certificationId = parseInt(id, 10);
     if (isNaN(certificationId)) {
       return NextResponse.json(
         {
           success: false,
           data: null,
           message: null,
-          error: 'Resource not found'
+          error: 'Resource not found',
         },
         { status: 404 }
-      )
+      );
     }
 
     const certification = await prisma.certification.findUnique({
@@ -30,7 +30,7 @@ export async function GET(request: Request, context: RouteContext) {
           select: {
             id: true,
             name: true,
-          }
+          },
         },
         instructorCertifications: {
           include: {
@@ -39,13 +39,13 @@ export async function GET(request: Request, context: RouteContext) {
                 id: true,
                 lastName: true,
                 firstName: true,
-                status: true
-              }
-            }
-          }
-        }
-      }
-    })
+                status: true,
+              },
+            },
+          },
+        },
+      },
+    });
 
     // 資格が見つからない場合は404を返す
     if (!certification) {
@@ -54,73 +54,73 @@ export async function GET(request: Request, context: RouteContext) {
           success: false,
           data: null,
           message: null,
-          error: 'Resource not found'
+          error: 'Resource not found',
         },
         { status: 404 }
-      )
+      );
     }
 
     // レスポンス形式をCertificationDetailスキーマに合わせて変換
-    const { instructorCertifications, ...certificationBase } = certification
+    const { instructorCertifications, ...certificationBase } = certification;
     const certificationDetail = {
       ...certificationBase,
-      instructors: instructorCertifications.map(ic => ic.instructor)
-    }
+      instructors: instructorCertifications.map((ic) => ic.instructor),
+    };
 
     return NextResponse.json({
       success: true,
       data: certificationDetail,
       message: null,
-      error: null
-    })
+      error: null,
+    });
   } catch (error) {
-    console.error('Certification API error:', error)
+    console.error('Certification API error:', error);
     return NextResponse.json(
       {
         success: false,
         data: null,
         message: null,
-        error: 'Internal server error'
+        error: 'Internal server error',
       },
       { status: 500 }
-    )
+    );
   }
 }
 
 export async function PUT(request: Request, context: RouteContext) {
   try {
-    const { id } = await context.params
-    
+    const { id } = await context.params;
+
     // IDが数値でない場合は404を返す
-    const certificationId = parseInt(id, 10)
+    const certificationId = parseInt(id, 10);
     if (isNaN(certificationId)) {
       return NextResponse.json(
         {
           success: false,
           data: null,
           message: null,
-          error: 'Resource not found'
+          error: 'Resource not found',
         },
         { status: 404 }
-      )
+      );
     }
 
-    const body = await request.json()
-    
+    const body = await request.json();
+
     // 必須フィールドのバリデーション
-    const requiredFields = ['departmentId', 'name', 'shortName', 'organization']
-    const missingFields = requiredFields.filter(field => !(field in body))
-    
+    const requiredFields = ['departmentId', 'name', 'shortName', 'organization'];
+    const missingFields = requiredFields.filter((field) => !(field in body));
+
     if (missingFields.length > 0) {
       return NextResponse.json(
         {
           success: false,
           data: null,
           message: null,
-          error: `Missing required fields: ${missingFields.join(', ')}`
+          error: `Missing required fields: ${missingFields.join(', ')}`,
         },
         { status: 400 }
-      )
+      );
     }
 
     // 資格更新
@@ -132,27 +132,27 @@ export async function PUT(request: Request, context: RouteContext) {
         shortName: body.shortName,
         organization: body.organization,
         description: body.description,
-        isActive: body.isActive ?? true
+        isActive: body.isActive ?? true,
       },
       include: {
         department: {
           select: {
             id: true,
             name: true,
-          }
-        }
-      }
-    })
+          },
+        },
+      },
+    });
 
     return NextResponse.json({
       success: true,
       data: certification,
       message: 'Certification updated successfully',
-      error: null
-    })
+      error: null,
+    });
   } catch (error: unknown) {
-    console.error('Certification API error:', error)
-    
+    console.error('Certification API error:', error);
+
     // Prismaの "Record to update not found" エラーを404として処理
     if (error && typeof error === 'object' && 'code' in error && error.code === 'P2025') {
       return NextResponse.json(
@@ -160,10 +160,10 @@ export async function PUT(request: Request, context: RouteContext) {
           success: false,
           data: null,
           message: null,
-          error: 'Resource not found'
+          error: 'Resource not found',
         },
         { status: 404 }
-      )
+      );
     }
 
     return NextResponse.json(
@@ -171,9 +171,9 @@ export async function PUT(request: Request, context: RouteContext) {
         success: false,
         data: null,
         message: null,
-        error: 'Internal server error'
+        error: 'Internal server error',
       },
       { status: 500 }
-    )
+    );
   }
 }

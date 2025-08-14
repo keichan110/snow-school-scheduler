@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import { Info, FileText, PersonSimpleSki, PersonSimpleSnowboard } from "@phosphor-icons/react";
-import type { CertificationModalProps, CertificationFormData } from "./types";
-import { getDepartmentType } from "./utils";
+import { useState, useEffect } from 'react';
+import { Info, FileText, PersonSimpleSki, PersonSimpleSnowboard } from '@phosphor-icons/react';
+import type { CertificationModalProps, CertificationFormData } from './types';
+import { getDepartmentType } from './utils';
 import {
   Drawer,
   DrawerClose,
@@ -11,15 +11,15 @@ import {
   DrawerHeader,
   DrawerTitle,
   DrawerFooter,
-} from "@/components/ui/drawer";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Switch } from "@/components/ui/switch";
-import { Separator } from "@/components/ui/separator";
+} from '@/components/ui/drawer';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Switch } from '@/components/ui/switch';
+import { Separator } from '@/components/ui/separator';
 
 export default function CertificationModal({
   isOpen,
@@ -28,12 +28,12 @@ export default function CertificationModal({
   onSave,
 }: CertificationModalProps) {
   const [formData, setFormData] = useState<CertificationFormData>({
-    name: "",
-    shortName: "",
-    department: "ski",
-    organization: "",
-    description: "",
-    status: "active",
+    name: '',
+    shortName: '',
+    department: 'ski',
+    organization: '',
+    description: '',
+    status: 'active',
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -44,21 +44,21 @@ export default function CertificationModal({
 
       setFormData({
         name: certification.name,
-        shortName: certification.shortName || "",
+        shortName: certification.shortName || '',
         department: deptType,
         organization: certification.organization,
-        description: certification.description || "",
-        status: certification.isActive ? "active" : "inactive",
+        description: certification.description || '',
+        status: certification.isActive ? 'active' : 'inactive',
       });
     } else {
       // 新規追加モード
       setFormData({
-        name: "",
-        shortName: "",
-        department: "ski",
-        organization: "",
-        description: "",
-        status: "active",
+        name: '',
+        shortName: '',
+        department: 'ski',
+        organization: '',
+        description: '',
+        status: 'active',
       });
     }
   }, [certification, isOpen]);
@@ -71,8 +71,8 @@ export default function CertificationModal({
       await onSave(formData);
       onClose();
     } catch (error) {
-      console.error("Save error:", error);
-      alert(error instanceof Error ? error.message : "保存に失敗しました");
+      console.error('Save error:', error);
+      alert(error instanceof Error ? error.message : '保存に失敗しました');
     } finally {
       setIsSubmitting(false);
     }
@@ -81,19 +81,19 @@ export default function CertificationModal({
   return (
     <Drawer open={isOpen} onOpenChange={onClose}>
       <DrawerContent>
-        <div className="max-w-7xl mx-auto w-full">
+        <div className="mx-auto w-full max-w-7xl">
           <DrawerHeader>
-            <DrawerTitle className="text-2xl flex items-center gap-2">
-              {certification ? "資格編集" : "新しい資格を追加"}
+            <DrawerTitle className="flex items-center gap-2 text-2xl">
+              {certification ? '資格編集' : '新しい資格を追加'}
             </DrawerTitle>
           </DrawerHeader>
 
-          <ScrollArea className="h-auto overflow-y-auto p-4 max-h-[60vh] overflow-auto">
+          <ScrollArea className="h-auto max-h-[60vh] overflow-auto overflow-y-auto p-4">
             <form id="certification-form" onSubmit={handleSubmit} className="space-y-6">
               {/* 基本情報セクション */}
               <div className="space-y-4">
                 <div className="flex items-center gap-2 text-lg font-semibold">
-                  <Info className="w-5 h-5 text-primary" weight="regular" />
+                  <Info className="h-5 w-5 text-primary" weight="regular" />
                   基本情報
                 </div>
 
@@ -105,21 +105,21 @@ export default function CertificationModal({
                   <RadioGroup
                     value={formData.department}
                     onValueChange={(value) =>
-                      setFormData((prev) => ({ ...prev, department: value as "ski" | "snowboard" }))
+                      setFormData((prev) => ({ ...prev, department: value as 'ski' | 'snowboard' }))
                     }
                     className="flex gap-4"
                   >
-                    <div className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-accent cursor-pointer has-[:checked]:border-primary has-[:checked]:bg-primary/5">
+                    <div className="flex cursor-pointer items-center space-x-2 rounded-lg border p-3 hover:bg-accent has-[:checked]:border-primary has-[:checked]:bg-primary/5">
                       <RadioGroupItem value="ski" id="ski" />
-                      <Label htmlFor="ski" className="flex items-center gap-2 cursor-pointer">
-                        <PersonSimpleSki className="w-5 h-5" weight="regular" />
+                      <Label htmlFor="ski" className="flex cursor-pointer items-center gap-2">
+                        <PersonSimpleSki className="h-5 w-5" weight="regular" />
                         <span className="font-medium">スキー</span>
                       </Label>
                     </div>
-                    <div className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-accent cursor-pointer has-[:checked]:border-accent has-[:checked]:bg-accent/20">
+                    <div className="flex cursor-pointer items-center space-x-2 rounded-lg border p-3 hover:bg-accent has-[:checked]:border-accent has-[:checked]:bg-accent/20">
                       <RadioGroupItem value="snowboard" id="snowboard" />
-                      <Label htmlFor="snowboard" className="flex items-center gap-2 cursor-pointer">
-                        <PersonSimpleSnowboard className="w-5 h-5" weight="regular" />
+                      <Label htmlFor="snowboard" className="flex cursor-pointer items-center gap-2">
+                        <PersonSimpleSnowboard className="h-5 w-5" weight="regular" />
                         <span className="font-medium">スノーボード</span>
                       </Label>
                     </div>
@@ -148,7 +148,7 @@ export default function CertificationModal({
                 </div>
 
                 {/* 発行組織と正式名称を2カラム（発行組織は小さく） */}
-                <div className="grid grid-cols-1 lg:grid-cols-[200px_1fr] gap-4">
+                <div className="grid grid-cols-1 gap-4 lg:grid-cols-[200px_1fr]">
                   <div className="space-y-2">
                     <Label htmlFor="organization" className="text-sm font-medium">
                       発行組織 <span className="text-destructive">*</span>
@@ -178,7 +178,9 @@ export default function CertificationModal({
                       onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
                       required
                     />
-                    <p className="text-xs text-muted-foreground">正式な資格名称を入力してください</p>
+                    <p className="text-xs text-muted-foreground">
+                      正式な資格名称を入力してください
+                    </p>
                   </div>
                 </div>
               </div>
@@ -188,7 +190,7 @@ export default function CertificationModal({
               {/* 詳細情報セクション */}
               <div className="space-y-4">
                 <div className="flex items-center gap-2 text-lg font-semibold">
-                  <FileText className="w-5 h-5 text-primary" weight="regular" />
+                  <FileText className="h-5 w-5 text-primary" weight="regular" />
                   詳細情報
                 </div>
 
@@ -214,16 +216,16 @@ export default function CertificationModal({
                   <Label className="text-sm font-medium">有効</Label>
                   <div className="flex items-center space-x-2">
                     <Switch
-                      checked={formData.status === "active"}
+                      checked={formData.status === 'active'}
                       onCheckedChange={(checked) =>
                         setFormData((prev) => ({
                           ...prev,
-                          status: checked ? "active" : "inactive",
+                          status: checked ? 'active' : 'inactive',
                         }))
                       }
                     />
                     <Label className="text-sm text-muted-foreground">
-                      {formData.status === "active" ? "有効" : "無効"}
+                      {formData.status === 'active' ? '有効' : '無効'}
                     </Label>
                   </div>
                   <p className="text-xs text-muted-foreground">
@@ -235,7 +237,7 @@ export default function CertificationModal({
           </ScrollArea>
 
           <DrawerFooter>
-            <div className="flex gap-2 w-full">
+            <div className="flex w-full gap-2">
               <DrawerClose asChild>
                 <Button type="button" variant="outline" disabled={isSubmitting} className="flex-1">
                   キャンセル
@@ -247,7 +249,7 @@ export default function CertificationModal({
                 disabled={isSubmitting}
                 className="flex-1"
               >
-                {isSubmitting ? "保存中..." : "保存"}
+                {isSubmitting ? '保存中...' : '保存'}
               </Button>
             </div>
           </DrawerFooter>

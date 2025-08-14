@@ -2,13 +2,13 @@
 const nextConfig = {
   output: 'standalone',
   experimental: {
-    optimizePackageImports: ['lucide-react', '@phosphor-icons/react']
+    optimizePackageImports: ['lucide-react', '@phosphor-icons/react'],
   },
   images: {
-    unoptimized: true
+    unoptimized: true,
   },
   eslint: {
-    dirs: ['app', 'lib', 'components']
+    dirs: ['app', 'lib', 'components'],
   },
   async headers() {
     return [
@@ -17,24 +17,24 @@ const nextConfig = {
         headers: [
           {
             key: 'X-Content-Type-Options',
-            value: 'nosniff'
+            value: 'nosniff',
           },
           {
             key: 'X-Frame-Options',
-            value: 'DENY'
+            value: 'DENY',
           },
           {
             key: 'X-XSS-Protection',
-            value: '1; mode=block'
+            value: '1; mode=block',
           },
           {
             key: 'Referrer-Policy',
-            value: 'origin-when-cross-origin'
-          }
-        ]
-      }
-    ]
-  }
-}
+            value: 'origin-when-cross-origin',
+          },
+        ],
+      },
+    ];
+  },
+};
 
-module.exports = nextConfig
+module.exports = nextConfig;

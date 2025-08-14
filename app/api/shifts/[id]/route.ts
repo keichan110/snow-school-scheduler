@@ -1,18 +1,15 @@
-import { NextResponse } from 'next/server'
-import { NextRequest } from 'next/server'
-import { prisma } from '@/lib/db'
+import { NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
+import { prisma } from '@/lib/db';
 
 interface Params {
-  id: string
+  id: string;
 }
 
-export async function GET(
-  request: NextRequest,
-  context: { params: Promise<Params> }
-) {
+export async function GET(request: NextRequest, context: { params: Promise<Params> }) {
   try {
-    const params = await context.params
-    const id = parseInt(params.id)
+    const params = await context.params;
+    const id = parseInt(params.id);
 
     if (isNaN(id)) {
       return NextResponse.json(
@@ -20,10 +17,10 @@ export async function GET(
           success: false,
           data: null,
           message: null,
-          error: 'Invalid shift ID'
+          error: 'Invalid shift ID',
         },
         { status: 400 }
-      )
+      );
     }
 
     const shift = await prisma.shift.findUnique({
@@ -33,11 +30,11 @@ export async function GET(
         shiftType: true,
         shiftAssignments: {
           include: {
-            instructor: true
-          }
-        }
-      }
-    })
+            instructor: true,
+          },
+        },
+      },
+    });
 
     if (!shift) {
       return NextResponse.json(
@@ -45,10 +42,10 @@ export async function GET(
           success: false,
           data: null,
           message: null,
-          error: 'Resource not found'
+          error: 'Resource not found',
         },
         { status: 404 }
-      )
+      );
     }
 
     // ShiftWithStats形式に変換
@@ -62,7 +59,7 @@ export async function GET(
       updatedAt: shift.updatedAt.toISOString(),
       department: shift.department,
       shiftType: shift.shiftType,
-      assignments: shift.shiftAssignments.map(assignment => ({
+      assignments: shift.shiftAssignments.map((assignment) => ({
         id: assignment.id,
         shiftId: assignment.shiftId,
         instructorId: assignment.instructorId,
@@ -71,39 +68,36 @@ export async function GET(
           id: assignment.instructor.id,
           lastName: assignment.instructor.lastName,
           firstName: assignment.instructor.firstName,
-          status: assignment.instructor.status
-        }
+          status: assignment.instructor.status,
+        },
       })),
-      assignedCount: shift.shiftAssignments.length
-    }
+      assignedCount: shift.shiftAssignments.length,
+    };
 
     return NextResponse.json({
       success: true,
       data: shiftWithStats,
       message: 'Shift operation completed successfully',
-      error: null
-    })
+      error: null,
+    });
   } catch (error) {
-    console.error('Shift GET error:', error)
+    console.error('Shift GET error:', error);
     return NextResponse.json(
       {
         success: false,
         data: null,
         message: null,
-        error: 'Internal server error'
+        error: 'Internal server error',
       },
       { status: 500 }
-    )
+    );
   }
 }
 
-export async function PUT(
-  request: NextRequest,
-  context: { params: Promise<Params> }
-) {
+export async function PUT(request: NextRequest, context: { params: Promise<Params> }) {
   try {
-    const params = await context.params
-    const id = parseInt(params.id)
+    const params = await context.params;
+    const id = parseInt(params.id);
 
     if (isNaN(id)) {
       return NextResponse.json(
@@ -111,14 +105,14 @@ export async function PUT(
           success: false,
           data: null,
           message: null,
-          error: 'Invalid shift ID'
+          error: 'Invalid shift ID',
         },
         { status: 400 }
-      )
+      );
     }
 
-    const body = await request.json()
-    const { date, departmentId, shiftTypeId, description, assignedInstructorIds = [] } = body
+    const body = await request.json();
+    const { date, departmentId, shiftTypeId, description, assignedInstructorIds = [] } = body;
 
     // バリデーション
     if (!date || !departmentId || !shiftTypeId) {
@@ -127,16 +121,16 @@ export async function PUT(
           success: false,
           data: null,
           message: null,
-          error: 'Required fields: date, departmentId, shiftTypeId'
+          error: 'Required fields: date, departmentId, shiftTypeId',
         },
         { status: 400 }
-      )
+      );
     }
 
     // 既存のシフトが存在するかチェック
     const existingShift = await prisma.shift.findUnique({
-      where: { id }
-    })
+      where: { id },
+    });
 
     if (!existingShift) {
       return NextResponse.json(
@@ -144,10 +138,10 @@ export async function PUT(
           success: false,
           data: null,
           message: null,
-          error: 'Resource not found'
+          error: 'Resource not found',
         },
         { status: 404 }
-      )
+      );
     }
 
     // トランザクションでシフト更新と割り当て更新
@@ -159,36 +153,36 @@ export async function PUT(
           date: new Date(date),
           departmentId: parseInt(departmentId),
           shiftTypeId: parseInt(shiftTypeId),
-          description: description || null
+          description: description || null,
         },
         include: {
           department: true,
-          shiftType: true
-        }
-      })
+          shiftType: true,
+        },
+      });
 
       // 既存の割り当てを削除
       await tx.shiftAssignment.deleteMany({
-        where: { shiftId: id }
-      })
+        where: { shiftId: id },
+      });
 
       // 新しい割り当てを作成
       const assignmentPromises = assignedInstructorIds.map((instructorId: number) =>
         tx.shiftAssignment.create({
           data: {
             shiftId: id,
-            instructorId
+            instructorId,
           },
           include: {
-            instructor: true
-          }
+            instructor: true,
+          },
         })
-      )
+      );
 
-      const assignments = await Promise.all(assignmentPromises)
+      const assignments = await Promise.all(assignmentPromises);
 
-      return { shift: updatedShift, assignments }
-    })
+      return { shift: updatedShift, assignments };
+    });
 
     // レスポンス用データを整形
     const shiftWithStats = {
@@ -201,7 +195,7 @@ export async function PUT(
       updatedAt: result.shift.updatedAt.toISOString(),
       department: result.shift.department,
       shiftType: result.shift.shiftType,
-      assignments: result.assignments.map(assignment => ({
+      assignments: result.assignments.map((assignment) => ({
         id: assignment.id,
         shiftId: assignment.shiftId,
         instructorId: assignment.instructorId,
@@ -210,39 +204,36 @@ export async function PUT(
           id: assignment.instructor.id,
           lastName: assignment.instructor.lastName,
           firstName: assignment.instructor.firstName,
-          status: assignment.instructor.status
-        }
+          status: assignment.instructor.status,
+        },
       })),
-      assignedCount: result.assignments.length
-    }
+      assignedCount: result.assignments.length,
+    };
 
     return NextResponse.json({
       success: true,
       data: shiftWithStats,
       message: 'Shift operation completed successfully',
-      error: null
-    })
+      error: null,
+    });
   } catch (error) {
-    console.error('Shift PUT error:', error)
+    console.error('Shift PUT error:', error);
     return NextResponse.json(
       {
         success: false,
         data: null,
         message: null,
-        error: 'Internal server error'
+        error: 'Internal server error',
       },
       { status: 500 }
-    )
+    );
   }
 }
 
-export async function DELETE(
-  request: NextRequest,
-  context: { params: Promise<Params> }
-) {
+export async function DELETE(request: NextRequest, context: { params: Promise<Params> }) {
   try {
-    const params = await context.params
-    const id = parseInt(params.id)
+    const params = await context.params;
+    const id = parseInt(params.id);
 
     if (isNaN(id)) {
       return NextResponse.json(
@@ -250,16 +241,16 @@ export async function DELETE(
           success: false,
           data: null,
           message: null,
-          error: 'Invalid shift ID'
+          error: 'Invalid shift ID',
         },
         { status: 400 }
-      )
+      );
     }
 
     // 既存のシフトが存在するかチェック
     const existingShift = await prisma.shift.findUnique({
-      where: { id }
-    })
+      where: { id },
+    });
 
     if (!existingShift) {
       return NextResponse.json(
@@ -267,36 +258,36 @@ export async function DELETE(
           success: false,
           data: null,
           message: null,
-          error: 'Resource not found'
+          error: 'Resource not found',
         },
         { status: 404 }
-      )
+      );
     }
 
     // トランザクションでシフトと割り当てを削除
     await prisma.$transaction(async (tx) => {
       // 関連する割り当てを削除（ON DELETE CASCADEが設定されているが明示的に削除）
       await tx.shiftAssignment.deleteMany({
-        where: { shiftId: id }
-      })
+        where: { shiftId: id },
+      });
 
       // シフトを削除
       await tx.shift.delete({
-        where: { id }
-      })
-    })
+        where: { id },
+      });
+    });
 
-    return new NextResponse(null, { status: 204 })
+    return new NextResponse(null, { status: 204 });
   } catch (error) {
-    console.error('Shift DELETE error:', error)
+    console.error('Shift DELETE error:', error);
     return NextResponse.json(
       {
         success: false,
         data: null,
         message: null,
-        error: 'Internal server error'
+        error: 'Internal server error',
       },
       { status: 500 }
-    )
+    );
   }
 }

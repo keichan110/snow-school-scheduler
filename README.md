@@ -13,11 +13,13 @@
 ## 開発環境のセットアップ
 
 1. 依存関係のインストール:
+
 ```bash
 npm install
 ```
 
 2. データベースのセットアップ:
+
 ```bash
 npm run db:generate
 npm run db:push
@@ -25,6 +27,7 @@ npm run db:seed
 ```
 
 3. 開発サーバーの起動:
+
 ```bash
 npm run dev
 ```
@@ -36,7 +39,7 @@ npm run dev
 ├── app/              # Next.js App Router
 │   ├── api/          # API Routes
 │   │   ├── departments/
-│   │   ├── instructors/ 
+│   │   ├── instructors/
 │   │   ├── certifications/
 │   │   ├── shifts/
 │   │   └── health/
@@ -52,6 +55,7 @@ npm run dev
 ## 主要機能
 
 ### API Routes (実装済み)
+
 - ヘルスチェック（`/api/health`）
 - 部門管理（`/api/departments`）
 - 資格マスタ管理（`/api/certifications`）
@@ -59,6 +63,7 @@ npm run dev
 - シフト管理（`/api/shifts`）
 
 ### 開発用コマンド
+
 ```bash
 # 型チェック
 npm run typecheck

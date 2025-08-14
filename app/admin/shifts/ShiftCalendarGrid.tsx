@@ -1,16 +1,16 @@
-"use client";
+'use client';
 
-import { cn } from "@/lib/utils";
-import { ShiftStats, DepartmentType } from "./types";
-import { PersonSimpleSki, PersonSimpleSnowboard, Calendar } from "@phosphor-icons/react";
-import { 
-  getShiftTypeShort, 
-  getDepartmentBgClass, 
+import { cn } from '@/lib/utils';
+import { ShiftStats, DepartmentType } from './types';
+import { PersonSimpleSki, PersonSimpleSnowboard, Calendar } from '@phosphor-icons/react';
+import {
+  getShiftTypeShort,
+  getDepartmentBgClass,
   formatDate,
   getDaysInMonth,
-  getFirstDayOfWeek
-} from "./utils/shiftUtils";
-import { WEEKDAYS } from "./constants/shiftConstants";
+  getFirstDayOfWeek,
+} from './utils/shiftUtils';
+import { WEEKDAYS } from './constants/shiftConstants';
 
 interface ShiftCalendarGridProps {
   year: number;
@@ -20,7 +20,6 @@ interface ShiftCalendarGridProps {
   selectedDate: string | null;
   onDateSelect: (date: string) => void;
 }
-
 
 export function ShiftCalendarGrid({
   year,
@@ -34,17 +33,14 @@ export function ShiftCalendarGrid({
   const daysInMonth = getDaysInMonth(year, month);
   const firstDayOfWeek = getFirstDayOfWeek(year, month);
 
-
-
-
   return (
     <div className="hidden sm:block">
       {/* カレンダーグリッド */}
       <div className="grid grid-cols-7 gap-2 md:gap-2">
         {/* 前月の空白セル */}
         {Array.from({ length: firstDayOfWeek }).map((_, index) => (
-          <div key={`empty-${index}`} className="opacity-30 pointer-events-none">
-            <div className="day-card bg-background border-2 border-border rounded-xl p-3 min-h-[120px] md:min-h-[140px] shadow-lg" />
+          <div key={`empty-${index}`} className="pointer-events-none opacity-30">
+            <div className="day-card min-h-[120px] rounded-xl border-2 border-border bg-background p-3 shadow-lg md:min-h-[140px]" />
           </div>
         ))}
 
@@ -63,29 +59,29 @@ export function ShiftCalendarGrid({
               key={day}
               onClick={() => onDateSelect(date)}
               className={cn(
-                "day-card cursor-pointer transition-all duration-300 border-2 rounded-xl p-3 min-h-[120px] md:min-h-[140px] flex flex-col shadow-lg",
-                "hover:transform hover:-translate-y-1 hover:shadow-xl",
+                'day-card flex min-h-[120px] cursor-pointer flex-col rounded-xl border-2 p-3 shadow-lg transition-all duration-300 md:min-h-[140px]',
+                'hover:-translate-y-1 hover:transform hover:shadow-xl',
                 {
-                  "bg-background border-border hover:border-blue-400": !isSelected && !isHoliday,
-                  "bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-800":
+                  'border-border bg-background hover:border-blue-400': !isSelected && !isHoliday,
+                  'border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950/30':
                     isHoliday && !isSelected,
-                  "bg-blue-50 dark:bg-blue-950/30 border-blue-400 dark:border-blue-600 transform -translate-y-1 shadow-xl":
+                  '-translate-y-1 transform border-blue-400 bg-blue-50 shadow-xl dark:border-blue-600 dark:bg-blue-950/30':
                     isSelected,
-                  "opacity-60": !hasShifts && !isHoliday,
+                  'opacity-60': !hasShifts && !isHoliday,
                 }
               )}
             >
               {/* 日付表示 */}
-              <div className="flex items-center gap-2 mb-2">
+              <div className="mb-2 flex items-center gap-2">
                 <div
-                  className={cn("text-lg font-bold", {
-                    "text-red-600 dark:text-red-400": isHoliday,
-                    "text-foreground": !isHoliday,
+                  className={cn('text-lg font-bold', {
+                    'text-red-600 dark:text-red-400': isHoliday,
+                    'text-foreground': !isHoliday,
                   })}
                 >
                   {day}
                 </div>
-                <div className="text-xs text-muted-foreground font-medium">{dayOfWeek}</div>
+                <div className="text-xs font-medium text-muted-foreground">{dayOfWeek}</div>
               </div>
 
               {/* シフト詳細表示 */}
@@ -95,37 +91,37 @@ export function ShiftCalendarGrid({
                     <div
                       key={idx}
                       className={cn(
-                        "flex items-center justify-between gap-2 rounded-lg px-2 py-2",
+                        'flex items-center justify-between gap-2 rounded-lg px-2 py-2',
                         getDepartmentBgClass(shift.department as DepartmentType)
                       )}
                     >
                       <div className="flex items-center gap-2">
-                        {shift.department === "ski" && (
-                          <PersonSimpleSki className="w-3 h-3 text-foreground" weight="fill" />
+                        {shift.department === 'ski' && (
+                          <PersonSimpleSki className="h-3 w-3 text-foreground" weight="fill" />
                         )}
-                        {shift.department === "snowboard" && (
+                        {shift.department === 'snowboard' && (
                           <PersonSimpleSnowboard
-                            className="w-3 h-3 text-foreground"
+                            className="h-3 w-3 text-foreground"
                             weight="fill"
                           />
                         )}
-                        {shift.department === "mixed" && (
-                          <Calendar className="w-3 h-3 text-foreground" weight="fill" />
+                        {shift.department === 'mixed' && (
+                          <Calendar className="h-3 w-3 text-foreground" weight="fill" />
                         )}
-                        <span className="text-foreground font-medium text-xs">
+                        <span className="text-xs font-medium text-foreground">
                           {getShiftTypeShort(shift.type)}
                         </span>
                       </div>
-                      <span className="bg-background/90 px-2 py-1 rounded-full text-foreground font-bold text-xs min-w-[1.5rem] text-center shadow-sm border border-border">
+                      <span className="min-w-[1.5rem] rounded-full border border-border bg-background/90 px-2 py-1 text-center text-xs font-bold text-foreground shadow-sm">
                         {shift.count}
                       </span>
                     </div>
                   ))}
                 </div>
               ) : (
-                <div className="flex-1 flex items-center justify-center">
+                <div className="flex flex-1 items-center justify-center">
                   <div className="text-center text-xs text-muted-foreground">
-                    {isHoliday ? "祝日" : "シフトなし"}
+                    {isHoliday ? '祝日' : 'シフトなし'}
                   </div>
                 </div>
               )}
