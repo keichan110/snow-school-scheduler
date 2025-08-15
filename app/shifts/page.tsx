@@ -13,8 +13,10 @@ import { PublicShiftMobileList } from './components/PublicShiftMobileList';
 import { WeeklyShiftList } from './components/WeeklyShiftList';
 import { ViewToggle } from './components/ViewToggle';
 import { WeekNavigation } from './components/WeekNavigation';
-import { getDepartmentTypeById } from '../admin/shifts/utils/shiftUtils';
 import { HOLIDAYS } from '../admin/shifts/constants/shiftConstants';
+import { useWeekNavigation } from './hooks/useWeekNavigation';
+import { useMonthNavigation } from './hooks/useMonthNavigation';
+import { useShiftDataTransformation } from './hooks/useShiftDataTransformation';
 
 type ViewMode = 'monthly' | 'weekly';
 
@@ -22,16 +24,17 @@ export default function PublicShiftsPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const now = new Date();
-  const [currentYear, setCurrentYear] = useState(now.getFullYear());
-  const [currentMonth, setCurrentMonth] = useState(now.getMonth() + 1);
-  const [weeklyBaseDate, setWeeklyBaseDate] = useState(now); // 週間ビューの基準日
   const [viewMode, setViewMode] = useState<ViewMode>('monthly');
   const [, setShifts] = useState<Shift[]>([]);
   const [, setDepartments] = useState<Department[]>([]);
   const [shiftStats, setShiftStats] = useState<ShiftStats>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // カスタムフックを使用
+  const { currentYear, currentMonth, monthlyQueryParams, navigateMonth } = useMonthNavigation();
+  const { weeklyBaseDate, weeklyQueryParams, navigateWeek, handleDateSelect } = useWeekNavigation();
+  const { transformShiftsToStats } = useShiftDataTransformation();
 
   // URLパラメータからビューモードを設定
   useEffect(() => {
@@ -41,79 +44,13 @@ export default function PublicShiftsPage() {
     }
   }, [searchParams]);
 
-  // 週間ビュー用のクエリパラメータ計算
-  const weeklyQueryParams = useMemo<ShiftQueryParams>(() => {
-    // 週の開始日（月曜日）を計算
-    const baseDate = new Date(weeklyBaseDate);
-    const dayOfWeek = baseDate.getDay(); // 0 = Sunday, 1 = Monday, ...
-    const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek; // 月曜日までの日数
-
-    const monday = new Date(baseDate);
-    monday.setDate(baseDate.getDate() + mondayOffset);
-
-    // 週の終了日（日曜日）を計算
-    const sunday = new Date(monday);
-    sunday.setDate(monday.getDate() + 6);
-
-    const formatDate = (date: Date) => {
-      const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const day = String(date.getDate()).padStart(2, '0');
-      return `${year}-${month}-${day}`;
-    };
-
-    return {
-      dateFrom: formatDate(monday),
-      dateTo: formatDate(sunday),
-    };
-  }, [weeklyBaseDate]);
-
   // Memoized query parameters
   const queryParams = useMemo<ShiftQueryParams>(() => {
     if (viewMode === 'weekly') {
       return weeklyQueryParams;
     }
-    return {
-      dateFrom: `${currentYear}-${String(currentMonth).padStart(2, '0')}-01`,
-      dateTo: `${currentYear}-${String(currentMonth).padStart(2, '0')}-31`,
-    };
-  }, [currentYear, currentMonth, viewMode, weeklyQueryParams]);
-
-  // Memoized data transformation
-  const transformShiftsToStats = useCallback(
-    (shifts: Shift[], departments: Department[]): ShiftStats => {
-      const stats: ShiftStats = {};
-
-      shifts.forEach((shift) => {
-        const date = shift.date;
-        if (!stats[date]) {
-          stats[date] = { shifts: [] };
-        }
-
-        const departmentType = getDepartmentTypeById(shift.departmentId, departments);
-
-        // 同じ部門・シフト種別の組み合わせが既に存在するかチェック
-        const existingShift = stats[date].shifts.find(
-          (s) => s.type === shift.shiftType.name && s.department === departmentType
-        );
-
-        if (existingShift) {
-          // 既存のシフトに人数を加算
-          existingShift.count += shift.assignedCount;
-        } else {
-          // 新しいシフトエントリを追加
-          stats[date].shifts.push({
-            type: shift.shiftType.name,
-            department: departmentType,
-            count: shift.assignedCount,
-          });
-        }
-      });
-
-      return stats;
-    },
-    []
-  );
+    return monthlyQueryParams;
+  }, [viewMode, weeklyQueryParams, monthlyQueryParams]);
 
   // データ取得
   useEffect(() => {
@@ -166,41 +103,6 @@ export default function PublicShiftsPage() {
       router.push(`/shifts?view=${newView}`, { scroll: false });
     },
     [router]
-  );
-
-  // 週間ナビゲーションハンドラー（任意の日付ベース）
-  const navigateWeek = useCallback(
-    (direction: number) => {
-      const newDate = new Date(weeklyBaseDate);
-      newDate.setDate(weeklyBaseDate.getDate() + direction * 7);
-      setWeeklyBaseDate(newDate);
-    },
-    [weeklyBaseDate]
-  );
-
-  // カレンダーで日付選択ハンドラー
-  const handleDateSelect = useCallback((selectedDate: Date) => {
-    setWeeklyBaseDate(selectedDate);
-  }, []);
-
-  // Memoized month navigation
-  const navigateMonth = useCallback(
-    (direction: number) => {
-      let newMonth = currentMonth + direction;
-      let newYear = currentYear;
-
-      if (newMonth > 12) {
-        newMonth = 1;
-        newYear++;
-      } else if (newMonth < 1) {
-        newMonth = 12;
-        newYear--;
-      }
-
-      setCurrentMonth(newMonth);
-      setCurrentYear(newYear);
-    },
-    [currentMonth, currentYear]
   );
 
   if (error) {

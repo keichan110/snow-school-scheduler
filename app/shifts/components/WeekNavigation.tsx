@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { ChevronLeft, ChevronRight, CalendarIcon } from 'lucide-react';
+import { getWeekPeriodDisplay } from '../utils/weekCalculations';
 
 interface WeekNavigationProps {
   baseDate: Date;
@@ -16,28 +17,7 @@ export function WeekNavigation({ baseDate, onNavigate, onDateSelect }: WeekNavig
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(baseDate);
 
   // 週の期間を表示用にフォーマット
-  const getWeekPeriod = () => {
-    // 週の開始日（月曜日）を計算
-    const dayOfWeek = baseDate.getDay(); // 0 = Sunday, 1 = Monday, ...
-    const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek; // 月曜日までの日数
-
-    const monday = new Date(baseDate);
-    monday.setDate(baseDate.getDate() + mondayOffset);
-
-    // 週の終了日（日曜日）を計算
-    const sunday = new Date(monday);
-    sunday.setDate(monday.getDate() + 6);
-
-    const formatDate = (date: Date) => {
-      const m = date.getMonth() + 1;
-      const d = date.getDate();
-      const dayNames = ['日', '月', '火', '水', '木', '金', '土'];
-      const dayName = dayNames[date.getDay()];
-      return `${m}/${d}(${dayName})`;
-    };
-
-    return `${formatDate(monday)} - ${formatDate(sunday)}`;
-  };
+  const weekPeriod = getWeekPeriodDisplay(baseDate);
 
   // 年月情報を取得
   const year = baseDate.getFullYear();
@@ -72,7 +52,7 @@ export function WeekNavigation({ baseDate, onNavigate, onDateSelect }: WeekNavig
               <h2 className="text-base font-bold text-foreground">
                 {year}年{month}月
               </h2>
-              <p className="text-xs text-muted-foreground">{getWeekPeriod()}</p>
+              <p className="text-xs text-muted-foreground">{weekPeriod}</p>
             </div>
 
             <div className="flex items-center gap-1">
@@ -137,7 +117,7 @@ export function WeekNavigation({ baseDate, onNavigate, onDateSelect }: WeekNavig
               <h2 className="text-lg font-bold text-foreground">
                 {year}年{month}月
               </h2>
-              <p className="text-sm text-muted-foreground">{getWeekPeriod()}</p>
+              <p className="text-sm text-muted-foreground">{weekPeriod}</p>
             </div>
 
             <Button
