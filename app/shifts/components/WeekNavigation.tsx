@@ -3,21 +3,15 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
-import { ChevronLeft, ChevronRight, RotateCcw, CalendarIcon } from 'lucide-react';
+import { ChevronLeft, ChevronRight, CalendarIcon } from 'lucide-react';
 
 interface WeekNavigationProps {
   baseDate: Date;
   onNavigate: (direction: number) => void;
-  onCurrentWeek: () => void;
   onDateSelect: (date: Date) => void;
 }
 
-export function WeekNavigation({
-  baseDate,
-  onNavigate,
-  onCurrentWeek,
-  onDateSelect,
-}: WeekNavigationProps) {
+export function WeekNavigation({ baseDate, onNavigate, onDateSelect }: WeekNavigationProps) {
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(baseDate);
 
@@ -63,7 +57,7 @@ export function WeekNavigation({
       <div className="py-3">
         {/* モバイル用レイアウト */}
         <div className="space-y-3 md:hidden">
-          {/* 1行目: 前/次ボタンと期間表示 */}
+          {/* 1行目: 前/次ボタン、期間表示、カレンダーボタン */}
           <div className="flex items-center justify-between">
             <Button
               variant="outline"
@@ -81,50 +75,48 @@ export function WeekNavigation({
               <p className="text-xs text-muted-foreground">{getWeekPeriod()}</p>
             </div>
 
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => onNavigate(1)}
-              className="flex items-center gap-1 px-2 py-2"
-            >
-              次
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          </div>
-
-          {/* 2行目: 今週に戻るボタンとカレンダーボタン */}
-          <div className="relative flex justify-center gap-2">
-            <Button
-              variant="default"
-              size="sm"
-              onClick={onCurrentWeek}
-              className="flex items-center gap-2"
-            >
-              <RotateCcw className="h-3 w-3" />
-              今週に戻る
-            </Button>
-
-            <div className="relative">
+            <div className="flex items-center gap-1">
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setIsCalendarOpen(!isCalendarOpen)}
-                className="flex items-center gap-2"
+                onClick={() => onNavigate(1)}
+                className="flex items-center gap-1 px-2 py-2"
               >
-                <CalendarIcon className="h-3 w-3" />
-                日付選択
+                次
+                <ChevronRight className="h-4 w-4" />
               </Button>
 
-              {isCalendarOpen && (
-                <div className="absolute right-0 top-full z-50 mt-2 rounded-md border bg-white p-3 shadow-lg">
-                  <Calendar
-                    mode="single"
-                    selected={selectedDate}
-                    onSelect={handleDateSelect}
-                    className="rounded-md border-0"
-                  />
-                </div>
-              )}
+              <div className="relative">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIsCalendarOpen(!isCalendarOpen)}
+                  className="flex items-center px-2 py-2"
+                >
+                  <CalendarIcon className="h-3 w-3" />
+                </Button>
+
+                {isCalendarOpen && (
+                  <div className="absolute right-0 top-full z-50 mt-2 rounded-md border bg-white p-3 shadow-lg">
+                    <div className="mb-2 flex justify-center">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleDateSelect(new Date())}
+                        className="text-xs"
+                      >
+                        今日
+                      </Button>
+                    </div>
+                    <Calendar
+                      mode="single"
+                      selected={selectedDate}
+                      onSelect={handleDateSelect}
+                      className="rounded-md border-0"
+                    />
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -157,11 +149,6 @@ export function WeekNavigation({
               <ChevronRight className="h-4 w-4" />
             </Button>
 
-            <Button variant="default" onClick={onCurrentWeek} className="flex items-center gap-2">
-              <RotateCcw className="h-4 w-4" />
-              今週に戻る
-            </Button>
-
             <div className="relative">
               <Button
                 variant="outline"
@@ -169,11 +156,20 @@ export function WeekNavigation({
                 className="flex items-center gap-2"
               >
                 <CalendarIcon className="h-4 w-4" />
-                日付選択
               </Button>
 
               {isCalendarOpen && (
                 <div className="absolute left-0 top-full z-50 mt-2 rounded-md border bg-white p-3 shadow-lg">
+                  <div className="mb-2 flex justify-center">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleDateSelect(new Date())}
+                      className="text-xs"
+                    >
+                      今日
+                    </Button>
+                  </div>
                   <Calendar
                     mode="single"
                     selected={selectedDate}

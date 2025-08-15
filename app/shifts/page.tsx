@@ -178,11 +178,6 @@ export default function PublicShiftsPage() {
     [weeklyBaseDate]
   );
 
-  // 今週に戻るハンドラー
-  const goToCurrentWeek = useCallback(() => {
-    setWeeklyBaseDate(new Date());
-  }, []);
-
   // カレンダーで日付選択ハンドラー
   const handleDateSelect = useCallback((selectedDate: Date) => {
     setWeeklyBaseDate(selectedDate);
@@ -278,7 +273,6 @@ export default function PublicShiftsPage() {
             <WeekNavigation
               baseDate={weeklyBaseDate}
               onNavigate={navigateWeek}
-              onCurrentWeek={goToCurrentWeek}
               onDateSelect={handleDateSelect}
             />
           )}
