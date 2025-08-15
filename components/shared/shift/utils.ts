@@ -1,9 +1,5 @@
 import { DepartmentType } from './types';
 
-// Performance optimization: pre-compiled regex patterns
-const SKI_PATTERN = /スキー/;
-const SNOWBOARD_PATTERN = /スノーボード/;
-
 // シフト種別の短縮名マッピング (type-safe Record)
 const SHIFT_TYPE_SHORT_MAP: Record<string, string> = {
   スキーレッスン: 'レッスン',
