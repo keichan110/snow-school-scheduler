@@ -71,14 +71,6 @@ export function WeeklyShiftList({ baseDate, shiftStats, holidays }: WeeklyShiftL
 
   return (
     <div className="space-y-6">
-      {/* 週間ヘッダー */}
-      <div className="text-center">
-        <h2 className="text-lg font-bold text-foreground md:text-xl">
-          {year}年{month}月
-        </h2>
-        <p className="text-sm text-muted-foreground">{weekPeriod}</p>
-      </div>
-
       {/* 日別カードリスト */}
       <div className="space-y-4">
         {weekDays.map(({ date, dateString, dayData }) => (

@@ -53,7 +53,7 @@ export function WeekNavigation({ baseDate, onNavigate, onDateSelect }: WeekNavig
   };
 
   return (
-    <div className="sticky top-20 z-40 -mx-4 mb-4 border-b border-border/30 bg-background/80 px-4 backdrop-blur-sm">
+    <div className="sticky top-20 z-40 -mx-4 mb-4 border-b border-border/30 px-4 backdrop-blur-sm">
       <div className="py-3">
         {/* モバイル用レイアウト */}
         <div className="space-y-3 md:hidden">
@@ -91,7 +91,7 @@ export function WeekNavigation({ baseDate, onNavigate, onDateSelect }: WeekNavig
                   variant="outline"
                   size="sm"
                   onClick={() => setIsCalendarOpen(!isCalendarOpen)}
-                  className="flex items-center px-2 py-2"
+                  className="ml-4 flex items-center px-2 py-2"
                 >
                   <CalendarIcon className="h-3 w-3" />
                 </Button>

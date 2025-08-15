@@ -18,7 +18,7 @@ export function ViewToggle({ currentView, onViewChange }: ViewToggleProps) {
         className="flex items-center gap-2"
       >
         <Calendar className="h-4 w-4" />
-        <span className="hidden sm:inline">月間</span>
+        <span className="inline">月間</span>
       </Button>
       <Button
         variant={currentView === 'weekly' ? 'default' : 'ghost'}
@@ -27,7 +27,7 @@ export function ViewToggle({ currentView, onViewChange }: ViewToggleProps) {
         className="flex items-center gap-2"
       >
         <List className="h-4 w-4" />
-        <span className="hidden sm:inline">週間</span>
+        <span className="inline">週間</span>
       </Button>
     </div>
   );
