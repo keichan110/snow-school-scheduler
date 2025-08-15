@@ -1,0 +1,67 @@
+'use client';
+
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+import { useState } from 'react';
+
+// 設計書に基づいたキャッシュ戦略設定
+function makeQueryClient() {
+  return new QueryClient({
+    defaultOptions: {
+      queries: {
+        // 5分のstaleTime（データが新鮮と見なされる時間）
+        staleTime: 5 * 60 * 1000,
+        // 30分のgcTime（キャッシュ保持時間）
+        gcTime: 30 * 60 * 1000,
+        // リトライ戦略（エラー時の再試行）
+        retry: (failureCount, error) => {
+          // ネットワークエラーの場合は最大2回リトライ
+          if (error instanceof TypeError && error.message.includes('fetch')) {
+            return failureCount < 2;
+          }
+          // その他のエラーは1回のみリトライ
+          return failureCount < 1;
+        },
+        // バックグラウンドでの再取得を無効化（パフォーマンス向上）
+        refetchOnWindowFocus: false,
+        // 再接続時の再取得を有効化
+        refetchOnReconnect: true,
+      },
+      mutations: {
+        // mutation失敗時のリトライ（1回のみ）
+        retry: 1,
+      },
+    },
+  });
+}
+
+let browserQueryClient: QueryClient | undefined = undefined;
+
+function getQueryClient() {
+  if (typeof window === 'undefined') {
+    // Server: 常に新しいクライアントを作成
+    return makeQueryClient();
+  } else {
+    // Browser: シングルトンパターンでクライアントを再利用
+    if (!browserQueryClient) browserQueryClient = makeQueryClient();
+    return browserQueryClient;
+  }
+}
+
+interface QueryProviderProps {
+  children: React.ReactNode;
+}
+
+export function QueryProvider({ children }: QueryProviderProps) {
+  // useState を使用してクライアントを初期化
+  // これによりSSRとCSRでのhydrationエラーを防ぐ
+  const [queryClient] = useState(() => getQueryClient());
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      {children}
+      {/* 開発環境でのみReact Query Devtoolsを表示 */}
+      {process.env.NODE_ENV === 'development' && <ReactQueryDevtools initialIsOpen={false} />}
+    </QueryClientProvider>
+  );
+}
