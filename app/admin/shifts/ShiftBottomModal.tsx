@@ -19,13 +19,16 @@ import {
 } from '@/components/ui/drawer';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
-import { DayData, DepartmentType, Department, ShiftType, ApiResponse } from './types';
-import { getDepartmentBgClass } from './utils/shiftUtils';
 import {
-  SAMPLE_INSTRUCTOR_NAMES,
-  DEPARTMENT_STYLES,
-  DEPARTMENT_NAMES,
-} from './constants/shiftConstants';
+  DayData,
+  DepartmentType,
+  Department,
+  ShiftType,
+  ApiResponse,
+  AssignedInstructor,
+} from './types';
+import { getDepartmentBgClass } from './utils/shiftUtils';
+import { DEPARTMENT_STYLES, DEPARTMENT_NAMES } from './constants/shiftConstants';
 import { useState, useEffect } from 'react';
 
 type ModalStep = 'view' | 'create-step1' | 'create-step2';
@@ -338,19 +341,26 @@ export function ShiftBottomModal({
     );
   };
 
-  const generateInstructorChips = (count: number, departmentType: DepartmentType) => {
+  const generateInstructorChips = (
+    assignedInstructors: AssignedInstructor[],
+    departmentType: DepartmentType
+  ) => {
     const chipClass = DEPARTMENT_STYLES[departmentType].chipClass;
 
-    return Array.from({ length: count }).map((_, i) => (
+    if (!assignedInstructors || assignedInstructors.length === 0) {
+      return <div className="text-xs text-muted-foreground">インストラクターが未配置です</div>;
+    }
+
+    return assignedInstructors.map((instructor) => (
       <div
-        key={i}
+        key={instructor.id}
         className={cn(
           'inline-flex cursor-pointer items-center gap-1 rounded-full border px-3 py-1 text-xs font-medium transition-all duration-200 hover:scale-105',
           chipClass
         )}
       >
         <User className="h-3 w-3" weight="fill" />
-        {SAMPLE_INSTRUCTOR_NAMES[i % SAMPLE_INSTRUCTOR_NAMES.length]}
+        {instructor.displayName}
       </div>
     ));
   };
@@ -410,7 +420,7 @@ export function ShiftBottomModal({
                     <div className="text-xs text-muted-foreground">{shift.count}名配置</div>
                   </div>
                   <div className="space-y-1 md:flex md:flex-wrap md:gap-2 md:space-y-0">
-                    {generateInstructorChips(shift.count, departmentType)}
+                    {generateInstructorChips(shift.assignedInstructors || [], departmentType)}
                   </div>
                 </div>
               ))}

@@ -42,6 +42,14 @@ export interface Instructor {
   status: string;
 }
 
+// アサイン済みインストラクター情報（公開ビュー用）
+export interface AssignedInstructor {
+  id: number;
+  lastName: string;
+  firstName: string;
+  displayName: string; // "lastName firstName" 形式
+}
+
 // Base API response type
 export interface ApiResponse<T> {
   success: boolean;
@@ -59,11 +67,25 @@ export interface ShiftSummary {
   type: string;
   department: DepartmentType;
   count: number;
+  assignedInstructors?: AssignedInstructor[]; // アサイン済みインストラクター情報
+}
+
+export interface DetailedShiftSummary {
+  type: string;
+  department: DepartmentType;
+  count: number;
+  instructors: string[]; // インストラクター名の配列
 }
 
 export interface ShiftStats {
   [date: string]: {
     shifts: ShiftSummary[];
+  };
+}
+
+export interface DetailedShiftStats {
+  [date: string]: {
+    shifts: DetailedShiftSummary[];
   };
 }
 
@@ -93,6 +115,12 @@ export interface CreateShiftData {
 export interface DayData {
   readonly date: string;
   readonly shifts: readonly ShiftSummary[];
+  readonly isHoliday: boolean;
+}
+
+export interface DetailedDayData {
+  readonly date: string;
+  readonly shifts: readonly DetailedShiftSummary[];
   readonly isHoliday: boolean;
 }
 
