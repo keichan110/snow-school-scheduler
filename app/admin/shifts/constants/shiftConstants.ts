@@ -15,20 +15,6 @@ export const HOLIDAYS: Record<string, boolean> = {
 // Helper function for holiday checking
 export const isHoliday = (date: string): boolean => Boolean(HOLIDAYS[date]);
 
-// サンプルインストラクター名（モーダルでの表示用）- frozen for immutability
-export const SAMPLE_INSTRUCTOR_NAMES = Object.freeze([
-  '田中太郎',
-  '佐藤花子',
-  '鈴木次郎',
-  '高橋美咲',
-  '木村健太',
-  '中村優子',
-  '山田一郎',
-  '伊藤智子',
-  '小林直美',
-  '渡辺大介',
-] as const);
-
 // 部門スタイルマッピング - frozen object for better performance
 export const DEPARTMENT_STYLES = Object.freeze({
   ski: Object.freeze({

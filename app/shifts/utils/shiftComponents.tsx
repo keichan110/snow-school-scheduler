@@ -3,30 +3,30 @@
 import React from 'react';
 import { Calendar, User, PersonSimpleSki, PersonSimpleSnowboard } from '@phosphor-icons/react';
 import { cn } from '@/lib/utils';
-import { DepartmentType, DayData } from '../../admin/shifts/types';
+import { DepartmentType, DayData, AssignedInstructor } from '../../admin/shifts/types';
 import { getDepartmentBgClass } from '../../admin/shifts/utils/shiftUtils';
-import {
-  SAMPLE_INSTRUCTOR_NAMES,
-  DEPARTMENT_STYLES,
-  DEPARTMENT_NAMES,
-} from '../../admin/shifts/constants/shiftConstants';
+import { DEPARTMENT_STYLES, DEPARTMENT_NAMES } from '../../admin/shifts/constants/shiftConstants';
 
 /**
  * インストラクターチップを生成する共通関数
+ * 実際にアサインされたインストラクター情報を使用
  */
-export function generateInstructorChips(count: number, departmentType: DepartmentType) {
+export function generateInstructorChips(
+  assignedInstructors: AssignedInstructor[],
+  departmentType: DepartmentType
+) {
   const chipClass = DEPARTMENT_STYLES[departmentType].chipClass;
 
-  return Array.from({ length: count }).map((_, i) => (
+  return assignedInstructors.map((instructor) => (
     <div
-      key={i}
+      key={instructor.id}
       className={cn(
         'inline-flex cursor-pointer items-center gap-1 rounded-full border px-3 py-1 text-xs font-medium transition-all duration-200 hover:scale-105',
         chipClass
       )}
     >
       <User className="h-3 w-3" weight="fill" />
-      {SAMPLE_INSTRUCTOR_NAMES[i % SAMPLE_INSTRUCTOR_NAMES.length]}
+      {instructor.displayName}
     </div>
   ));
 }
@@ -89,7 +89,13 @@ export function createDepartmentSection(
                   <div className="text-xs text-muted-foreground">{shift.count}名配置</div>
                 </div>
                 <div className="space-y-1 md:flex md:flex-wrap md:gap-2 md:space-y-0">
-                  {generateInstructorChips(shift.count, departmentType)}
+                  {shift.assignedInstructors && shift.assignedInstructors.length > 0 ? (
+                    generateInstructorChips(shift.assignedInstructors, departmentType)
+                  ) : (
+                    <div className="text-xs text-muted-foreground">
+                      インストラクターが未配置です
+                    </div>
+                  )}
                 </div>
               </div>
             ))}

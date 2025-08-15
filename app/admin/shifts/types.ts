@@ -42,6 +42,14 @@ export interface Instructor {
   status: string;
 }
 
+// アサイン済みインストラクター情報（公開ビュー用）
+export interface AssignedInstructor {
+  id: number;
+  lastName: string;
+  firstName: string;
+  displayName: string; // "lastName firstName" 形式
+}
+
 // Base API response type
 export interface ApiResponse<T> {
   success: boolean;
@@ -59,6 +67,7 @@ export interface ShiftSummary {
   type: string;
   department: DepartmentType;
   count: number;
+  assignedInstructors?: AssignedInstructor[]; // アサイン済みインストラクター情報
 }
 
 export interface DetailedShiftSummary {
