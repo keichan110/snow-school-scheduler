@@ -94,12 +94,13 @@ export async function POST(request: Request) {
     if (body.certificationIds && Array.isArray(body.certificationIds)) {
       const existingCertifications = await prisma.certification.findMany({
         where: {
-          id: { in: body.certificationIds },
+          id: { in: body.certificationIds || [] },
           isActive: true,
         },
       });
 
-      if (existingCertifications.length !== body.certificationIds.length) {
+      const certificationIdsLength = body?.certificationIds?.length ?? 0;
+      if ((existingCertifications?.length ?? 0) !== certificationIdsLength) {
         return createErrorResponse('Some certification IDs are invalid or inactive', {
           type: ApiErrorType.VALIDATION_ERROR,
           status: HttpStatus.BAD_REQUEST,
