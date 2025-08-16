@@ -19,10 +19,6 @@ export function WeekNavigation({ baseDate, onNavigate, onDateSelect }: WeekNavig
   // 週の期間を表示用にフォーマット
   const weekPeriod = getWeekPeriodDisplay(baseDate);
 
-  // 年月情報を取得
-  const year = baseDate.getFullYear();
-  const month = baseDate.getMonth() + 1;
-
   // 日付選択時の処理（即座に移動）
   const handleDateSelect = (date: Date | undefined) => {
     if (date) {
@@ -52,9 +48,10 @@ export function WeekNavigation({ baseDate, onNavigate, onDateSelect }: WeekNavig
 
               <div className="relative ml-1">
                 <Button
-                  variant="outline"
+                  variant="ghost"
+                  size="sm"
                   onClick={() => setIsCalendarOpen(!isCalendarOpen)}
-                  className="flex items-center px-2 py-2"
+                  className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
                 >
                   <CalendarIcon className="h-4 w-4" />
                 </Button>
@@ -109,9 +106,10 @@ export function WeekNavigation({ baseDate, onNavigate, onDateSelect }: WeekNavig
 
             <div className="relative ml-2">
               <Button
-                variant="outline"
+                variant="ghost"
+                size="sm"
                 onClick={() => setIsCalendarOpen(!isCalendarOpen)}
-                className="flex items-center gap-2"
+                className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
               >
                 <CalendarIcon className="h-4 w-4" />
               </Button>
