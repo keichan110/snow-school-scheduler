@@ -19,16 +19,9 @@ import {
 } from '@/components/ui/drawer';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
-import {
-  DayData,
-  DepartmentType,
-  Department,
-  ShiftType,
-  ApiResponse,
-  AssignedInstructor,
-} from './types';
-import { getDepartmentBgClass } from './utils/shiftUtils';
-import { DEPARTMENT_STYLES, DEPARTMENT_NAMES } from './constants/shiftConstants';
+import { DayData, DepartmentType, Department, ShiftType, ApiResponse } from './types';
+import { DEPARTMENT_STYLES } from './constants/shiftConstants';
+import { createDepartmentSection } from '../../shifts/utils/shiftComponents';
 import { useState, useEffect } from 'react';
 
 type ModalStep = 'view' | 'create-step1' | 'create-step2';
@@ -337,95 +330,6 @@ export function ShiftBottomModal({
         <span className={cn('font-medium', isSelected ? styles.sectionTextClass : 'text-gray-600')}>
           {department.name}
         </span>
-      </div>
-    );
-  };
-
-  const generateInstructorChips = (
-    assignedInstructors: AssignedInstructor[],
-    departmentType: DepartmentType
-  ) => {
-    const chipClass = DEPARTMENT_STYLES[departmentType].chipClass;
-
-    if (!assignedInstructors || assignedInstructors.length === 0) {
-      return <div className="text-xs text-muted-foreground">インストラクターが未配置です</div>;
-    }
-
-    return assignedInstructors.map((instructor) => (
-      <div
-        key={instructor.id}
-        className={cn(
-          'inline-flex cursor-pointer items-center gap-1 rounded-full border px-3 py-1 text-xs font-medium transition-all duration-200 hover:scale-105',
-          chipClass
-        )}
-      >
-        <User className="h-3 w-3" weight="fill" />
-        {instructor.displayName}
-      </div>
-    ));
-  };
-
-  const createDepartmentSection = (
-    departmentType: DepartmentType,
-    shifts: typeof dayData.shifts,
-    icon: React.ReactNode
-  ) => {
-    const departmentName = DEPARTMENT_NAMES[departmentType];
-    const styles = DEPARTMENT_STYLES[departmentType];
-    const {
-      sectionBgClass: bgClass,
-      sectionBorderClass: borderClass,
-      sectionTextClass: textClass,
-    } = styles;
-
-    return (
-      <div
-        key={departmentType}
-        className={cn(
-          'rounded-xl border p-3 transition-all duration-300 md:p-4',
-          bgClass,
-          borderClass
-        )}
-      >
-        <div className="md:flex md:items-start md:gap-4">
-          {/* 部門ヘッダー */}
-          <div className="mb-3 flex items-center gap-2 md:mb-0 md:w-40 md:flex-shrink-0 md:gap-3">
-            {icon}
-            <div>
-              <h4 className={cn('text-base font-semibold md:text-lg', textClass)}>
-                {departmentName}
-              </h4>
-              <p className="text-xs text-muted-foreground">{styles.label}</p>
-            </div>
-          </div>
-
-          {/* シフト種類とインストラクター */}
-          <div className="flex-1 space-y-3">
-            {shifts
-              .filter((s) => s.department === departmentType)
-              .map((shift, idx) => (
-                <div
-                  key={idx}
-                  className="rounded-lg border border-border bg-background p-3 transition-all duration-200 hover:shadow-sm"
-                >
-                  <div className="mb-2 flex items-center justify-between md:mb-3">
-                    <div
-                      className={cn(
-                        'rounded-lg px-3 py-2 text-sm font-medium text-foreground',
-                        getDepartmentBgClass(shift.department as DepartmentType)
-                      )}
-                    >
-                      {shift.type}
-                    </div>
-                    <div className="text-xs text-muted-foreground">{shift.count}名配置</div>
-                  </div>
-                  <div className="space-y-1 md:flex md:flex-wrap md:gap-2 md:space-y-0">
-                    {generateInstructorChips(shift.assignedInstructors || [], departmentType)}
-                  </div>
-                </div>
-              ))}
-          </div>
-        </div>
       </div>
     );
   };
