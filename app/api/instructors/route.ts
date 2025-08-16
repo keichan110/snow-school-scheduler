@@ -11,7 +11,7 @@ import { isOneOf, validate, commonSchemas } from '@/lib/api/validation';
 import { ApiErrorType, HttpStatus, ApiSuccessResponse, ApiErrorResponse } from '@/lib/api/types';
 
 export async function GET(request: Request) {
-  return withApiErrorHandling(async () => {
+  return withApiErrorHandling<ApiSuccessResponse<unknown[]> | ApiErrorResponse>(async () => {
     const { searchParams } = new URL(request.url);
     const statusParam = searchParams.get('status');
 
@@ -19,9 +19,10 @@ export async function GET(request: Request) {
     let statusFilter: InstructorStatus | undefined = undefined;
     if (statusParam) {
       const statusErrors = isOneOf(['ACTIVE', 'INACTIVE', 'RETIRED'])(statusParam, 'status');
-      if (statusErrors.length === 0) {
-        statusFilter = statusParam as InstructorStatus;
+      if (statusErrors.length > 0) {
+        return createValidationErrorResponse(statusErrors);
       }
+      statusFilter = statusParam as InstructorStatus;
     }
 
     const whereClause = statusFilter ? { status: statusFilter } : {};
