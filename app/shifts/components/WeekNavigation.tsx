@@ -36,44 +36,27 @@ export function WeekNavigation({ baseDate, onNavigate, onDateSelect }: WeekNavig
     <div className="sticky top-20 z-40 -mx-4 mb-4 border-b border-border/30 px-4 backdrop-blur-sm">
       <div className="py-3">
         {/* モバイル用レイアウト */}
-        <div className="space-y-3 md:hidden">
-          {/* 1行目: 前/次ボタン、期間表示、カレンダーボタン */}
+        <div className="md:hidden">
           <div className="flex items-center justify-between">
             <Button
               variant="outline"
-              size="sm"
               onClick={() => onNavigate(-1)}
-              className="flex items-center gap-1 px-2 py-2"
+              className="flex touch-manipulation items-center gap-1 px-2 py-2 hover:shadow-md"
             >
-              <ChevronLeft className="h-4 w-4" />前
+              <ChevronLeft className="h-4 w-4" />
+              <span className="hidden text-sm font-medium sm:inline">前週</span>
             </Button>
 
-            <div className="text-center">
-              <h2 className="text-base font-bold text-foreground">
-                {year}年{month}月
-              </h2>
-              <p className="text-xs text-muted-foreground">{weekPeriod}</p>
-            </div>
-
             <div className="flex items-center gap-1">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => onNavigate(1)}
-                className="flex items-center gap-1 px-2 py-2"
-              >
-                次
-                <ChevronRight className="h-4 w-4" />
-              </Button>
+              <h2 className="text-lg font-bold text-foreground">{weekPeriod}</h2>
 
-              <div className="relative">
+              <div className="relative ml-1">
                 <Button
                   variant="outline"
-                  size="sm"
                   onClick={() => setIsCalendarOpen(!isCalendarOpen)}
-                  className="ml-4 flex items-center px-2 py-2"
+                  className="flex items-center px-2 py-2"
                 >
-                  <CalendarIcon className="h-3 w-3" />
+                  <CalendarIcon className="h-4 w-4" />
                 </Button>
 
                 {isCalendarOpen && (
@@ -98,38 +81,33 @@ export function WeekNavigation({ baseDate, onNavigate, onDateSelect }: WeekNavig
                 )}
               </div>
             </div>
+
+            <Button
+              variant="outline"
+              onClick={() => onNavigate(1)}
+              className="flex touch-manipulation items-center gap-1 px-2 py-2 hover:shadow-md"
+            >
+              <span className="hidden text-sm font-medium sm:inline">来週</span>
+              <ChevronRight className="h-4 w-4" />
+            </Button>
           </div>
         </div>
 
         {/* デスクトップ用レイアウト */}
         <div className="hidden md:flex md:items-center md:justify-between">
-          <div className="flex items-center gap-4">
-            <Button
-              variant="outline"
-              onClick={() => onNavigate(-1)}
-              className="flex items-center gap-2"
-            >
-              <ChevronLeft className="h-4 w-4" />
-              前週
-            </Button>
+          <Button
+            variant="outline"
+            onClick={() => onNavigate(-1)}
+            className="flex touch-manipulation items-center gap-1 px-2 py-2 hover:shadow-md md:gap-2 md:px-4"
+          >
+            <ChevronLeft className="h-4 w-4" />
+            <span className="hidden text-sm font-medium sm:inline">前週</span>
+          </Button>
 
-            <div className="text-center">
-              <h2 className="text-lg font-bold text-foreground">
-                {year}年{month}月
-              </h2>
-              <p className="text-sm text-muted-foreground">{weekPeriod}</p>
-            </div>
+          <div className="flex items-center gap-2">
+            <h2 className="text-lg font-bold text-foreground md:text-xl">{weekPeriod}</h2>
 
-            <Button
-              variant="outline"
-              onClick={() => onNavigate(1)}
-              className="flex items-center gap-2"
-            >
-              来週
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-
-            <div className="relative">
+            <div className="relative ml-2">
               <Button
                 variant="outline"
                 onClick={() => setIsCalendarOpen(!isCalendarOpen)}
@@ -160,6 +138,15 @@ export function WeekNavigation({ baseDate, onNavigate, onDateSelect }: WeekNavig
               )}
             </div>
           </div>
+
+          <Button
+            variant="outline"
+            onClick={() => onNavigate(1)}
+            className="flex touch-manipulation items-center gap-1 px-2 py-2 hover:shadow-md md:gap-2 md:px-4"
+          >
+            <span className="hidden text-sm font-medium sm:inline">来週</span>
+            <ChevronRight className="h-4 w-4" />
+          </Button>
         </div>
       </div>
     </div>
