@@ -11,7 +11,7 @@ import { createDepartmentSection } from '../utils/shiftComponents';
 interface ShiftDayCardProps {
   date: Date;
   dateString: string;
-  dayData: DayData | null;
+  dayData: DayData;
   isSelected: boolean;
   onDateSelect: () => void;
 }
@@ -36,11 +36,11 @@ export const ShiftDayCard = React.memo<ShiftDayCardProps>(function ShiftDayCard(
   }, [date]);
 
   // 祝日かどうか
-  const isHoliday = dayData?.isHoliday || false;
+  const isHoliday = dayData.isHoliday;
 
   // 設計書に基づくシフト統計のメモ化
   const shiftStats = useMemo(() => {
-    if (!dayData?.shifts)
+    if (!dayData.shifts || dayData.shifts.length === 0)
       return {
         totalCount: 0,
         departments: {
@@ -58,12 +58,12 @@ export const ShiftDayCard = React.memo<ShiftDayCardProps>(function ShiftDayCard(
         mixed: dayData.shifts.filter((s) => s.department === 'mixed'),
       },
     };
-  }, [dayData?.shifts]);
+  }, [dayData.shifts]);
 
   return (
     <Card
       className={cn('transition-all duration-200', {
-        'opacity-60': !dayData,
+        'opacity-60': !dayData.shifts || dayData.shifts.length === 0,
         'border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950/30':
           isHoliday || dateInfo.isSunday,
         'border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/30': dateInfo.isSaturday,
@@ -94,7 +94,7 @@ export const ShiftDayCard = React.memo<ShiftDayCardProps>(function ShiftDayCard(
           </div>
 
           {/* シフト総数 */}
-          {dayData && (
+          {dayData.shifts && dayData.shifts.length > 0 && (
             <div className="text-right">
               <div className="text-sm text-muted-foreground">総シフト数</div>
               <div className="text-lg font-bold text-primary">{shiftStats.totalCount}名</div>
@@ -104,56 +104,50 @@ export const ShiftDayCard = React.memo<ShiftDayCardProps>(function ShiftDayCard(
       </CardHeader>
 
       <CardContent className="pt-0">
-        {dayData ? (
-          <div className="space-y-4">
-            {dayData.shifts.length === 0 ? (
-              /* シフトなしの場合 */
-              <div className="py-8 text-center text-muted-foreground">
-                <Calendar className="mx-auto mb-4 h-12 w-12 opacity-50" />
-                <div className="text-lg font-medium">シフトが設定されていません</div>
-                <div className="mt-1 text-sm">この日はシフトの設定がありません</div>
-              </div>
-            ) : (
-              /* シフトがある場合 - PublicShiftBottomModalと同じロジック */
-              <>
-                {/* スキー部門 */}
-                {shiftStats.departments.ski.length > 0 &&
-                  createDepartmentSection(
-                    'ski',
-                    dayData.shifts,
-                    <PersonSimpleSki
-                      className={cn('h-5 w-5', DEPARTMENT_STYLES.ski.iconColor)}
-                      weight="fill"
-                    />
-                  )}
+        <div className="space-y-4">
+          {dayData.shifts.length === 0 ? (
+            /* シフトなしの場合 */
+            <div className="py-8 text-center text-muted-foreground">
+              <div className="mt-1 text-sm">シフトなし</div>
+            </div>
+          ) : (
+            /* シフトがある場合 - PublicShiftBottomModalと同じロジック */
+            <>
+              {/* スキー部門 */}
+              {shiftStats.departments.ski.length > 0 &&
+                createDepartmentSection(
+                  'ski',
+                  dayData.shifts,
+                  <PersonSimpleSki
+                    className={cn('h-5 w-5', DEPARTMENT_STYLES.ski.iconColor)}
+                    weight="fill"
+                  />
+                )}
 
-                {/* スノーボード部門 */}
-                {shiftStats.departments.snowboard.length > 0 &&
-                  createDepartmentSection(
-                    'snowboard',
-                    dayData.shifts,
-                    <PersonSimpleSnowboard
-                      className={cn('h-5 w-5', DEPARTMENT_STYLES.snowboard.iconColor)}
-                      weight="fill"
-                    />
-                  )}
+              {/* スノーボード部門 */}
+              {shiftStats.departments.snowboard.length > 0 &&
+                createDepartmentSection(
+                  'snowboard',
+                  dayData.shifts,
+                  <PersonSimpleSnowboard
+                    className={cn('h-5 w-5', DEPARTMENT_STYLES.snowboard.iconColor)}
+                    weight="fill"
+                  />
+                )}
 
-                {/* 共通部門 */}
-                {shiftStats.departments.mixed.length > 0 &&
-                  createDepartmentSection(
-                    'mixed',
-                    dayData.shifts,
-                    <Calendar
-                      className={cn('h-5 w-5', DEPARTMENT_STYLES.mixed.iconColor)}
-                      weight="fill"
-                    />
-                  )}
-              </>
-            )}
-          </div>
-        ) : (
-          <div className="py-4 text-center text-muted-foreground">シフトなし</div>
-        )}
+              {/* 共通部門 */}
+              {shiftStats.departments.mixed.length > 0 &&
+                createDepartmentSection(
+                  'mixed',
+                  dayData.shifts,
+                  <Calendar
+                    className={cn('h-5 w-5', DEPARTMENT_STYLES.mixed.iconColor)}
+                    weight="fill"
+                  />
+                )}
+            </>
+          )}
+        </div>
       </CardContent>
     </Card>
   );
