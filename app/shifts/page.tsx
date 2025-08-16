@@ -14,7 +14,7 @@ import { PublicShiftBottomModal } from './components/PublicShiftBottomModal';
 import { WeeklyShiftList } from './components/WeeklyShiftList';
 import { ViewToggle } from './components/ViewToggle';
 import { WeekNavigation } from './components/WeekNavigation';
-import { HOLIDAYS, isHoliday } from '../admin/shifts/constants/shiftConstants';
+import { isHoliday } from '../admin/shifts/constants/shiftConstants';
 import { useWeekNavigation } from './hooks/useWeekNavigation';
 import { useMonthNavigation } from './hooks/useMonthNavigation';
 import { useShiftDataTransformation } from './hooks/useShiftDataTransformation';
@@ -226,7 +226,7 @@ export default function PublicShiftsPage() {
                         year={currentYear}
                         month={currentMonth}
                         shiftStats={shiftStats}
-                        holidays={HOLIDAYS}
+                        isHoliday={isHoliday}
                         selectedDate={selectedDate}
                         onDateSelect={handleMonthlyDateSelect}
                       />
@@ -238,7 +238,7 @@ export default function PublicShiftsPage() {
                         year={currentYear}
                         month={currentMonth}
                         shiftStats={shiftStats}
-                        holidays={HOLIDAYS}
+                        isHoliday={isHoliday}
                         selectedDate={selectedDate}
                         onDateSelect={handleMonthlyDateSelect}
                       />
@@ -250,7 +250,7 @@ export default function PublicShiftsPage() {
                     <WeeklyShiftList
                       baseDate={weeklyBaseDate}
                       shiftStats={shiftStats}
-                      holidays={HOLIDAYS}
+                      isHoliday={isHoliday}
                     />
                   </div>
                 )}

@@ -16,7 +16,7 @@ export function BaseShiftMobileList({
   year,
   month,
   shiftStats,
-  holidays,
+  isHoliday: checkIsHoliday,
   selectedDate,
   onDateSelect,
 }: BaseShiftDisplayProps) {
@@ -28,7 +28,7 @@ export function BaseShiftMobileList({
         const day = index + 1;
         const date = formatDate(year, month, day);
         const dayData = shiftStats[date];
-        const isHoliday = holidays[date] || false;
+        const isHolidayDay = checkIsHoliday(date);
         const isSelected = selectedDate === date;
         const hasShifts = dayData && dayData.shifts.length > 0;
         const dayOfWeek = WEEKDAYS[new Date(year, month - 1, day).getDay()];
@@ -41,12 +41,12 @@ export function BaseShiftMobileList({
               'mobile-day-item cursor-pointer rounded-xl border p-4 transition-all duration-300',
               'hover:-translate-y-0.5 hover:transform hover:shadow-md',
               {
-                'border-border bg-background hover:border-blue-400': !isSelected && !isHoliday,
+                'border-border bg-background hover:border-blue-400': !isSelected && !isHolidayDay,
                 'border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950/30':
-                  isHoliday && !isSelected,
+                  isHolidayDay && !isSelected,
                 '-translate-y-0.5 transform border-blue-400 bg-blue-50 shadow-md dark:border-blue-600 dark:bg-blue-950/30':
                   isSelected,
-                'opacity-60': !hasShifts && !isHoliday,
+                'opacity-60': !hasShifts && !isHolidayDay,
               }
             )}
           >
@@ -54,8 +54,8 @@ export function BaseShiftMobileList({
             <div className="mb-3 flex items-center gap-3">
               <div
                 className={cn('text-2xl font-bold', {
-                  'text-red-600 dark:text-red-400': isHoliday,
-                  'text-foreground': !isHoliday,
+                  'text-red-600 dark:text-red-400': isHolidayDay,
+                  'text-foreground': !isHolidayDay,
                 })}
               >
                 {day}
@@ -86,7 +86,7 @@ export function BaseShiftMobileList({
               </div>
             ) : (
               <div className="py-2 text-center text-sm text-muted-foreground">
-                {isHoliday ? '祝日' : 'シフトなし'}
+                {isHolidayDay ? '祝日' : 'シフトなし'}
               </div>
             )}
           </div>

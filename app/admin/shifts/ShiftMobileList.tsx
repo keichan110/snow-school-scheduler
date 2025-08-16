@@ -7,7 +7,7 @@ interface ShiftMobileListProps {
   year: number;
   month: number;
   shiftStats: ShiftStats;
-  holidays: Record<string, boolean>;
+  isHoliday: (date: string) => boolean;
   selectedDate: string | null;
   onDateSelect: (date: string) => void;
 }
