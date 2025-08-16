@@ -31,7 +31,10 @@ export function BaseShiftMobileList({
         const isHolidayDay = checkIsHoliday(date);
         const isSelected = selectedDate === date;
         const hasShifts = dayData && dayData.shifts.length > 0;
-        const dayOfWeek = WEEKDAYS[new Date(year, month - 1, day).getDay()];
+        const dayOfWeekIndex = new Date(year, month - 1, day).getDay();
+        const dayOfWeek = WEEKDAYS[dayOfWeekIndex];
+        const isSaturday = dayOfWeekIndex === 6;
+        const isSunday = dayOfWeekIndex === 0;
 
         return (
           <div
@@ -41,12 +44,15 @@ export function BaseShiftMobileList({
               'mobile-day-item cursor-pointer rounded-xl border p-4 transition-all duration-300',
               'hover:-translate-y-0.5 hover:transform hover:shadow-md',
               {
-                'border-border bg-background hover:border-blue-400': !isSelected && !isHolidayDay,
+                'border-border bg-background hover:border-blue-400':
+                  !isSelected && !isHolidayDay && !isSaturday && !isSunday,
+                'border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/30':
+                  isSaturday && !isSelected,
                 'border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950/30':
-                  isHolidayDay && !isSelected,
+                  (isHolidayDay || isSunday) && !isSelected,
                 '-translate-y-0.5 transform border-blue-400 bg-blue-50 shadow-md dark:border-blue-600 dark:bg-blue-950/30':
                   isSelected,
-                'opacity-60': !hasShifts && !isHolidayDay,
+                'opacity-60': !hasShifts && !isHolidayDay && !isSaturday && !isSunday,
               }
             )}
           >
@@ -54,8 +60,9 @@ export function BaseShiftMobileList({
             <div className="mb-3 flex items-center gap-3">
               <div
                 className={cn('text-2xl font-bold', {
-                  'text-red-600 dark:text-red-400': isHolidayDay,
-                  'text-foreground': !isHolidayDay,
+                  'text-red-600 dark:text-red-400': isHolidayDay || isSunday,
+                  'text-blue-600 dark:text-blue-400': isSaturday,
+                  'text-foreground': !isHolidayDay && !isSaturday && !isSunday,
                 })}
               >
                 {day}
