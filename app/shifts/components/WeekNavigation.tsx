@@ -1,10 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { ChevronLeft, ChevronRight, CalendarIcon } from 'lucide-react';
 import { getWeekPeriodDisplay } from '../utils/weekCalculations';
+import { ja } from 'date-fns/locale';
 
 interface WeekNavigationProps {
   baseDate: Date;
@@ -15,6 +16,7 @@ interface WeekNavigationProps {
 export function WeekNavigation({ baseDate, onNavigate, onDateSelect }: WeekNavigationProps) {
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(baseDate);
+  const calendarRef = useRef<HTMLDivElement>(null);
 
   // 週の期間を表示用にフォーマット
   const weekPeriod = getWeekPeriodDisplay(baseDate);
@@ -27,6 +29,23 @@ export function WeekNavigation({ baseDate, onNavigate, onDateSelect }: WeekNavig
       setIsCalendarOpen(false);
     }
   };
+
+  // カレンダー外クリックで閉じる
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (calendarRef.current && !calendarRef.current.contains(event.target as Node)) {
+        setIsCalendarOpen(false);
+      }
+    };
+
+    if (isCalendarOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isCalendarOpen]);
 
   return (
     <div className="sticky top-20 z-40 -mx-4 mb-4 border-b border-border/30 px-4 backdrop-blur-sm">
@@ -57,23 +76,31 @@ export function WeekNavigation({ baseDate, onNavigate, onDateSelect }: WeekNavig
                 </Button>
 
                 {isCalendarOpen && (
-                  <div className="absolute right-0 top-full z-50 mt-2 rounded-md border bg-white p-3 shadow-lg">
-                    <div className="mb-2 flex justify-center">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleDateSelect(new Date())}
-                        className="text-xs"
-                      >
-                        今日
-                      </Button>
-                    </div>
+                  <div
+                    ref={calendarRef}
+                    className="absolute right-0 top-full z-50 mt-2 rounded-md border bg-white p-3 shadow-lg"
+                  >
                     <Calendar
                       mode="single"
                       selected={selectedDate}
                       onSelect={handleDateSelect}
+                      locale={ja}
+                      showOutsideDays={true}
+                      captionLayout="dropdown"
+                      fromYear={2020}
+                      toYear={2030}
                       className="rounded-md border-0"
                     />
+                    <div className="mt-2 flex justify-start">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDateSelect(new Date())}
+                        className="text-xs text-muted-foreground hover:text-foreground"
+                      >
+                        今日
+                      </Button>
+                    </div>
                   </div>
                 )}
               </div>
@@ -115,23 +142,31 @@ export function WeekNavigation({ baseDate, onNavigate, onDateSelect }: WeekNavig
               </Button>
 
               {isCalendarOpen && (
-                <div className="absolute left-0 top-full z-50 mt-2 rounded-md border bg-white p-3 shadow-lg">
-                  <div className="mb-2 flex justify-center">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleDateSelect(new Date())}
-                      className="text-xs"
-                    >
-                      今日
-                    </Button>
-                  </div>
+                <div
+                  ref={calendarRef}
+                  className="absolute left-0 top-full z-50 mt-2 rounded-md border bg-white p-3 shadow-lg"
+                >
                   <Calendar
                     mode="single"
                     selected={selectedDate}
                     onSelect={handleDateSelect}
+                    locale={ja}
+                    showOutsideDays={true}
+                    captionLayout="dropdown"
+                    fromYear={2020}
+                    toYear={2030}
                     className="rounded-md border-0"
                   />
+                  <div className="mt-2 flex justify-start">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleDateSelect(new Date())}
+                      className="text-xs text-muted-foreground hover:text-foreground"
+                    >
+                      今日
+                    </Button>
+                  </div>
                 </div>
               )}
             </div>
