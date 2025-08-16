@@ -144,6 +144,8 @@ model Shift {
   shiftType        ShiftType         @relation(fields: [shiftTypeId], references: [id])
   shiftAssignments ShiftAssignment[]
 
+  // 重複防止制約: 同じ日付・部門・シフト種別のシフトは1つまで
+  @@unique([date, departmentId, shiftTypeId], name: "unique_shift_per_day")
   @@index([departmentId], map: "idx_shifts_department_id")
   @@index([shiftTypeId], map: "idx_shifts_shift_type_id")
   @@index([date], map: "idx_shifts_date")
