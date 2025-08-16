@@ -8,10 +8,10 @@ import { getWeekDates, formatDateToString } from '../utils/weekCalculations';
 interface WeeklyShiftListProps {
   baseDate: Date;
   shiftStats: ShiftStats;
-  holidays: Record<string, boolean>;
+  isHoliday: (date: string) => boolean;
 }
 
-export function WeeklyShiftList({ baseDate, shiftStats, holidays }: WeeklyShiftListProps) {
+export function WeeklyShiftList({ baseDate, shiftStats, isHoliday }: WeeklyShiftListProps) {
   // 週の日付データを計算
   const weekDays = useMemo(() => {
     const weekDates = getWeekDates(baseDate);
@@ -24,7 +24,7 @@ export function WeeklyShiftList({ baseDate, shiftStats, holidays }: WeeklyShiftL
         ? {
             date: dateString,
             shifts: shiftStats[dateString].shifts,
-            isHoliday: holidays[dateString] || false,
+            isHoliday: isHoliday(dateString),
           }
         : null;
 
@@ -36,7 +36,7 @@ export function WeeklyShiftList({ baseDate, shiftStats, holidays }: WeeklyShiftL
     });
 
     return days;
-  }, [baseDate, shiftStats, holidays]);
+  }, [baseDate, shiftStats, isHoliday]);
 
   return (
     <div className="space-y-6">

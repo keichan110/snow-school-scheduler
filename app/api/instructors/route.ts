@@ -1,19 +1,28 @@
-import { NextResponse } from 'next/server';
+// NextResponse import removed as it's only used in return type
 import { prisma } from '@/lib/db';
 import { InstructorStatus } from '@prisma/client';
+import {
+  createSuccessResponse,
+  createErrorResponse,
+  createValidationErrorResponse,
+  withApiErrorHandling,
+} from '@/lib/api/response';
+import { isOneOf, validate, commonSchemas } from '@/lib/api/validation';
+import { ApiErrorType, HttpStatus, ApiSuccessResponse, ApiErrorResponse } from '@/lib/api/types';
 
 export async function GET(request: Request) {
-  try {
+  return withApiErrorHandling<ApiSuccessResponse<unknown[]> | ApiErrorResponse>(async () => {
     const { searchParams } = new URL(request.url);
     const statusParam = searchParams.get('status');
 
     // statusパラメータのバリデーション
     let statusFilter: InstructorStatus | undefined = undefined;
     if (statusParam) {
-      const validStatuses = ['ACTIVE', 'INACTIVE', 'RETIRED'] as const;
-      if (validStatuses.includes(statusParam as InstructorStatus)) {
-        statusFilter = statusParam as InstructorStatus;
+      const statusErrors = isOneOf(['ACTIVE', 'INACTIVE', 'RETIRED'])(statusParam, 'status');
+      if (statusErrors.length > 0) {
+        return createValidationErrorResponse(statusErrors);
       }
+      statusFilter = statusParam as InstructorStatus;
     }
 
     const whereClause = statusFilter ? { status: statusFilter } : {};
@@ -59,79 +68,44 @@ export async function GET(request: Request) {
       })),
     }));
 
-    return NextResponse.json({
-      success: true,
-      data: formattedInstructors,
+    return createSuccessResponse(formattedInstructors, {
       count: formattedInstructors.length,
-      message: null,
-      error: null,
     });
-  } catch (error) {
-    console.error('Instructors API error:', error);
-    return NextResponse.json(
-      {
-        success: false,
-        data: null,
-        message: null,
-        error: 'Internal server error',
-      },
-      { status: 500 }
-    );
-  }
+  }, 'GET /api/instructors');
 }
 
 export async function POST(request: Request) {
-  try {
+  return withApiErrorHandling<ApiSuccessResponse<unknown> | ApiErrorResponse>(async () => {
     const body = await request.json();
 
-    // 必須フィールドのバリデーション
-    const requiredFields = ['lastName', 'firstName'];
-    const missingFields = requiredFields.filter((field) => !(field in body));
-
-    if (missingFields.length > 0) {
-      return NextResponse.json(
-        {
-          success: false,
-          data: null,
-          message: null,
-          error: `Missing required fields: ${missingFields.join(', ')}`,
-        },
-        { status: 400 }
-      );
+    // スキーマベースバリデーション
+    const schema = commonSchemas.createInstructor;
+    if (!schema) {
+      return createErrorResponse('Validation schema not found', {
+        type: ApiErrorType.INTERNAL_ERROR,
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+      });
     }
-
-    // statusのバリデーション
-    if (body.status && !['ACTIVE', 'INACTIVE', 'RETIRED'].includes(body.status)) {
-      return NextResponse.json(
-        {
-          success: false,
-          data: null,
-          message: null,
-          error: 'Invalid status value',
-        },
-        { status: 400 }
-      );
+    const validationResult = validate(body, schema);
+    if (!validationResult.isValid) {
+      return createValidationErrorResponse(validationResult.errors);
     }
 
     // 資格IDの存在確認（指定されている場合）
     if (body.certificationIds && Array.isArray(body.certificationIds)) {
       const existingCertifications = await prisma.certification.findMany({
         where: {
-          id: { in: body.certificationIds },
+          id: { in: body.certificationIds || [] },
           isActive: true,
         },
       });
 
-      if (existingCertifications.length !== body.certificationIds.length) {
-        return NextResponse.json(
-          {
-            success: false,
-            data: null,
-            message: null,
-            error: 'Some certification IDs are invalid or inactive',
-          },
-          { status: 400 }
-        );
+      const certificationIdsLength = body?.certificationIds?.length ?? 0;
+      if ((existingCertifications?.length ?? 0) !== certificationIdsLength) {
+        return createErrorResponse('Some certification IDs are invalid or inactive', {
+          type: ApiErrorType.VALIDATION_ERROR,
+          status: HttpStatus.BAD_REQUEST,
+        });
       }
     }
 
@@ -203,25 +177,9 @@ export async function POST(request: Request) {
       })),
     };
 
-    return NextResponse.json(
-      {
-        success: true,
-        data: formattedInstructor,
-        message: 'Instructor operation completed successfully',
-        error: null,
-      },
-      { status: 201 }
-    );
-  } catch (error) {
-    console.error('Instructors API error:', error);
-    return NextResponse.json(
-      {
-        success: false,
-        data: null,
-        message: null,
-        error: 'Internal server error',
-      },
-      { status: 500 }
-    );
-  }
+    return createSuccessResponse(formattedInstructor, {
+      status: HttpStatus.CREATED,
+      message: 'Instructor operation completed successfully',
+    });
+  }, 'POST /api/instructors');
 }

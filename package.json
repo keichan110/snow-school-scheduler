@@ -29,8 +29,13 @@
     "@radix-ui/react-slot": "^1.2.3",
     "@radix-ui/react-switch": "^1.2.5",
     "@radix-ui/react-tabs": "^1.1.12",
+    "@tanstack/react-query": "^5.85.3",
+    "@tanstack/react-query-devtools": "^5.85.3",
+    "@types/japanese-holidays": "^1.0.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "date-fns": "^4.1.0",
+    "japanese-holidays": "^1.0.10",
     "lucide-react": "^0.535.0",
     "next": "^15.1.6",
     "next-themes": "^0.4.6",
@@ -38,9 +43,11 @@
     "react": "^18.3.1",
     "react-day-picker": "^9.8.1",
     "react-dom": "^18.3.1",
+    "react-error-boundary": "^6.0.0",
     "tailwind-merge": "^3.3.1",
     "tailwindcss-animate": "^1.0.7",
-    "vaul": "^1.1.2"
+    "vaul": "^1.1.2",
+    "zod": "^4.0.17"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.6.3",

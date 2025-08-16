@@ -7,13 +7,14 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { fetchShifts, fetchDepartments, ApiError } from '../admin/shifts/api';
-import { Shift, Department, ShiftStats, ShiftQueryParams } from '../admin/shifts/types';
+import { Shift, Department, ShiftStats, ShiftQueryParams, DayData } from '../admin/shifts/types';
 import { PublicShiftCalendarGrid } from './components/PublicShiftCalendarGrid';
 import { PublicShiftMobileList } from './components/PublicShiftMobileList';
+import { PublicShiftBottomModal } from './components/PublicShiftBottomModal';
 import { WeeklyShiftList } from './components/WeeklyShiftList';
 import { ViewToggle } from './components/ViewToggle';
 import { WeekNavigation } from './components/WeekNavigation';
-import { HOLIDAYS } from '../admin/shifts/constants/shiftConstants';
+import { isHoliday } from '../admin/shifts/constants/shiftConstants';
 import { useWeekNavigation } from './hooks/useWeekNavigation';
 import { useMonthNavigation } from './hooks/useMonthNavigation';
 import { useShiftDataTransformation } from './hooks/useShiftDataTransformation';
@@ -30,6 +31,8 @@ export default function PublicShiftsPage() {
   const [shiftStats, setShiftStats] = useState<ShiftStats>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // カスタムフックを使用
   const { currentYear, currentMonth, monthlyQueryParams, navigateMonth } = useMonthNavigation();
@@ -104,6 +107,32 @@ export default function PublicShiftsPage() {
     },
     [router]
   );
+
+  // 日付選択ハンドラー（月間ビュー用）
+  const handleMonthlyDateSelect = useCallback((date: string) => {
+    setSelectedDate(date);
+    setIsModalOpen(true);
+  }, []);
+
+  // モーダル開閉ハンドラー
+  const handleModalOpenChange = useCallback((open: boolean) => {
+    setIsModalOpen(open);
+    if (!open) {
+      setSelectedDate(null);
+    }
+  }, []);
+
+  // dayData計算
+  const dayData = useMemo((): DayData | null => {
+    if (!selectedDate || !shiftStats[selectedDate]) {
+      return null;
+    }
+    return {
+      date: selectedDate,
+      shifts: shiftStats[selectedDate].shifts,
+      isHoliday: isHoliday(selectedDate),
+    };
+  }, [selectedDate, shiftStats]);
 
   if (error) {
     return (
@@ -197,9 +226,9 @@ export default function PublicShiftsPage() {
                         year={currentYear}
                         month={currentMonth}
                         shiftStats={shiftStats}
-                        holidays={HOLIDAYS}
-                        selectedDate={null}
-                        onDateSelect={() => {}}
+                        isHoliday={isHoliday}
+                        selectedDate={selectedDate}
+                        onDateSelect={handleMonthlyDateSelect}
                       />
                     </div>
 
@@ -209,9 +238,9 @@ export default function PublicShiftsPage() {
                         year={currentYear}
                         month={currentMonth}
                         shiftStats={shiftStats}
-                        holidays={HOLIDAYS}
-                        selectedDate={null}
-                        onDateSelect={() => {}}
+                        isHoliday={isHoliday}
+                        selectedDate={selectedDate}
+                        onDateSelect={handleMonthlyDateSelect}
                       />
                     </div>
                   </>
@@ -221,7 +250,7 @@ export default function PublicShiftsPage() {
                     <WeeklyShiftList
                       baseDate={weeklyBaseDate}
                       shiftStats={shiftStats}
-                      holidays={HOLIDAYS}
+                      isHoliday={isHoliday}
                     />
                   </div>
                 )}
@@ -230,6 +259,14 @@ export default function PublicShiftsPage() {
           )}
         </div>
       </div>
+
+      {/* 読み取り専用モーダル */}
+      <PublicShiftBottomModal
+        isOpen={isModalOpen}
+        onOpenChange={handleModalOpenChange}
+        selectedDate={selectedDate}
+        dayData={dayData}
+      />
     </div>
   );
 }

@@ -11,7 +11,7 @@ import { ShiftCalendarGrid } from './ShiftCalendarGrid';
 import { ShiftMobileList } from './ShiftMobileList';
 import { ShiftBottomModal } from './ShiftBottomModal';
 import { getDepartmentTypeById } from './utils/shiftUtils';
-import { HOLIDAYS, isHoliday } from './constants/shiftConstants';
+import { isHoliday } from './constants/shiftConstants';
 
 export default function ShiftsPage() {
   const now = new Date();
@@ -263,7 +263,7 @@ export default function ShiftsPage() {
                     year={currentYear}
                     month={currentMonth}
                     shiftStats={shiftStats}
-                    holidays={HOLIDAYS}
+                    isHoliday={isHoliday}
                     selectedDate={selectedDate}
                     onDateSelect={handleDateSelect}
                   />
@@ -275,7 +275,7 @@ export default function ShiftsPage() {
                     year={currentYear}
                     month={currentMonth}
                     shiftStats={shiftStats}
-                    holidays={HOLIDAYS}
+                    isHoliday={isHoliday}
                     selectedDate={selectedDate}
                     onDateSelect={handleDateSelect}
                   />

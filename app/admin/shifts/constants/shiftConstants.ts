@@ -1,19 +1,22 @@
+import { isHoliday as checkJapaneseHoliday } from 'japanese-holidays';
+
 // 曜日の配列 (frozen for immutability)
 export const WEEKDAYS = Object.freeze(['日', '月', '火', '水', '木', '金', '土'] as const);
 
-// 祝日の定義 (backward compatibility with Record)
-export const HOLIDAYS: Record<string, boolean> = {
-  '2024-01-01': true, // 元日
-  '2024-01-08': true, // 成人の日
-  '2024-02-11': true, // 建国記念の日
-  '2024-02-12': true, // 振替休日
-  '2024-02-23': true, // 天皇誕生日
-  '2023-12-29': true, // 年末休業
-  '2023-12-31': true, // 大晦日
-} as const;
-
-// Helper function for holiday checking
-export const isHoliday = (date: string): boolean => Boolean(HOLIDAYS[date]);
+// 祝日判定関数 - japanese-holidaysライブラリを使用した動的判定
+export const isHoliday = (date: string): boolean => {
+  try {
+    const dateObj = new Date(date);
+    // 無効な日付の場合はfalseを返す
+    if (isNaN(dateObj.getTime())) {
+      return false;
+    }
+    return Boolean(checkJapaneseHoliday(dateObj));
+  } catch (error) {
+    console.warn(`Failed to check holiday for date: ${date}`, error);
+    return false;
+  }
+};
 
 // 部門スタイルマッピング - frozen object for better performance
 export const DEPARTMENT_STYLES = Object.freeze({
