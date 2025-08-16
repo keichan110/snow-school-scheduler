@@ -24,11 +24,14 @@ export const ShiftDayCard = React.memo<ShiftDayCardProps>(function ShiftDayCard(
   // 設計書に基づく日付情報のメモ化
   const dateInfo = useMemo(() => {
     const dayNames = ['日', '月', '火', '水', '木', '金', '土'];
+    const dayOfWeek = date.getDay();
     return {
-      dayName: dayNames[date.getDay()],
+      dayName: dayNames[dayOfWeek],
       day: date.getDate(),
       month: date.getMonth() + 1,
-      isWeekend: date.getDay() === 0 || date.getDay() === 6,
+      isWeekend: dayOfWeek === 0 || dayOfWeek === 6,
+      isSaturday: dayOfWeek === 6,
+      isSunday: dayOfWeek === 0,
     };
   }, [date]);
 
@@ -59,14 +62,23 @@ export const ShiftDayCard = React.memo<ShiftDayCardProps>(function ShiftDayCard(
 
   return (
     <Card
-      className={`transition-all duration-200 ${dayData ? '' : 'opacity-60'} ${isHoliday ? 'border-red-200 bg-red-50' : ''} ${dateInfo.isWeekend && !isHoliday ? 'border-blue-200 bg-blue-50' : ''}`}
+      className={cn('transition-all duration-200', {
+        'opacity-60': !dayData,
+        'border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950/30':
+          isHoliday || dateInfo.isSunday,
+        'border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/30': dateInfo.isSaturday,
+      })}
     >
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           {/* 日付エリア */}
           <div className="flex items-center gap-3">
             <div
-              className={`text-center ${isHoliday ? 'text-red-700' : dateInfo.isWeekend ? 'text-blue-700' : 'text-foreground'}`}
+              className={cn('text-center', {
+                'text-red-600 dark:text-red-400': isHoliday || dateInfo.isSunday,
+                'text-blue-600 dark:text-blue-400': dateInfo.isSaturday,
+                'text-foreground': !isHoliday && !dateInfo.isSaturday && !dateInfo.isSunday,
+              })}
             >
               <div className="text-2xl font-bold leading-none md:text-3xl">{dateInfo.day}</div>
               <div className="text-xs text-muted-foreground md:text-sm">
@@ -75,7 +87,7 @@ export const ShiftDayCard = React.memo<ShiftDayCardProps>(function ShiftDayCard(
             </div>
             {/* 祝日表示 */}
             {isHoliday && (
-              <div className="rounded-full bg-red-100 px-2 py-1 text-xs font-medium text-red-700">
+              <div className="rounded-full bg-red-100 px-2 py-1 text-xs font-medium text-red-600 dark:bg-red-950/30 dark:text-red-400">
                 祝日
               </div>
             )}
