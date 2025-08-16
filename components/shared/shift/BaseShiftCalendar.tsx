@@ -82,7 +82,9 @@ export function BaseShiftCalendar({
                 </div>
                 <div className="text-xs font-medium text-muted-foreground">{dayOfWeek}</div>
                 {isHolidayDay && (
-                  <div className="text-xs font-medium text-red-600 dark:text-red-400">祝日</div>
+                  <div className="rounded-full bg-red-100 px-2 py-1 text-xs font-medium text-red-600 dark:bg-red-950/30 dark:text-red-400">
+                    祝日
+                  </div>
                 )}
               </div>
 
