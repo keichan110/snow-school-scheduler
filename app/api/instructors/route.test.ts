@@ -288,39 +288,6 @@ describe('GET /api/instructors', () => {
       });
     });
 
-    it('無効なstatusパラメータは無視されること', async () => {
-      // Arrange
-      const mockInstructors: Instructor[] = [];
-      mockInstructorFindMany.mockResolvedValue(mockInstructors);
-
-      const mockRequest = new Request('http://localhost:3000/api/instructors?status=INVALID');
-
-      // Act
-      await GET(mockRequest);
-
-      // Assert
-      expect(mockInstructorFindMany).toHaveBeenCalledWith({
-        where: {},
-        include: {
-          certifications: {
-            include: {
-              certification: {
-                include: {
-                  department: {
-                    select: {
-                      id: true,
-                      name: true,
-                    },
-                  },
-                },
-              },
-            },
-          },
-        },
-        orderBy: [{ lastName: 'asc' }, { firstName: 'asc' }],
-      });
-    });
-
     it('インストラクターデータが空の場合でも正しく処理されること', async () => {
       // Arrange
       const mockInstructors: Instructor[] = [];
@@ -346,6 +313,26 @@ describe('GET /api/instructors', () => {
   });
 
   describe('異常系', () => {
+    it('無効なstatusパラメータでバリデーションエラーが返されること', async () => {
+      // Arrange
+      const mockRequest = new Request('http://localhost:3000/api/instructors?status=INVALID');
+
+      // Act
+      await GET(mockRequest);
+
+      // Assert
+      expect(mockInstructorFindMany).not.toHaveBeenCalled();
+      expect(mockNextResponse.json).toHaveBeenCalledWith(
+        {
+          success: false,
+          data: null,
+          message: null,
+          error: 'Validation failed: status must be one of: ACTIVE, INACTIVE, RETIRED',
+        },
+        { status: 400 }
+      );
+    });
+
     it('データベースエラーが発生した場合に500エラーが返されること', async () => {
       // Arrange
       const mockError = new Error('Database connection failed');
