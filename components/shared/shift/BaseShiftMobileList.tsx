@@ -61,6 +61,9 @@ export function BaseShiftMobileList({
                 {day}
               </div>
               <div className="text-sm text-muted-foreground">{dayOfWeek}</div>
+              {isHolidayDay && (
+                <div className="text-sm font-medium text-red-600 dark:text-red-400">祝日</div>
+              )}
             </div>
 
             {/* シフト詳細 */}
@@ -85,9 +88,7 @@ export function BaseShiftMobileList({
                 ))}
               </div>
             ) : (
-              <div className="py-2 text-center text-sm text-muted-foreground">
-                {isHolidayDay ? '祝日' : 'シフトなし'}
-              </div>
+              <div className="py-2 text-center text-sm text-muted-foreground">シフトなし</div>
             )}
           </div>
         );

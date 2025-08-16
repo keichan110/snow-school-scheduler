@@ -74,36 +74,37 @@ export function BaseShiftCalendar({
                   {day}
                 </div>
                 <div className="text-xs font-medium text-muted-foreground">{dayOfWeek}</div>
+                {isHolidayDay && (
+                  <div className="text-xs font-medium text-red-600 dark:text-red-400">祝日</div>
+                )}
               </div>
 
               {/* シフト詳細表示 */}
-              {hasShifts ? (
-                <div className="flex-1 space-y-1">
-                  {dayData.shifts.map((shift, idx) => (
-                    <div
-                      key={idx}
-                      className={cn(
-                        'flex items-center justify-between gap-2 rounded-lg px-2 py-2',
-                        getDepartmentBgClass(shift.department as DepartmentType)
-                      )}
-                    >
-                      <div className="flex items-center gap-2">
-                        <DepartmentIcon department={shift.department} size="sm" />
-                        <span className="text-xs font-medium text-foreground">
-                          {getShiftTypeShort(shift.type)}
-                        </span>
+              <div className="flex flex-1 items-center justify-center">
+                {hasShifts ? (
+                  <div className="w-full space-y-1">
+                    {dayData.shifts.map((shift, idx) => (
+                      <div
+                        key={idx}
+                        className={cn(
+                          'flex items-center justify-between gap-2 rounded-lg px-2 py-2',
+                          getDepartmentBgClass(shift.department as DepartmentType)
+                        )}
+                      >
+                        <div className="flex items-center gap-2">
+                          <DepartmentIcon department={shift.department} size="sm" />
+                          <span className="text-xs font-medium text-foreground">
+                            {getShiftTypeShort(shift.type)}
+                          </span>
+                        </div>
+                        <ShiftBadge count={shift.count} />
                       </div>
-                      <ShiftBadge count={shift.count} />
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="flex flex-1 items-center justify-center">
-                  <div className="text-center text-xs text-muted-foreground">
-                    {isHolidayDay ? '祝日' : 'シフトなし'}
+                    ))}
                   </div>
-                </div>
-              )}
+                ) : (
+                  <div className="text-center text-xs text-muted-foreground">シフトなし</div>
+                )}
+              </div>
             </div>
           );
         })}
