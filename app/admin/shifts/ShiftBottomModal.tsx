@@ -21,7 +21,6 @@ import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 import { DayData, DepartmentType, Department, ShiftType, ApiResponse } from './types';
 import { DEPARTMENT_STYLES } from './constants/shiftConstants';
-import { createDepartmentSection } from '../../shifts/utils/shiftComponents';
 import { useState, useEffect } from 'react';
 import { Edit3 } from 'lucide-react';
 import { prepareShift } from './shiftApiClient';
@@ -259,6 +258,111 @@ export function ShiftBottomModal({
     });
   };
 
+  // 直接編集（Step1スキップ）機能
+  const handleDirectEdit = async (shiftType: string, departmentType: DepartmentType) => {
+    if (!selectedDate) {
+      setErrors({ submit: '日付が選択されていません' });
+      return;
+    }
+
+    // ローディング中は重複実行を防止
+    if (isLoading) return;
+
+    // エラーをクリア
+    setErrors({});
+    setIsLoading(true);
+
+    try {
+      // 部門とシフト種類の情報を取得
+      const [departmentsRes, shiftTypesRes] = await Promise.all([
+        fetch('/api/departments'),
+        fetch('/api/shift-types'),
+      ]);
+
+      if (departmentsRes.ok && shiftTypesRes.ok) {
+        const departmentsData: ApiResponse<Department[]> = await departmentsRes.json();
+        const shiftTypesData: ApiResponse<ShiftType[]> = await shiftTypesRes.json();
+
+        if (
+          departmentsData.success &&
+          shiftTypesData.success &&
+          departmentsData.data &&
+          shiftTypesData.data
+        ) {
+          // 部門タイプから部門IDを特定
+          const department = departmentsData.data.find((dept) => {
+            const name = dept.name.toLowerCase();
+            return (
+              (departmentType === 'ski' && (name.includes('スキー') || name.includes('ski'))) ||
+              (departmentType === 'snowboard' &&
+                (name.includes('スノーボード') || name.includes('snowboard'))) ||
+              (departmentType === 'mixed' &&
+                !name.includes('スキー') &&
+                !name.includes('snowboard'))
+            );
+          });
+
+          // シフト種類名からシフト種類IDを特定
+          const shiftTypeData = shiftTypesData.data.find((type) => type.name === shiftType);
+
+          if (department && shiftTypeData) {
+            // フォームデータを設定
+            setFormData({
+              departmentId: department.id,
+              shiftTypeId: shiftTypeData.id,
+              notes: '',
+              selectedInstructorIds: [],
+            });
+
+            // 部門とシフト種類データを状態に保存
+            setDepartments(departmentsData.data);
+            setShiftTypes(shiftTypesData.data);
+
+            // 統合APIを呼び出して編集準備
+            const prepareResponse = await prepareShift({
+              date: selectedDate,
+              departmentId: department.id,
+              shiftTypeId: shiftTypeData.id,
+            });
+
+            if (prepareResponse.success && prepareResponse.data) {
+              // レスポンスに基づいてモード設定
+              if (prepareResponse.data.mode === 'edit' && prepareResponse.data.shift) {
+                setEditMode({
+                  isEdit: true,
+                  existingShift: prepareResponse.data.shift,
+                });
+              } else {
+                setEditMode({
+                  isEdit: false,
+                });
+              }
+
+              // フォームデータを事前設定
+              setFormData((prev) => ({
+                ...prev,
+                notes: prepareResponse.data?.formData.description || '',
+                selectedInstructorIds: prepareResponse.data?.formData.selectedInstructorIds || [],
+              }));
+
+              // Step2に直接遷移
+              setCurrentStep('create-step2');
+            } else {
+              setErrors({ submit: prepareResponse.error || 'エラーが発生しました' });
+            }
+          } else {
+            setErrors({ submit: '対応する部門またはシフト種類が見つかりません' });
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Direct edit error:', error);
+      setErrors({ submit: 'ネットワークエラーが発生しました' });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleCreateShift = async () => {
     if (formData.selectedInstructorIds.length === 0) {
       setErrors({ instructors: '最低1名のインストラクターを選択してください' });
@@ -344,6 +448,102 @@ export function ShiftBottomModal({
     }));
   };
 
+  // モーダル専用：クリック可能なシフト種類を含む部門セクション作成
+  const createClickableDepartmentSection = (
+    departmentType: DepartmentType,
+    shifts: DayData['shifts'],
+    icon: React.ReactNode
+  ) => {
+    const departmentName =
+      departmentType === 'ski'
+        ? 'スキー部門'
+        : departmentType === 'snowboard'
+          ? 'スノーボード部門'
+          : '共通部門';
+
+    const styles = DEPARTMENT_STYLES[departmentType];
+    const {
+      sectionBgClass: bgClass,
+      sectionBorderClass: borderClass,
+      sectionTextClass: textClass,
+    } = styles;
+
+    return (
+      <div
+        key={departmentType}
+        className={cn(
+          'rounded-xl border p-3 transition-all duration-300 md:p-4',
+          bgClass,
+          borderClass
+        )}
+      >
+        <div className="md:flex md:items-start md:gap-4">
+          {/* 部門ヘッダー */}
+          <div className="mb-3 flex items-center gap-2 md:mb-0 md:w-40 md:flex-shrink-0 md:gap-3">
+            {icon}
+            <div>
+              <h4 className={cn('text-base font-semibold md:text-lg', textClass)}>
+                {departmentName}
+              </h4>
+              <p className="text-xs text-muted-foreground">{styles.label}</p>
+            </div>
+          </div>
+
+          {/* シフト種類とインストラクター */}
+          <div className="flex-1 space-y-3">
+            {shifts
+              .filter((s) => s.department === departmentType)
+              .map((shift, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => handleDirectEdit(shift.type, departmentType)}
+                  disabled={isLoading}
+                  className={cn(
+                    'w-full rounded-lg border border-border bg-background p-3 text-left transition-all duration-200',
+                    'hover:scale-[1.02] hover:bg-accent/50 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2',
+                    'disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100 disabled:hover:bg-background disabled:hover:shadow-sm',
+                    'cursor-pointer'
+                  )}
+                >
+                  <div className="mb-2 flex items-center justify-between md:mb-3">
+                    <div
+                      className={cn(
+                        'pointer-events-none rounded-lg px-3 py-2 text-sm font-medium text-foreground',
+                        styles.chipClass || 'bg-gray-100'
+                      )}
+                    >
+                      {shift.type}
+                    </div>
+                    <div className="text-xs text-muted-foreground">{shift.count}名配置</div>
+                  </div>
+                  <div className="space-y-1 md:flex md:flex-wrap md:gap-2 md:space-y-0">
+                    {shift.assignedInstructors && shift.assignedInstructors.length > 0 ? (
+                      shift.assignedInstructors.map((instructor) => (
+                        <div
+                          key={instructor.id}
+                          className={cn(
+                            'pointer-events-none inline-flex cursor-pointer items-center gap-1 rounded-full border px-3 py-1 text-xs font-medium',
+                            styles.chipClass
+                          )}
+                        >
+                          <User className="h-3 w-3" weight="fill" />
+                          {instructor.displayName}
+                        </div>
+                      ))
+                    ) : (
+                      <div className="text-xs text-muted-foreground">
+                        インストラクターが未配置です
+                      </div>
+                    )}
+                  </div>
+                </button>
+              ))}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const renderDepartmentCard = (department: Department) => {
     // 部門名から判定するための簡易関数
     const getDepartmentType = (name: string): DepartmentType => {
@@ -416,7 +616,7 @@ export function ShiftBottomModal({
                 <>
                   {/* スキー部門 */}
                   {dayData.shifts.filter((s) => s.department === 'ski').length > 0 &&
-                    createDepartmentSection(
+                    createClickableDepartmentSection(
                       'ski',
                       dayData.shifts,
                       <PersonSimpleSki
@@ -427,7 +627,7 @@ export function ShiftBottomModal({
 
                   {/* スノーボード部門 */}
                   {dayData.shifts.filter((s) => s.department === 'snowboard').length > 0 &&
-                    createDepartmentSection(
+                    createClickableDepartmentSection(
                       'snowboard',
                       dayData.shifts,
                       <PersonSimpleSnowboard
@@ -438,7 +638,7 @@ export function ShiftBottomModal({
 
                   {/* 共通部門 */}
                   {dayData.shifts.filter((s) => s.department === 'mixed').length > 0 &&
-                    createDepartmentSection(
+                    createClickableDepartmentSection(
                       'mixed',
                       dayData.shifts,
                       <Calendar
@@ -447,6 +647,13 @@ export function ShiftBottomModal({
                       />
                     )}
                 </>
+              )}
+
+              {/* エラー表示 */}
+              {errors.submit && (
+                <div className="mt-4 rounded-lg border border-red-200 bg-red-50 p-3 dark:border-red-700 dark:bg-red-950">
+                  <p className="text-sm text-red-600 dark:text-red-400">{errors.submit}</p>
+                </div>
               )}
             </div>
           ) : (
