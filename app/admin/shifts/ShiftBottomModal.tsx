@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowRight, ArrowLeft, Search, X } from 'lucide-react';
+import { ArrowRight, Search, X, CheckCircle } from 'lucide-react';
 import {
   PersonSimpleSki,
   PersonSimpleSnowboard,
@@ -60,6 +60,7 @@ interface ShiftBottomModalProps {
   selectedDate: string | null;
   dayData: DayData | null;
   onStartShiftCreation?: () => void;
+  onShiftUpdated?: () => Promise<void>;
 }
 
 export function ShiftBottomModal({
@@ -68,6 +69,7 @@ export function ShiftBottomModal({
   selectedDate,
   dayData,
   onStartShiftCreation = () => {}, // eslint-disable-line @typescript-eslint/no-unused-vars
+  onShiftUpdated,
 }: ShiftBottomModalProps) {
   const [currentStep, setCurrentStep] = useState<ModalStep>('view');
   const [formData, setFormData] = useState<ShiftFormData>({
@@ -88,6 +90,19 @@ export function ShiftBottomModal({
     isEdit: boolean;
     existingShift?: ExistingShiftData;
   }>({ isEdit: false });
+  // 成功メッセージ状態
+  const [successMessage, setSuccessMessage] = useState<{
+    show: boolean;
+    message: string;
+    isEdit: boolean;
+  }>({ show: false, message: '', isEdit: false });
+  // ローカルシフトデータ状態（更新可能）
+  const [localDayData, setLocalDayData] = useState<DayData | null>(dayData);
+
+  // dayDataが変更された時にlocalDayDataを更新
+  useEffect(() => {
+    setLocalDayData(dayData);
+  }, [dayData]);
 
   // API データ取得
   useEffect(() => {
@@ -142,7 +157,7 @@ export function ShiftBottomModal({
     fetchData();
   }, [currentStep]);
 
-  if (!selectedDate || !dayData) return null;
+  if (!selectedDate || !localDayData) return null;
 
   const formatSelectedDate = () => {
     try {
@@ -169,14 +184,6 @@ export function ShiftBottomModal({
     setCurrentStep('view');
     setFormData({ departmentId: 0, shiftTypeId: 0, notes: '', selectedInstructorIds: [] });
     setErrors({});
-    setEditMode({ isEdit: false });
-  };
-
-  const handleBackToStep1 = () => {
-    setCurrentStep('create-step1');
-    setFormData((prev) => ({ ...prev, selectedInstructorIds: [] }));
-    setErrors({});
-    setSearchTerm('');
     setEditMode({ isEdit: false });
   };
 
@@ -396,9 +403,27 @@ export function ShiftBottomModal({
         const message = editMode.isEdit
           ? 'シフトが正常に更新されました'
           : 'シフトが正常に作成されました';
-        alert(message);
-        handleModalOpenChange(false);
-        // TODO: 親コンポーネントでシフトデータを更新する処理が必要
+
+        // 成功メッセージを設定してviewステップに遷移
+        setSuccessMessage({
+          show: true,
+          message,
+          isEdit: editMode.isEdit,
+        });
+
+        // フォームをリセット
+        setFormData({ departmentId: 0, shiftTypeId: 0, notes: '', selectedInstructorIds: [] });
+        setErrors({});
+        setSearchTerm('');
+        setEditMode({ isEdit: false });
+
+        // viewステップに遷移
+        setCurrentStep('view');
+
+        // 親コンポーネントにシフトデータの更新を通知し、データ更新完了を待つ
+        if (onShiftUpdated) {
+          await onShiftUpdated();
+        }
       } else {
         setErrors({ submit: result.error || 'シフトの処理に失敗しました' });
       }
@@ -418,6 +443,7 @@ export function ShiftBottomModal({
       setErrors({});
       setSearchTerm('');
       setEditMode({ isEdit: false });
+      setSuccessMessage({ show: false, message: '', isEdit: false });
     }
     onOpenChange(open);
   };
@@ -604,7 +630,35 @@ export function ShiftBottomModal({
           {currentStep === 'view' ? (
             /* シフト表示モード */
             <div className="space-y-4">
-              {dayData.shifts.length === 0 ? (
+              {/* 成功メッセージ表示 */}
+              {successMessage.show && (
+                <div className="rounded-lg border border-green-200 bg-green-50 p-4 dark:border-green-700 dark:bg-green-950">
+                  <div className="flex items-center gap-3">
+                    <CheckCircle className="h-6 w-6 text-green-600 dark:text-green-400" />
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-green-900 dark:text-green-100">
+                        {successMessage.isEdit ? 'シフト更新完了' : 'シフト作成完了'}
+                      </h3>
+                      <p className="text-sm text-green-700 dark:text-green-200">
+                        {successMessage.message}
+                      </p>
+                      <p className="mt-1 text-xs text-green-600 dark:text-green-300">
+                        下記でシフトの詳細を確認できます。
+                      </p>
+                    </div>
+                    <Button
+                      onClick={() => setSuccessMessage({ show: false, message: '', isEdit: false })}
+                      variant="ghost"
+                      size="sm"
+                      className="h-6 w-6 p-0 text-green-600 hover:bg-green-100 hover:text-green-700 dark:text-green-400 dark:hover:bg-green-900 dark:hover:text-green-300"
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {localDayData.shifts.length === 0 ? (
                 /* シフトなしの場合 */
                 <div className="py-8 text-center text-muted-foreground">
                   <Calendar className="mx-auto mb-4 h-12 w-12 opacity-50" />
@@ -615,10 +669,10 @@ export function ShiftBottomModal({
                 /* シフトがある場合 */
                 <>
                   {/* スキー部門 */}
-                  {dayData.shifts.filter((s) => s.department === 'ski').length > 0 &&
+                  {localDayData.shifts.filter((s) => s.department === 'ski').length > 0 &&
                     createClickableDepartmentSection(
                       'ski',
-                      dayData.shifts,
+                      localDayData.shifts,
                       <PersonSimpleSki
                         className={cn('h-5 w-5', DEPARTMENT_STYLES.ski.iconColor)}
                         weight="fill"
@@ -626,10 +680,10 @@ export function ShiftBottomModal({
                     )}
 
                   {/* スノーボード部門 */}
-                  {dayData.shifts.filter((s) => s.department === 'snowboard').length > 0 &&
+                  {localDayData.shifts.filter((s) => s.department === 'snowboard').length > 0 &&
                     createClickableDepartmentSection(
                       'snowboard',
-                      dayData.shifts,
+                      localDayData.shifts,
                       <PersonSimpleSnowboard
                         className={cn('h-5 w-5', DEPARTMENT_STYLES.snowboard.iconColor)}
                         weight="fill"
@@ -637,10 +691,10 @@ export function ShiftBottomModal({
                     )}
 
                   {/* 共通部門 */}
-                  {dayData.shifts.filter((s) => s.department === 'mixed').length > 0 &&
+                  {localDayData.shifts.filter((s) => s.department === 'mixed').length > 0 &&
                     createClickableDepartmentSection(
                       'mixed',
-                      dayData.shifts,
+                      localDayData.shifts,
                       <Calendar
                         className={cn('h-5 w-5', DEPARTMENT_STYLES.mixed.iconColor)}
                         weight="fill"

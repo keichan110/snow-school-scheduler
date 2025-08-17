@@ -153,6 +153,23 @@ export default function ShiftsPage() {
     }
   }, [selectedDate]);
 
+  // シフトデータを再読み込み（カレンダー全体 + 特定日対応）
+  const handleShiftUpdated = useCallback(async () => {
+    try {
+      const [shiftsData, departmentsData] = await Promise.all([
+        fetchShifts(queryParams),
+        fetchDepartments(),
+      ]);
+
+      setShifts(shiftsData);
+      setDepartments(departmentsData);
+      setShiftStats(transformShiftsToStats(shiftsData, departmentsData));
+    } catch (error) {
+      console.error('Failed to refresh shift data:', error);
+      throw error; // モーダル側でエラーハンドリングできるように
+    }
+  }, [queryParams, transformShiftsToStats]);
+
   if (error) {
     return (
       <div className="flex min-h-screen items-center justify-center">
@@ -257,6 +274,7 @@ export default function ShiftsPage() {
         selectedDate={selectedDate}
         dayData={selectedDate ? getDayData(selectedDate) : null}
         onStartShiftCreation={handleStartShiftCreation}
+        onShiftUpdated={handleShiftUpdated}
       />
     </div>
   );
