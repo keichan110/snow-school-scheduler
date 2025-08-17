@@ -60,6 +60,7 @@ jest.mock('@/lib/db', () => ({
   prisma: {
     shift: {
       findMany: jest.fn(),
+      findUnique: jest.fn(),
       create: jest.fn(),
     },
     shiftAssignment: {
@@ -79,6 +80,9 @@ jest.mock('next/server', () => ({
 const mockPrisma = prisma as jest.Mocked<typeof prisma>;
 const mockShiftFindMany = mockPrisma.shift.findMany as jest.MockedFunction<
   typeof prisma.shift.findMany
+>;
+const mockShiftFindUnique = mockPrisma.shift.findUnique as jest.MockedFunction<
+  typeof prisma.shift.findUnique
 >;
 const mockTransaction = mockPrisma.$transaction as jest.MockedFunction<typeof prisma.$transaction>;
 const mockNextResponse = NextResponse as jest.Mocked<typeof NextResponse>;
@@ -366,6 +370,9 @@ describe('Shifts API', () => {
           instructor: mockInstructor,
         };
 
+        // 重複チェックでシフトが存在しないことをモック
+        mockShiftFindUnique.mockResolvedValue(null);
+
         mockTransaction.mockImplementation(async (callback) => {
           return await callback({
             shift: {
@@ -413,7 +420,7 @@ describe('Shifts API', () => {
               ],
               assignedCount: 1,
             },
-            message: 'Shift operation completed successfully',
+            message: 'シフトが正常に作成されました',
             error: null,
           },
           { status: 201 }
@@ -440,6 +447,9 @@ describe('Shifts API', () => {
           department: mockDepartment,
           shiftType: mockShiftType,
         };
+
+        // 重複チェックでシフトが存在しないことをモック
+        mockShiftFindUnique.mockResolvedValue(null);
 
         mockTransaction.mockImplementation(async (callback) => {
           return await callback({
@@ -504,7 +514,8 @@ describe('Shifts API', () => {
           shiftTypeId: 1,
         };
         const mockError = new Error('Database error');
-        mockTransaction.mockRejectedValue(mockError);
+        // findUniqueでエラーが発生することをモック
+        mockShiftFindUnique.mockRejectedValue(mockError);
         const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
         const request = createMockPostRequest(requestBody);
 
