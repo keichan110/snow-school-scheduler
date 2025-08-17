@@ -21,6 +21,7 @@ import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 import { DayData, DepartmentType, Department, ShiftType, ApiResponse } from './types';
 import { DEPARTMENT_STYLES } from './constants/shiftConstants';
+import { getDepartmentType } from '../certifications/utils';
 import { useState, useEffect } from 'react';
 import { Edit3 } from 'lucide-react';
 import { prepareShift } from './shiftApiClient';
@@ -933,12 +934,14 @@ export function ShiftBottomModal({
                               const isSelected = formData.selectedInstructorIds.includes(
                                 instructor.id
                               );
-                              const selectedDepartment = departments.find(
-                                (d) => d.id === formData.departmentId
-                              );
 
                               // 選択された部門に対応する資格を持っているかチェック
                               const hasRequiredCertification = instructor.certifications.some(
+                                (cert) => cert.department.id === formData.departmentId
+                              );
+
+                              // 該当部門の資格名を取得
+                              const departmentCertifications = instructor.certifications.filter(
                                 (cert) => cert.department.id === formData.departmentId
                               );
 
@@ -982,18 +985,24 @@ export function ShiftBottomModal({
                                   </div>
                                   <div className="text-right">
                                     {hasRequiredCertification ? (
-                                      <div className="inline-flex items-center gap-1 rounded-full border border-green-200 bg-green-100 px-2 py-1 text-xs font-medium text-green-800 dark:border-green-700 dark:bg-green-900 dark:text-green-100">
-                                        <Check className="h-3 w-3" />
-                                        {selectedDepartment?.name}認定
+                                      <div className="flex flex-wrap justify-end gap-1">
+                                        {departmentCertifications.map((cert) => {
+                                          const deptType = getDepartmentType(cert.department.name);
+                                          const badgeClass =
+                                            deptType === 'ski' ? 'badge-ski' : 'badge-snowboard';
+
+                                          return (
+                                            <span key={cert.id} className={badgeClass}>
+                                              {cert.shortName}
+                                            </span>
+                                          );
+                                        })}
                                       </div>
                                     ) : (
                                       <div className="rounded-full border border-orange-200 bg-orange-100 px-2 py-1 text-xs text-orange-800 dark:border-orange-700 dark:bg-orange-900 dark:text-orange-100">
                                         認定なし
                                       </div>
                                     )}
-                                    <div className="mt-1 text-xs text-muted-foreground">
-                                      {instructor.certifications.length}資格保有
-                                    </div>
                                   </div>
                                 </div>
                               );
@@ -1018,7 +1027,6 @@ export function ShiftBottomModal({
                               }
                               名
                             </span>
-                            <span>全体: {instructors.length}名</span>
                           </div>
                         </div>
                       </>
