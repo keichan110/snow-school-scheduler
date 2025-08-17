@@ -1000,8 +1000,7 @@ export function ShiftBottomModal({
                 size="lg"
                 className="gap-2 md:flex-1"
               >
-                <ArrowLeft className="h-4 w-4" />
-                戻る
+                キャンセル
               </Button>
               <Button onClick={handleNext} size="lg" className="gap-2 md:flex-1">
                 次へ：インストラクター選択
@@ -1011,13 +1010,12 @@ export function ShiftBottomModal({
           ) : (
             <div className="flex flex-col gap-2 md:flex-row md:gap-4">
               <Button
-                onClick={handleBackToStep1}
+                onClick={handleBackToView}
                 variant="outline"
                 size="lg"
                 className="gap-2 md:flex-1"
               >
-                <ArrowLeft className="h-4 w-4" />
-                戻る
+                キャンセル
               </Button>
               <Button
                 onClick={handleCreateShift}
