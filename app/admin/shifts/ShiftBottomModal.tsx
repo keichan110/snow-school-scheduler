@@ -23,6 +23,9 @@ import { DayData, DepartmentType, Department, ShiftType, ApiResponse } from './t
 import { DEPARTMENT_STYLES } from './constants/shiftConstants';
 import { createDepartmentSection } from '../../shifts/utils/shiftComponents';
 import { useState, useEffect } from 'react';
+import { Edit3 } from 'lucide-react';
+import { prepareShift } from './shiftApiClient';
+import { ExistingShiftData } from './DuplicateShiftDialog';
 
 type ModalStep = 'view' | 'create-step1' | 'create-step2';
 
@@ -81,6 +84,11 @@ export function ShiftBottomModal({
   const [isLoading, setIsLoading] = useState(false);
   const [isCreatingShift, setIsCreatingShift] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  // 編集モード状態
+  const [editMode, setEditMode] = useState<{
+    isEdit: boolean;
+    existingShift?: ExistingShiftData;
+  }>({ isEdit: false });
 
   // API データ取得
   useEffect(() => {
@@ -162,6 +170,7 @@ export function ShiftBottomModal({
     setCurrentStep('view');
     setFormData({ departmentId: 0, shiftTypeId: 0, notes: '', selectedInstructorIds: [] });
     setErrors({});
+    setEditMode({ isEdit: false });
   };
 
   const handleBackToStep1 = () => {
@@ -169,6 +178,7 @@ export function ShiftBottomModal({
     setFormData((prev) => ({ ...prev, selectedInstructorIds: [] }));
     setErrors({});
     setSearchTerm('');
+    setEditMode({ isEdit: false });
   };
 
   const handleDepartmentSelect = (departmentId: number) => {
@@ -193,9 +203,48 @@ export function ShiftBottomModal({
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (validateForm()) {
-      setCurrentStep('create-step2');
+      setIsLoading(true);
+
+      try {
+        // 統合APIコール
+        const prepareResponse = await prepareShift({
+          date: selectedDate!,
+          departmentId: formData.departmentId,
+          shiftTypeId: formData.shiftTypeId,
+        });
+
+        if (prepareResponse.success && prepareResponse.data) {
+          // レスポンスに基づいてモード設定
+          if (prepareResponse.data.mode === 'edit' && prepareResponse.data.shift) {
+            setEditMode({
+              isEdit: true,
+              existingShift: prepareResponse.data.shift,
+            });
+          } else {
+            setEditMode({
+              isEdit: false,
+            });
+          }
+
+          // フォームデータを事前設定
+          setFormData((prev) => ({
+            ...prev,
+            notes: prepareResponse.data?.formData.description || '',
+            selectedInstructorIds: prepareResponse.data?.formData.selectedInstructorIds || [],
+          }));
+
+          setCurrentStep('create-step2');
+        } else {
+          setErrors({ submit: prepareResponse.error || 'エラーが発生しました' });
+        }
+      } catch (error) {
+        console.error('Prepare shift error:', error);
+        setErrors({ submit: 'ネットワークエラーが発生しました' });
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
@@ -217,6 +266,8 @@ export function ShiftBottomModal({
     }
 
     setIsCreatingShift(true);
+    setErrors({}); // エラーをクリア
+
     try {
       const response = await fetch('/api/shifts', {
         method: 'POST',
@@ -229,6 +280,8 @@ export function ShiftBottomModal({
           shiftTypeId: formData.shiftTypeId,
           description: formData.notes || null,
           assignedInstructorIds: formData.selectedInstructorIds,
+          // 編集モードの場合はforce=trueで送信
+          force: editMode.isEdit,
         }),
       });
 
@@ -236,15 +289,18 @@ export function ShiftBottomModal({
 
       if (result.success) {
         // 成功時の処理
-        alert('シフトが正常に作成されました');
+        const message = editMode.isEdit
+          ? 'シフトが正常に更新されました'
+          : 'シフトが正常に作成されました';
+        alert(message);
         handleModalOpenChange(false);
         // TODO: 親コンポーネントでシフトデータを更新する処理が必要
       } else {
-        setErrors({ submit: result.error || 'シフトの作成に失敗しました' });
+        setErrors({ submit: result.error || 'シフトの処理に失敗しました' });
       }
     } catch (error) {
       console.error('Shift creation error:', error);
-      setErrors({ submit: 'シフトの作成中にエラーが発生しました' });
+      setErrors({ submit: 'シフトの処理中にエラーが発生しました' });
     } finally {
       setIsCreatingShift(false);
     }
@@ -257,6 +313,7 @@ export function ShiftBottomModal({
       setFormData({ departmentId: 0, shiftTypeId: 0, notes: '', selectedInstructorIds: [] });
       setErrors({});
       setSearchTerm('');
+      setEditMode({ isEdit: false });
     }
     onOpenChange(open);
   };
@@ -431,6 +488,24 @@ export function ShiftBottomModal({
                   <div className="text-sm text-muted-foreground">
                     {departments.find((d) => d.id === formData.departmentId)?.name} -{' '}
                     {shiftTypes.find((t) => t.id === formData.shiftTypeId)?.name}
+                  </div>
+                </div>
+              )}
+
+              {currentStep === 'create-step2' && editMode.isEdit && (
+                /* 編集モード表示 */
+                <div className="mb-4 rounded-lg border-2 border-blue-200 bg-blue-50 p-4 dark:border-blue-700 dark:bg-blue-950">
+                  <div className="mb-2 flex items-center gap-2">
+                    <Edit3 className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                    <h3 className="font-semibold text-blue-900 dark:text-blue-100">
+                      既存シフトの編集
+                    </h3>
+                  </div>
+                  <p className="text-sm text-blue-700 dark:text-blue-200">
+                    このシフトは既に存在します。インストラクターの追加・変更・削除ができます。
+                  </p>
+                  <div className="mt-2 text-xs text-blue-600 dark:text-blue-300">
+                    現在の割り当て: {editMode.existingShift?.assignedCount || 0}名
                   </div>
                 </div>
               )}
@@ -743,7 +818,7 @@ export function ShiftBottomModal({
                 className="gap-2 md:flex-1"
                 disabled={isCreatingShift}
               >
-                {isCreatingShift ? '作成中...' : 'シフト登録'}
+                {isCreatingShift ? '処理中...' : editMode.isEdit ? 'シフトを更新' : 'シフト登録'}
               </Button>
             </div>
           )}
