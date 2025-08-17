@@ -21,7 +21,7 @@ import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 import { DayData, DepartmentType, Department, ShiftType, ApiResponse } from './types';
 import { DEPARTMENT_STYLES } from './constants/shiftConstants';
-import { getDepartmentType } from '../certifications/utils';
+import { CertificationBadge } from '@/components/ui/certification-badge';
 import { useState, useEffect } from 'react';
 import { Edit3 } from 'lucide-react';
 import { prepareShift } from './shiftApiClient';
@@ -986,17 +986,13 @@ export function ShiftBottomModal({
                                   <div className="text-right">
                                     {hasRequiredCertification ? (
                                       <div className="flex flex-wrap justify-end gap-1">
-                                        {departmentCertifications.map((cert) => {
-                                          const deptType = getDepartmentType(cert.department.name);
-                                          const badgeClass =
-                                            deptType === 'ski' ? 'badge-ski' : 'badge-snowboard';
-
-                                          return (
-                                            <span key={cert.id} className={badgeClass}>
-                                              {cert.shortName}
-                                            </span>
-                                          );
-                                        })}
+                                        {departmentCertifications.map((cert) => (
+                                          <CertificationBadge
+                                            key={cert.id}
+                                            shortName={cert.shortName}
+                                            departmentName={cert.department.name}
+                                          />
+                                        ))}
                                       </div>
                                     ) : (
                                       <div className="rounded-full border border-orange-200 bg-orange-100 px-2 py-1 text-xs text-orange-800 dark:border-orange-700 dark:bg-orange-900 dark:text-orange-100">

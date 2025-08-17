@@ -23,7 +23,7 @@ import type {
   InstructorStats,
   CategoryFilterType,
 } from './types';
-import { getDepartmentType } from '../certifications/utils';
+import { CertificationBadge } from '@/components/ui/certification-badge';
 
 export default function InstructorsPage() {
   const [instructors, setInstructors] = useState<InstructorWithCertifications[]>([]);
@@ -419,19 +419,13 @@ export default function InstructorsPage() {
                     <TableCell>
                       <div className="flex flex-wrap gap-1">
                         {instructor.certifications.length > 0 ? (
-                          instructor.certifications.map((cert) => {
-                            const deptType = getDepartmentType(cert.department.name);
-                            const badgeClass = deptType === 'ski' ? 'badge-ski' : 'badge-snowboard';
-
-                            return (
-                              <span
-                                key={cert.id}
-                                className={`inline-flex items-center rounded px-2 py-1 text-xs font-medium ${badgeClass}`}
-                              >
-                                {cert.shortName}
-                              </span>
-                            );
-                          })
+                          instructor.certifications.map((cert) => (
+                            <CertificationBadge
+                              key={cert.id}
+                              shortName={cert.shortName || cert.name}
+                              departmentName={cert.department.name || ''}
+                            />
+                          ))
                         ) : (
                           <span className="text-sm text-muted-foreground">なし</span>
                         )}
