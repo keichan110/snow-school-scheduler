@@ -14,6 +14,7 @@ export async function GET(request: Request) {
   return withApiErrorHandling<ApiSuccessResponse<unknown[]> | ApiErrorResponse>(async () => {
     const { searchParams } = new URL(request.url);
     const statusParam = searchParams.get('status');
+    const departmentIdParam = searchParams.get('departmentId');
 
     // statusパラメータのバリデーション
     let statusFilter: InstructorStatus | undefined = undefined;
@@ -25,7 +26,34 @@ export async function GET(request: Request) {
       statusFilter = statusParam as InstructorStatus;
     }
 
-    const whereClause = statusFilter ? { status: statusFilter } : {};
+    // departmentIdパラメータのバリデーション
+    let departmentIdFilter: number | undefined = undefined;
+    if (departmentIdParam) {
+      const departmentId = parseInt(departmentIdParam, 10);
+      if (isNaN(departmentId) || departmentId <= 0) {
+        return createValidationErrorResponse([
+          {
+            field: 'departmentId',
+            message: 'departmentId must be a positive integer',
+          },
+        ]);
+      }
+      departmentIdFilter = departmentId;
+    }
+
+    const whereClause: Record<string, unknown> = {};
+    if (statusFilter) {
+      whereClause.status = statusFilter;
+    }
+    if (departmentIdFilter) {
+      whereClause.certifications = {
+        some: {
+          certification: {
+            departmentId: departmentIdFilter,
+          },
+        },
+      };
+    }
 
     const instructors = await prisma.instructor.findMany({
       where: whereClause,

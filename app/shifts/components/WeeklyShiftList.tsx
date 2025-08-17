@@ -15,18 +15,16 @@ export function WeeklyShiftList({ baseDate, shiftStats, isHoliday }: WeeklyShift
   // 週の日付データを計算
   const weekDays = useMemo(() => {
     const weekDates = getWeekDates(baseDate);
-    const days: { date: Date; dateString: string; dayData: DayData | null }[] = [];
+    const days: { date: Date; dateString: string; dayData: DayData }[] = [];
 
     weekDates.forEach((currentDay) => {
       const dateString = formatDateToString(currentDay);
 
-      const dayData: DayData | null = shiftStats[dateString]
-        ? {
-            date: dateString,
-            shifts: shiftStats[dateString].shifts,
-            isHoliday: isHoliday(dateString),
-          }
-        : null;
+      const dayData: DayData = {
+        date: dateString,
+        shifts: shiftStats[dateString]?.shifts || [],
+        isHoliday: isHoliday(dateString),
+      };
 
       days.push({
         date: currentDay,

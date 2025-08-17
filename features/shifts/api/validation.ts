@@ -16,6 +16,8 @@ import {
 export const createShiftSchema = shiftSchema.extend({
   // 過去の日付は作成不可
   date: createDateRangeSchema(new Date()),
+  // 重複シフトの強制作成フラグ（オプション）
+  force: z.boolean().optional().default(false),
 });
 
 /**

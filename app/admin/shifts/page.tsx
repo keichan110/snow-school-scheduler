@@ -6,12 +6,12 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { fetchShifts, fetchDepartments, ApiError } from './api';
-import { Shift, Department, ShiftStats, DayData, DepartmentType, ShiftQueryParams } from './types';
+import { Shift, Department, ShiftStats, DayData, ShiftQueryParams } from './types';
 import { ShiftCalendarGrid } from './ShiftCalendarGrid';
 import { ShiftMobileList } from './ShiftMobileList';
 import { ShiftBottomModal } from './ShiftBottomModal';
-import { getDepartmentTypeById } from './utils/shiftUtils';
 import { isHoliday } from './constants/shiftConstants';
+import { useShiftDataTransformation } from '../../shifts/hooks/useShiftDataTransformation';
 
 export default function ShiftsPage() {
   const now = new Date();
@@ -34,44 +34,8 @@ export default function ShiftsPage() {
     [currentYear, currentMonth]
   );
 
-  // Memoized data transformation
-  const transformShiftsToStats = useCallback(
-    (shifts: Shift[], departments: Department[]): ShiftStats => {
-      const stats: ShiftStats = {};
-
-      shifts.forEach((shift) => {
-        const date = shift.date;
-        if (!stats[date]) {
-          stats[date] = { shifts: [] };
-        }
-
-        const departmentType: DepartmentType = getDepartmentTypeById(
-          shift.departmentId,
-          departments
-        );
-
-        // 同じ部門・シフト種別の組み合わせが既に存在するかチェック
-        const existingShift = stats[date].shifts.find(
-          (s) => s.type === shift.shiftType.name && s.department === departmentType
-        );
-
-        if (existingShift) {
-          // 既存のシフトに人数を加算
-          existingShift.count += shift.assignedCount;
-        } else {
-          // 新しいシフトエントリを追加
-          stats[date].shifts.push({
-            type: shift.shiftType.name,
-            department: departmentType,
-            count: shift.assignedCount,
-          });
-        }
-      });
-
-      return stats;
-    },
-    []
-  );
+  // カスタムフックを使用
+  const { transformShiftsToStats } = useShiftDataTransformation();
 
   // データ取得
   useEffect(() => {
@@ -189,6 +153,23 @@ export default function ShiftsPage() {
     }
   }, [selectedDate]);
 
+  // シフトデータを再読み込み（カレンダー全体 + 特定日対応）
+  const handleShiftUpdated = useCallback(async () => {
+    try {
+      const [shiftsData, departmentsData] = await Promise.all([
+        fetchShifts(queryParams),
+        fetchDepartments(),
+      ]);
+
+      setShifts(shiftsData);
+      setDepartments(departmentsData);
+      setShiftStats(transformShiftsToStats(shiftsData, departmentsData));
+    } catch (error) {
+      console.error('Failed to refresh shift data:', error);
+      throw error; // モーダル側でエラーハンドリングできるように
+    }
+  }, [queryParams, transformShiftsToStats]);
+
   if (error) {
     return (
       <div className="flex min-h-screen items-center justify-center">
@@ -293,6 +274,7 @@ export default function ShiftsPage() {
         selectedDate={selectedDate}
         dayData={selectedDate ? getDayData(selectedDate) : null}
         onStartShiftCreation={handleStartShiftCreation}
+        onShiftUpdated={handleShiftUpdated}
       />
     </div>
   );

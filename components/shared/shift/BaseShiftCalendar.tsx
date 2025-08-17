@@ -44,7 +44,10 @@ export function BaseShiftCalendar({
           const isHolidayDay = checkIsHoliday(date);
           const isSelected = selectedDate === date;
           const hasShifts = dayData && dayData.shifts.length > 0;
-          const dayOfWeek = WEEKDAYS[new Date(year, month - 1, day).getDay()];
+          const dayOfWeekIndex = new Date(year, month - 1, day).getDay();
+          const dayOfWeek = WEEKDAYS[dayOfWeekIndex];
+          const isSaturday = dayOfWeekIndex === 6;
+          const isSunday = dayOfWeekIndex === 0;
 
           return (
             <div
@@ -54,12 +57,15 @@ export function BaseShiftCalendar({
                 'day-card flex min-h-[120px] cursor-pointer flex-col rounded-xl border-2 p-3 shadow-lg transition-all duration-300 md:min-h-[140px]',
                 'hover:-translate-y-1 hover:transform hover:shadow-xl',
                 {
-                  'border-border bg-background hover:border-blue-400': !isSelected && !isHolidayDay,
+                  'border-border bg-background hover:border-blue-400':
+                    !isSelected && !isHolidayDay && !isSaturday && !isSunday,
+                  'border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/30':
+                    isSaturday && !isSelected,
                   'border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950/30':
-                    isHolidayDay && !isSelected,
+                    (isHolidayDay || isSunday) && !isSelected,
                   '-translate-y-1 transform border-blue-400 bg-blue-50 shadow-xl dark:border-blue-600 dark:bg-blue-950/30':
                     isSelected,
-                  'opacity-60': !hasShifts && !isHolidayDay,
+                  'opacity-60': !hasShifts && !isHolidayDay && !isSaturday && !isSunday,
                 }
               )}
             >
@@ -67,43 +73,47 @@ export function BaseShiftCalendar({
               <div className="mb-2 flex items-center gap-2">
                 <div
                   className={cn('text-lg font-bold', {
-                    'text-red-600 dark:text-red-400': isHolidayDay,
-                    'text-foreground': !isHolidayDay,
+                    'text-red-600 dark:text-red-400': isHolidayDay || isSunday,
+                    'text-blue-600 dark:text-blue-400': isSaturday,
+                    'text-foreground': !isHolidayDay && !isSaturday && !isSunday,
                   })}
                 >
                   {day}
                 </div>
                 <div className="text-xs font-medium text-muted-foreground">{dayOfWeek}</div>
+                {isHolidayDay && (
+                  <div className="rounded-full bg-red-100 px-2 py-1 text-xs font-medium text-red-600 dark:bg-red-950/30 dark:text-red-400">
+                    祝日
+                  </div>
+                )}
               </div>
 
               {/* シフト詳細表示 */}
-              {hasShifts ? (
-                <div className="flex-1 space-y-1">
-                  {dayData.shifts.map((shift, idx) => (
-                    <div
-                      key={idx}
-                      className={cn(
-                        'flex items-center justify-between gap-2 rounded-lg px-2 py-2',
-                        getDepartmentBgClass(shift.department as DepartmentType)
-                      )}
-                    >
-                      <div className="flex items-center gap-2">
-                        <DepartmentIcon department={shift.department} size="sm" />
-                        <span className="text-xs font-medium text-foreground">
-                          {getShiftTypeShort(shift.type)}
-                        </span>
+              <div className="flex flex-1 items-center justify-center">
+                {hasShifts ? (
+                  <div className="w-full space-y-1">
+                    {dayData.shifts.map((shift, idx) => (
+                      <div
+                        key={idx}
+                        className={cn(
+                          'flex items-center justify-between gap-2 rounded-lg px-2 py-2',
+                          getDepartmentBgClass(shift.department as DepartmentType)
+                        )}
+                      >
+                        <div className="flex items-center gap-2">
+                          <DepartmentIcon department={shift.department} size="sm" />
+                          <span className="text-xs font-medium text-foreground">
+                            {getShiftTypeShort(shift.type)}
+                          </span>
+                        </div>
+                        <ShiftBadge count={shift.count} />
                       </div>
-                      <ShiftBadge count={shift.count} />
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="flex flex-1 items-center justify-center">
-                  <div className="text-center text-xs text-muted-foreground">
-                    {isHolidayDay ? '祝日' : 'シフトなし'}
+                    ))}
                   </div>
-                </div>
-              )}
+                ) : (
+                  <div className="text-center text-xs text-muted-foreground">シフトなし</div>
+                )}
+              </div>
             </div>
           );
         })}

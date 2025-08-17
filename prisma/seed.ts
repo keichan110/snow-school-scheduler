@@ -554,12 +554,13 @@ async function main() {
       });
       shifts.push(ski1);
 
+      // スキー団体レッスン
       const ski2 = await prisma.shift.create({
         data: {
           date: new Date(dateString!),
           departmentId: skiDepartment.id,
-          shiftTypeId: generalLessonType.id,
-          description: `スキー一般レッスン`,
+          shiftTypeId: groupLessonType.id,
+          description: `スキー団体レッスン`,
         },
       });
       shifts.push(ski2);
@@ -575,53 +576,41 @@ async function main() {
       });
       shifts.push(snowboard1);
 
+      // スノーボード団体レッスン
       const snowboard2 = await prisma.shift.create({
         data: {
           date: new Date(dateString!),
           departmentId: snowboardDepartment.id,
-          shiftTypeId: generalLessonType.id,
-          description: `スノーボード一般レッスン`,
+          shiftTypeId: groupLessonType.id,
+          description: `スノーボード団体レッスン`,
         },
       });
       shifts.push(snowboard2);
 
-      // 団体レッスン・バッジテスト・県連事業（土日のみ）
+      // バッジテスト・県連事業（特定の土日のみ追加）
       // 月2回程度の頻度で各種イベントを配置
       const weekOfMonth = Math.ceil(currentDate.getDate() / 7);
 
-      // 団体レッスン（第1・3土日）
-      if (weekOfMonth === 1 || weekOfMonth === 3) {
-        const groupLesson = await prisma.shift.create({
-          data: {
-            date: new Date(dateString!),
-            departmentId: Math.random() > 0.5 ? skiDepartment.id : snowboardDepartment.id,
-            shiftTypeId: groupLessonType.id,
-            description: `団体レッスン`,
-          },
-        });
-        shifts.push(groupLesson);
-      }
-
-      // バッジテスト（第2・4土日）
-      if (weekOfMonth === 2 || weekOfMonth === 4) {
+      // バッジテスト（第2・4土日、スキー部門のみ）
+      if ((weekOfMonth === 2 || weekOfMonth === 4) && dayOfWeek === 6) {
         const badgeTest = await prisma.shift.create({
           data: {
             date: new Date(dateString!),
-            departmentId: Math.random() > 0.5 ? skiDepartment.id : snowboardDepartment.id,
+            departmentId: skiDepartment.id,
             shiftTypeId: badgeTestType.id,
-            description: `バッジテスト`,
+            description: `スキーバッジテスト`,
           },
         });
         shifts.push(badgeTest);
       }
 
-      // 県連事業（月1回程度、第1土日のみ）
-      if (weekOfMonth === 1 && dayOfWeek === 6) {
-        // 第1土曜日のみ
+      // 県連事業（月1回程度、第1日曜日のみ、スノーボード部門）
+      if (weekOfMonth === 1 && dayOfWeek === 0) {
+        // 第1日曜日のみ
         const prefectureEvent = await prisma.shift.create({
           data: {
             date: new Date(dateString!),
-            departmentId: Math.random() > 0.5 ? skiDepartment.id : snowboardDepartment.id,
+            departmentId: snowboardDepartment.id,
             shiftTypeId: prefectureEventType.id,
             description: `県連事業`,
           },

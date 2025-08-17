@@ -192,7 +192,7 @@ paths:
   /api/instructors:
     get:
       summary: インストラクター一覧取得
-      description: インストラクターの一覧を取得（ステータス絞り込み可能）
+      description: インストラクターの一覧を取得（ステータス・部門絞り込み可能）
       tags:
         - インストラクター管理
       parameters:
@@ -202,6 +202,13 @@ paths:
           schema:
             type: string
             enum: [ACTIVE, INACTIVE, RETIRED]
+        - name: departmentId
+          in: query
+          description: 部門IDでフィルタリング（指定された部門の資格を持つインストラクターのみ）
+          schema:
+            type: integer
+            minimum: 1
+            example: 1
       responses:
         '200':
           description: インストラクター一覧
@@ -500,6 +507,47 @@ paths:
                       message:
                         type: string
                         example: 'Shift operation completed successfully'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /api/shifts/prepare:
+    get:
+      summary: シフト準備（重複チェック・編集準備）
+      description: 指定された日付・部門・シフト種類の組み合わせで既存シフトの重複チェックと編集準備を行う統合エンドポイント
+      tags:
+        - シフト管理
+      parameters:
+        - name: date
+          in: query
+          required: true
+          description: シフト日付（YYYY-MM-DD形式）
+          schema:
+            type: string
+            format: date
+            example: '2024-01-15'
+        - name: departmentId
+          in: query
+          required: true
+          description: 部門ID
+          schema:
+            type: integer
+            example: 1
+        - name: shiftTypeId
+          in: query
+          required: true
+          description: シフト種類ID
+          schema:
+            type: integer
+            example: 2
+      responses:
+        '200':
+          description: シフト準備完了（新規作成モードまたは編集モード）
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PrepareShiftResponse'
         '400':
           $ref: '#/components/responses/ValidationError'
         '500':
@@ -1056,6 +1104,126 @@ components:
                       type: array
                       items:
                         $ref: '#/components/schemas/CertificationSummary'
+
+    # シフト準備API専用レスポンス
+    PrepareShiftResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: object
+          properties:
+            mode:
+              type: string
+              enum: ['create', 'edit']
+              description: '作成モードまたは編集モード'
+              example: 'edit'
+            shift:
+              allOf:
+                - $ref: '#/components/schemas/ExistingShiftData'
+                - type: object
+                  nullable: true
+                  description: '編集モードの場合の既存シフトデータ（新規作成モードではnull）'
+            formData:
+              $ref: '#/components/schemas/PrepareShiftFormData'
+        error:
+          type: string
+          nullable: true
+          example: null
+
+    ExistingShiftData:
+      type: object
+      description: '既存シフトの詳細データ（編集モード用）'
+      properties:
+        id:
+          type: integer
+          example: 1
+        date:
+          type: string
+          format: date
+          example: '2024-01-15'
+        departmentId:
+          type: integer
+          example: 1
+        shiftTypeId:
+          type: integer
+          example: 2
+        description:
+          type: string
+          nullable: true
+          example: 'モーニングレッスン'
+        department:
+          type: object
+          properties:
+            id:
+              type: integer
+              example: 1
+            name:
+              type: string
+              example: 'スキー'
+            code:
+              type: string
+              example: 'ski'
+        shiftType:
+          type: object
+          properties:
+            id:
+              type: integer
+              example: 2
+            name:
+              type: string
+              example: 'レッスン'
+        assignments:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+                example: 1
+              instructor:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 3
+                  lastName:
+                    type: string
+                    example: '山田'
+                  firstName:
+                    type: string
+                    example: '太郎'
+        assignedCount:
+          type: integer
+          description: '現在割り当てられているインストラクター数'
+          example: 2
+
+    PrepareShiftFormData:
+      type: object
+      description: 'フォーム事前設定用のデータ'
+      properties:
+        date:
+          type: string
+          format: date
+          example: '2024-01-15'
+        departmentId:
+          type: integer
+          example: 1
+        shiftTypeId:
+          type: integer
+          example: 2
+        description:
+          type: string
+          nullable: true
+          example: 'モーニングレッスン'
+        selectedInstructorIds:
+          type: array
+          items:
+            type: integer
+          description: '事前選択されるインストラクターIDの配列'
+          example: [3, 5]
 
 tags:
   - name: システム
