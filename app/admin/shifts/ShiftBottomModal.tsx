@@ -116,7 +116,9 @@ export function ShiftBottomModal({
         if (currentStep === 'create-step1') {
           requests.push(fetch('/api/departments'), fetch('/api/shift-types'));
         } else if (currentStep === 'create-step2') {
-          requests.push(fetch('/api/instructors?status=ACTIVE'));
+          requests.push(
+            fetch(`/api/instructors?status=ACTIVE&departmentId=${formData.departmentId}`)
+          );
         }
 
         const responses = await Promise.all(requests);
@@ -155,7 +157,7 @@ export function ShiftBottomModal({
     };
 
     fetchData();
-  }, [currentStep]);
+  }, [currentStep, formData.departmentId]);
 
   if (!selectedDate || !localDayData) return null;
 

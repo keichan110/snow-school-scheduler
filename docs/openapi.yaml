@@ -192,7 +192,7 @@ paths:
   /api/instructors:
     get:
       summary: インストラクター一覧取得
-      description: インストラクターの一覧を取得（ステータス絞り込み可能）
+      description: インストラクターの一覧を取得（ステータス・部門絞り込み可能）
       tags:
         - インストラクター管理
       parameters:
@@ -202,6 +202,13 @@ paths:
           schema:
             type: string
             enum: [ACTIVE, INACTIVE, RETIRED]
+        - name: departmentId
+          in: query
+          description: 部門IDでフィルタリング（指定された部門の資格を持つインストラクターのみ）
+          schema:
+            type: integer
+            minimum: 1
+            example: 1
       responses:
         '200':
           description: インストラクター一覧
