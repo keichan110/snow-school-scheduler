@@ -89,15 +89,12 @@ export function NotificationItem({ notification }: NotificationItemProps) {
           handleDismiss();
         }
       }, notification.duration);
-
-      return () => {
-        if (timeoutRef.current) clearTimeout(timeoutRef.current);
-        if (progressIntervalRef.current) clearInterval(progressIntervalRef.current);
-      };
     }
 
+    // すべての場合で確実にクリーンアップを実行
     return () => {
-      // cleanup function for all cases
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+      if (progressIntervalRef.current) clearInterval(progressIntervalRef.current);
     };
   }, [notification.duration, isPaused, isExiting, notification.persistent, handleDismiss]);
 
@@ -116,6 +113,11 @@ export function NotificationItem({ notification }: NotificationItemProps) {
         }, remainingTime);
       }
     }
+
+    // クリーンアップ関数を追加
+    return () => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isPaused, state.config.pauseOnHover]);
 
