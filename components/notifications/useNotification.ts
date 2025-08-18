@@ -55,13 +55,6 @@ export function useNotification() {
 
       dispatch({ type: 'ADD_NOTIFICATION', payload: notification });
 
-      // 自動削除（duration > 0の場合）
-      if (duration > 0) {
-        setTimeout(() => {
-          dispatch({ type: 'REMOVE_NOTIFICATION', payload: id });
-        }, duration);
-      }
-
       return id;
     },
     [dispatch]

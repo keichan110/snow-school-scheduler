@@ -57,10 +57,14 @@ export function NotificationItem({ notification }: NotificationItemProps) {
   // 安定した参照を作成してuseEffect依存配列問題を回避
   const hideNotificationRef = useRef(hideNotification);
   const notificationIdRef = useRef(notification.id);
+  const isPausedRef = useRef(isPaused);
+  const isExitingRef = useRef(isExiting);
 
   // refs を最新の値で更新
   hideNotificationRef.current = hideNotification;
   notificationIdRef.current = notification.id;
+  isPausedRef.current = isPaused;
+  isExitingRef.current = isExiting;
 
   const Icon = ICONS[notification.type];
 
@@ -74,78 +78,61 @@ export function NotificationItem({ notification }: NotificationItemProps) {
     }, 200); // アニメーション時間と合わせる
   }, []);
 
-  // プログレスバーとタイマー管理
+  // 統合されたタイマー管理 - マウント時にのみ実行
   useEffect(() => {
-    if (notification.duration && notification.duration > 0 && !notification.persistent) {
-      const startTime = Date.now();
-      startTimeRef.current = startTime;
-
-      const dismiss = () => {
-        setIsExiting(true);
-        if (timeoutRef.current) clearTimeout(timeoutRef.current);
-        if (progressIntervalRef.current) clearInterval(progressIntervalRef.current);
-        setTimeout(() => {
-          hideNotificationRef.current(notificationIdRef.current);
-        }, 200);
-      };
-
-      const updateProgress = () => {
-        if (!isPaused && !isExiting) {
-          const elapsed = Date.now() - startTime;
-          const progressPercent = Math.min((elapsed / notification.duration!) * 100, 100);
-          setProgress(progressPercent);
-
-          if (progressPercent >= 100) {
-            dismiss();
-          }
-        }
-      };
-
-      progressIntervalRef.current = setInterval(updateProgress, 50);
-      timeoutRef.current = setTimeout(() => {
-        if (!isPaused && !isExiting) {
-          dismiss();
-        }
-      }, notification.duration);
+    if (!notification.duration || notification.duration <= 0 || notification.persistent) {
+      return;
     }
 
-    // すべての場合で確実にクリーンアップを実行
-    return () => {
-      if (timeoutRef.current) clearTimeout(timeoutRef.current);
-      if (progressIntervalRef.current) clearInterval(progressIntervalRef.current);
-    };
-  }, [notification.duration, isPaused, isExiting, notification.persistent]);
+    const startTime = Date.now();
+    startTimeRef.current = startTime;
+    let pausedAt = 0;
+    let totalPausedTime = 0;
 
-  // ホバー時の一時停止
-  useEffect(() => {
-    if (state.config.pauseOnHover && isPaused) {
-      if (timeoutRef.current) clearTimeout(timeoutRef.current);
-      if (progressIntervalRef.current) clearInterval(progressIntervalRef.current);
-    } else if (notification.duration && notification.duration > 0 && !notification.persistent) {
-      const remainingTime = notification.duration - (progress / 100) * notification.duration;
-      if (remainingTime > 0) {
-        const dismiss = () => {
+    const updateProgress = () => {
+      if (isPausedRef.current) {
+        if (pausedAt === 0) {
+          pausedAt = Date.now();
+        }
+        return; // 一時停止中は何もしない
+      }
+
+      if (pausedAt > 0) {
+        totalPausedTime += Date.now() - pausedAt;
+        pausedAt = 0;
+      }
+
+      if (!isExitingRef.current) {
+        const elapsed = Date.now() - startTime - totalPausedTime;
+        const progressPercent = Math.min((elapsed / notification.duration!) * 100, 100);
+        setProgress(progressPercent);
+
+        if (progressPercent >= 100) {
           setIsExiting(true);
           if (timeoutRef.current) clearTimeout(timeoutRef.current);
           if (progressIntervalRef.current) clearInterval(progressIntervalRef.current);
           setTimeout(() => {
             hideNotificationRef.current(notificationIdRef.current);
           }, 200);
-        };
-
-        timeoutRef.current = setTimeout(() => {
-          if (!isPaused && !isExiting) {
-            dismiss();
-          }
-        }, remainingTime);
+        }
       }
-    }
-
-    // クリーンアップ関数を追加
-    return () => {
-      if (timeoutRef.current) clearTimeout(timeoutRef.current);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
+    const intervalId = setInterval(updateProgress, 50);
+    progressIntervalRef.current = intervalId;
+
+    // クリーンアップ関数
+    return () => {
+      // intervalIdは確実にクリアできるが、timeoutRefは手動削除で既にクリアされている可能性がある
+      if (intervalId) clearInterval(intervalId);
+      // timeoutRefのクリアは handleDismiss で行われるため、ここでは行わない
+    };
+  }, [notification.duration, notification.persistent]); // state依存を除外し、refで状態を参照
+
+  // 一時停止状態の監視のみ - タイマーリセットは行わない
+  useEffect(() => {
+    // このeffectは状態監視のみで、タイマー操作は行わない
+    // 実際の一時停止ロジックは上記のuseEffectのupdateProgress内で処理
   }, [isPaused, state.config.pauseOnHover]);
 
   useEffect(() => {
