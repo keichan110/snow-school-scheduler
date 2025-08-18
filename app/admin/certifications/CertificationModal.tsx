@@ -20,6 +20,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
+import { useNotification } from '@/components/notifications';
 
 export default function CertificationModal({
   isOpen,
@@ -27,6 +28,7 @@ export default function CertificationModal({
   certification,
   onSave,
 }: CertificationModalProps) {
+  const { showNotification } = useNotification();
   const [formData, setFormData] = useState<CertificationFormData>({
     name: '',
     shortName: '',
@@ -69,10 +71,14 @@ export default function CertificationModal({
 
     try {
       await onSave(formData);
+      showNotification(
+        certification ? '資格が正常に更新されました' : '資格が正常に作成されました',
+        'success'
+      );
       onClose();
     } catch (error) {
       console.error('Save error:', error);
-      alert(error instanceof Error ? error.message : '保存に失敗しました');
+      showNotification(error instanceof Error ? error.message : '保存に失敗しました', 'error');
     } finally {
       setIsSubmitting(false);
     }

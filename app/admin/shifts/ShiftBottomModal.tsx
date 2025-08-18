@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowRight, Search, X, CheckCircle } from 'lucide-react';
+import { ArrowRight, Search, X } from 'lucide-react';
 import {
   PersonSimpleSki,
   PersonSimpleSnowboard,
@@ -26,6 +26,7 @@ import { useState, useEffect } from 'react';
 import { Edit3 } from 'lucide-react';
 import { prepareShift } from './shiftApiClient';
 import { ExistingShiftData } from './DuplicateShiftDialog';
+import { useNotification } from '@/components/notifications';
 
 type ModalStep = 'view' | 'create-step1' | 'create-step2';
 
@@ -72,6 +73,7 @@ export function ShiftBottomModal({
   onStartShiftCreation = () => {}, // eslint-disable-line @typescript-eslint/no-unused-vars
   onShiftUpdated,
 }: ShiftBottomModalProps) {
+  const { showNotification } = useNotification();
   const [currentStep, setCurrentStep] = useState<ModalStep>('view');
   const [formData, setFormData] = useState<ShiftFormData>({
     departmentId: 0,
@@ -91,12 +93,6 @@ export function ShiftBottomModal({
     isEdit: boolean;
     existingShift?: ExistingShiftData;
   }>({ isEdit: false });
-  // 成功メッセージ状態
-  const [successMessage, setSuccessMessage] = useState<{
-    show: boolean;
-    message: string;
-    isEdit: boolean;
-  }>({ show: false, message: '', isEdit: false });
   // ローカルシフトデータ状態（更新可能）
   const [localDayData, setLocalDayData] = useState<DayData | null>(dayData);
 
@@ -407,12 +403,8 @@ export function ShiftBottomModal({
           ? 'シフトが正常に更新されました'
           : 'シフトが正常に作成されました';
 
-        // 成功メッセージを設定してviewステップに遷移
-        setSuccessMessage({
-          show: true,
-          message,
-          isEdit: editMode.isEdit,
-        });
+        // 新しい通知システム
+        showNotification(message, 'success');
 
         // フォームをリセット
         setFormData({ departmentId: 0, shiftTypeId: 0, notes: '', selectedInstructorIds: [] });
@@ -446,7 +438,6 @@ export function ShiftBottomModal({
       setErrors({});
       setSearchTerm('');
       setEditMode({ isEdit: false });
-      setSuccessMessage({ show: false, message: '', isEdit: false });
     }
     onOpenChange(open);
   };
@@ -633,34 +624,6 @@ export function ShiftBottomModal({
           {currentStep === 'view' ? (
             /* シフト表示モード */
             <div className="space-y-4">
-              {/* 成功メッセージ表示 */}
-              {successMessage.show && (
-                <div className="rounded-lg border border-green-200 bg-green-50 p-4 dark:border-green-700 dark:bg-green-950">
-                  <div className="flex items-center gap-3">
-                    <CheckCircle className="h-6 w-6 text-green-600 dark:text-green-400" />
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-green-900 dark:text-green-100">
-                        {successMessage.isEdit ? 'シフト更新完了' : 'シフト作成完了'}
-                      </h3>
-                      <p className="text-sm text-green-700 dark:text-green-200">
-                        {successMessage.message}
-                      </p>
-                      <p className="mt-1 text-xs text-green-600 dark:text-green-300">
-                        下記でシフトの詳細を確認できます。
-                      </p>
-                    </div>
-                    <Button
-                      onClick={() => setSuccessMessage({ show: false, message: '', isEdit: false })}
-                      variant="ghost"
-                      size="sm"
-                      className="h-6 w-6 p-0 text-green-600 hover:bg-green-100 hover:text-green-700 dark:text-green-400 dark:hover:bg-green-900 dark:hover:text-green-300"
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              )}
-
               {localDayData.shifts.length === 0 ? (
                 /* シフトなしの場合 */
                 <div className="py-8 text-center text-muted-foreground">

@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 import { ThemeProvider } from '@/components/theme-provider';
 import { QueryProvider } from '@/shared/providers/query-client';
+import { NotificationProvider } from '@/components/notifications';
 import Background from '@/components/Background';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -27,14 +28,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               system: 'system',
             }}
           >
-            <Background />
-            <div className="flex min-h-screen flex-col">
-              <Header />
-              <main className="mx-auto w-full max-w-7xl flex-1 px-4 pt-32 sm:px-6 lg:px-8">
-                {children}
-              </main>
-              <Footer />
-            </div>
+            <NotificationProvider>
+              <Background />
+              <div className="flex min-h-screen flex-col">
+                <Header />
+                <main className="mx-auto w-full max-w-7xl flex-1 px-4 pt-32 sm:px-6 lg:px-8">
+                  {children}
+                </main>
+                <Footer />
+              </div>
+            </NotificationProvider>
           </ThemeProvider>
         </QueryProvider>
       </body>

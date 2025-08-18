@@ -29,6 +29,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Separator } from '@/components/ui/separator';
+import { useNotification } from '@/components/notifications';
 
 export default function InstructorModal({
   isOpen,
@@ -36,6 +37,7 @@ export default function InstructorModal({
   instructor,
   onSave,
 }: InstructorModalProps) {
+  const { showNotification } = useNotification();
   const [formData, setFormData] = useState<InstructorFormData>({
     lastName: '',
     firstName: '',
@@ -123,10 +125,16 @@ export default function InstructorModal({
 
     try {
       await onSave(formData);
+      showNotification(
+        instructor
+          ? 'インストラクターが正常に更新されました'
+          : 'インストラクターが正常に作成されました',
+        'success'
+      );
       onClose();
     } catch (error) {
       console.error('Save error:', error);
-      alert(error instanceof Error ? error.message : '保存に失敗しました');
+      showNotification(error instanceof Error ? error.message : '保存に失敗しました', 'error');
     } finally {
       setIsSubmitting(false);
     }
@@ -157,7 +165,7 @@ export default function InstructorModal({
 
     // 重複チェック
     if (assignedCertifications.find((cert) => cert.id === certificationToAdd.id)) {
-      alert('この資格は既に追加されています');
+      showNotification('この資格は既に追加されています', 'warning');
       return;
     }
 

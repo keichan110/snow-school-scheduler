@@ -16,6 +16,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
+import { useNotification } from '@/components/notifications';
 
 export default function ShiftTypeModal({
   isOpen,
@@ -23,6 +24,7 @@ export default function ShiftTypeModal({
   shiftType,
   onSave,
 }: ShiftTypeModalProps) {
+  const { showNotification } = useNotification();
   const [formData, setFormData] = useState<ShiftTypeFormData>({
     name: '',
     isActive: true,
@@ -51,10 +53,14 @@ export default function ShiftTypeModal({
 
     try {
       await onSave(formData);
+      showNotification(
+        shiftType ? 'シフト種類が正常に更新されました' : 'シフト種類が正常に作成されました',
+        'success'
+      );
       onClose();
     } catch (error) {
       console.error('Save error:', error);
-      alert(error instanceof Error ? error.message : '保存に失敗しました');
+      showNotification(error instanceof Error ? error.message : '保存に失敗しました', 'error');
     } finally {
       setIsSubmitting(false);
     }
