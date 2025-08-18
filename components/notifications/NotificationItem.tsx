@@ -54,22 +54,40 @@ export function NotificationItem({ notification }: NotificationItemProps) {
   const progressIntervalRef = useRef<NodeJS.Timeout>();
   const startTimeRef = useRef<number>();
 
+  // 安定した参照を作成してuseEffect依存配列問題を回避
+  const hideNotificationRef = useRef(hideNotification);
+  const notificationIdRef = useRef(notification.id);
+
+  // refs を最新の値で更新
+  hideNotificationRef.current = hideNotification;
+  notificationIdRef.current = notification.id;
+
   const Icon = ICONS[notification.type];
 
+  // 共通の削除ロジック - useCallbackで安定化し、refを使用して依存配列を空にする
   const handleDismiss = useCallback(() => {
     setIsExiting(true);
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
     if (progressIntervalRef.current) clearInterval(progressIntervalRef.current);
     setTimeout(() => {
-      hideNotification(notification.id);
+      hideNotificationRef.current(notificationIdRef.current);
     }, 200); // アニメーション時間と合わせる
-  }, [hideNotification, notification.id]);
+  }, []);
 
   // プログレスバーとタイマー管理
   useEffect(() => {
     if (notification.duration && notification.duration > 0 && !notification.persistent) {
       const startTime = Date.now();
       startTimeRef.current = startTime;
+
+      const dismiss = () => {
+        setIsExiting(true);
+        if (timeoutRef.current) clearTimeout(timeoutRef.current);
+        if (progressIntervalRef.current) clearInterval(progressIntervalRef.current);
+        setTimeout(() => {
+          hideNotificationRef.current(notificationIdRef.current);
+        }, 200);
+      };
 
       const updateProgress = () => {
         if (!isPaused && !isExiting) {
@@ -78,7 +96,7 @@ export function NotificationItem({ notification }: NotificationItemProps) {
           setProgress(progressPercent);
 
           if (progressPercent >= 100) {
-            handleDismiss();
+            dismiss();
           }
         }
       };
@@ -86,7 +104,7 @@ export function NotificationItem({ notification }: NotificationItemProps) {
       progressIntervalRef.current = setInterval(updateProgress, 50);
       timeoutRef.current = setTimeout(() => {
         if (!isPaused && !isExiting) {
-          handleDismiss();
+          dismiss();
         }
       }, notification.duration);
     }
@@ -96,7 +114,7 @@ export function NotificationItem({ notification }: NotificationItemProps) {
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
       if (progressIntervalRef.current) clearInterval(progressIntervalRef.current);
     };
-  }, [notification.duration, isPaused, isExiting, notification.persistent, handleDismiss]);
+  }, [notification.duration, isPaused, isExiting, notification.persistent]);
 
   // ホバー時の一時停止
   useEffect(() => {
@@ -106,9 +124,18 @@ export function NotificationItem({ notification }: NotificationItemProps) {
     } else if (notification.duration && notification.duration > 0 && !notification.persistent) {
       const remainingTime = notification.duration - (progress / 100) * notification.duration;
       if (remainingTime > 0) {
+        const dismiss = () => {
+          setIsExiting(true);
+          if (timeoutRef.current) clearTimeout(timeoutRef.current);
+          if (progressIntervalRef.current) clearInterval(progressIntervalRef.current);
+          setTimeout(() => {
+            hideNotificationRef.current(notificationIdRef.current);
+          }, 200);
+        };
+
         timeoutRef.current = setTimeout(() => {
           if (!isPaused && !isExiting) {
-            handleDismiss();
+            dismiss();
           }
         }, remainingTime);
       }
