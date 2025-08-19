@@ -13,6 +13,7 @@ import { cn } from '@/lib/utils';
 import { DayData } from '../../admin/shifts/types';
 import { DEPARTMENT_STYLES } from '../../admin/shifts/constants/shiftConstants';
 import { createDepartmentSection } from '../utils/shiftComponents';
+import { formatDateForDisplay } from '@/shared/utils/dateFormatter';
 
 interface PublicShiftBottomModalProps {
   isOpen: boolean;
@@ -29,29 +30,12 @@ export function PublicShiftBottomModal({
 }: PublicShiftBottomModalProps) {
   if (!selectedDate || !dayData) return null;
 
-  const formatSelectedDate = () => {
-    try {
-      const date = new Date(selectedDate);
-      const dateStr = date.toLocaleDateString('ja-JP', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-      });
-      const weekdayStr = date.toLocaleDateString('ja-JP', {
-        weekday: 'short',
-      });
-      return `${dateStr}（${weekdayStr}）`;
-    } catch {
-      return selectedDate;
-    }
-  };
-
   return (
     <Drawer open={isOpen} onOpenChange={onOpenChange}>
       <DrawerContent className="max-h-[80vh]">
         <DrawerHeader className="pb-2 text-center">
           <DrawerTitle className="flex items-center justify-center gap-2 text-xl md:text-2xl">
-            {formatSelectedDate()}
+            {formatDateForDisplay(selectedDate)}
           </DrawerTitle>
         </DrawerHeader>
 

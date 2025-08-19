@@ -27,6 +27,7 @@ import { Edit3 } from 'lucide-react';
 import { prepareShift } from './shiftApiClient';
 import { ExistingShiftData } from './DuplicateShiftDialog';
 import { useNotification } from '@/components/notifications';
+import { formatDateForDisplay } from '@/shared/utils/dateFormatter';
 
 type ModalStep = 'view' | 'create-step1' | 'create-step2';
 
@@ -157,23 +158,6 @@ export function ShiftBottomModal({
   }, [currentStep, formData.departmentId]);
 
   if (!selectedDate || !localDayData) return null;
-
-  const formatSelectedDate = () => {
-    try {
-      const date = new Date(selectedDate);
-      const dateStr = date.toLocaleDateString('ja-JP', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-      });
-      const weekdayStr = date.toLocaleDateString('ja-JP', {
-        weekday: 'short',
-      });
-      return `${dateStr}（${weekdayStr}）`;
-    } catch {
-      return selectedDate;
-    }
-  };
 
   const handleStartShiftCreation = () => {
     setCurrentStep('create-step1');
@@ -616,7 +600,7 @@ export function ShiftBottomModal({
       <DrawerContent className="max-h-[80vh]">
         <DrawerHeader className="pb-2 text-center">
           <DrawerTitle className="flex items-center justify-center gap-2 text-xl md:text-2xl">
-            {formatSelectedDate()}
+            {formatDateForDisplay(selectedDate)}
           </DrawerTitle>
         </DrawerHeader>
 
