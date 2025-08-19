@@ -2,7 +2,7 @@
 
 import dynamic from 'next/dynamic';
 import { ShiftCalendarSkeleton } from '@/shared/components/skeletons/ShiftCalendarSkeleton';
-import { ShiftStats } from '../../admin/shifts/types';
+import { ShiftCalendarGridProps } from '@/shared/types/shiftDisplayTypes';
 
 // 設計書に基づく動的インポート
 const BaseShiftCalendar = dynamic(
@@ -16,15 +16,6 @@ const BaseShiftCalendar = dynamic(
   }
 );
 
-interface PublicShiftCalendarGridProps {
-  year: number;
-  month: number;
-  shiftStats: ShiftStats;
-  isHoliday: (date: string) => boolean;
-  selectedDate: string | null;
-  onDateSelect: (date: string) => void;
-}
-
-export function PublicShiftCalendarGrid(props: PublicShiftCalendarGridProps) {
+export function PublicShiftCalendarGrid(props: ShiftCalendarGridProps) {
   return <BaseShiftCalendar {...props} />;
 }
