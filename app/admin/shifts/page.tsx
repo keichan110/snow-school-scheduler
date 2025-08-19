@@ -8,7 +8,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { fetchShifts, fetchDepartments, ApiError } from './api';
 import { Shift, Department, ShiftStats, DayData, ShiftQueryParams } from './types';
 import { ShiftCalendarGrid } from '@/components/shared/shift/ShiftCalendarGrid';
-import { ShiftMobileList } from './ShiftMobileList';
+import { ShiftMobileList } from '@/components/shared/shift/ShiftMobileList';
 import { ShiftBottomModal } from './ShiftBottomModal';
 import { isHoliday } from './constants/shiftConstants';
 import { useShiftDataTransformation } from '../../shifts/hooks/useShiftDataTransformation';

@@ -9,7 +9,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { fetchShifts, fetchDepartments, ApiError } from '../admin/shifts/api';
 import { Shift, Department, ShiftStats, ShiftQueryParams, DayData } from '../admin/shifts/types';
 import { ShiftCalendarGrid } from '@/components/shared/shift/ShiftCalendarGrid';
-import { PublicShiftMobileList } from './components/PublicShiftMobileList';
+import { ShiftMobileList } from '@/components/shared/shift/ShiftMobileList';
 import { PublicShiftBottomModal } from './components/PublicShiftBottomModal';
 import { WeeklyShiftList } from './components/WeeklyShiftList';
 import { ViewToggle } from './components/ViewToggle';
@@ -234,7 +234,7 @@ function PublicShiftsPageContent() {
 
                     {/* モバイル用リスト表示 */}
                     <div className="block px-4 sm:hidden">
-                      <PublicShiftMobileList
+                      <ShiftMobileList
                         year={currentYear}
                         month={currentMonth}
                         shiftStats={shiftStats}
