@@ -44,3 +44,6 @@ jobs:
 
       - name: Build application
         run: npm run build
+
+      - name: Security audit
+        run: npm audit --audit-level=moderate
