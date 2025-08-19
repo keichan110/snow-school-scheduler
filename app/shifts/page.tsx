@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Header from '@/components/Header';
 import { Button } from '@/components/ui/button';
@@ -21,7 +21,7 @@ import { useShiftDataTransformation } from './hooks/useShiftDataTransformation';
 
 type ViewMode = 'monthly' | 'weekly';
 
-export default function PublicShiftsPage() {
+function PublicShiftsPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -268,5 +268,22 @@ export default function PublicShiftsPage() {
         dayData={dayData}
       />
     </div>
+  );
+}
+
+export default function PublicShiftsPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center">
+          <div className="text-center">
+            <div className="mx-auto h-8 w-8 animate-spin rounded-full border-b-2 border-blue-600"></div>
+            <div className="mt-2 text-muted-foreground">読み込み中...</div>
+          </div>
+        </div>
+      }
+    >
+      <PublicShiftsPageContent />
+    </Suspense>
   );
 }
