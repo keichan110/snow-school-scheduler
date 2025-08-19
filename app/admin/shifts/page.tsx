@@ -7,7 +7,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { fetchShifts, fetchDepartments, ApiError } from './api';
 import { Shift, Department, ShiftStats, DayData, ShiftQueryParams } from './types';
-import { ShiftCalendarGrid } from './ShiftCalendarGrid';
+import { ShiftCalendarGrid } from '@/components/shared/shift/ShiftCalendarGrid';
 import { ShiftMobileList } from './ShiftMobileList';
 import { ShiftBottomModal } from './ShiftBottomModal';
 import { isHoliday } from './constants/shiftConstants';
