@@ -1,6 +1,6 @@
 'use client';
 
-import { Calendar, PersonSimpleSki, PersonSimpleSnowboard } from '@phosphor-icons/react';
+import { Calendar } from '@phosphor-icons/react';
 import {
   Drawer,
   DrawerClose,
@@ -9,10 +9,8 @@ import {
   DrawerTitle,
 } from '@/components/ui/drawer';
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
 import { DayData } from '../../admin/shifts/types';
-import { DEPARTMENT_STYLES } from '../../admin/shifts/constants/shiftConstants';
-import { createDepartmentSection } from '../utils/shiftComponents';
+import { renderDepartmentSections } from '../utils/shiftComponents';
 import { formatDateForDisplay } from '@/shared/utils/dateFormatter';
 
 interface PublicShiftBottomModalProps {
@@ -51,38 +49,8 @@ export function PublicShiftBottomModal({
             ) : (
               /* シフトがある場合 */
               <>
-                {/* スキー部門 */}
-                {dayData.shifts.filter((s) => s.department === 'ski').length > 0 &&
-                  createDepartmentSection(
-                    'ski',
-                    dayData.shifts,
-                    <PersonSimpleSki
-                      className={cn('h-5 w-5', DEPARTMENT_STYLES.ski.iconColor)}
-                      weight="fill"
-                    />
-                  )}
-
-                {/* スノーボード部門 */}
-                {dayData.shifts.filter((s) => s.department === 'snowboard').length > 0 &&
-                  createDepartmentSection(
-                    'snowboard',
-                    dayData.shifts,
-                    <PersonSimpleSnowboard
-                      className={cn('h-5 w-5', DEPARTMENT_STYLES.snowboard.iconColor)}
-                      weight="fill"
-                    />
-                  )}
-
-                {/* 共通部門 */}
-                {dayData.shifts.filter((s) => s.department === 'mixed').length > 0 &&
-                  createDepartmentSection(
-                    'mixed',
-                    dayData.shifts,
-                    <Calendar
-                      className={cn('h-5 w-5', DEPARTMENT_STYLES.mixed.iconColor)}
-                      weight="fill"
-                    />
-                  )}
+                {/* 部門別セクション表示（統合版・表示専用） */}
+                {renderDepartmentSections(dayData.shifts)}
               </>
             )}
           </div>

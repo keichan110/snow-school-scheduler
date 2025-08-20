@@ -1,13 +1,7 @@
 'use client';
 
-import { ArrowRight, Search, X } from 'lucide-react';
-import {
-  PersonSimpleSki,
-  PersonSimpleSnowboard,
-  Calendar,
-  User,
-  Check,
-} from '@phosphor-icons/react';
+import { ArrowRight, Search, X, Calendar } from 'lucide-react';
+import { User, Check } from '@phosphor-icons/react';
 import { Button } from '@/components/ui/button';
 import {
   Drawer,
@@ -28,6 +22,7 @@ import { prepareShift } from './shiftApiClient';
 import { ExistingShiftData } from './DuplicateShiftDialog';
 import { useNotification } from '@/components/notifications';
 import { formatDateForDisplay } from '@/shared/utils/dateFormatter';
+import { renderDepartmentSections, getDepartmentIcon } from '@/app/shifts/utils/shiftComponents';
 
 type ModalStep = 'view' | 'create-step1' | 'create-step2';
 
@@ -452,102 +447,6 @@ export function ShiftBottomModal({
     }));
   };
 
-  // モーダル専用：クリック可能なシフト種類を含む部門セクション作成
-  const createClickableDepartmentSection = (
-    departmentType: DepartmentType,
-    shifts: DayData['shifts'],
-    icon: React.ReactNode
-  ) => {
-    const departmentName =
-      departmentType === 'ski'
-        ? 'スキー部門'
-        : departmentType === 'snowboard'
-          ? 'スノーボード部門'
-          : '共通部門';
-
-    const styles = DEPARTMENT_STYLES[departmentType];
-    const {
-      sectionBgClass: bgClass,
-      sectionBorderClass: borderClass,
-      sectionTextClass: textClass,
-    } = styles;
-
-    return (
-      <div
-        key={departmentType}
-        className={cn(
-          'rounded-xl border p-3 transition-all duration-300 md:p-4',
-          bgClass,
-          borderClass
-        )}
-      >
-        <div className="md:flex md:items-start md:gap-4">
-          {/* 部門ヘッダー */}
-          <div className="mb-3 flex items-center gap-2 md:mb-0 md:w-40 md:flex-shrink-0 md:gap-3">
-            {icon}
-            <div>
-              <h4 className={cn('text-base font-semibold md:text-lg', textClass)}>
-                {departmentName}
-              </h4>
-              <p className="text-xs text-muted-foreground">{styles.label}</p>
-            </div>
-          </div>
-
-          {/* シフト種類とインストラクター */}
-          <div className="flex-1 space-y-3">
-            {shifts
-              .filter((s) => s.department === departmentType)
-              .map((shift, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => handleDirectEdit(shift.type, departmentType)}
-                  disabled={isLoading}
-                  className={cn(
-                    'w-full rounded-lg border border-border bg-background p-3 text-left transition-all duration-200',
-                    'hover:scale-[1.02] hover:bg-accent/50 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2',
-                    'disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100 disabled:hover:bg-background disabled:hover:shadow-sm',
-                    'cursor-pointer'
-                  )}
-                >
-                  <div className="mb-2 flex items-center justify-between md:mb-3">
-                    <div
-                      className={cn(
-                        'pointer-events-none rounded-lg px-3 py-2 text-sm font-medium text-foreground',
-                        styles.chipClass || 'bg-gray-100'
-                      )}
-                    >
-                      {shift.type}
-                    </div>
-                    <div className="text-xs text-muted-foreground">{shift.count}名配置</div>
-                  </div>
-                  <div className="space-y-1 md:flex md:flex-wrap md:gap-2 md:space-y-0">
-                    {shift.assignedInstructors && shift.assignedInstructors.length > 0 ? (
-                      shift.assignedInstructors.map((instructor) => (
-                        <div
-                          key={instructor.id}
-                          className={cn(
-                            'pointer-events-none inline-flex cursor-pointer items-center gap-1 rounded-full border px-3 py-1 text-xs font-medium',
-                            styles.chipClass
-                          )}
-                        >
-                          <User className="h-3 w-3" weight="fill" />
-                          {instructor.displayName}
-                        </div>
-                      ))
-                    ) : (
-                      <div className="text-xs text-muted-foreground">
-                        インストラクターが未配置です
-                      </div>
-                    )}
-                  </div>
-                </button>
-              ))}
-          </div>
-        </div>
-      </div>
-    );
-  };
-
   const renderDepartmentCard = (department: Department) => {
     // 部門名から判定するための簡易関数
     const getDepartmentType = (name: string): DepartmentType => {
@@ -566,12 +465,7 @@ export function ShiftBottomModal({
     const styles = DEPARTMENT_STYLES[departmentType];
     const isSelected = formData.departmentId === department.id;
 
-    const Icon =
-      departmentType === 'ski'
-        ? PersonSimpleSki
-        : departmentType === 'snowboard'
-          ? PersonSimpleSnowboard
-          : Calendar;
+    const iconElement = getDepartmentIcon(departmentType, cn('h-5 w-5', styles.iconColor));
 
     return (
       <div
@@ -584,10 +478,7 @@ export function ShiftBottomModal({
             : 'border-gray-200 hover:border-gray-300'
         )}
       >
-        <Icon
-          className={cn('h-5 w-5', isSelected ? styles.iconColor : 'text-gray-400')}
-          weight="regular"
-        />
+        {iconElement}
         <span className={cn('font-medium', isSelected ? styles.sectionTextClass : 'text-gray-600')}>
           {department.name}
         </span>
@@ -618,38 +509,12 @@ export function ShiftBottomModal({
               ) : (
                 /* シフトがある場合 */
                 <>
-                  {/* スキー部門 */}
-                  {localDayData.shifts.filter((s) => s.department === 'ski').length > 0 &&
-                    createClickableDepartmentSection(
-                      'ski',
-                      localDayData.shifts,
-                      <PersonSimpleSki
-                        className={cn('h-5 w-5', DEPARTMENT_STYLES.ski.iconColor)}
-                        weight="fill"
-                      />
-                    )}
-
-                  {/* スノーボード部門 */}
-                  {localDayData.shifts.filter((s) => s.department === 'snowboard').length > 0 &&
-                    createClickableDepartmentSection(
-                      'snowboard',
-                      localDayData.shifts,
-                      <PersonSimpleSnowboard
-                        className={cn('h-5 w-5', DEPARTMENT_STYLES.snowboard.iconColor)}
-                        weight="fill"
-                      />
-                    )}
-
-                  {/* 共通部門 */}
-                  {localDayData.shifts.filter((s) => s.department === 'mixed').length > 0 &&
-                    createClickableDepartmentSection(
-                      'mixed',
-                      localDayData.shifts,
-                      <Calendar
-                        className={cn('h-5 w-5', DEPARTMENT_STYLES.mixed.iconColor)}
-                        weight="fill"
-                      />
-                    )}
+                  {/* 部門別セクション表示（統合版） */}
+                  {renderDepartmentSections(localDayData.shifts, {
+                    clickable: true,
+                    onShiftClick: handleDirectEdit,
+                    isLoading: isLoading,
+                  })}
                 </>
               )}
 
