@@ -314,7 +314,7 @@ describe('BaseShiftMobileList', () => {
             shifts: [
               {
                 type: '春休みレッスン',
-                department: 'ski',
+                department: 'ski' as const,
                 count: 2,
               },
             ],
@@ -336,10 +336,10 @@ describe('BaseShiftMobileList', () => {
         shiftStats: {
           '2024-02-01': {
             shifts: [
-              { type: '早朝', department: 'ski', count: 1 },
-              { type: '午前', department: 'ski', count: 2 },
-              { type: '午後', department: 'snowboard', count: 1 },
-              { type: '夕方', department: 'mixed', count: 1 },
+              { type: '早朝', department: 'ski' as const, count: 1 },
+              { type: '午前', department: 'ski' as const, count: 2 },
+              { type: '午後', department: 'snowboard' as const, count: 1 },
+              { type: '夕方', department: 'mixed' as const, count: 1 },
             ],
           },
         },

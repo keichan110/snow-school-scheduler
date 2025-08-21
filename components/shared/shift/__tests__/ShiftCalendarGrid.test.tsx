@@ -24,12 +24,13 @@ jest.mock('../BaseShiftCalendar', () => ({
 
 // 動的インポートをモック化
 jest.mock('next/dynamic', () => {
-  return jest.fn((importFn) => {
+  return jest.fn(() => {
     // BaseShiftCalendarを直接返す
-    const MockComponent = jest.fn((props) => {
+    function MockComponent(props: Record<string, unknown>) {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
       const { BaseShiftCalendar } = require('../BaseShiftCalendar');
       return <BaseShiftCalendar {...props} />;
-    });
+    }
     MockComponent.displayName = 'MockDynamicComponent';
     return MockComponent;
   });
