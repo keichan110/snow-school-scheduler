@@ -1,0 +1,144 @@
+name: 🐛 バグ報告
+description: バグや不具合を報告する場合に使用してください
+title: '[Bug]: '
+labels: ['bug', 'triage']
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        バグ報告ありがとうございます！🐛
+        以下の情報をできるだけ詳しく記入してください。
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: 🚨 優先度
+      description: バグの緊急度・重要度を選択してください
+      options:
+        - 'Critical (緊急) - システム停止、データ損失など'
+        - 'High (高) - 主要機能が使用不能'
+        - 'Medium (中) - 一部機能に問題があるが回避可能'
+        - 'Low (低) - 軽微な問題、改善提案'
+    validations:
+      required: true
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: 📝 概要
+      description: バグの概要を簡潔に説明してください
+      placeholder: 例：シフト登録時に同一時間の重複チェックが機能しない
+    validations:
+      required: true
+
+  - type: textarea
+    id: current_situation
+    attributes:
+      label: 📊 現状
+      description: 現在発生している問題の詳細を記述してください
+      placeholder: 例：同一インストラクターが同じ時間帯に複数のシフトに割り当てられてしまう
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected_behavior
+    attributes:
+      label: ✨ あるべき姿
+      description: 期待される正しい動作を説明してください
+      placeholder: 例：同一インストラクターが同じ時間帯に重複してシフトに割り当てられようとした場合、エラーメッセージが表示され登録が阻止される
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction_steps
+    attributes:
+      label: 🔄 再現手順
+      description: バグを再現するための具体的な手順を記述してください
+      placeholder: |
+        例：
+        1. 管理者画面 > シフト管理ページにアクセス
+        2. インストラクター「田中太郎」を2025年1月15日 10:00-12:00のシフトに割り当て
+        3. 保存ボタンをクリック
+        4. 同じインストラクター「田中太郎」を2025年1月15日 11:00-13:00のシフトに割り当て
+        5. 保存ボタンをクリック
+        6. エラーが表示されず、重複してシフトが登録される
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: 💻 環境情報
+      description: バグが発生した環境の詳細を記述してください
+      placeholder: |
+        - OS: macOS 14.2 / Windows 11 / iOS 17.2など
+        - ブラウザ: Chrome 120.0, Safari 17.1, Firefox 121.0など
+        - デバイス: iPhone 15, iPad Pro, デスクトップなど
+        - 画面サイズ: 1920x1080, モバイルなど
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: 📈 影響範囲
+      description: このバグが与える影響の範囲を記述してください
+      placeholder: |
+        例：
+        - 影響を受ける機能：シフト管理機能全般
+        - 影響を受けるユーザー：管理者、インストラクター
+        - データ整合性への影響：重複シフトによるスケジュール混乱
+    validations:
+      required: true
+
+  - type: textarea
+    id: completion_criteria
+    attributes:
+      label: ✅ 完了条件
+      description: このバグが修正されたと判断する条件を記述してください
+      placeholder: |
+        例：
+        - [ ] 同一インストラクターの時間重複チェックが正常に動作する
+        - [ ] 重複時に適切なエラーメッセージが表示される
+        - [ ] 既存の重複データがあれば適切に処理される
+        - [ ] テストケースが追加される
+    validations:
+      required: true
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: 📸 スクリーンショット
+      description: バグの状況がわかるスクリーンショットがあれば添付してください
+      placeholder: 画像をドラッグ&ドロップまたは貼り付けてください
+
+  - type: textarea
+    id: related_resources
+    attributes:
+      label: 🔗 関連・参考資料
+      description: 関連するドキュメント、Stack Overflow、類似事例などのリンクを記述してください
+      placeholder: |
+        例：
+        - 関連Issue: #123
+        - 参考資料: https://example.com/docs
+        - エラーログ: （ここにログを貼り付け）
+
+  - type: textarea
+    id: technical_constraints
+    attributes:
+      label: ⚙️ 技術的制約
+      description: 修正時に考慮すべき技術的な制約があれば記述してください
+      placeholder: |
+        例：
+        - データベースマイグレーションが必要
+        - 既存APIとの互換性を保つ必要がある
+        - パフォーマンスへの影響を最小限にする
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: 📝 備考
+      description: その他、補足情報や気づいた点があれば記述してください
+      placeholder: 例：特定の条件下でのみ発生、一時的な回避方法など

@@ -1,0 +1,187 @@
+name: ✨ 機能要求・改善提案
+description: 新機能の追加や既存機能の改善を提案する場合に使用してください
+title: '[Feature]: '
+labels: ['enhancement', 'triage']
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        機能要求・改善提案ありがとうございます！✨
+        以下の情報をできるだけ詳しく記入してください。
+
+  - type: dropdown
+    id: type
+    attributes:
+      label: 📋 種別
+      description: 提案の種別を選択してください
+      options:
+        - '新機能追加 - 全く新しい機能の追加'
+        - '機能改善 - 既存機能の使いやすさ向上'
+        - 'UI/UX改善 - インターフェースの改善'
+        - 'パフォーマンス改善 - 動作速度の向上'
+        - 'セキュリティ強化 - セキュリティ関連の改善'
+        - '保守性向上 - コードの保守性・可読性向上'
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: 🚨 優先度
+      description: 提案の優先度を選択してください
+      options:
+        - 'Critical (緊急) - ビジネス上必須、すぐに対応が必要'
+        - 'High (高) - 重要な改善、次のリリースで対応したい'
+        - 'Medium (中) - あると良い改善、計画的に対応'
+        - 'Low (低) - 将来的な改善案、時間があるときに対応'
+        - 'Nice to have - あれば嬉しい機能'
+    validations:
+      required: true
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: 📝 概要
+      description: 提案する機能や改善の概要を簡潔に説明してください
+      placeholder: 例：シフト表をPDF形式でエクスポートする機能を追加したい
+    validations:
+      required: true
+
+  - type: textarea
+    id: current_situation
+    attributes:
+      label: 📊 現状
+      description: 現在の状況や課題を詳しく記述してください
+      placeholder: |
+        例：
+        - シフト表をブラウザで表示することはできるが、印刷や配布用のPDF出力機能がない
+        - インストラクターへの配布や掲示板への貼り出しに不便
+        - 現在は画面キャプチャで対応しているが、レイアウトが崩れることがある
+    validations:
+      required: true
+
+  - type: textarea
+    id: desired_state
+    attributes:
+      label: ✨ あるべき姿・期待する結果
+      description: 実現したい理想的な状態や期待する結果を説明してください
+      placeholder: |
+        例：
+        - シフト表ページから「PDF出力」ボタンをクリックするだけで、整った形式のPDFがダウンロードできる
+        - PDF内容：日付、時間、インストラクター名、シフトタイプが見やすく整理されている
+        - A4サイズで印刷に適したレイアウト
+        - スキー場のロゴやヘッダー情報も含まれる
+    validations:
+      required: true
+
+  - type: textarea
+    id: implementation_proposal
+    attributes:
+      label: 💡 実装提案・アイデア
+      description: 具体的な実装方法や技術的なアイデアがあれば記述してください
+      placeholder: |
+        例：
+        - PDF生成ライブラリ（jsPDF、Puppeteer、React-PDFなど）の活用
+        - 新しいAPI エンドポイント `/api/shifts/export/pdf` の作成
+        - PDF用の専用コンポーネント作成
+        - ユーザーが出力項目を選択できるオプション機能
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: 📈 影響範囲
+      description: この機能・改善が与える影響の範囲を記述してください
+      placeholder: |
+        例：
+        - 影響を受ける機能：シフト表示機能、管理者機能
+        - 影響を受けるユーザー：管理者、一般ユーザー
+        - システムへの影響：新しいライブラリ追加、サーバー負荷への配慮が必要
+        - 既存機能への影響：なし（追加機能のため）
+    validations:
+      required: true
+
+  - type: textarea
+    id: completion_criteria
+    attributes:
+      label: ✅ 完了条件
+      description: この機能・改善が完了したと判断する条件を記述してください
+      placeholder: |
+        例：
+        - [ ] シフト表ページにPDF出力ボタンが追加される
+        - [ ] ボタンクリックで適切な形式のPDFがダウンロードされる
+        - [ ] PDF内容が見やすく整理されている
+        - [ ] A4サイズで印刷時に適切にレイアウトされる
+        - [ ] エラーハンドリングが適切に実装される
+        - [ ] レスポンシブ対応（モバイルからも使用可能）
+        - [ ] テストケースが作成される
+        - [ ] ドキュメントが更新される
+    validations:
+      required: true
+
+  - type: textarea
+    id: test_scenarios
+    attributes:
+      label: 🧪 テスト観点・シナリオ
+      description: 実装時に確認すべきテスト観点やシナリオを記述してください
+      placeholder: |
+        例：
+        - 正常系：各種条件でのPDF出力成功
+        - 異常系：大量データ時の動作、ネットワークエラー時の処理
+        - ブラウザ互換性：Chrome、Safari、Firefox、Edge
+        - デバイス対応：PC、タブレット、スマートフォン
+        - 印刷テスト：実際の印刷結果の確認
+
+  - type: textarea
+    id: schedule
+    attributes:
+      label: 📅 期限・スケジュール
+      description: 希望する完了時期や納期があれば記述してください
+      placeholder: |
+        例：
+        - 希望完了時期：2025年2月末まで
+        - 理由：新シーズン開始前に運用したい
+        - マイルストーン：1月中に設計完了、2月中に実装・テスト完了
+
+  - type: textarea
+    id: technical_constraints
+    attributes:
+      label: ⚙️ 技術的制約
+      description: 実装時に考慮すべき技術的な制約があれば記述してください
+      placeholder: |
+        例：
+        - パッケージサイズの増加を最小限に抑える
+        - サーバーメモリ使用量への配慮
+        - 既存のNext.js・TypeScript構成との整合性
+        - モバイルデバイスでの動作保証
+
+  - type: textarea
+    id: related_resources
+    attributes:
+      label: 🔗 関連・参考資料
+      description: 関連するドキュメント、類似機能の実装例、参考サイトなどがあれば記述してください
+      placeholder: |
+        例：
+        - 関連Issue: #456
+        - 参考サイト: https://example.com/pdf-export-feature
+        - 類似実装: 他のシフト管理システムでの事例
+        - 技術資料: PDF生成ライブラリのドキュメント
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: 📸 スクリーンショット・モックアップ
+      description: UI改善の場合は現在の画面や理想的なモックアップがあれば添付してください
+      placeholder: 画像をドラッグ&ドロップまたは貼り付けてください
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: 📝 備考
+      description: その他、補足情報や考慮事項があれば記述してください
+      placeholder: |
+        例：
+        - ユーザーからの具体的な要望があった
+        - 競合他社では標準的な機能
+        - 段階的な実装も可能（第1段階：基本PDF出力、第2段階：カスタマイズ機能）
