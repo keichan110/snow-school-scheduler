@@ -17,13 +17,30 @@ export interface DateFormatOptions {
 export function formatDateForDisplay(dateString: string, options: DateFormatOptions = {}): string {
   const { includeWeekday = true, format = 'long' } = options;
 
+  // 不正な入力のチェック
+  if (!dateString || dateString.trim() === '' || dateString === 'null') {
+    return dateString;
+  }
+
   try {
     const date = new Date(dateString);
-    const dateStr = date.toLocaleDateString('ja-JP', {
-      year: 'numeric',
-      month: format,
-      day: 'numeric',
-    });
+
+    // Invalid Dateのチェック
+    if (isNaN(date.getTime())) {
+      return dateString;
+    }
+
+    let dateStr: string;
+    if (format === 'short') {
+      // short形式の場合は 2024/3/15 形式
+      dateStr = `${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()}`;
+    } else {
+      dateStr = date.toLocaleDateString('ja-JP', {
+        year: 'numeric',
+        month: format,
+        day: 'numeric',
+      });
+    }
 
     if (includeWeekday) {
       const weekdayStr = date.toLocaleDateString('ja-JP', {

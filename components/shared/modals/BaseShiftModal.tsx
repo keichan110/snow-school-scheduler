@@ -6,6 +6,7 @@ import {
   Drawer,
   DrawerClose,
   DrawerContent,
+  DrawerDescription,
   DrawerHeader,
   DrawerTitle,
 } from '@/components/ui/drawer';
@@ -70,6 +71,7 @@ export function BaseShiftModal({
           <DrawerTitle className="flex items-center justify-center gap-2 text-xl md:text-2xl">
             {displayTitle}
           </DrawerTitle>
+          <DrawerDescription>選択した日のシフト情報を表示しています</DrawerDescription>
         </DrawerHeader>
 
         <div className="overflow-y-auto px-4 pb-4">

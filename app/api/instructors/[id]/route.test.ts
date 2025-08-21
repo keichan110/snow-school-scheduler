@@ -3,6 +3,26 @@ import { prisma } from '@/lib/db';
 import { NextResponse } from 'next/server';
 import { InstructorStatus } from '@prisma/client';
 
+// Request グローバルオブジェクトのモック
+global.Request = class MockRequest {
+  url: string;
+  method: string;
+  private _body: any;
+
+  constructor(url: string, options?: { method?: string; body?: any }) {
+    this.url = url;
+    this.method = options?.method || 'GET';
+    this._body = options?.body;
+  }
+
+  async json() {
+    if (typeof this._body === 'string') {
+      return JSON.parse(this._body);
+    }
+    return this._body || {};
+  }
+} as any;
+
 type InstructorWithCertifications = {
   id: number;
   lastName: string;
