@@ -8,8 +8,8 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { fetchShifts, fetchDepartments, ApiError } from '../admin/shifts/api';
 import { Shift, Department, ShiftStats, ShiftQueryParams, DayData } from '../admin/shifts/types';
-import { PublicShiftCalendarGrid } from './components/PublicShiftCalendarGrid';
-import { PublicShiftMobileList } from './components/PublicShiftMobileList';
+import { ShiftCalendarGrid } from '@/components/shared/shift/ShiftCalendarGrid';
+import { ShiftMobileList } from '@/components/shared/shift/ShiftMobileList';
 import { PublicShiftBottomModal } from './components/PublicShiftBottomModal';
 import { WeeklyShiftList } from './components/WeeklyShiftList';
 import { ViewToggle } from './components/ViewToggle';
@@ -222,7 +222,7 @@ function PublicShiftsPageContent() {
                   <>
                     {/* デスクトップ・タブレット用カレンダー */}
                     <div className="hidden sm:block">
-                      <PublicShiftCalendarGrid
+                      <ShiftCalendarGrid
                         year={currentYear}
                         month={currentMonth}
                         shiftStats={shiftStats}
@@ -234,7 +234,7 @@ function PublicShiftsPageContent() {
 
                     {/* モバイル用リスト表示 */}
                     <div className="block px-4 sm:hidden">
-                      <PublicShiftMobileList
+                      <ShiftMobileList
                         year={currentYear}
                         month={currentMonth}
                         shiftStats={shiftStats}

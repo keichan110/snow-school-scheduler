@@ -2,6 +2,26 @@ import { GET, PUT } from './route';
 import { prisma } from '@/lib/db';
 import { NextResponse } from 'next/server';
 
+// Request グローバルオブジェクトのモック
+global.Request = class MockRequest {
+  url: string;
+  method: string;
+  private _body: unknown;
+
+  constructor(url: string, options?: { method?: string; body?: unknown }) {
+    this.url = url;
+    this.method = options?.method || 'GET';
+    this._body = options?.body;
+  }
+
+  async json(): Promise<unknown> {
+    if (typeof this._body === 'string') {
+      return JSON.parse(this._body);
+    }
+    return this._body || {};
+  }
+} as unknown as typeof Request;
+
 // Prismaクライアントをモック化
 jest.mock('@/lib/db', () => ({
   prisma: {

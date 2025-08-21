@@ -1,12 +1,10 @@
 'use client';
 
 import React, { useMemo } from 'react';
-import { Calendar, PersonSimpleSki, PersonSimpleSnowboard } from '@phosphor-icons/react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { DayData } from '../../admin/shifts/types';
-import { DEPARTMENT_STYLES } from '../../admin/shifts/constants/shiftConstants';
-import { createDepartmentSection } from '../utils/shiftComponents';
+import { renderDepartmentSections } from '../utils/shiftComponents';
 
 interface ShiftDayCardProps {
   date: Date;
@@ -111,40 +109,10 @@ export const ShiftDayCard = React.memo<ShiftDayCardProps>(function ShiftDayCard(
               <div className="mt-1 text-sm">シフトなし</div>
             </div>
           ) : (
-            /* シフトがある場合 - PublicShiftBottomModalと同じロジック */
+            /* シフトがある場合 - 統合版関数を使用 */
             <>
-              {/* スキー部門 */}
-              {shiftStats.departments.ski.length > 0 &&
-                createDepartmentSection(
-                  'ski',
-                  dayData.shifts,
-                  <PersonSimpleSki
-                    className={cn('h-5 w-5', DEPARTMENT_STYLES.ski.iconColor)}
-                    weight="fill"
-                  />
-                )}
-
-              {/* スノーボード部門 */}
-              {shiftStats.departments.snowboard.length > 0 &&
-                createDepartmentSection(
-                  'snowboard',
-                  dayData.shifts,
-                  <PersonSimpleSnowboard
-                    className={cn('h-5 w-5', DEPARTMENT_STYLES.snowboard.iconColor)}
-                    weight="fill"
-                  />
-                )}
-
-              {/* 共通部門 */}
-              {shiftStats.departments.mixed.length > 0 &&
-                createDepartmentSection(
-                  'mixed',
-                  dayData.shifts,
-                  <Calendar
-                    className={cn('h-5 w-5', DEPARTMENT_STYLES.mixed.iconColor)}
-                    weight="fill"
-                  />
-                )}
+              {/* 部門別セクション表示（統合版・表示専用） */}
+              {renderDepartmentSections(dayData.shifts)}
             </>
           )}
         </div>
