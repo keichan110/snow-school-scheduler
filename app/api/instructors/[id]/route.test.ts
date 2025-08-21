@@ -7,21 +7,21 @@ import { InstructorStatus } from '@prisma/client';
 global.Request = class MockRequest {
   url: string;
   method: string;
-  private _body: any;
+  private _body: unknown;
 
-  constructor(url: string, options?: { method?: string; body?: any }) {
+  constructor(url: string, options?: { method?: string; body?: unknown }) {
     this.url = url;
     this.method = options?.method || 'GET';
     this._body = options?.body;
   }
 
-  async json() {
+  async json(): Promise<unknown> {
     if (typeof this._body === 'string') {
       return JSON.parse(this._body);
     }
     return this._body || {};
   }
-} as any;
+} as unknown as typeof Request;
 
 type InstructorWithCertifications = {
   id: number;
