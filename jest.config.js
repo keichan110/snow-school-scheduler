@@ -43,7 +43,15 @@ const customJestConfig = {
     '!postcss.config.{js,mjs}',
   ],
   coverageDirectory: 'coverage',
-  coverageReporters: ['text', 'lcov', 'html'],
+  coverageReporters: [
+    'text',
+    'text-summary',
+    'lcov',
+    'json',
+    'json-summary',
+    ['html', { subdir: 'html' }],
+    ['cobertura', { file: 'coverage.xml' }],
+  ],
   coverageThreshold: {
     global: {
       branches: 80,
