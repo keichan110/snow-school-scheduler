@@ -12,6 +12,7 @@ import type {
   Shift,
   ShiftType,
   ShiftAssignment,
+  InstructorStatus,
 } from '@prisma/client';
 
 // カウンター（ユニークなID生成用）
@@ -27,6 +28,7 @@ let assignmentCounter = 1;
  */
 export const createDepartment = (overrides: Partial<Department> = {}): Department => ({
   id: departmentCounter++,
+  code: `DEPT${String(departmentCounter).padStart(3, '0')}`,
   name: `テスト部門${departmentCounter}`,
   description: `テスト用の部門説明${departmentCounter}`,
   isActive: true,
@@ -40,11 +42,12 @@ export const createDepartment = (overrides: Partial<Department> = {}): Departmen
  */
 export const createInstructor = (overrides: Partial<Instructor> = {}): Instructor => ({
   id: instructorCounter++,
-  name: `テストインストラクター${instructorCounter}`,
-  email: `instructor${instructorCounter}@test.example.com`,
-  phone: `090-0000-${String(instructorCounter).padStart(4, '0')}`,
-  departmentId: 1, // デフォルト部門ID
-  isActive: true,
+  lastName: `テスト姓${instructorCounter}`,
+  firstName: `テスト名${instructorCounter}`,
+  lastNameKana: `テストセイ${instructorCounter}`,
+  firstNameKana: `テストメイ${instructorCounter}`,
+  status: 'ACTIVE' as InstructorStatus,
+  notes: `テスト用のメモ${instructorCounter}`,
   createdAt: new Date(),
   updatedAt: new Date(),
   ...overrides,
@@ -55,9 +58,11 @@ export const createInstructor = (overrides: Partial<Instructor> = {}): Instructo
  */
 export const createCertification = (overrides: Partial<Certification> = {}): Certification => ({
   id: certificationCounter++,
+  departmentId: 1, // デフォルト部門ID
   name: `テスト資格${certificationCounter}`,
+  shortName: `資格${certificationCounter}`,
+  organization: `テスト団体${certificationCounter}`,
   description: `テスト用の資格説明${certificationCounter}`,
-  level: (certificationCounter % 3) + 1, // 1-3のレベル
   isActive: true,
   createdAt: new Date(),
   updatedAt: new Date(),
@@ -70,8 +75,6 @@ export const createCertification = (overrides: Partial<Certification> = {}): Cer
 export const createShiftType = (overrides: Partial<ShiftType> = {}): ShiftType => ({
   id: shiftTypeCounter++,
   name: `テストシフト種別${shiftTypeCounter}`,
-  description: `テスト用のシフト種別説明${shiftTypeCounter}`,
-  color: `#${Math.floor(Math.random() * 16777215).toString(16)}`, // ランダムカラー
   isActive: true,
   createdAt: new Date(),
   updatedAt: new Date(),
@@ -87,15 +90,10 @@ export const createShift = (overrides: Partial<Shift> = {}): Shift => {
 
   return {
     id: shiftCounter++,
-    title: `テストシフト${shiftCounter}`,
     date: defaultDate,
-    startTime: '09:00',
-    endTime: '17:00',
-    requiredInstructors: 2,
-    shiftTypeId: 1, // デフォルトシフト種別ID
     departmentId: 1, // デフォルト部門ID
-    notes: `テスト用のメモ${shiftCounter}`,
-    isActive: true,
+    shiftTypeId: 1, // デフォルトシフト種別ID
+    description: `テスト用のシフト説明${shiftCounter}`,
     createdAt: new Date(),
     updatedAt: new Date(),
     ...overrides,
@@ -112,8 +110,6 @@ export const createShiftAssignment = (
   shiftId: 1, // デフォルトシフトID
   instructorId: 1, // デフォルトインストラクターID
   assignedAt: new Date(),
-  createdAt: new Date(),
-  updatedAt: new Date(),
   ...overrides,
 });
 
@@ -150,17 +146,17 @@ export const createShiftAssignments = (
 /**
  * 関連データを含む複合ファクトリー
  */
-export const createInstructorWithDepartment = (
-  instructorOverrides: Partial<Instructor> = {},
+export const createCertificationWithDepartment = (
+  certificationOverrides: Partial<Certification> = {},
   departmentOverrides: Partial<Department> = {}
 ) => {
   const department = createDepartment(departmentOverrides);
-  const instructor = createInstructor({
+  const certification = createCertification({
     departmentId: department.id,
-    ...instructorOverrides,
+    ...certificationOverrides,
   });
 
-  return { instructor, department };
+  return { certification, department };
 };
 
 export const createShiftWithAssignments = (
