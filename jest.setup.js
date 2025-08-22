@@ -1,4 +1,5 @@
 import '@testing-library/jest-dom';
+import './__tests__/matchers';
 
 // テスト環境変数の設定
 process.env.NODE_ENV = 'test';

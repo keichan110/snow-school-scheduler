@@ -44,11 +44,11 @@ const createMockCrudOperations = (tableName: keyof typeof mockDatabase) => ({
     // where条件の簡単な実装
     if (args.where) {
       data = data.filter((item) => {
-        return Object.entries(args.where).every(([key, value]) => {
+        return Object.entries(args.where).every(([key, value]: [string, any]) => {
           if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
             // 複雑な条件（equals, gt, lt等）は簡単に実装
             if ('equals' in value) return item[key] === value.equals;
-            if ('in' in value) return value.in.includes(item[key]);
+            if ('in' in value) return (value.in as any).includes(item[key]);
             if ('contains' in value) return String(item[key]).includes(String(value.contains));
             return true;
           }
@@ -62,7 +62,7 @@ const createMockCrudOperations = (tableName: keyof typeof mockDatabase) => ({
       const orderByArray = Array.isArray(args.orderBy) ? args.orderBy : [args.orderBy];
       data.sort((a, b) => {
         for (const order of orderByArray) {
-          const [field, direction] = Object.entries(order)[0];
+          const [field, direction] = Object.entries(order)[0] as [string, any];
           const aVal = a[field];
           const bVal = b[field];
           if (aVal !== bVal) {
@@ -103,7 +103,7 @@ const createMockCrudOperations = (tableName: keyof typeof mockDatabase) => ({
       const orderByArray = Array.isArray(args.orderBy) ? args.orderBy : [args.orderBy];
       data.sort((a, b) => {
         for (const order of orderByArray) {
-          const [field, direction] = Object.entries(order)[0];
+          const [field, direction] = Object.entries(order)[0] as [string, any];
           const aVal = a[field];
           const bVal = b[field];
           if (aVal !== bVal) {
@@ -217,7 +217,8 @@ export const createMockPrismaClient = (): MockPrismaClient => {
     instructorCertification: createMockCrudOperations('instructorCertifications'),
 
     // トランザクション関連
-    $transaction: jest.fn().mockImplementation(async (operations: any[]) => {
+    $transaction: jest.fn().mockImplementation(async (...args: any[]) => {
+      const [operations] = args as [any[]];
       // 簡単なトランザクションシミュレーション
       const results = [];
       for (const operation of operations) {
@@ -231,14 +232,14 @@ export const createMockPrismaClient = (): MockPrismaClient => {
     }),
 
     // 接続関連
-    $connect: jest.fn().mockResolvedValue(undefined),
-    $disconnect: jest.fn().mockResolvedValue(undefined),
+    $connect: jest.fn(() => Promise.resolve()) as any,
+    $disconnect: jest.fn(() => Promise.resolve()) as any,
 
     // その他のPrismaメソッド
-    $executeRaw: jest.fn().mockResolvedValue(0),
-    $executeRawUnsafe: jest.fn().mockResolvedValue(0),
-    $queryRaw: jest.fn().mockResolvedValue([]),
-    $queryRawUnsafe: jest.fn().mockResolvedValue([]),
+    $executeRaw: jest.fn(() => Promise.resolve(0)) as any,
+    $executeRawUnsafe: jest.fn(() => Promise.resolve(0)) as any,
+    $queryRaw: jest.fn(() => Promise.resolve([])) as any,
+    $queryRawUnsafe: jest.fn(() => Promise.resolve([])) as any,
   } as any;
 
   return mockPrisma;

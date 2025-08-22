@@ -66,64 +66,25 @@ export const mockErrorResponse = (
  * fetchのグローバルモック
  */
 export const setupFetchMock = () => {
-  global.fetch = jest
-    .fn()
-    .mockImplementation(async (url: string | URL, options: RequestInit = {}) => {
-      const urlString = typeof url === 'string' ? url : url.toString();
-      const method = options.method || 'GET';
-      const key = `${method.toUpperCase()}:${urlString}`;
+  (global.fetch as any) = jest.fn().mockImplementation(async (...args: any[]) => {
+    const [url, options = {}] = args as [string | URL, RequestInit];
+    const urlString = typeof url === 'string' ? url : url.toString();
+    const method = options.method || 'GET';
+    const key = `${method.toUpperCase()}:${urlString}`;
 
-      // モック設定を検索
-      const mockConfig = mockResponses.get(key);
-      if (!mockConfig) {
-        // デフォルト404レスポンス
-        return Promise.resolve({
-          ok: false,
-          status: 404,
-          statusText: 'Not Found',
-          headers: new Headers(),
-          json: async () => ({ success: false, error: 'API endpoint not mocked' }),
-          text: async () => 'Not Found',
-          blob: async () => new Blob(),
-          arrayBuffer: async () => new ArrayBuffer(0),
-          formData: async () => new FormData(),
-          clone: jest.fn(),
-          body: null,
-          bodyUsed: false,
-          type: 'default' as ResponseType,
-          url: urlString,
-          redirected: false,
-        });
-      }
-
-      // API呼び出し履歴に記録
-      mockApiCalls.push({
-        url: urlString,
-        method,
-        body: options.body ? JSON.parse(options.body as string) : undefined,
-        headers: options.headers as Record<string, string>,
-        response: mockConfig.response,
-        status: mockConfig.status,
-      });
-
-      // 遅延がある場合は待機
-      if (mockConfig.delay && mockConfig.delay > 0) {
-        await new Promise((resolve) => setTimeout(resolve, mockConfig.delay));
-      }
-
-      // レスポンスを返す
+    // モック設定を検索
+    const mockConfig = mockResponses.get(key);
+    if (!mockConfig) {
+      // デフォルト404レスポンス
       return Promise.resolve({
-        ok: mockConfig.status >= 200 && mockConfig.status < 300,
-        status: mockConfig.status,
-        statusText: mockConfig.status < 400 ? 'OK' : 'Error',
-        headers: new Headers({
-          'Content-Type': 'application/json',
-        }),
-        json: async () => mockConfig.response,
-        text: async () => JSON.stringify(mockConfig.response),
-        blob: async () => new Blob([JSON.stringify(mockConfig.response)]),
-        arrayBuffer: async () =>
-          new TextEncoder().encode(JSON.stringify(mockConfig.response)).buffer,
+        ok: false,
+        status: 404,
+        statusText: 'Not Found',
+        headers: new Headers(),
+        json: async () => ({ success: false, error: 'API endpoint not mocked' }),
+        text: async () => 'Not Found',
+        blob: async () => new Blob(),
+        arrayBuffer: async () => new ArrayBuffer(0),
         formData: async () => new FormData(),
         clone: jest.fn(),
         body: null,
@@ -132,7 +93,44 @@ export const setupFetchMock = () => {
         url: urlString,
         redirected: false,
       });
+    }
+
+    // API呼び出し履歴に記録
+    mockApiCalls.push({
+      url: urlString,
+      method,
+      body: options.body ? JSON.parse(options.body as string) : undefined,
+      headers: options.headers as Record<string, string>,
+      response: mockConfig.response,
+      status: mockConfig.status,
     });
+
+    // 遅延がある場合は待機
+    if (mockConfig.delay && mockConfig.delay > 0) {
+      await new Promise((resolve) => setTimeout(resolve, mockConfig.delay));
+    }
+
+    // レスポンスを返す
+    return Promise.resolve({
+      ok: mockConfig.status >= 200 && mockConfig.status < 300,
+      status: mockConfig.status,
+      statusText: mockConfig.status < 400 ? 'OK' : 'Error',
+      headers: new Headers({
+        'Content-Type': 'application/json',
+      }),
+      json: async () => mockConfig.response,
+      text: async () => JSON.stringify(mockConfig.response),
+      blob: async () => new Blob([JSON.stringify(mockConfig.response)]),
+      arrayBuffer: async () => new TextEncoder().encode(JSON.stringify(mockConfig.response)).buffer,
+      formData: async () => new FormData(),
+      clone: jest.fn(),
+      body: null,
+      bodyUsed: false,
+      type: 'default' as ResponseType,
+      url: urlString,
+      redirected: false,
+    });
+  });
 };
 
 /**
