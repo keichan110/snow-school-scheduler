@@ -7,5 +7,18 @@
         "command": "npm run format"
       }]
     }]
+  },
+  "permissions": {
+    "allow": [
+      "mcp__github__create_issue",
+      "mcp__github__add_issue_comment",
+      "mcp__github__update_issue",
+      "mcp__github__add_sub_issue",
+      "mcp__github__list_sub_issues",
+      "mcp__github__remove_sub_issue",
+      "mcp__github__reprioritize_sub_issue",
+      "mcp__github__list_issues",
+      "mcp__github__get_issue"
+    ]
   }
 }
