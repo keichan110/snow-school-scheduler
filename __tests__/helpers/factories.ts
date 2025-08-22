@@ -26,74 +26,87 @@ let assignmentCounter = 1;
 /**
  * 部門データファクトリー
  */
-export const createDepartment = (overrides: Partial<Department> = {}): Department => ({
-  id: departmentCounter++,
-  code: `DEPT${String(departmentCounter).padStart(3, '0')}`,
-  name: `テスト部門${departmentCounter}`,
-  description: `テスト用の部門説明${departmentCounter}`,
-  isActive: true,
-  createdAt: new Date(),
-  updatedAt: new Date(),
-  ...overrides,
-});
+export const createDepartment = (overrides: Partial<Department> = {}): Department => {
+  const id = departmentCounter++;
+  return {
+    id,
+    code: `DEPT${String(id).padStart(3, '0')}`,
+    name: `テスト部門${id}`,
+    description: `テスト用の部門説明${id}`,
+    isActive: true,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    ...overrides,
+  };
+};
 
 /**
  * インストラクターデータファクトリー
  */
-export const createInstructor = (overrides: Partial<Instructor> = {}): Instructor => ({
-  id: instructorCounter++,
-  lastName: `テスト姓${instructorCounter}`,
-  firstName: `テスト名${instructorCounter}`,
-  lastNameKana: `テストセイ${instructorCounter}`,
-  firstNameKana: `テストメイ${instructorCounter}`,
-  status: 'ACTIVE' as InstructorStatus,
-  notes: `テスト用のメモ${instructorCounter}`,
-  createdAt: new Date(),
-  updatedAt: new Date(),
-  ...overrides,
-});
+export const createInstructor = (overrides: Partial<Instructor> = {}): Instructor => {
+  const id = instructorCounter++;
+  return {
+    id,
+    lastName: `テスト姓${id}`,
+    firstName: `テスト名${id}`,
+    lastNameKana: `テストセイ${id}`,
+    firstNameKana: `テストメイ${id}`,
+    status: 'ACTIVE' as InstructorStatus,
+    notes: `テスト用のメモ${id}`,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    ...overrides,
+  };
+};
 
 /**
  * 資格データファクトリー
  */
-export const createCertification = (overrides: Partial<Certification> = {}): Certification => ({
-  id: certificationCounter++,
-  departmentId: 1, // デフォルト部門ID
-  name: `テスト資格${certificationCounter}`,
-  shortName: `資格${certificationCounter}`,
-  organization: `テスト団体${certificationCounter}`,
-  description: `テスト用の資格説明${certificationCounter}`,
-  isActive: true,
-  createdAt: new Date(),
-  updatedAt: new Date(),
-  ...overrides,
-});
+export const createCertification = (overrides: Partial<Certification> = {}): Certification => {
+  const id = certificationCounter++;
+  return {
+    id,
+    departmentId: 1, // デフォルト部門ID
+    name: `テスト資格${id}`,
+    shortName: `資格${id}`,
+    organization: `テスト団体${id}`,
+    description: `テスト用の資格説明${id}`,
+    isActive: true,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    ...overrides,
+  };
+};
 
 /**
  * シフト種別データファクトリー
  */
-export const createShiftType = (overrides: Partial<ShiftType> = {}): ShiftType => ({
-  id: shiftTypeCounter++,
-  name: `テストシフト種別${shiftTypeCounter}`,
-  isActive: true,
-  createdAt: new Date(),
-  updatedAt: new Date(),
-  ...overrides,
-});
+export const createShiftType = (overrides: Partial<ShiftType> = {}): ShiftType => {
+  const id = shiftTypeCounter++;
+  return {
+    id,
+    name: `テストシフト種別${id}`,
+    isActive: true,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    ...overrides,
+  };
+};
 
 /**
  * シフトデータファクトリー
  */
 export const createShift = (overrides: Partial<Shift> = {}): Shift => {
+  const id = shiftCounter++;
   const now = new Date();
-  const defaultDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + shiftCounter);
+  const defaultDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + id);
 
   return {
-    id: shiftCounter++,
+    id,
     date: defaultDate,
     departmentId: 1, // デフォルト部門ID
     shiftTypeId: 1, // デフォルトシフト種別ID
-    description: `テスト用のシフト説明${shiftCounter}`,
+    description: `テスト用のシフト説明${id}`,
     createdAt: new Date(),
     updatedAt: new Date(),
     ...overrides,
@@ -105,13 +118,16 @@ export const createShift = (overrides: Partial<Shift> = {}): Shift => {
  */
 export const createShiftAssignment = (
   overrides: Partial<ShiftAssignment> = {}
-): ShiftAssignment => ({
-  id: assignmentCounter++,
-  shiftId: 1, // デフォルトシフトID
-  instructorId: 1, // デフォルトインストラクターID
-  assignedAt: new Date(),
-  ...overrides,
-});
+): ShiftAssignment => {
+  const id = assignmentCounter++;
+  return {
+    id,
+    shiftId: 1, // デフォルトシフトID
+    instructorId: 1, // デフォルトインストラクターID
+    assignedAt: new Date(),
+    ...overrides,
+  };
+};
 
 /**
  * 複数レコードの一括生成ヘルパー

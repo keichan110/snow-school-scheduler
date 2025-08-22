@@ -36,6 +36,26 @@ declare module '@jest/expect' {
      * 配列が指定されたプロパティでソートされているかをチェック
      */
     toBeSortedBy(property: string, order?: 'asc' | 'desc'): R;
+
+    /**
+     * 日本の祝日かをチェック
+     */
+    toBeJapaneseHoliday(): R;
+
+    /**
+     * 週末（土日）かをチェック
+     */
+    toBeWeekend(): R;
+
+    /**
+     * 配列に重複がないかをチェック
+     */
+    toHaveUniqueElements(keyExtractor?: (item: any) => any): R;
+
+    /**
+     * Promiseが指定時間内に解決されるかをチェック
+     */
+    toResolveWithin(timeoutMs: number): R;
   }
 }
 

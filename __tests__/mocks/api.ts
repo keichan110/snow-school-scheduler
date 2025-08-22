@@ -50,8 +50,12 @@ export const mockApiResponse = (
 /**
  * 統一APIレスポンス形式のヘルパー
  */
-export const mockSuccessResponse = <T>(data: T) =>
-  mockApiResponse as <T>(method: string, url: string, data: T, status?: number) => void;
+export const mockSuccessResponse = <T>(
+  method: string,
+  url: string,
+  data: T,
+  status: number = 200
+) => mockApiResponse(method, url, { success: true, data }, status);
 
 export const mockErrorResponse = (
   method: string,

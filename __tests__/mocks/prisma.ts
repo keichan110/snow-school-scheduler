@@ -50,7 +50,8 @@ const createMockCrudOperations = (tableName: keyof typeof mockDatabase) => ({
             if ('equals' in value) return item[key] === value.equals;
             if ('in' in value) return (value.in as any).includes(item[key]);
             if ('contains' in value) return String(item[key]).includes(String(value.contains));
-            return true;
+            // サポートされていない条件はfalseを返す（フィルタリングを確実に行う）
+            return false;
           }
           return item[key] === value;
         });
