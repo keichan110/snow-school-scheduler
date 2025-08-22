@@ -10,11 +10,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 - **フレームワーク**: Next.js 15.1 (App Router)
 - **言語**: TypeScript 5.7 (厳格設定)
+- **Runtime要件**: Node.js >=22.0.0
 - **データベース**: Prisma ORM 6.2 + SQLite
-- **スタイリング**: Tailwind CSS 3.4 + shadcn/ui
+- **スタイリング**: Tailwind CSS 3.4 + shadcn/ui, Radix UI コンポーネント
 - **開発ツール**: ESLint 9.17, Prettier 3.6, Jest 29.7
 - **状態管理**: TanStack Query 5.85
-- **その他**: Radix UI, Zod, date-fns
+- **UI拡張**: Vaul（drawer），React Day Picker，Lucide React（アイコン）
+- **その他**: Zod（バリデーション），date-fns（日付操作），japanese-holidays
 
 ## 重要な開発コマンド
 
@@ -30,8 +32,11 @@ npm run lint         # ESLint静的解析（必須）
 ```bash
 npm run dev          # 開発サーバー起動
 npm run build        # プロダクションビルド
+npm run start        # 本番モードで起動
 npm test             # Jest単体テスト
 npm run test:watch   # テストwatchモード
+npm run format       # Prettierコード整形
+npm run format:check # 整形チェック
 ```
 
 ### データベース操作
@@ -40,7 +45,7 @@ npm run test:watch   # テストwatchモード
 npm run db:generate  # Prismaクライアント生成（スキーマ変更時必須）
 npm run db:push      # スキーマをDBに反映
 npm run db:studio    # Prisma Studio起動
-npm run db:seed      # サンプルデータ投入
+npm run db:seed      # サンプルデータ投入（tsx実行）
 ```
 
 ## アーキテクチャ・設計原則
@@ -55,24 +60,50 @@ npm run db:seed      # サンプルデータ投入
 
 ```
 app/
-├── admin/           # 管理者機能（シフト管理、マスタ管理）
-├── shifts/          # 公開シフト表示
-├── api/             # API Routes
-├── layout.tsx       # ルートレイアウト
-└── page.tsx         # ホームページ
+├── admin/                    # 管理者機能（シフト管理、マスタ管理）
+│   ├── shifts/               # シフト管理（作成・編集・割り当て）
+│   ├── instructors/          # インストラクター管理
+│   ├── certifications/       # 資格マスタ管理
+│   ├── shift-types/          # シフト種別マスタ管理
+│   └── page.tsx
+├── shifts/                   # 公開シフト表示機能
+│   ├── components/           # シフト表示専用コンポーネント
+│   ├── hooks/                # データ変換・ナビゲーション hooks
+│   ├── utils/                # 週・月計算ユーティリティ
+│   └── page.tsx
+├── api/                      # API Routes (RESTful設計)
+│   ├── departments/[id]/     # 部門CRUD
+│   ├── instructors/[id]/     # インストラクター CRUD
+│   ├── certifications/[id]/  # 資格 CRUD
+│   ├── shifts/[id]/          # シフト CRUD
+│   ├── shift-types/[id]/     # シフト種別 CRUD
+│   ├── health/               # ヘルスチェック
+│   └── shifts/prepare/       # シフト作成準備データ
+├── layout.tsx                # ルートレイアウト（共通UI・Providers）
+├── page.tsx                  # ホームページ
+└── globals.css               # グローバルスタイル
 
-components/          # UIコンポーネント
-shared/             # 共有ユーティリティ・型定義
-features/           # 機能別モジュール
-prisma/             # データベーススキーマ・シード
+components/                   # 再利用可能UIコンポーネント（shadcn/ui拡張）
+shared/                      # 共有ユーティリティ・型定義・ヘルパー
+features/                    # 機能別モジュール（ドメイン駆動設計）
+├── departments/             # 部門機能モジュール
+├── instructors/             # インストラクター機能モジュール
+├── shifts/                  # シフト機能モジュール
+└── shared/                  # 機能間共有モジュール
+hooks/                       # カスタムフック集
+lib/                        # ライブラリ設定・ユーティリティ
+prisma/                     # データベーススキーマ・シード・マイグレーション
+public/                     # 静的アセット
+docs/                       # プロジェクトドキュメント
 ```
 
 ### データベース設計
 
-- **Prisma ORM**: 型安全なDB操作
-- **主要テーブル**: departments, instructors, certifications, shifts, shift_assignments
+- **Prisma ORM**: 型安全なDB操作、クライアント生成を`generated/prisma`に配置
+- **主要テーブル**: departments, instructors, certifications, shifts, shift_assignments, shift_types
 - **関係性**: 多対多関係（instructor-certification, shift-assignment）
 - **制約**: ユニーク制約、カスケード削除、論理削除（isActiveフラグ）
+- **SQLite**: 開発・小規模運用向け軽量DB、Prisma Studioで可視化可能
 
 ## コーディング規約
 
@@ -90,15 +121,20 @@ prisma/             # データベーススキーマ・シード
 
 ### TypeScript厳格設定
 
-- strict mode, noUncheckedIndexedAccess有効
-- Zodバリデーション使用
-- Server Actions型安全性確保
+- **Strict Mode**: `strict`, `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`有効
+- **パス解決**: `@/*`エイリアス、`@prisma/client`は`generated/prisma`にマップ
+- **プリセット**: Next.js推奨設定、ES2017ターゲット
+- **Zodバリデーション**: API入力・出力の型安全性確保
+- **Server Actions型安全性**: try/catch + revalidatePath パターン使用
 
-### コンポーネント設計
+### コンポーネント設計とパターン
 
-- Container-Presentationalパターン
-- Server ComponentでデータフェッチングとClient Componentでインタラクション分離
-- 並列データフェッチング（Promise.all）使用
+- **Container-Presentationalパターン**: データ取得とUI表示を分離
+- **Server/Client Component分離**: データフェッチングはServer、インタラクションはClient
+- **並列データフェッチング**: Promise.allによる効率的なデータ取得
+- **Features層アーキテクチャ**: ドメイン駆動でapi/handlers/services/types分離
+- **Hooks活用**: TanStack Query（データ状態管理）、カスタムHooks（ロジック抽出）
+- **shadcn/ui + Radix UI**: アクセシブルで再利用可能なコンポーネント基盤
 
 ## 開発ワークフロー
 
@@ -145,22 +181,79 @@ prisma/             # データベーススキーマ・シード
 
 ## 重要な実装パターン
 
-### API Routes型安全設計
+### API Routes設計パターン
+
+#### RESTful API設計
 
 ```typescript
+// 統一レスポンス形式
 export type ApiResponse<T> = { success: true; data: T } | { success: false; error: string };
+
+// CRUD操作パターン
+GET    /api/[resource]     → 一覧取得
+POST   /api/[resource]     → 新規作成
+GET    /api/[resource]/[id] → 詳細取得
+PUT    /api/[resource]/[id] → 更新
+DELETE /api/[resource]/[id] → 削除
 ```
 
-### Server Actions実装
+#### 実装済みAPI エンドポイント
 
-- try/catch適切エラーハンドリング
-- revalidatePath()によるキャッシュ更新
-- Zodバリデーション必須
+- `/api/health` - ヘルスチェック
+- `/api/departments` - 部門管理 (CRUD)
+- `/api/instructors` - インストラクター管理 (CRUD)
+- `/api/certifications` - 資格管理 (CRUD)
+- `/api/shifts` - シフト管理 (CRUD)
+- `/api/shift-types` - シフト種別管理 (CRUD)
+- `/api/shifts/prepare` - シフト作成準備データ（特殊エンドポイント）
 
-### エラーハンドリング
+### Server Actions実装パターン
 
-- `error.tsx`ファイルによるエラー境界
-- `not-found.tsx`によるNotFound処理
-- 一貫したエラーレスポンス形式
+```typescript
+// 標準的なServer Action実装パターン
+export async function createResource(data: CreateResourceSchema) {
+  try {
+    const validated = createResourceSchema.parse(data);
+    const result = await prisma.resource.create({ data: validated });
+    revalidatePath('/admin/resources');
+    return { success: true, data: result };
+  } catch (error) {
+    return { success: false, error: 'Failed to create resource' };
+  }
+}
+```
 
-この構成により、型安全性と開発効率を両立したモダンなNext.jsアプリケーションを構築している。
+### エラーハンドリング戦略
+
+- **API Routes**: 統一されたApiResponse型でエラー情報を返却
+- **Server Actions**: try/catch + revalidatePath() パターンで安全性確保
+- **React Error Boundaries**: `error.tsx`ファイルによるエラー境界実装
+- **404ハンドリング**: `not-found.tsx`による適切な404ページ表示
+- **クライアントサイド**: TanStack Query + React Error Boundaryによる包括的エラー管理
+
+## テストとコード品質
+
+### Jest設定
+
+- **テスト環境**: jsdom（React コンポーネントテスト）
+- **設定ファイル**: `jest.config.js`（Next.js統合）、`jest.setup.js`
+- **テストパターン**: `__tests__`フォルダ、`*.test.ts/tsx`、`*.spec.ts/tsx`
+- **モックマッピング**: `@/*`エイリアス対応
+
+### テスト実行戦略
+
+```bash
+npm test                    # 全テスト実行
+npm run test:watch          # ウォッチモード（開発時推奨）
+npm test -- --testPathPattern="shifts"  # 特定パス指定実行
+```
+
+### コード品質チェック
+
+```bash
+npm run typecheck && npm run lint  # 必須チェック（作業前後）
+npm run format                     # コード整形実行
+npm run format:check               # 整形チェックのみ
+```
+
+この構成により、型安全性・テスト担保・開発効率を三位一体で実現したモダンなNext.jsアプリケーションを構築している。
