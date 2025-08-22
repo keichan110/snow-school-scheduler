@@ -49,7 +49,14 @@ const customJestConfig = {
     'lcov',
     'json',
     'json-summary',
-    ['html', { subdir: 'html' }],
+    [
+      'html',
+      {
+        subdir: 'html',
+        skipCovered: false,
+        skipFull: false,
+      },
+    ],
     ['cobertura', { file: 'coverage.xml' }],
   ],
   coverageThreshold: {
@@ -84,6 +91,8 @@ const customJestConfig = {
   globalTeardown: undefined,
   // Error handling
   errorOnDeprecated: true,
+  // Coverage visualization enhancements
+  coveragePathIgnorePatterns: ['/node_modules/', '/build/', '/.next/', '/coverage/'],
 };
 
 module.exports = createJestConfig(customJestConfig);
