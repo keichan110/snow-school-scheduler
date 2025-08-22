@@ -1,7 +1,11 @@
 import '@testing-library/jest-dom';
 
-// 日本のタイムゾーンを設定
+// テスト環境変数の設定
+process.env.NODE_ENV = 'test';
 process.env.TZ = 'Asia/Tokyo';
+process.env.DATABASE_URL = 'file:./test.db';
+process.env.NEXT_PUBLIC_APP_URL = 'http://localhost:3000';
+process.env.NEXT_PUBLIC_TEST_MODE = 'true';
 
 // 日本語ロケール設定
 if (typeof Intl !== 'undefined' && Intl.DateTimeFormat) {
