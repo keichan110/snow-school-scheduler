@@ -25,6 +25,8 @@
     "test:updateSnapshot": "jest --updateSnapshot --passWithNoTests",
     "test:performance": "jest --testPathPattern=performance --runInBand --passWithNoTests",
     "test:validate": "npm run typecheck && npm run lint && npm test",
+    "test:coverage:ci": "jest --coverage --watchAll=false --collectCoverage=true --passWithNoTests --silent --maxWorkers=50% --ci",
+    "test:coverage:upload": "npm run test:coverage:ci && echo 'Coverage reports ready for upload'",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "db:studio": "prisma studio",

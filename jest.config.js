@@ -93,6 +93,10 @@ const customJestConfig = {
   errorOnDeprecated: true,
   // Coverage visualization enhancements
   coveragePathIgnorePatterns: ['/node_modules/', '/build/', '/.next/', '/coverage/'],
+  // CI/CD optimizations
+  ci: process.env.CI === 'true',
+  forceExit: process.env.CI === 'true',
+  detectOpenHandles: process.env.CI !== 'true',
 };
 
 module.exports = createJestConfig(customJestConfig);
