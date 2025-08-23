@@ -24,16 +24,47 @@ const customJestConfig = {
     '!**/*.d.ts',
     '!**/node_modules/**',
     '!**/__tests__/**',
+    '!**/*.test.{js,jsx,ts,tsx}',
+    '!**/*.spec.{js,jsx,ts,tsx}',
     '!**/coverage/**',
+    '!**/build/**',
+    '!**/.next/**',
+    '!**/docs/**',
+    '!**/prisma/**',
+    '!**/generated/**',
+    '!app/**/layout.{js,jsx,ts,tsx}',
+    '!app/**/loading.{js,jsx,ts,tsx}',
+    '!app/**/error.{js,jsx,ts,tsx}',
+    '!app/**/not-found.{js,jsx,ts,tsx}',
+    '!app/globals.css',
+    '!**/middleware.{js,ts}',
+    '!next.config.{js,mjs}',
+    '!tailwind.config.{js,ts}',
+    '!postcss.config.{js,mjs}',
   ],
   coverageDirectory: 'coverage',
-  coverageReporters: ['text', 'lcov', 'html'],
+  coverageReporters: [
+    'text',
+    'text-summary',
+    'lcov',
+    'json',
+    'json-summary',
+    [
+      'html',
+      {
+        subdir: 'html',
+        skipCovered: false,
+        skipFull: false,
+      },
+    ],
+    ['cobertura', { file: 'coverage.xml' }],
+  ],
   coverageThreshold: {
     global: {
-      branches: 70,
-      functions: 70,
-      lines: 70,
-      statements: 70,
+      branches: 80,
+      functions: 80,
+      lines: 80,
+      statements: 80,
     },
   },
   // Performance optimizations
@@ -60,6 +91,11 @@ const customJestConfig = {
   globalTeardown: undefined,
   // Error handling
   errorOnDeprecated: true,
+  // Coverage visualization enhancements
+  coveragePathIgnorePatterns: ['/node_modules/', '/build/', '/.next/', '/coverage/'],
+  // CI/CD optimizations
+  ci: process.env.CI === 'true',
+  detectOpenHandles: process.env.CI !== 'true',
 };
 
 module.exports = createJestConfig(customJestConfig);
