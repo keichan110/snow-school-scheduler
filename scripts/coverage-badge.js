@@ -12,11 +12,18 @@ const path = require('path');
 const COVERAGE_FILE = path.join(__dirname, '../coverage/coverage-summary.json');
 const BADGE_FILE = path.join(__dirname, '../coverage/badge-info.json');
 
+function getColorForPercentage(average) {
+  if (average >= 90) return 'brightgreen';
+  if (average >= 80) return 'green';
+  if (average >= 70) return 'yellow';
+  if (average >= 60) return 'orange';
+  return 'red';
+}
+
 function generateBadgeInfo() {
   try {
     if (!fs.existsSync(COVERAGE_FILE)) {
-      console.error('Coverage summary file not found. Run `npm run test:coverage` first.');
-      process.exit(1);
+      throw new Error('Coverage summary file not found. Run `npm run test:coverage` first.');
     }
 
     const coverageData = JSON.parse(fs.readFileSync(COVERAGE_FILE, 'utf8'));
@@ -34,12 +41,7 @@ function generateBadgeInfo() {
       (metrics.lines + metrics.functions + metrics.branches + metrics.statements) / 4
     );
 
-    // バッジ色の決定
-    let color = 'red';
-    if (average >= 90) color = 'brightgreen';
-    else if (average >= 80) color = 'green';
-    else if (average >= 70) color = 'yellow';
-    else if (average >= 60) color = 'orange';
+    const color = getColorForPercentage(average);
 
     const badgeInfo = {
       schemaVersion: 1,
@@ -67,13 +69,17 @@ function generateBadgeInfo() {
     return badgeInfo;
   } catch (error) {
     console.error('Error generating badge info:', error.message);
-    process.exit(1);
+    throw error;
   }
 }
 
 // スクリプトが直接実行された場合
 if (require.main === module) {
-  generateBadgeInfo();
+  try {
+    generateBadgeInfo();
+  } catch (error) {
+    process.exit(1);
+  }
 }
 
 module.exports = { generateBadgeInfo };
