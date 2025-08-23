@@ -95,7 +95,6 @@ const customJestConfig = {
   coveragePathIgnorePatterns: ['/node_modules/', '/build/', '/.next/', '/coverage/'],
   // CI/CD optimizations
   ci: process.env.CI === 'true',
-  forceExit: process.env.CI === 'true',
   detectOpenHandles: process.env.CI !== 'true',
 };
 
