@@ -29,6 +29,20 @@ export interface InvitationListItem {
   remainingUses: number | null;
 }
 
+// 招待URL検証APIのレスポンス型
+export interface InvitationValidationData {
+  isValid: boolean;
+  token?: string;
+  expiresAt?: string;
+  maxUses?: number | null;
+  usedCount?: number;
+  remainingUses?: number | null;
+  createdBy?: string;
+  creatorName?: string;
+  error?: string;
+  errorCode?: 'NOT_FOUND' | 'EXPIRED' | 'INACTIVE' | 'MAX_USES_EXCEEDED';
+}
+
 // 招待URL作成リクエスト型
 export interface CreateInvitationRequest {
   expiresInHours?: number; // 1-8760 (1時間〜1年)
