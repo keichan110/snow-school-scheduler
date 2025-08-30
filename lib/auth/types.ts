@@ -14,6 +14,21 @@ export interface InvitationUrlData {
   createdBy: string;
 }
 
+// 招待URL一覧取得APIのレスポンス型
+export interface InvitationListItem {
+  token: string;
+  expiresAt: string;
+  isActive: boolean;
+  maxUses: number | null;
+  usedCount: number;
+  createdAt: string;
+  createdBy: string;
+  creatorName: string;
+  creatorRole: string;
+  isExpired: boolean;
+  remainingUses: number | null;
+}
+
 // 招待URL作成リクエスト型
 export interface CreateInvitationRequest {
   expiresInHours?: number; // 1-8760 (1時間〜1年)

@@ -1,7 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { extractUserFromToken } from '@/lib/auth/jwt';
-import { createInvitationToken, CreateInvitationTokenParams } from '@/lib/auth/invitations';
-import { ApiResponse, InvitationUrlData } from '@/lib/auth/types';
+import { prisma } from '@/lib/db';
+import {
+  createInvitationToken,
+  CreateInvitationTokenParams,
+  getInvitationTokensByCreator,
+} from '@/lib/auth/invitations';
+import { ApiResponse, InvitationUrlData, InvitationListItem } from '@/lib/auth/types';
 import { z } from 'zod';
 
 /**
@@ -138,6 +143,142 @@ export async function POST(
       } else {
         errorMessage = error.message;
       }
+    }
+
+    return NextResponse.json({ success: false, error: errorMessage }, { status: 500 });
+  }
+}
+
+/**
+ * 招待URL一覧取得API
+ *
+ * GET /api/auth/invitations
+ * - 管理者・マネージャーのみアクセス可能
+ * - 作成した招待URL一覧を取得
+ *
+ * @example
+ * ```bash
+ * curl -X GET http://localhost:3000/api/auth/invitations \
+ *   -H "Authorization: Bearer <JWT_TOKEN>"
+ * ```
+ */
+export async function GET(
+  request: NextRequest
+): Promise<NextResponse<ApiResponse<InvitationListItem[]>>> {
+  try {
+    // 認証トークン取得
+    const authHeader = request.headers.get('authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return NextResponse.json(
+        { success: false, error: 'Authentication token required' },
+        { status: 401 }
+      );
+    }
+
+    const token = authHeader.substring(7); // "Bearer " を除去
+    const user = extractUserFromToken(token);
+
+    if (!user) {
+      return NextResponse.json(
+        { success: false, error: 'Invalid or expired token' },
+        { status: 401 }
+      );
+    }
+
+    // 権限チェック - ADMIN または MANAGER のみ許可
+    if (user.role !== 'ADMIN' && user.role !== 'MANAGER') {
+      return NextResponse.json(
+        { success: false, error: 'Insufficient permissions. Admin or Manager role required.' },
+        { status: 403 }
+      );
+    }
+
+    // アクティブユーザーチェック
+    if (!user.isActive) {
+      return NextResponse.json(
+        { success: false, error: 'User account is inactive' },
+        { status: 403 }
+      );
+    }
+
+    // クエリパラメータの解析
+    const { searchParams } = new URL(request.url);
+    const includeInactive = searchParams.get('includeInactive') === 'true';
+    const showAll = user.role === 'ADMIN' && searchParams.get('showAll') === 'true';
+
+    // 招待トークン一覧取得
+    // ADMIN: showAll=trueの場合は全トークン、そうでなければ自分作成のみ
+    // MANAGER: 自分が作成したトークンのみ
+
+    let tokens;
+    if (showAll && user.role === 'ADMIN') {
+      // 全ユーザーの招待トークンを取得（管理者のみ）
+      tokens = await prisma.invitationToken.findMany({
+        where: {
+          ...(includeInactive ? {} : { isActive: true }),
+        },
+        include: {
+          creator: {
+            select: {
+              id: true,
+              displayName: true,
+              role: true,
+            },
+          },
+        },
+        orderBy: {
+          createdAt: 'desc',
+        },
+      });
+    } else {
+      // 自分が作成した招待トークンのみ取得
+      tokens = await getInvitationTokensByCreator(user.userId, includeInactive);
+    }
+
+    // 現在時刻
+    const now = new Date();
+
+    // レスポンスデータの構築
+    const invitationList: InvitationListItem[] = tokens.map((token) => {
+      const isExpired = token.expiresAt <= now;
+      const remainingUses = token.maxUses ? token.maxUses - token.usedCount : null;
+
+      return {
+        token: token.token,
+        expiresAt: token.expiresAt.toISOString(),
+        isActive: token.isActive,
+        maxUses: token.maxUses,
+        usedCount: token.usedCount,
+        createdAt: token.createdAt.toISOString(),
+        createdBy: token.creator.id,
+        creatorName: token.creator.displayName,
+        creatorRole: token.creator.role,
+        isExpired,
+        remainingUses,
+      };
+    });
+
+    console.log('✅ Invitation tokens retrieved successfully:', {
+      requestedBy: user.displayName,
+      role: user.role,
+      showAll: showAll && user.role === 'ADMIN',
+      includeInactive,
+      tokenCount: invitationList.length,
+      activeTokens: invitationList.filter((t) => t.isActive && !t.isExpired).length,
+    });
+
+    const responseData: ApiResponse<InvitationListItem[]> = {
+      success: true,
+      data: invitationList,
+    };
+
+    return NextResponse.json(responseData, { status: 200 });
+  } catch (error) {
+    console.error('❌ Invitation tokens retrieval failed:', error);
+
+    let errorMessage = 'Failed to retrieve invitation tokens';
+    if (error instanceof Error) {
+      errorMessage = error.message;
     }
 
     return NextResponse.json({ success: false, error: errorMessage }, { status: 500 });
