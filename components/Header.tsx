@@ -2,7 +2,16 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Snowflake, CalendarDots, Certificate, UsersThree, List, Tag } from '@phosphor-icons/react';
+import {
+  Snowflake,
+  CalendarDots,
+  Certificate,
+  UsersThree,
+  List,
+  Tag,
+  LinkSimple,
+  UserGear,
+} from '@phosphor-icons/react';
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useState } from 'react';
@@ -33,6 +42,16 @@ export default function Header() {
       href: '/admin/certifications',
       icon: Certificate,
       label: '資格管理',
+    },
+    {
+      href: '/admin/invitations',
+      icon: LinkSimple,
+      label: '招待管理',
+    },
+    {
+      href: '/admin/users',
+      icon: UserGear,
+      label: 'ユーザー管理',
     },
   ];
 
