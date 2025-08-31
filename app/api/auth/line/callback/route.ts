@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { executeLineAuthFlow } from '@/lib/auth/line';
 import { generateJwt } from '@/lib/auth/jwt';
 import { setAuthCookie } from '@/lib/auth/middleware';
+import { validateInvitationToken, incrementTokenUsage } from '@/lib/auth/invitations';
 import { prisma } from '@/lib/db';
 
 /**
@@ -125,27 +126,81 @@ export async function GET(request: NextRequest) {
     });
 
     if (!user) {
-      // 新規ユーザーの場合
-      console.log('👤 Creating new user:', {
+      // 新規ユーザーの場合 - 招待トークン検証が必要
+      console.log('👤 Creating new user with invitation validation:', {
         lineUserId: authResult.profile.userId,
         displayName: authResult.profile.displayName,
+        hasInviteToken: !!sessionData.inviteToken,
       });
 
-      // TODO: 将来的には招待トークンの検証を実装
-      // 現在は全ユーザーをMEMBER権限で登録
-      user = await prisma.user.create({
-        data: {
-          lineUserId: authResult.profile.userId,
-          displayName: authResult.profile.displayName,
-          role: 'MEMBER',
-          isActive: true,
-        },
-      });
+      // 招待トークンの検証
+      if (!sessionData.inviteToken) {
+        console.error('❌ New user registration requires invitation token');
+        return NextResponse.redirect(
+          new URL('/auth/error?reason=invitation_required', request.url),
+          {
+            status: 302,
+          }
+        );
+      }
 
-      console.log('✅ New user created:', {
-        id: user.id,
-        role: user.role,
-      });
+      // 招待トークンの有効性チェック
+      const tokenValidation = await validateInvitationToken(sessionData.inviteToken);
+      if (!tokenValidation.isValid) {
+        console.error('❌ Invalid invitation token:', {
+          token: sessionData.inviteToken.substring(0, 16) + '...',
+          error: tokenValidation.error,
+          errorCode: tokenValidation.errorCode,
+        });
+
+        const errorReason =
+          tokenValidation.errorCode === 'EXPIRED'
+            ? 'invitation_expired'
+            : tokenValidation.errorCode === 'MAX_USES_EXCEEDED'
+              ? 'invitation_exhausted'
+              : tokenValidation.errorCode === 'INACTIVE'
+                ? 'invitation_inactive'
+                : 'invitation_invalid';
+
+        return NextResponse.redirect(new URL(`/auth/error?reason=${errorReason}`, request.url), {
+          status: 302,
+        });
+      }
+
+      try {
+        // ユーザー作成
+        user = await prisma.user.create({
+          data: {
+            lineUserId: authResult.profile.userId,
+            displayName: authResult.profile.displayName,
+            role: 'MEMBER', // 招待経由のユーザーはMEMBER権限
+            isActive: true,
+          },
+        });
+
+        console.log('✅ New user created via invitation:', {
+          id: user.id,
+          role: user.role,
+          inviteToken: sessionData.inviteToken.substring(0, 16) + '...',
+        });
+
+        // 招待トークンの使用回数を増加
+        try {
+          await incrementTokenUsage(sessionData.inviteToken);
+          console.log('📊 Invitation token usage incremented successfully');
+        } catch (incrementError) {
+          // 使用回数増加に失敗してもユーザー作成は成功しているので警告レベル
+          console.warn('⚠️ Failed to increment invitation token usage:', incrementError);
+        }
+      } catch (createError) {
+        console.error('❌ Failed to create user:', createError);
+        return NextResponse.redirect(
+          new URL('/auth/error?reason=user_creation_failed', request.url),
+          {
+            status: 302,
+          }
+        );
+      }
     } else {
       // 既存ユーザーの場合
       console.log('👤 Existing user login:', {
