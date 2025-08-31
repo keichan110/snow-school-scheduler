@@ -72,16 +72,16 @@ export const PERMISSIONS: PermissionMatrix = {
   },
 
   MEMBER: {
-    // メンバー: 公開シフト表の閲覧のみ
+    // メンバー: シフト表閲覧と基本情報参照
     users: ['read'], // 自分の情報のみ
-    invitations: [],
-    departments: [],
-    instructors: [],
-    certifications: [],
-    shifts: [],
-    'shift-types': [],
-    'shift-assignments': [],
-    'public-shifts': ['read'],
+    invitations: [], // 招待URL管理不可
+    departments: ['read'], // 部門情報参照
+    instructors: ['read'], // インストラクター情報参照
+    certifications: ['read'], // 資格情報参照
+    shifts: ['read'], // シフト表閲覧
+    'shift-types': ['read'], // シフト種別参照
+    'shift-assignments': ['read'], // シフト割り当て情報参照
+    'public-shifts': ['read'], // 公開シフト表閲覧
   },
 } as const;
 
