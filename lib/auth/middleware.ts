@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-import { verifyJwt, extractUserFromToken, JwtPayload } from './jwt';
+import { verifyJwt } from './jwt';
 import { prisma } from '@/lib/db';
 
 /**
@@ -58,7 +58,7 @@ export async function getAuthTokenFromCookies(): Promise<string | null> {
     const cookieStore = await cookies();
     const token = cookieStore.get('auth-token')?.value;
     return token || null;
-  } catch (error) {
+  } catch {
     // Server Component外での呼び出し等でエラーが発生する場合
     return null;
   }
@@ -371,7 +371,7 @@ export async function getAuthDebugInfo(request: NextRequest) {
             isActive: true,
           },
         });
-      } catch (error) {
+      } catch {
         dbUser = { error: 'Database query failed' };
       }
     }

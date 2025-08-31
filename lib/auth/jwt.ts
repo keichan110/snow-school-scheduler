@@ -68,14 +68,14 @@ export function generateJwt(payload: Omit<JwtPayload, 'iat' | 'exp' | 'iss' | 'a
 
   try {
     // TypeScript型定義の問題を回避するため any を使用
-    const options: any = {
+    const options = {
       expiresIn: jwtConfig.expiresIn, // 48h (from env.ts)
       algorithm: 'HS256',
       issuer: 'snow-school-scheduler',
       audience: 'snow-school-users',
     };
 
-    return jwt.sign(jwtPayload, jwtConfig.secret, options);
+    return jwt.sign(jwtPayload, jwtConfig.secret, options as jwt.SignOptions);
   } catch (error) {
     throw new Error(
       `JWT generation failed: ${error instanceof Error ? error.message : 'Unknown error'}`
