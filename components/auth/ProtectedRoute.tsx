@@ -151,15 +151,67 @@ export interface AuthCheckResult {
  * }
  * ```
  */
-export async function getServerAuthCheck(): Promise<AuthCheckResult> {
-  // Note: Server Componentでの実装は将来のタスクとして保留
-  // 現在は常にClient Componentでの保護を使用
-  return {
-    isAuthenticated: false,
-    hasPermission: false,
-    user: null,
-    redirectUrl: '/login',
-  };
+export async function getServerAuthCheck(
+  requiredRole?: 'ADMIN' | 'MANAGER' | 'MEMBER'
+): Promise<AuthCheckResult> {
+  try {
+    // Next.js の cookies() を使用してJWTトークンを取得
+    const { cookies } = await import('next/headers');
+    const token = (await cookies()).get('auth-token')?.value;
+
+    if (!token) {
+      return {
+        isAuthenticated: false,
+        hasPermission: false,
+        user: null,
+        redirectUrl: '/login',
+      };
+    }
+
+    // JWTトークンの検証
+    const { verifyJwt } = await import('@/lib/auth/jwt');
+    const verificationResult = verifyJwt(token);
+
+    if (!verificationResult.success || !verificationResult.payload) {
+      return {
+        isAuthenticated: false,
+        hasPermission: false,
+        user: null,
+        redirectUrl: '/login',
+      };
+    }
+
+    const user = verificationResult.payload;
+
+    // 権限チェック
+    let hasPermission = true;
+    if (requiredRole) {
+      const roleHierarchy = {
+        ADMIN: 3,
+        MANAGER: 2,
+        MEMBER: 1,
+      };
+
+      const userLevel = roleHierarchy[user.role as keyof typeof roleHierarchy];
+      const requiredLevel = roleHierarchy[requiredRole as keyof typeof roleHierarchy];
+      hasPermission = userLevel >= requiredLevel;
+    }
+
+    return {
+      isAuthenticated: true,
+      hasPermission,
+      user,
+      redirectUrl: hasPermission ? null : '/',
+    };
+  } catch (error) {
+    console.error('Server auth check failed:', error);
+    return {
+      isAuthenticated: false,
+      hasPermission: false,
+      user: null,
+      redirectUrl: '/login',
+    };
+  }
 }
 
 /**

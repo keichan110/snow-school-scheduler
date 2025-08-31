@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import Header from '@/components/Header';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -273,17 +274,19 @@ function PublicShiftsPageContent() {
 
 export default function PublicShiftsPage() {
   return (
-    <Suspense
-      fallback={
-        <div className="flex min-h-screen items-center justify-center">
-          <div className="text-center">
-            <div className="mx-auto h-8 w-8 animate-spin rounded-full border-b-2 border-blue-600"></div>
-            <div className="mt-2 text-muted-foreground">読み込み中...</div>
+    <ProtectedRoute>
+      <Suspense
+        fallback={
+          <div className="flex min-h-screen items-center justify-center">
+            <div className="text-center">
+              <div className="mx-auto h-8 w-8 animate-spin rounded-full border-b-2 border-blue-600"></div>
+              <div className="mt-2 text-muted-foreground">読み込み中...</div>
+            </div>
           </div>
-        </div>
-      }
-    >
-      <PublicShiftsPageContent />
-    </Suspense>
+        }
+      >
+        <PublicShiftsPageContent />
+      </Suspense>
+    </ProtectedRoute>
   );
 }
