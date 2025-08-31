@@ -1,23 +1,23 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { 
-  Plus, 
-  Users, 
-  UserCheck, 
+import {
+  Plus,
+  Users,
+  UserCheck,
   Clock,
   Copy,
   Trash,
   Eye,
   EyeSlash,
-  CalendarX
+  CalendarX,
 } from '@phosphor-icons/react';
 import InvitationModal from './InvitationModal';
-import { 
-  fetchInvitations, 
-  createInvitation, 
+import {
+  fetchInvitations,
+  createInvitation,
   deactivateInvitation,
-  generateInvitationUrl 
+  generateInvitationUrl,
 } from './api';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -37,6 +37,7 @@ import type {
   InvitationTokenWithStats,
   InvitationFormData,
   InvitationStats,
+  CreateInvitationRequest,
 } from './types';
 
 export default function InvitationsPage() {
@@ -87,7 +88,7 @@ export default function InvitationsPage() {
   const updateStats = useCallback(() => {
     const now = new Date();
     const total = invitations.length;
-    
+
     let active = 0;
     let expired = 0;
     let used = 0;
@@ -140,7 +141,7 @@ export default function InvitationsPage() {
         description: data.description,
         maxUses: data.maxUses,
       };
-      
+
       if (data.expiresAt) {
         requestData.expiresAt = data.expiresAt.toISOString();
       }
@@ -166,9 +167,7 @@ export default function InvitationsPage() {
     try {
       await deactivateInvitation(token);
       setInvitations((prev) =>
-        prev.map((inv) =>
-          inv.token === token ? { ...inv, isActive: false } : inv
-        )
+        prev.map((inv) => (inv.token === token ? { ...inv, isActive: false } : inv))
       );
     } catch {
       console.error('招待の無効化に失敗しました');
@@ -321,9 +320,7 @@ export default function InvitationsPage() {
             {filteredInvitations.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={6} className="py-8 text-center text-muted-foreground">
-                  {showActiveOnly
-                    ? '有効な招待がありません'
-                    : '招待が作成されていません'}
+                  {showActiveOnly ? '有効な招待がありません' : '招待が作成されていません'}
                 </TableCell>
               </TableRow>
             ) : (
@@ -335,19 +332,13 @@ export default function InvitationsPage() {
                     </span>
                   </TableCell>
                   <TableCell>
-                    <p className="line-clamp-2 text-sm">
-                      {invitation.description || '説明なし'}
-                    </p>
+                    <p className="line-clamp-2 text-sm">{invitation.description || '説明なし'}</p>
                   </TableCell>
                   <TableCell>
                     <div className="text-sm">
-                      <span className="font-mono">
-                        {invitation.usageCount}
-                      </span>
+                      <span className="font-mono">{invitation.usageCount}</span>
                       {invitation.maxUses && (
-                        <span className="text-muted-foreground">
-                          /{invitation.maxUses}
-                        </span>
+                        <span className="text-muted-foreground">/{invitation.maxUses}</span>
                       )}
                     </div>
                   </TableCell>
@@ -376,13 +367,17 @@ export default function InvitationsPage() {
                       >
                         <Copy className="h-4 w-4" />
                       </Button>
-                      
+
                       {invitation.isActive && (
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => {
-                            if (window.confirm('この招待を無効化しますか？\nこの操作は取り消せません。')) {
+                            if (
+                              window.confirm(
+                                'この招待を無効化しますか？\nこの操作は取り消せません。'
+                              )
+                            ) {
                               handleDeactivate(invitation.token);
                             }
                           }}
@@ -401,11 +396,7 @@ export default function InvitationsPage() {
         </Table>
       </div>
 
-      <InvitationModal
-        isOpen={isModalOpen}
-        onClose={handleCloseModal}
-        onSave={handleSave}
-      />
+      <InvitationModal isOpen={isModalOpen} onClose={handleCloseModal} onSave={handleSave} />
     </div>
   );
 }

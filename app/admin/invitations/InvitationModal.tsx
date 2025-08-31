@@ -23,11 +23,7 @@ interface InvitationModalProps {
   onSave: (data: InvitationFormData) => Promise<void>;
 }
 
-export default function InvitationModal({
-  isOpen,
-  onClose,
-  onSave,
-}: InvitationModalProps) {
+export default function InvitationModal({ isOpen, onClose, onSave }: InvitationModalProps) {
   const [formData, setFormData] = useState<InvitationFormData>({
     description: '',
     maxUses: 1,
@@ -38,7 +34,7 @@ export default function InvitationModal({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!formData.description.trim()) {
       setError('説明を入力してください');
       return;
@@ -52,15 +48,15 @@ export default function InvitationModal({
     try {
       setIsSubmitting(true);
       setError(null);
-      
+
       await onSave(formData);
-      
+
       setFormData({
         description: '',
         maxUses: 1,
         expiresAt: null,
       });
-      
+
       onClose();
     } catch (error) {
       setError(error instanceof Error ? error.message : '招待の作成に失敗しました');
@@ -87,9 +83,7 @@ export default function InvitationModal({
             <Plus className="h-5 w-5" />
             新規招待作成
           </DialogTitle>
-          <DialogDescription>
-            新しいメンバー招待用のURLを作成します
-          </DialogDescription>
+          <DialogDescription>新しいメンバー招待用のURLを作成します</DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -104,9 +98,7 @@ export default function InvitationModal({
             <Textarea
               id="description"
               value={formData.description}
-              onChange={(e) =>
-                setFormData({ ...formData, description: e.target.value })
-              }
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               placeholder="招待の目的や対象者を記入してください"
               required
             />
@@ -120,9 +112,7 @@ export default function InvitationModal({
               min="1"
               max="999"
               value={formData.maxUses}
-              onChange={(e) =>
-                setFormData({ ...formData, maxUses: parseInt(e.target.value) || 1 })
-              }
+              onChange={(e) => setFormData({ ...formData, maxUses: parseInt(e.target.value) || 1 })}
             />
             <p className="text-xs text-muted-foreground">
               この招待URLで登録できる最大人数を設定します
@@ -134,20 +124,14 @@ export default function InvitationModal({
             <Input
               id="expiresAt"
               type="date"
-              value={
-                formData.expiresAt
-                  ? format(formData.expiresAt, 'yyyy-MM-dd')
-                  : ''
-              }
+              value={formData.expiresAt ? format(formData.expiresAt, 'yyyy-MM-dd') : ''}
               onChange={(e) => {
                 const date = e.target.value ? new Date(e.target.value) : null;
                 setFormData({ ...formData, expiresAt: date });
               }}
               min={format(new Date(), 'yyyy-MM-dd')}
             />
-            <p className="text-xs text-muted-foreground">
-              指定しない場合は無期限で有効です
-            </p>
+            <p className="text-xs text-muted-foreground">指定しない場合は無期限で有効です</p>
           </div>
 
           <DialogFooter>
