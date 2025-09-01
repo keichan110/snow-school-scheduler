@@ -132,6 +132,7 @@ NEXTAUTH_URL=http://localhost:3000   # 開発環境
 #### 1. `invalid_client` エラー
 
 **症状**: LINE認証時にクライアント認証エラーが発生
+
 ```
 原因: Channel IDまたはChannel Secretが間違っている
 解決: .env.localの設定値を再確認
@@ -140,6 +141,7 @@ NEXTAUTH_URL=http://localhost:3000   # 開発環境
 #### 2. `redirect_uri_mismatch` エラー
 
 **症状**: 認証後のリダイレクトでエラーが発生
+
 ```
 原因: Callback URLがLINE Developers Consoleの設定と一致しない
 解決: 両方の設定を確認して統一する
@@ -148,6 +150,7 @@ NEXTAUTH_URL=http://localhost:3000   # 開発環境
 #### 3. `unauthorized_client` エラー
 
 **症状**: 認証リクエスト自体が拒否される
+
 ```
 原因: チャンネル設定が不完全
 解決: LINE LoginタブでスコープとコールバックURLを再設定
@@ -289,6 +292,7 @@ UPDATE "User" SET role = 'ADMIN' WHERE id = 'USER_ID_HERE';
 #### 1. 管理者メニューにアクセスできない
 
 **症状**: LINE認証後に`/admin`ページでアクセス拒否される
+
 ```
 原因: roleが正しく設定されていない
 解決: データベースでrole設定を再確認
@@ -297,6 +301,7 @@ UPDATE "User" SET role = 'ADMIN' WHERE id = 'USER_ID_HERE';
 #### 2. 本番環境でデータベースにアクセスできない
 
 **症状**: 本番環境でデータベース操作コマンドが失敗する
+
 ```
 原因: データベース接続設定やアクセス権限の問題
 解決: 環境変数とデータベース設定を確認
@@ -305,6 +310,7 @@ UPDATE "User" SET role = 'ADMIN' WHERE id = 'USER_ID_HERE';
 #### 3. 複数ユーザーが同じメールアドレスで作成される
 
 **症状**: 同一LINEアカウントで複数のユーザーレコードが存在する
+
 ```
 原因: LINEアカウントの重複登録
 解決: 重複レコードを削除し、正しいユーザーに権限を付与
@@ -321,9 +327,9 @@ UPDATE "User" SET role = 'ADMIN' WHERE id = 'USER_ID_HERE';
 
 ## 更新履歴
 
-| 日付 | 更新内容 | 担当者 |
-|------|----------|--------|
-| 2024-XX-XX | 初版作成（LINE Developers Console設定手順） | - |
-| 2024-XX-XX | ファーストアドミン設定手順を追加 | - |
+| 日付       | 更新内容                                    | 担当者 |
+| ---------- | ------------------------------------------- | ------ |
+| 2024-XX-XX | 初版作成（LINE Developers Console設定手順） | -      |
+| 2024-XX-XX | ファーストアドミン設定手順を追加            | -      |
 
 > **注意**: 設定変更時は本マニュアルを必ず更新してください
