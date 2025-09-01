@@ -2,8 +2,6 @@
  * 招待管理画面の型定義
  */
 
-import type { InvitationToken } from '@prisma/client';
-
 export interface InvitationTokenWithStats {
   token: string;
   description: string;

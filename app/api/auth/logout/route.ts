@@ -146,7 +146,7 @@ export async function GET(request: NextRequest) {
       } else {
         console.warn('⚠️ External redirect blocked:', redirectTo);
       }
-    } catch (urlError) {
+    } catch {
       // 無効なURLの場合はルートにリダイレクト
       console.warn('⚠️ Invalid redirect URL:', redirectTo);
     }

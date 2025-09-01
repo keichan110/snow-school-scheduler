@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { executeLineAuthFlow } from '@/lib/auth/line';
 import { generateJwt } from '@/lib/auth/jwt';
-import { setAuthCookie } from '@/lib/auth/middleware';
 import { validateInvitationToken, incrementTokenUsage } from '@/lib/auth/invitations';
 import { prisma } from '@/lib/db';
 

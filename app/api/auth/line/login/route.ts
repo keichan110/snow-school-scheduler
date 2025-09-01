@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
       if (body.trim()) {
         requestData = JSON.parse(body);
       }
-    } catch (parseError) {
+    } catch {
       return NextResponse.json(
         {
           success: false,
