@@ -67,12 +67,10 @@ export function generateJwt(payload: Omit<JwtPayload, 'iat' | 'exp' | 'iss' | 'a
   };
 
   try {
-    // TypeScript型定義の問題を回避するため any を使用
+    // ペイロードで iss/aud を設定済みのため、optionsでは設定しない
     const options = {
       expiresIn: jwtConfig.expiresIn, // 48h (from env.ts)
       algorithm: 'HS256',
-      issuer: 'snow-school-scheduler',
-      audience: 'snow-school-users',
     };
 
     return jwt.sign(jwtPayload, jwtConfig.secret, options as jwt.SignOptions);
