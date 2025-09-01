@@ -38,16 +38,17 @@ export async function DELETE(
   try {
     const { token } = params;
 
-    // 認証トークン取得
-    const authHeader = request.headers.get('authorization');
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    // 認証トークン取得（Cookieまたは Authorization ヘッダー）
+    const { getAuthTokenFromRequest } = await import('@/lib/auth/middleware');
+    const authToken = getAuthTokenFromRequest(request);
+    
+    if (!authToken) {
       return NextResponse.json(
         { success: false, error: 'Authentication token required' },
         { status: 401 }
       );
     }
 
-    const authToken = authHeader.substring(7); // "Bearer " を除去
     const user = extractUserFromToken(authToken);
 
     if (!user) {

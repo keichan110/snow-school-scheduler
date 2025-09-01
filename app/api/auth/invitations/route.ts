@@ -37,16 +37,17 @@ export async function POST(
   request: NextRequest
 ): Promise<NextResponse<ApiResponse<InvitationUrlData>>> {
   try {
-    // 認証トークン取得
-    const authHeader = request.headers.get('authorization');
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    // 認証トークン取得（Cookieまたは Authorization ヘッダー）
+    const { getAuthTokenFromRequest } = await import('@/lib/auth/middleware');
+    const token = getAuthTokenFromRequest(request);
+    
+    if (!token) {
       return NextResponse.json(
         { success: false, error: 'Authentication token required' },
         { status: 401 }
       );
     }
 
-    const token = authHeader.substring(7); // "Bearer " を除去
     const user = extractUserFromToken(token);
 
     if (!user) {
@@ -166,16 +167,16 @@ export async function GET(
   request: NextRequest
 ): Promise<NextResponse<ApiResponse<InvitationListItem[]>>> {
   try {
-    // 認証トークン取得
-    const authHeader = request.headers.get('authorization');
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    // 認証トークン取得（Cookieまたは Authorization ヘッダー）
+    const { getAuthTokenFromRequest } = await import('@/lib/auth/middleware');
+    const token = getAuthTokenFromRequest(request);
+    
+    if (!token) {
       return NextResponse.json(
         { success: false, error: 'Authentication token required' },
         { status: 401 }
       );
     }
-
-    const token = authHeader.substring(7); // "Bearer " を除去
     const user = extractUserFromToken(token);
 
     if (!user) {

@@ -16,6 +16,7 @@ const API_BASE_URL = '/api/auth/invitations';
 export async function fetchInvitations(): Promise<InvitationTokenWithStats[]> {
   const response = await fetch(API_BASE_URL, {
     method: 'GET',
+    credentials: 'include', // Cookieベースの認証
     headers: {
       'Content-Type': 'application/json',
     },
@@ -42,6 +43,7 @@ export async function createInvitation(
 ): Promise<InvitationTokenWithStats> {
   const response = await fetch(API_BASE_URL, {
     method: 'POST',
+    credentials: 'include', // Cookieベースの認証
     headers: {
       'Content-Type': 'application/json',
     },
@@ -67,6 +69,7 @@ export async function createInvitation(
 export async function deactivateInvitation(token: string): Promise<void> {
   const response = await fetch(`${API_BASE_URL}/${token}`, {
     method: 'DELETE',
+    credentials: 'include', // Cookieベースの認証
     headers: {
       'Content-Type': 'application/json',
     },

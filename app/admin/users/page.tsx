@@ -66,6 +66,12 @@ export default function UsersPage() {
   };
 
   const applyFilter = useCallback(() => {
+    // usersが配列でない場合のガード処理
+    if (!Array.isArray(users)) {
+      setFilteredUsers([]);
+      return;
+    }
+    
     let filtered = [...users];
 
     // ロールフィルター
@@ -97,6 +103,12 @@ export default function UsersPage() {
   }, [users, filters]);
 
   const updateStats = useCallback(() => {
+    // usersが配列でない場合のガード処理
+    if (!Array.isArray(users)) {
+      setStats({ total: 0, active: 0, admins: 0, managers: 0, members: 0 });
+      return;
+    }
+    
     const total = users.length;
     const active = users.filter((user) => user.isActive).length;
     const admins = users.filter((user) => user.role === 'ADMIN').length;

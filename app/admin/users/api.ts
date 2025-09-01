@@ -24,6 +24,7 @@ export async function fetchUsers(filters?: Partial<UserFilters>): Promise<UserWi
 
   const response = await fetch(url, {
     method: 'GET',
+    credentials: 'include', // Cookieベースの認証
     headers: {
       'Content-Type': 'application/json',
     },
@@ -48,6 +49,7 @@ export async function fetchUsers(filters?: Partial<UserFilters>): Promise<UserWi
 export async function fetchUser(id: string): Promise<UserWithDetails> {
   const response = await fetch(`${API_BASE_URL}/${id}`, {
     method: 'GET',
+    credentials: 'include', // Cookieベースの認証
     headers: {
       'Content-Type': 'application/json',
     },
@@ -72,6 +74,7 @@ export async function fetchUser(id: string): Promise<UserWithDetails> {
 export async function updateUser(id: string, data: UpdateUserRequest): Promise<UserWithDetails> {
   const response = await fetch(`${API_BASE_URL}/${id}`, {
     method: 'PUT',
+    credentials: 'include', // Cookieベースの認証
     headers: {
       'Content-Type': 'application/json',
     },
@@ -97,6 +100,7 @@ export async function updateUser(id: string, data: UpdateUserRequest): Promise<U
 export async function deactivateUser(id: string): Promise<void> {
   const response = await fetch(`${API_BASE_URL}/${id}`, {
     method: 'DELETE',
+    credentials: 'include', // Cookieベースの認証
     headers: {
       'Content-Type': 'application/json',
     },
