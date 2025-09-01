@@ -238,10 +238,9 @@ export async function GET(request: NextRequest) {
     };
 
     const token = generateJwt(jwtPayload);
-    console.log('🎫 JWT generated for user:', {
-      userId: user.id,
-      role: user.role,
-    });
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🎫 JWT generated for user:', user.displayName);
+    }
 
     // 認証成功レスポンスの作成
     const successUrl = new URL('/', request.url); // ホームページにリダイレクト

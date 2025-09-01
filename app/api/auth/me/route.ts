@@ -42,8 +42,6 @@ export interface ErrorResponse {
  */
 export async function GET(request: NextRequest) {
   try {
-    console.log('🔍 User info request initiated');
-
     // 認証トークンの検証とユーザー情報取得
     const authResult = await authenticateFromRequest(request);
 
@@ -66,12 +64,10 @@ export async function GET(request: NextRequest) {
 
     const user = authResult.user;
 
-    console.log('✅ User info retrieved successfully:', {
-      userId: user.id,
-      displayName: user.displayName,
-      role: user.role,
-      isActive: user.isActive,
-    });
+    // デバッグモードでのみログ出力
+    if (process.env.NODE_ENV === 'development') {
+      console.log('✅ User authenticated:', user.displayName);
+    }
 
     // ユーザー情報レスポンス
     const response: UserInfoResponse = {
