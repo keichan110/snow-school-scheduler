@@ -41,7 +41,7 @@ export async function DELETE(
     // 認証トークン取得（Cookieまたは Authorization ヘッダー）
     const { getAuthTokenFromRequest } = await import('@/lib/auth/middleware');
     const authToken = getAuthTokenFromRequest(request);
-    
+
     if (!authToken) {
       return NextResponse.json(
         { success: false, error: 'Authentication token required' },

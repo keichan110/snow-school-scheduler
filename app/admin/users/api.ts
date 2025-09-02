@@ -34,13 +34,18 @@ export async function fetchUsers(filters?: Partial<UserFilters>): Promise<UserWi
     throw new Error(`ユーザー一覧の取得に失敗しました: ${response.status}`);
   }
 
-  const result: UserApiResponse<UserWithDetails[]> = await response.json();
+  const result: UserApiResponse<{
+    users: UserWithDetails[];
+    total: number;
+    page: number;
+    limit: number;
+  }> = await response.json();
 
   if (!result.success || !result.data) {
     throw new Error(result.error || 'ユーザー一覧の取得に失敗しました');
   }
 
-  return result.data;
+  return result.data.users;
 }
 
 /**

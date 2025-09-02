@@ -40,7 +40,7 @@ export async function POST(
     // 認証トークン取得（Cookieまたは Authorization ヘッダー）
     const { getAuthTokenFromRequest } = await import('@/lib/auth/middleware');
     const token = getAuthTokenFromRequest(request);
-    
+
     if (!token) {
       return NextResponse.json(
         { success: false, error: 'Authentication token required' },
@@ -170,7 +170,7 @@ export async function GET(
     // 認証トークン取得（Cookieまたは Authorization ヘッダー）
     const { getAuthTokenFromRequest } = await import('@/lib/auth/middleware');
     const token = getAuthTokenFromRequest(request);
-    
+
     if (!token) {
       return NextResponse.json(
         { success: false, error: 'Authentication token required' },
