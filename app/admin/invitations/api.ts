@@ -85,11 +85,3 @@ export async function deactivateInvitation(token: string): Promise<void> {
     throw new Error(result.error || '招待の無効化に失敗しました');
   }
 }
-
-/**
- * 招待URL生成
- */
-export function generateInvitationUrl(token: string): string {
-  const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
-  return `${baseUrl}/api/auth/line/login?invite=${token}`;
-}

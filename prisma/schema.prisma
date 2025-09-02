@@ -210,14 +210,15 @@ enum UserRole {
 
 /// 招待URL管理テーブル
 model InvitationToken {
-  token     String   @id
-  expiresAt DateTime @map("expires_at")
-  isActive  Boolean  @default(true) @map("is_active")
-  createdBy String   @map("created_by")
-  maxUses   Int?     @map("max_uses")
-  usedCount Int      @default(0) @map("used_count")
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  token       String   @id
+  description String?  // 招待の説明（任意）
+  expiresAt   DateTime @map("expires_at")
+  isActive    Boolean  @default(true) @map("is_active")
+  createdBy   String   @map("created_by")
+  maxUses     Int?     @map("max_uses")
+  usedCount   Int      @default(0) @map("used_count")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
 
   // リレーション
   creator User @relation("CreatedBy", fields: [createdBy], references: [id])

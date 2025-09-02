@@ -26,10 +26,11 @@ export const invitationConfig = {
 export interface CreateInvitationTokenParams {
   /** 招待を作成するユーザーID */
   createdBy: string;
-  /** 有効期限（時間後）。指定しない場合はデフォルト値を使用 */
+  /** 招待の説明（任意） */
+  description?: string;
+  /** 有効期限（必須）。Dateオブジェクトまたは時間数での指定 */
+  expiresAt?: Date;
   expiresInHours?: number;
-  /** 最大使用回数。指定しない場合はデフォルト値を使用 */
-  maxUses?: number;
 }
 
 /**
@@ -99,8 +100,9 @@ export async function createInvitationToken(
 ): Promise<InvitationTokenDetails> {
   const {
     createdBy,
+    description,
+    expiresAt,
     expiresInHours = invitationConfig.defaultExpiryHours,
-    maxUses = invitationConfig.defaultMaxUses,
   } = params;
 
   // 作成者が存在し、権限があることを確認
@@ -145,16 +147,22 @@ export async function createInvitationToken(
   } while (attempts < maxAttempts);
 
   // 有効期限を計算
-  const expiresAt = new Date();
-  expiresAt.setHours(expiresAt.getHours() + expiresInHours);
+  const finalExpiresAt =
+    expiresAt ||
+    (() => {
+      const date = new Date();
+      date.setHours(date.getHours() + expiresInHours);
+      return date;
+    })();
 
   // データベースに保存
   const invitationToken = await prisma.invitationToken.create({
     data: {
       token,
-      expiresAt,
+      ...(description && { description }),
+      expiresAt: finalExpiresAt,
       createdBy,
-      maxUses,
+      maxUses: null, // 使用回数制限なし
       usedCount: 0,
       isActive: true,
     },
@@ -172,11 +180,18 @@ export async function createInvitationToken(
   console.log('✅ Invitation token created:', {
     token: token.substring(0, 16) + '...',
     createdBy: creator.displayName,
-    expiresAt: expiresAt.toISOString(),
-    maxUses,
+    expiresAt: finalExpiresAt.toISOString(),
+    description: description || 'No description',
   });
 
-  return invitationToken;
+  return {
+    ...invitationToken,
+    creator: {
+      id: creator.id,
+      displayName: creator.displayName,
+      role: creator.role,
+    },
+  };
 }
 
 /**
@@ -257,16 +272,6 @@ export async function validateInvitationToken(token: string): Promise<TokenValid
         isValid: false,
         error: 'Invitation token has expired',
         errorCode: 'EXPIRED',
-        token: invitationToken,
-      };
-    }
-
-    // 使用回数チェック
-    if (invitationToken.maxUses !== null && invitationToken.usedCount >= invitationToken.maxUses) {
-      return {
-        isValid: false,
-        error: 'Invitation token usage limit exceeded',
-        errorCode: 'MAX_USES_EXCEEDED',
         token: invitationToken,
       };
     }

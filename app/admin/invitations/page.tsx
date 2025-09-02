@@ -6,19 +6,13 @@ import {
   Users,
   UserCheck,
   Clock,
-  Copy,
   Trash,
   Eye,
   EyeSlash,
   CalendarX,
 } from '@phosphor-icons/react';
 import InvitationModal from './InvitationModal';
-import {
-  fetchInvitations,
-  createInvitation,
-  deactivateInvitation,
-  generateInvitationUrl,
-} from './api';
+import { fetchInvitations, createInvitation, deactivateInvitation } from './api';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
@@ -76,7 +70,6 @@ export default function InvitationsPage() {
       filtered = filtered.filter((invitation) => {
         if (!invitation.isActive) return false;
         if (invitation.expiresAt && new Date(invitation.expiresAt) < now) return false;
-        if (invitation.maxUses && invitation.usageCount >= invitation.maxUses) return false;
         return true;
       });
     }
@@ -88,27 +81,24 @@ export default function InvitationsPage() {
   const updateStats = useCallback(() => {
     const now = new Date();
     const total = invitations.length;
+    const inactive = invitations.filter((invitation) => !invitation.isActive).length;
 
     let active = 0;
     let expired = 0;
-    let used = 0;
 
     invitations.forEach((invitation) => {
       if (!invitation.isActive) return;
 
       const isExpired = invitation.expiresAt && new Date(invitation.expiresAt) < now;
-      const isMaxUsed = invitation.maxUses && invitation.usageCount >= invitation.maxUses;
 
       if (isExpired) {
         expired++;
-      } else if (isMaxUsed) {
-        used++;
       } else {
         active++;
       }
     });
 
-    setStats({ total, active, expired, used });
+    setStats({ total, active, expired, used: inactive });
   }, [invitations]);
 
   useEffect(() => {
@@ -139,27 +129,13 @@ export default function InvitationsPage() {
     try {
       const requestData: CreateInvitationRequest = {
         description: data.description,
-        maxUses: data.maxUses,
+        expiresAt: data.expiresAt.toISOString(),
       };
-
-      if (data.expiresAt) {
-        requestData.expiresAt = data.expiresAt.toISOString();
-      }
 
       const created = await createInvitation(requestData);
       setInvitations((prev) => [created, ...prev]);
     } catch (error) {
       throw error;
-    }
-  };
-
-  const handleCopyUrl = async (token: string) => {
-    const url = generateInvitationUrl(token);
-    try {
-      await navigator.clipboard.writeText(url);
-      console.log('招待URLをコピーしました:', url);
-    } catch {
-      console.error('URLのコピーに失敗しました');
     }
   };
 
@@ -179,9 +155,8 @@ export default function InvitationsPage() {
 
     const now = new Date();
     const isExpired = invitation.expiresAt && new Date(invitation.expiresAt) < now;
-    const isMaxUsed = invitation.maxUses && invitation.usageCount >= invitation.maxUses;
 
-    if (isExpired || isMaxUsed) return 'text-red-500';
+    if (isExpired) return 'text-red-500';
     return 'text-green-500';
   };
 
@@ -190,10 +165,8 @@ export default function InvitationsPage() {
 
     const now = new Date();
     const isExpired = invitation.expiresAt && new Date(invitation.expiresAt) < now;
-    const isMaxUsed = invitation.maxUses && invitation.usageCount >= invitation.maxUses;
 
     if (isExpired) return '期限切れ';
-    if (isMaxUsed) return '使用完了';
     return '有効';
   };
 
@@ -269,7 +242,7 @@ export default function InvitationsPage() {
                 <div className="text-lg font-bold text-amber-600 dark:text-amber-400">
                   {stats.used}
                 </div>
-                <div className="text-xs text-muted-foreground">使用完了</div>
+                <div className="text-xs text-muted-foreground">無効</div>
               </div>
             </div>
           </CardContent>
@@ -337,9 +310,6 @@ export default function InvitationsPage() {
                   <TableCell>
                     <div className="text-sm">
                       <span className="font-mono">{invitation.usageCount}</span>
-                      {invitation.maxUses && (
-                        <span className="text-muted-foreground">/{invitation.maxUses}</span>
-                      )}
                     </div>
                   </TableCell>
                   <TableCell>
@@ -358,16 +328,6 @@ export default function InvitationsPage() {
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-1">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleCopyUrl(invitation.token)}
-                        className="h-8 w-8 p-0"
-                        title="URLをコピー"
-                      >
-                        <Copy className="h-4 w-4" />
-                      </Button>
-
                       {invitation.isActive && (
                         <Button
                           variant="ghost"

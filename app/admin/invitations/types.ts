@@ -16,14 +16,12 @@ export interface InvitationTokenWithStats {
 
 export interface CreateInvitationRequest {
   description?: string;
-  maxUses?: number;
-  expiresAt?: string;
+  expiresAt: string; // 必須に変更
 }
 
 export interface InvitationFormData {
   description: string;
-  maxUses: number;
-  expiresAt: Date | null;
+  expiresAt: Date; // 必須に変更
 }
 
 export interface InvitationStats {

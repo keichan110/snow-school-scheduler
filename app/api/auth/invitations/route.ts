@@ -27,8 +27,8 @@ import { z } from 'zod';
 
 // リクエストボディのバリデーションスキーマ
 const createInvitationSchema = z.object({
-  expiresInHours: z.number().min(1).max(8760).optional(), // 1時間〜1年
-  maxUses: z.number().min(1).max(1000).optional(), // 1〜1000回
+  description: z.string().optional(),
+  expiresAt: z.string(), // 必須 - ISO 8601形式の日付文字列
 });
 
 type CreateInvitationRequest = z.infer<typeof createInvitationSchema>;
@@ -82,8 +82,27 @@ export async function POST(
       return NextResponse.json(
         {
           success: false,
-          error: 'Invalid request body. Expected: { expiresInHours?: number, maxUses?: number }',
+          error: 'Invalid request body. Expected: { description?: string, expiresAt: string }',
         },
+        { status: 400 }
+      );
+    }
+
+    // 有効期限のバリデーション（最大1ヶ月）
+    const expiresAt = new Date(requestBody.expiresAt);
+    const maxExpiryDate = new Date();
+    maxExpiryDate.setMonth(maxExpiryDate.getMonth() + 1);
+
+    if (expiresAt > maxExpiryDate) {
+      return NextResponse.json(
+        { success: false, error: '有効期限は最大1ヶ月までです' },
+        { status: 400 }
+      );
+    }
+
+    if (expiresAt <= new Date()) {
+      return NextResponse.json(
+        { success: false, error: '有効期限は現在時刻より後に設定してください' },
         { status: 400 }
       );
     }
@@ -91,10 +110,8 @@ export async function POST(
     // 招待トークン作成パラメータの準備
     const createParams: CreateInvitationTokenParams = {
       createdBy: user.userId,
-      ...(requestBody.expiresInHours !== undefined && {
-        expiresInHours: requestBody.expiresInHours,
-      }),
-      ...(requestBody.maxUses !== undefined && { maxUses: requestBody.maxUses }),
+      ...(requestBody.description && { description: requestBody.description }),
+      expiresAt: expiresAt,
     };
 
     // 招待トークン生成
