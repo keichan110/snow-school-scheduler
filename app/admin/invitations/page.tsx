@@ -1,16 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import {
-  Plus,
-  Users,
-  UserCheck,
-  Clock,
-  Trash,
-  Eye,
-  EyeSlash,
-  CalendarX,
-} from '@phosphor-icons/react';
+import { Plus, UserCheck, Eye, EyeSlash, CalendarX } from '@phosphor-icons/react';
 import InvitationModal from './InvitationModal';
 import { fetchInvitations, createInvitation, deactivateInvitation } from './api';
 import { Button } from '@/components/ui/button';
@@ -45,6 +36,7 @@ export default function InvitationsPage() {
     used: 0,
   });
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingInvitation, setEditingInvitation] = useState<InvitationTokenWithStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -117,12 +109,14 @@ export default function InvitationsPage() {
     setShowActiveOnly(checked);
   };
 
-  const handleOpenModal = () => {
+  const handleOpenModal = (invitation?: InvitationTokenWithStats) => {
+    setEditingInvitation(invitation || null);
     setIsModalOpen(true);
   };
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
+    setEditingInvitation(null);
   };
 
   const handleSave = async (data: InvitationFormData) => {
@@ -148,26 +142,6 @@ export default function InvitationsPage() {
     } catch {
       console.error('招待の無効化に失敗しました');
     }
-  };
-
-  const getStatusColor = (invitation: InvitationTokenWithStats) => {
-    if (!invitation.isActive) return 'text-gray-500';
-
-    const now = new Date();
-    const isExpired = invitation.expiresAt && new Date(invitation.expiresAt) < now;
-
-    if (isExpired) return 'text-red-500';
-    return 'text-green-500';
-  };
-
-  const getStatusText = (invitation: InvitationTokenWithStats) => {
-    if (!invitation.isActive) return '無効';
-
-    const now = new Date();
-    const isExpired = invitation.expiresAt && new Date(invitation.expiresAt) < now;
-
-    if (isExpired) return '期限切れ';
-    return '有効';
   };
 
   if (isLoading) {
@@ -209,40 +183,33 @@ export default function InvitationsPage() {
         </div>
       </div>
 
+      {/* 統計情報 */}
       <div className="mb-4 md:mb-6">
-        <Card className="mx-auto w-full max-w-2xl md:mx-0">
-          <CardContent className="px-4 py-3">
-            <div className="grid grid-cols-4 divide-x divide-border">
-              <div className="flex flex-col items-center gap-1 px-2">
-                <Users className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                <div className="text-lg font-bold text-blue-600 dark:text-blue-400">
-                  {stats.total}
-                </div>
-                <div className="text-xs text-muted-foreground">総数</div>
-              </div>
-
-              <div className="flex flex-col items-center gap-1 px-2">
-                <UserCheck className="h-5 w-5 text-green-600 dark:text-green-400" />
-                <div className="text-lg font-bold text-green-600 dark:text-green-400">
+        <Card className="mx-auto w-full max-w-md md:mx-0">
+          <CardContent className="px-3 py-2">
+            <div className="flex items-center justify-center divide-x divide-border">
+              <div className="flex items-center gap-2 px-4 py-1">
+                <UserCheck
+                  className="h-4 w-4 text-green-600 dark:text-green-400"
+                  weight="regular"
+                />
+                <div className="text-base font-bold text-green-600 dark:text-green-400">
                   {stats.active}
                 </div>
-                <div className="text-xs text-muted-foreground">有効</div>
               </div>
 
-              <div className="flex flex-col items-center gap-1 px-2">
-                <CalendarX className="h-5 w-5 text-red-600 dark:text-red-400" />
-                <div className="text-lg font-bold text-red-600 dark:text-red-400">
+              <div className="flex items-center gap-2 px-4 py-1">
+                <CalendarX className="h-4 w-4 text-red-600 dark:text-red-400" weight="regular" />
+                <div className="text-base font-bold text-red-600 dark:text-red-400">
                   {stats.expired}
                 </div>
-                <div className="text-xs text-muted-foreground">期限切れ</div>
               </div>
 
-              <div className="flex flex-col items-center gap-1 px-2">
-                <Clock className="h-5 w-5 text-amber-600 dark:text-amber-400" />
-                <div className="text-lg font-bold text-amber-600 dark:text-amber-400">
+              <div className="flex items-center gap-2 px-4 py-1">
+                <EyeSlash className="h-4 w-4 text-amber-600 dark:text-amber-400" weight="regular" />
+                <div className="text-base font-bold text-amber-600 dark:text-amber-400">
                   {stats.used}
                 </div>
-                <div className="text-xs text-muted-foreground">無効</div>
               </div>
             </div>
           </CardContent>
@@ -253,7 +220,7 @@ export default function InvitationsPage() {
         <div className="space-y-4 border-b p-4">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold">招待一覧</h2>
-            <Button onClick={handleOpenModal} className="flex items-center gap-2">
+            <Button onClick={() => handleOpenModal()} className="flex items-center gap-2">
               <Plus className="h-4 w-4" />
               新規作成
             </Button>
@@ -281,82 +248,118 @@ export default function InvitationsPage() {
         <Table>
           <TableHeader>
             <TableRow className="bg-white dark:bg-gray-900">
-              <TableHead className="min-w-[100px]">ステータス</TableHead>
+              <TableHead className="w-12"></TableHead>
               <TableHead className="min-w-[200px]">説明</TableHead>
               <TableHead className="min-w-[80px]">使用回数</TableHead>
               <TableHead className="min-w-[120px]">有効期限</TableHead>
               <TableHead className="min-w-[120px]">作成日時</TableHead>
-              <TableHead className="min-w-[120px]">操作</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {filteredInvitations.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="py-8 text-center text-muted-foreground">
+                <TableCell colSpan={5} className="py-8 text-center text-muted-foreground">
                   {showActiveOnly ? '有効な招待がありません' : '招待が作成されていません'}
                 </TableCell>
               </TableRow>
             ) : (
-              filteredInvitations.map((invitation) => (
-                <TableRow key={invitation.token} className="hover:bg-muted/50">
-                  <TableCell>
-                    <span className={`font-medium ${getStatusColor(invitation)}`}>
-                      {getStatusText(invitation)}
-                    </span>
-                  </TableCell>
-                  <TableCell>
-                    <p className="line-clamp-2 text-sm">{invitation.description || '説明なし'}</p>
-                  </TableCell>
-                  <TableCell>
-                    <div className="text-sm">
-                      <span className="font-mono">{invitation.usageCount}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    {invitation.expiresAt ? (
-                      <span className="text-sm">
-                        {format(new Date(invitation.expiresAt), 'MM/dd', { locale: ja })}
+              filteredInvitations.map((invitation) => {
+                const now = new Date();
+                const isExpired = invitation.expiresAt && new Date(invitation.expiresAt) < now;
+                const isInactive = !invitation.isActive;
+
+                // ステータス別の背景色とアイコンの設定
+                let statusStyles;
+                let StatusIcon;
+                if (isInactive) {
+                  statusStyles = {
+                    row: 'bg-gray-50/30 hover:bg-gray-50/50 dark:bg-gray-900/5 dark:hover:bg-gray-900/10',
+                    icon: 'text-gray-600 dark:text-gray-400',
+                    text: 'text-foreground',
+                  };
+                  StatusIcon = EyeSlash;
+                } else if (isExpired) {
+                  statusStyles = {
+                    row: 'bg-red-50/30 hover:bg-red-50/50 dark:bg-red-900/5 dark:hover:bg-red-900/10',
+                    icon: 'text-red-600 dark:text-red-400',
+                    text: 'text-foreground',
+                  };
+                  StatusIcon = CalendarX;
+                } else {
+                  statusStyles = {
+                    row: 'bg-green-50/30 hover:bg-green-50/50 dark:bg-green-900/5 dark:hover:bg-green-900/10',
+                    icon: 'text-green-600 dark:text-green-400',
+                    text: 'text-foreground',
+                  };
+                  StatusIcon = UserCheck;
+                }
+
+                return (
+                  <TableRow
+                    key={invitation.token}
+                    className={`cursor-pointer transition-colors ${statusStyles.row} ${
+                      isInactive || isExpired ? 'opacity-60' : ''
+                    }`}
+                    onClick={() => handleOpenModal(invitation)}
+                  >
+                    <TableCell>
+                      <StatusIcon className={`h-5 w-5 ${statusStyles.icon}`} weight="regular" />
+                    </TableCell>
+                    <TableCell>
+                      <p
+                        className={`line-clamp-2 text-sm font-medium ${statusStyles.text} ${
+                          isInactive || isExpired ? 'line-through' : ''
+                        }`}
+                      >
+                        {invitation.description || '説明なし'}
+                      </p>
+                    </TableCell>
+                    <TableCell>
+                      <span
+                        className={`font-mono text-sm ${statusStyles.text} ${
+                          isInactive || isExpired ? 'line-through' : ''
+                        }`}
+                      >
+                        {invitation.usageCount}
                       </span>
-                    ) : (
-                      <span className="text-sm text-muted-foreground">なし</span>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <span className="text-sm text-muted-foreground">
-                      {format(new Date(invitation.createdAt), 'MM/dd HH:mm', { locale: ja })}
-                    </span>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-1">
-                      {invitation.isActive && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => {
-                            if (
-                              window.confirm(
-                                'この招待を無効化しますか？\nこの操作は取り消せません。'
-                              )
-                            ) {
-                              handleDeactivate(invitation.token);
-                            }
-                          }}
-                          className="h-8 w-8 p-0 text-red-600 hover:bg-red-100 hover:text-red-700 dark:text-red-400"
-                          title="無効化"
+                    </TableCell>
+                    <TableCell>
+                      {invitation.expiresAt ? (
+                        <span
+                          className={`text-sm ${statusStyles.text} ${
+                            isInactive || isExpired ? 'line-through' : ''
+                          }`}
                         >
-                          <Trash className="h-4 w-4" />
-                        </Button>
+                          {format(new Date(invitation.expiresAt), 'MM/dd', { locale: ja })}
+                        </span>
+                      ) : (
+                        <span className="text-sm text-muted-foreground">なし</span>
                       )}
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))
+                    </TableCell>
+                    <TableCell>
+                      <span
+                        className={`text-sm text-muted-foreground ${
+                          isInactive || isExpired ? 'line-through' : ''
+                        }`}
+                      >
+                        {format(new Date(invitation.createdAt), 'MM/dd HH:mm', { locale: ja })}
+                      </span>
+                    </TableCell>
+                  </TableRow>
+                );
+              })
             )}
           </TableBody>
         </Table>
       </div>
 
-      <InvitationModal isOpen={isModalOpen} onClose={handleCloseModal} onSave={handleSave} />
+      <InvitationModal
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        onSave={handleSave}
+        invitation={editingInvitation}
+        onDeactivate={handleDeactivate}
+      />
     </div>
   );
 }

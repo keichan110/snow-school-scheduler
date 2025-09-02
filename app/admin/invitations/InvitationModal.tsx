@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { Plus, Info, Calendar, Clock } from '@phosphor-icons/react';
+import { useState, useEffect } from 'react';
+import { Plus, Info, Calendar, Clock, Trash, Eye } from '@phosphor-icons/react';
 import {
   Drawer,
   DrawerClose,
@@ -17,25 +17,56 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Separator } from '@/components/ui/separator';
 import { format, addDays, addMonths } from 'date-fns';
-import type { InvitationFormData } from './types';
+import type { InvitationFormData, InvitationTokenWithStats } from './types';
 
 interface InvitationModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: (data: InvitationFormData) => Promise<void>;
+  invitation?: InvitationTokenWithStats | null;
+  onDeactivate?: (token: string) => Promise<void>;
 }
 
-export default function InvitationModal({ isOpen, onClose, onSave }: InvitationModalProps) {
+export default function InvitationModal({
+  isOpen,
+  onClose,
+  onSave,
+  invitation,
+  onDeactivate,
+}: InvitationModalProps) {
   const [formData, setFormData] = useState<InvitationFormData>({
     description: '',
     expiresAt: addDays(new Date(), 7), // デフォルト1週間
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const isEditing = !!invitation;
+
+  // 編集モードの場合は招待データで初期化
+  useEffect(() => {
+    if (invitation) {
+      setFormData({
+        description: invitation.description || '',
+        expiresAt: invitation.expiresAt ? new Date(invitation.expiresAt) : addDays(new Date(), 7),
+      });
+    } else {
+      setFormData({
+        description: '',
+        expiresAt: addDays(new Date(), 7),
+      });
+    }
+    setError(null);
+  }, [invitation]);
 
   const handleSubmit = async (e?: React.FormEvent) => {
     if (e) {
       e.preventDefault();
+    }
+
+    // 編集モードでは新規作成を無効化
+    if (isEditing) {
+      setError('編集モードでは新しい招待を作成できません');
+      return;
     }
 
     if (!formData.description.trim()) {
@@ -74,6 +105,23 @@ export default function InvitationModal({ isOpen, onClose, onSave }: InvitationM
     }
   };
 
+  const handleDeactivate = async () => {
+    if (!invitation || !onDeactivate) return;
+
+    if (window.confirm('この招待を無効化しますか？\nこの操作は取り消せません。')) {
+      try {
+        setIsSubmitting(true);
+        setError(null);
+        await onDeactivate(invitation.token);
+        onClose();
+      } catch (error) {
+        setError(error instanceof Error ? error.message : '招待の無効化に失敗しました');
+      } finally {
+        setIsSubmitting(false);
+      }
+    }
+  };
+
   const handleClose = () => {
     setFormData({
       description: '',
@@ -89,8 +137,17 @@ export default function InvitationModal({ isOpen, onClose, onSave }: InvitationM
         <div className="mx-auto w-full max-w-7xl">
           <DrawerHeader>
             <DrawerTitle className="flex items-center gap-2 text-2xl">
-              <Plus className="h-6 w-6" weight="regular" />
-              新規招待作成
+              {isEditing ? (
+                <>
+                  <Eye className="h-6 w-6" weight="regular" />
+                  招待詳細
+                </>
+              ) : (
+                <>
+                  <Plus className="h-6 w-6" weight="regular" />
+                  新規招待作成
+                </>
+              )}
             </DrawerTitle>
           </DrawerHeader>
 
@@ -117,11 +174,16 @@ export default function InvitationModal({ isOpen, onClose, onSave }: InvitationM
                     <Textarea
                       id="description"
                       value={formData.description}
-                      onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                      placeholder="招待の目的や対象者を記入してください"
-                      required
+                      onChange={
+                        isEditing
+                          ? undefined
+                          : (e) => setFormData({ ...formData, description: e.target.value })
+                      }
+                      placeholder={isEditing ? '' : '招待の目的や対象者を記入してください'}
+                      required={!isEditing}
                       rows={3}
                       className="resize-none"
+                      readOnly={isEditing}
                     />
                     <p className="text-xs text-muted-foreground">
                       この招待が何のためのものかを分かりやすく記述してください
@@ -148,14 +210,19 @@ export default function InvitationModal({ isOpen, onClose, onSave }: InvitationM
                       id="expiresAt"
                       type="date"
                       value={format(formData.expiresAt, 'yyyy-MM-dd')}
-                      onChange={(e) => {
-                        const date = new Date(e.target.value);
-                        setFormData({ ...formData, expiresAt: date });
-                      }}
-                      min={format(new Date(), 'yyyy-MM-dd')}
-                      max={format(addMonths(new Date(), 1), 'yyyy-MM-dd')}
-                      required
+                      onChange={
+                        isEditing
+                          ? undefined
+                          : (e) => {
+                              const date = new Date(e.target.value);
+                              setFormData({ ...formData, expiresAt: date });
+                            }
+                      }
+                      min={isEditing ? undefined : format(new Date(), 'yyyy-MM-dd')}
+                      max={isEditing ? undefined : format(addMonths(new Date(), 1), 'yyyy-MM-dd')}
+                      required={!isEditing}
                       className="w-full"
+                      readOnly={isEditing}
                     />
                     <div className="flex items-center gap-1 text-xs text-muted-foreground">
                       最大1ヶ月まで設定可能です
@@ -201,24 +268,52 @@ export default function InvitationModal({ isOpen, onClose, onSave }: InvitationM
             <div className="flex w-full gap-2">
               <DrawerClose asChild>
                 <Button type="button" variant="outline" disabled={isSubmitting} className="flex-1">
-                  キャンセル
+                  {isEditing ? '閉じる' : 'キャンセル'}
                 </Button>
               </DrawerClose>
-              <Button
-                type="submit"
-                form="invitation-form"
-                disabled={isSubmitting || !formData.description.trim()}
-                className="flex-1"
-              >
-                {isSubmitting ? (
-                  <>
-                    <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
-                    作成中...
-                  </>
-                ) : (
-                  '作成'
-                )}
-              </Button>
+
+              {isEditing ? (
+                // 編集モード：削除ボタンのみ表示
+                invitation &&
+                invitation.isActive && (
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    onClick={handleDeactivate}
+                    disabled={isSubmitting}
+                    className="flex-1"
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+                        無効化中...
+                      </>
+                    ) : (
+                      <>
+                        <Trash className="mr-2 h-4 w-4" weight="regular" />
+                        無効化
+                      </>
+                    )}
+                  </Button>
+                )
+              ) : (
+                // 新規作成モード：作成ボタン表示
+                <Button
+                  type="submit"
+                  form="invitation-form"
+                  disabled={isSubmitting || !formData.description.trim()}
+                  className="flex-1"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+                      作成中...
+                    </>
+                  ) : (
+                    '作成'
+                  )}
+                </Button>
+              )}
             </div>
           </DrawerFooter>
         </div>
