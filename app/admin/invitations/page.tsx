@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Plus, UserCheck, Eye, EyeSlash, CalendarX } from '@phosphor-icons/react';
+import { Plus, UserCheck, Eye, EyeSlash, CalendarX, Copy, CheckCircle } from '@phosphor-icons/react';
 import InvitationModal from './InvitationModal';
 import { fetchInvitations, createInvitation, deactivateInvitation } from './api';
 import { Button } from '@/components/ui/button';
@@ -39,6 +39,7 @@ export default function InvitationsPage() {
   const [editingInvitation, setEditingInvitation] = useState<InvitationTokenWithStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [copiedToken, setCopiedToken] = useState<string | null>(null);
 
   const loadInvitations = async () => {
     try {
@@ -130,6 +131,19 @@ export default function InvitationsPage() {
       setInvitations((prev) => [created, ...prev]);
     } catch (error) {
       throw error;
+    }
+  };
+
+  // 招待URLをコピーする関数
+  const handleCopyInvitationUrl = async (token: string) => {
+    try {
+      const baseUrl = window.location.origin;
+      const invitationUrl = `${baseUrl}/login?invite=${encodeURIComponent(token)}`;
+      await navigator.clipboard.writeText(invitationUrl);
+      setCopiedToken(token);
+      setTimeout(() => setCopiedToken(null), 2000);
+    } catch (error) {
+      console.error('クリップボードへのコピーに失敗しました:', error);
     }
   };
 
@@ -253,12 +267,13 @@ export default function InvitationsPage() {
               <TableHead className="min-w-[80px]">使用回数</TableHead>
               <TableHead className="min-w-[120px]">有効期限</TableHead>
               <TableHead className="min-w-[120px]">作成日時</TableHead>
+              <TableHead className="w-20 text-center">URL</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {filteredInvitations.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="py-8 text-center text-muted-foreground">
+                <TableCell colSpan={6} className="py-8 text-center text-muted-foreground">
                   {showActiveOnly ? '有効な招待がありません' : '招待が作成されていません'}
                 </TableCell>
               </TableRow>
@@ -297,15 +312,17 @@ export default function InvitationsPage() {
                 return (
                   <TableRow
                     key={invitation.token}
-                    className={`cursor-pointer transition-colors ${statusStyles.row} ${
+                    className={`transition-colors ${statusStyles.row} ${
                       isInactive || isExpired ? 'opacity-60' : ''
                     }`}
-                    onClick={() => handleOpenModal(invitation)}
                   >
                     <TableCell>
                       <StatusIcon className={`h-5 w-5 ${statusStyles.icon}`} weight="regular" />
                     </TableCell>
-                    <TableCell>
+                    <TableCell 
+                      className="cursor-pointer"
+                      onClick={() => handleOpenModal(invitation)}
+                    >
                       <p
                         className={`line-clamp-2 text-sm font-medium ${statusStyles.text} ${
                           isInactive || isExpired ? 'line-through' : ''
@@ -314,7 +331,10 @@ export default function InvitationsPage() {
                         {invitation.description || '説明なし'}
                       </p>
                     </TableCell>
-                    <TableCell>
+                    <TableCell 
+                      className="cursor-pointer"
+                      onClick={() => handleOpenModal(invitation)}
+                    >
                       <span
                         className={`font-mono text-sm ${statusStyles.text} ${
                           isInactive || isExpired ? 'line-through' : ''
@@ -323,7 +343,10 @@ export default function InvitationsPage() {
                         {invitation.usageCount}
                       </span>
                     </TableCell>
-                    <TableCell>
+                    <TableCell 
+                      className="cursor-pointer"
+                      onClick={() => handleOpenModal(invitation)}
+                    >
                       {invitation.expiresAt ? (
                         <span
                           className={`text-sm ${statusStyles.text} ${
@@ -336,7 +359,10 @@ export default function InvitationsPage() {
                         <span className="text-sm text-muted-foreground">なし</span>
                       )}
                     </TableCell>
-                    <TableCell>
+                    <TableCell 
+                      className="cursor-pointer"
+                      onClick={() => handleOpenModal(invitation)}
+                    >
                       <span
                         className={`text-sm text-muted-foreground ${
                           isInactive || isExpired ? 'line-through' : ''
@@ -344,6 +370,28 @@ export default function InvitationsPage() {
                       >
                         {format(new Date(invitation.createdAt), 'MM/dd HH:mm', { locale: ja })}
                       </span>
+                    </TableCell>
+                    <TableCell className="text-center">
+                      {invitation.isActive && !isExpired ? (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleCopyInvitationUrl(invitation.token);
+                          }}
+                          className="h-8 w-8 p-0"
+                          title="招待URLをコピー"
+                        >
+                          {copiedToken === invitation.token ? (
+                            <CheckCircle className="h-4 w-4 text-green-600" weight="fill" />
+                          ) : (
+                            <Copy className="h-4 w-4" weight="regular" />
+                          )}
+                        </Button>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">-</span>
+                      )}
                     </TableCell>
                   </TableRow>
                 );

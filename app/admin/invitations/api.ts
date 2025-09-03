@@ -54,13 +54,35 @@ export async function createInvitation(
     throw new Error(`招待の作成に失敗しました: ${response.status}`);
   }
 
-  const result: InvitationApiResponse<InvitationTokenWithStats> = await response.json();
+  // APIは InvitationUrlData 型を返すので、InvitationTokenWithStats 型に変換
+  const result: InvitationApiResponse<{
+    token: string;
+    invitationUrl: string;
+    expiresAt: string;
+    maxUses: number | null;
+    createdBy: string;
+  }> = await response.json();
 
   if (!result.success || !result.data) {
     throw new Error(result.error || '招待の作成に失敗しました');
   }
 
-  return result.data;
+  // APIレスポンスをフロントエンド用の型に変換
+  const apiData = result.data;
+  const convertedData: InvitationTokenWithStats = {
+    token: apiData.token,
+    description: data.description || '',
+    expiresAt: new Date(apiData.expiresAt),
+    isActive: true, // 新規作成時は必ずアクティブ
+    maxUses: apiData.maxUses,
+    usageCount: 0, // 新規作成時は使用回数0
+    remainingUses: apiData.maxUses || 0,
+    createdAt: new Date(),
+    createdBy: apiData.createdBy,
+    invitationUrl: apiData.invitationUrl, // 招待URLを含める
+  };
+
+  return convertedData;
 }
 
 /**

@@ -12,6 +12,7 @@ export interface InvitationTokenWithStats {
   remainingUses: number;
   createdAt: Date;
   createdBy: string;
+  invitationUrl?: string; // 新規作成時のみ含まれる
 }
 
 export interface CreateInvitationRequest {
