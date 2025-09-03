@@ -194,8 +194,6 @@ export default function InvitationModal({
 
               <Separator />
 
-
-
               {/* 有効期限設定 */}
               <div className="space-y-4">
                 <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">

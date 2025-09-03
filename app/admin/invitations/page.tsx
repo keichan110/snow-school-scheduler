@@ -1,9 +1,18 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Plus, UserCheck, Eye, EyeSlash, CalendarX, Copy, CheckCircle } from '@phosphor-icons/react';
+import {
+  Plus,
+  UserCheck,
+  Eye,
+  EyeSlash,
+  CalendarX,
+  Copy,
+  CheckCircle,
+} from '@phosphor-icons/react';
 import InvitationModal from './InvitationModal';
-import { fetchInvitations, createInvitation, deactivateInvitation } from './api';
+import InvitationWarningModal from './InvitationWarningModal';
+import { fetchInvitations, createInvitation, deactivateInvitation, checkActiveInvitation } from './api';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
@@ -40,6 +49,9 @@ export default function InvitationsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [copiedToken, setCopiedToken] = useState<string | null>(null);
+  const [warningModalOpen, setWarningModalOpen] = useState(false);
+  const [existingActiveInvitation, setExistingActiveInvitation] = useState<InvitationTokenWithStats | null>(null);
+  const [pendingFormData, setPendingFormData] = useState<InvitationFormData | null>(null);
 
   const loadInvitations = async () => {
     try {
@@ -122,16 +134,57 @@ export default function InvitationsPage() {
 
   const handleSave = async (data: InvitationFormData) => {
     try {
-      const requestData: CreateInvitationRequest = {
-        description: data.description,
-        expiresAt: data.expiresAt.toISOString(),
-      };
+      // 有効な招待が存在するかチェック
+      const activeInvitation = await checkActiveInvitation();
+      
+      if (activeInvitation) {
+        // 有効な招待が存在する場合は警告モーダルを表示
+        setExistingActiveInvitation(activeInvitation);
+        setPendingFormData(data);
+        setWarningModalOpen(true);
+        return; // ここで処理を中断し、ユーザーの確認を待つ
+      }
 
-      const created = await createInvitation(requestData);
-      setInvitations((prev) => [created, ...prev]);
+      // 有効な招待が存在しない場合は直接作成
+      await executeInvitationCreation(data);
     } catch (error) {
       throw error;
     }
+  };
+
+  // 実際の招待作成処理
+  const executeInvitationCreation = async (data: InvitationFormData) => {
+    const requestData: CreateInvitationRequest = {
+      description: data.description,
+      expiresAt: data.expiresAt.toISOString(),
+    };
+
+    await createInvitation(requestData);
+    // 招待作成後はサーバーから最新データを再読み込み
+    // （既存の有効な招待が無効化されているため）
+    await loadInvitations();
+  };
+
+  // 警告モーダルで確認された場合の処理
+  const handleConfirmReplacement = async () => {
+    if (!pendingFormData) return;
+
+    try {
+      await executeInvitationCreation(pendingFormData);
+      setWarningModalOpen(false);
+      setPendingFormData(null);
+      setExistingActiveInvitation(null);
+    } catch (error) {
+      // エラーはInvitationModalで処理される
+      throw error;
+    }
+  };
+
+  // 警告モーダルをキャンセルした場合の処理
+  const handleCancelReplacement = () => {
+    setWarningModalOpen(false);
+    setPendingFormData(null);
+    setExistingActiveInvitation(null);
   };
 
   // 招待URLをコピーする関数
@@ -150,9 +203,8 @@ export default function InvitationsPage() {
   const handleDeactivate = async (token: string) => {
     try {
       await deactivateInvitation(token);
-      setInvitations((prev) =>
-        prev.map((inv) => (inv.token === token ? { ...inv, isActive: false } : inv))
-      );
+      // 無効化後はサーバーから最新データを再読み込み
+      await loadInvitations();
     } catch {
       console.error('招待の無効化に失敗しました');
     }
@@ -319,7 +371,7 @@ export default function InvitationsPage() {
                     <TableCell>
                       <StatusIcon className={`h-5 w-5 ${statusStyles.icon}`} weight="regular" />
                     </TableCell>
-                    <TableCell 
+                    <TableCell
                       className="cursor-pointer"
                       onClick={() => handleOpenModal(invitation)}
                     >
@@ -331,7 +383,7 @@ export default function InvitationsPage() {
                         {invitation.description || '説明なし'}
                       </p>
                     </TableCell>
-                    <TableCell 
+                    <TableCell
                       className="cursor-pointer"
                       onClick={() => handleOpenModal(invitation)}
                     >
@@ -343,7 +395,7 @@ export default function InvitationsPage() {
                         {invitation.usageCount}
                       </span>
                     </TableCell>
-                    <TableCell 
+                    <TableCell
                       className="cursor-pointer"
                       onClick={() => handleOpenModal(invitation)}
                     >
@@ -359,7 +411,7 @@ export default function InvitationsPage() {
                         <span className="text-sm text-muted-foreground">なし</span>
                       )}
                     </TableCell>
-                    <TableCell 
+                    <TableCell
                       className="cursor-pointer"
                       onClick={() => handleOpenModal(invitation)}
                     >
@@ -408,6 +460,16 @@ export default function InvitationsPage() {
         invitation={editingInvitation}
         onDeactivate={handleDeactivate}
       />
+
+      {/* 警告モーダル */}
+      {existingActiveInvitation && (
+        <InvitationWarningModal
+          isOpen={warningModalOpen}
+          onClose={handleCancelReplacement}
+          onConfirm={handleConfirmReplacement}
+          existingInvitation={existingActiveInvitation}
+        />
+      )}
     </div>
   );
 }

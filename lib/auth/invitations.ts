@@ -155,29 +155,46 @@ export async function createInvitationToken(
       return date;
     })();
 
-  // データベースに保存
-  const invitationToken = await prisma.invitationToken.create({
-    data: {
-      token,
-      ...(description && { description }),
-      expiresAt: finalExpiresAt,
-      createdBy,
-      maxUses: null, // 使用回数制限なし
-      usedCount: 0,
-      isActive: true,
-    },
-    include: {
-      creator: {
-        select: {
-          id: true,
-          displayName: true,
-          role: true,
+  // 既存の有効な招待を無効化してから新しい招待を作成（トランザクションで実行）
+  const invitationToken = await prisma.$transaction(async (tx) => {
+    // 既存の有効な招待を無効化
+    await tx.invitationToken.updateMany({
+      where: {
+        isActive: true,
+        expiresAt: {
+          gt: new Date(), // 有効期限が現在時刻より後の招待のみ
         },
       },
-    },
+      data: {
+        isActive: false,
+        updatedAt: new Date(),
+      },
+    });
+
+    // 新しい招待を作成
+    return await tx.invitationToken.create({
+      data: {
+        token,
+        ...(description && { description }),
+        expiresAt: finalExpiresAt,
+        createdBy,
+        maxUses: null, // 使用回数制限なし
+        usedCount: 0,
+        isActive: true,
+      },
+      include: {
+        creator: {
+          select: {
+            id: true,
+            displayName: true,
+            role: true,
+          },
+        },
+      },
+    });
   });
 
-  console.log('✅ Invitation token created:', {
+  console.log('✅ Invitation token created (previous active tokens deactivated):', {
     token: token.substring(0, 16) + '...',
     createdBy: creator.displayName,
     expiresAt: finalExpiresAt.toISOString(),

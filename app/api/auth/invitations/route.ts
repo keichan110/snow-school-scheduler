@@ -114,7 +114,7 @@ export async function POST(
       expiresAt: expiresAt,
     };
 
-    // 招待トークン生成
+    // 招待トークン生成（内部で既存の有効招待を自動無効化）
     const invitationToken = await createInvitationToken(createParams);
 
     // ベースURLの取得（環境変数または リクエストヘッダーから）

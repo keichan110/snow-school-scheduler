@@ -11,6 +11,34 @@ import type {
 const API_BASE_URL = '/api/auth/invitations';
 
 /**
+ * 有効な招待の存在をチェック
+ */
+export async function checkActiveInvitation(): Promise<InvitationTokenWithStats | null> {
+  const response = await fetch(`${API_BASE_URL}/active`, {
+    method: 'GET',
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (!response.ok) {
+    if (response.status === 404) {
+      return null; // 有効な招待が存在しない
+    }
+    throw new Error(`有効な招待のチェックに失敗しました: ${response.status}`);
+  }
+
+  const result: InvitationApiResponse<InvitationTokenWithStats> = await response.json();
+
+  if (!result.success) {
+    throw new Error(result.error || '有効な招待のチェックに失敗しました');
+  }
+
+  return result.data || null;
+}
+
+/**
  * 招待トークン一覧取得
  */
 export async function fetchInvitations(): Promise<InvitationTokenWithStats[]> {
