@@ -1,12 +1,7 @@
 'use client';
 
 import { Warning, CalendarX, Info } from '@phosphor-icons/react';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { format } from 'date-fns';
@@ -39,12 +34,15 @@ export default function InvitationWarningModal({
         </DialogHeader>
 
         <div className="space-y-6">
-          {/* 警告メッセージ */}
+
           <div className="rounded-lg bg-amber-50 p-4 dark:bg-amber-950/20">
             <div className="flex items-start gap-3">
-              <Info className="h-5 w-5 text-amber-600 dark:text-amber-400 mt-0.5" weight="regular" />
+              <Info
+                className="mt-0.5 h-5 w-5 text-amber-600 dark:text-amber-400"
+                weight="regular"
+              />
               <div className="text-sm text-amber-800 dark:text-amber-200">
-                <p className="font-medium mb-1">現在有効な招待があります</p>
+                <p className="mb-1 font-medium">現在有効な招待があります</p>
                 <p>
                   新しい招待を作成すると、既存の有効な招待は自動的に無効化されます。
                   無効化された招待URLは使用できなくなります。
@@ -55,10 +53,10 @@ export default function InvitationWarningModal({
 
           <Separator />
 
-          {/* 既存招待の詳細 */}
+
           <div className="space-y-4">
             <h4 className="text-sm font-medium text-muted-foreground">無効化される招待</h4>
-            
+
             <div className="rounded-lg border bg-gray-50 p-4 dark:bg-gray-800/50">
               <div className="space-y-3">
                 <div>
@@ -66,27 +64,26 @@ export default function InvitationWarningModal({
                     {existingInvitation.description || '説明なし'}
                   </p>
                 </div>
-                
+
                 <div className="flex items-center justify-between text-sm text-muted-foreground">
                   <div className="flex items-center gap-2">
                     <CalendarX className="h-4 w-4" weight="regular" />
                     <span>有効期限</span>
                   </div>
                   <span>
-                    {existingInvitation.expiresAt 
-                      ? format(new Date(existingInvitation.expiresAt), 'MM月dd日 HH:mm', { locale: ja })
-                      : 'なし'
-                    }
+                    {existingInvitation.expiresAt
+                      ? format(new Date(existingInvitation.expiresAt), 'MM月dd日 HH:mm', {
+                          locale: ja,
+                        })
+                      : 'なし'}
                   </span>
                 </div>
-                
+
                 <div className="flex items-center justify-between text-sm text-muted-foreground">
                   <span>使用回数</span>
-                  <span className="font-mono">
-                    {existingInvitation.usageCount || 0}回
-                  </span>
+                  <span className="font-mono">{existingInvitation.usageCount || 0}回</span>
                 </div>
-                
+
                 <div className="flex items-center justify-between text-sm text-muted-foreground">
                   <span>作成者</span>
                   <span>{existingInvitation.createdBy}</span>
@@ -97,7 +94,7 @@ export default function InvitationWarningModal({
 
           <Separator />
 
-          {/* 注意事項 */}
+
           <div className="rounded-lg bg-red-50 p-4 dark:bg-red-950/20">
             <h4 className="mb-2 flex items-center gap-2 text-sm font-medium text-red-900 dark:text-red-100">
               <Warning className="h-4 w-4" weight="regular" />
@@ -110,17 +107,12 @@ export default function InvitationWarningModal({
             </ul>
           </div>
 
-          {/* アクション */}
+
           <div className="flex gap-2">
-            <Button 
-              variant="outline" 
-              onClick={onClose}
-              disabled={isSubmitting}
-              className="flex-1"
-            >
+            <Button variant="outline" onClick={onClose} disabled={isSubmitting} className="flex-1">
               キャンセル
             </Button>
-            <Button 
+            <Button
               onClick={onConfirm}
               disabled={isSubmitting}
               className="flex-1 bg-amber-600 hover:bg-amber-700"

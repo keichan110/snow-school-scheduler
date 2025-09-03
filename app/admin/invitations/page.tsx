@@ -12,7 +12,12 @@ import {
 } from '@phosphor-icons/react';
 import InvitationModal from './InvitationModal';
 import InvitationWarningModal from './InvitationWarningModal';
-import { fetchInvitations, createInvitation, deactivateInvitation, checkActiveInvitation } from './api';
+import {
+  fetchInvitations,
+  createInvitation,
+  deactivateInvitation,
+  checkActiveInvitation,
+} from './api';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
@@ -50,7 +55,8 @@ export default function InvitationsPage() {
   const [error, setError] = useState<string | null>(null);
   const [copiedToken, setCopiedToken] = useState<string | null>(null);
   const [warningModalOpen, setWarningModalOpen] = useState(false);
-  const [existingActiveInvitation, setExistingActiveInvitation] = useState<InvitationTokenWithStats | null>(null);
+  const [existingActiveInvitation, setExistingActiveInvitation] =
+    useState<InvitationTokenWithStats | null>(null);
   const [pendingFormData, setPendingFormData] = useState<InvitationFormData | null>(null);
 
   const loadInvitations = async () => {
@@ -134,25 +140,20 @@ export default function InvitationsPage() {
 
   const handleSave = async (data: InvitationFormData) => {
     try {
-      // 有効な招待が存在するかチェック
       const activeInvitation = await checkActiveInvitation();
-      
+
       if (activeInvitation) {
-        // 有効な招待が存在する場合は警告モーダルを表示
         setExistingActiveInvitation(activeInvitation);
         setPendingFormData(data);
         setWarningModalOpen(true);
-        return; // ここで処理を中断し、ユーザーの確認を待つ
+        return; // ユーザー確認待ち
       }
-
-      // 有効な招待が存在しない場合は直接作成
       await executeInvitationCreation(data);
     } catch (error) {
       throw error;
     }
   };
 
-  // 実際の招待作成処理
   const executeInvitationCreation = async (data: InvitationFormData) => {
     const requestData: CreateInvitationRequest = {
       description: data.description,
@@ -160,12 +161,9 @@ export default function InvitationsPage() {
     };
 
     await createInvitation(requestData);
-    // 招待作成後はサーバーから最新データを再読み込み
-    // （既存の有効な招待が無効化されているため）
-    await loadInvitations();
+    await loadInvitations(); // 既存招待の無効化を反映
   };
 
-  // 警告モーダルで確認された場合の処理
   const handleConfirmReplacement = async () => {
     if (!pendingFormData) return;
 
@@ -175,19 +173,17 @@ export default function InvitationsPage() {
       setPendingFormData(null);
       setExistingActiveInvitation(null);
     } catch (error) {
-      // エラーはInvitationModalで処理される
       throw error;
     }
   };
 
-  // 警告モーダルをキャンセルした場合の処理
   const handleCancelReplacement = () => {
     setWarningModalOpen(false);
     setPendingFormData(null);
     setExistingActiveInvitation(null);
   };
 
-  // 招待URLをコピーする関数
+
   const handleCopyInvitationUrl = async (token: string) => {
     try {
       const baseUrl = window.location.origin;
@@ -335,7 +331,7 @@ export default function InvitationsPage() {
                 const isExpired = invitation.expiresAt && new Date(invitation.expiresAt) < now;
                 const isInactive = !invitation.isActive;
 
-                // ステータス別の背景色とアイコンの設定
+
                 let statusStyles;
                 let StatusIcon;
                 if (isInactive) {
@@ -461,7 +457,7 @@ export default function InvitationsPage() {
         onDeactivate={handleDeactivate}
       />
 
-      {/* 警告モーダル */}
+
       {existingActiveInvitation && (
         <InvitationWarningModal
           isOpen={warningModalOpen}

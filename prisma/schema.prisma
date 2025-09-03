@@ -1,7 +1,3 @@
-// スキー・スノーボードスクールのシフト管理システム
-// Prisma スキーマ定義
-// docs/db.md に基づいて設計
-
 generator client {
   provider = "prisma-client-js"
   output   = "../generated/prisma"
@@ -12,23 +8,17 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ============================================
-// 部門管理
-// ============================================
-
 /// 部門テーブル（スキー・スノーボード等の部門を管理）
 model Department {
-  id           Int     @id @default(autoincrement())
-  code         String  @unique
-  name         String
-  description  String?
-  isActive     Boolean @default(true) @map("is_active")
-  createdAt    DateTime @default(now()) @map("created_at")
-  updatedAt    DateTime @updatedAt @map("updated_at")
-
-  // リレーション
+  id             Int             @id @default(autoincrement())
+  code           String          @unique
+  name           String
+  description    String?
+  isActive       Boolean         @default(true) @map("is_active")
+  createdAt      DateTime        @default(now()) @map("created_at")
+  updatedAt      DateTime        @updatedAt @map("updated_at")
   certifications Certification[]
-  shifts        Shift[]
+  shifts         Shift[]
 
   @@index([isActive], map: "idx_departments_active")
   @@map("departments")
@@ -36,18 +26,16 @@ model Department {
 
 /// 資格テーブル（インストラクター資格を管理）
 model Certification {
-  id           Int     @id @default(autoincrement())
-  departmentId Int     @map("department_id")
-  name         String
-  shortName    String @map("short_name")
-  organization String
-  description  String?
-  isActive     Boolean @default(true) @map("is_active")
-  createdAt    DateTime @default(now()) @map("created_at")
-  updatedAt    DateTime @updatedAt @map("updated_at")
-
-  // リレーション
-  department              Department                @relation(fields: [departmentId], references: [id])
+  id                       Int                       @id @default(autoincrement())
+  departmentId             Int                       @map("department_id")
+  name                     String
+  shortName                String                    @map("short_name")
+  organization             String
+  description              String?
+  isActive                 Boolean                   @default(true) @map("is_active")
+  createdAt                DateTime                  @default(now()) @map("created_at")
+  updatedAt                DateTime                  @updatedAt @map("updated_at")
+  department               Department                @relation(fields: [departmentId], references: [id])
   instructorCertifications InstructorCertification[]
 
   @@index([departmentId], map: "idx_certifications_department_id")
@@ -56,23 +44,17 @@ model Certification {
   @@map("certifications")
 }
 
-// ============================================
-// インストラクター管理
-// ============================================
-
 /// インストラクターテーブル（インストラクター基本情報を管理）
 model Instructor {
-  id            Int     @id @default(autoincrement())
-  lastName      String  @map("last_name")
-  firstName     String  @map("first_name")
-  lastNameKana  String? @map("last_name_kana")
-  firstNameKana String? @map("first_name_kana")
-  status        InstructorStatus @default(ACTIVE)
-  notes         String?
-  createdAt     DateTime @default(now()) @map("created_at")
-  updatedAt     DateTime @updatedAt @map("updated_at")
-
-  // リレーション
+  id               Int                       @id @default(autoincrement())
+  lastName         String                    @map("last_name")
+  firstName        String                    @map("first_name")
+  lastNameKana     String?                   @map("last_name_kana")
+  firstNameKana    String?                   @map("first_name_kana")
+  status           String                    @default("ACTIVE")
+  notes            String?
+  createdAt        DateTime                  @default(now()) @map("created_at")
+  updatedAt        DateTime                  @updatedAt @map("updated_at")
   certifications   InstructorCertification[]
   shiftAssignments ShiftAssignment[]
 
@@ -85,34 +67,21 @@ model Instructor {
   @@map("instructors")
 }
 
-/// インストラクターステータス列挙型
-enum InstructorStatus {
-  ACTIVE
-  INACTIVE
-  RETIRED
-}
-
 /// インストラクター資格関連テーブル（多対多の中間テーブル）
 model InstructorCertification {
-  id              Int     @id @default(autoincrement())
-  instructorId    Int     @map("instructor_id")
-  certificationId Int     @map("certification_id")
-  createdAt       DateTime @default(now()) @map("created_at")
-  updatedAt       DateTime @updatedAt @map("updated_at")
-
-  // リレーション
-  instructor    Instructor    @relation(fields: [instructorId], references: [id], onDelete: Cascade)
-  certification Certification @relation(fields: [certificationId], references: [id], onDelete: Cascade)
+  id              Int           @id @default(autoincrement())
+  instructorId    Int           @map("instructor_id")
+  certificationId Int           @map("certification_id")
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
+  certification   Certification @relation(fields: [certificationId], references: [id], onDelete: Cascade)
+  instructor      Instructor    @relation(fields: [instructorId], references: [id], onDelete: Cascade)
 
   @@unique([instructorId, certificationId], map: "idx_instructor_cert_unique")
   @@index([instructorId], map: "idx_instructor_cert_instructor_id")
   @@index([certificationId], map: "idx_instructor_cert_certification_id")
   @@map("instructor_certifications")
 }
-
-// ============================================
-// シフト管理
-// ============================================
 
 /// シフト種類テーブル（シフトの種類を管理するマスタ）
 model ShiftType {
@@ -121,9 +90,7 @@ model ShiftType {
   isActive  Boolean  @default(true) @map("is_active")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
-
-  // リレーション
-  shifts Shift[]
+  shifts    Shift[]
 
   @@index([isActive], map: "idx_shift_types_active")
   @@map("shift_types")
@@ -131,20 +98,17 @@ model ShiftType {
 
 /// シフトテーブル（シフト枠を管理）
 model Shift {
-  id            Int      @id @default(autoincrement())
-  date          DateTime
-  departmentId  Int      @map("department_id")
-  shiftTypeId   Int      @map("shift_type_id")
-  description   String?
-  createdAt     DateTime @default(now()) @map("created_at")
-  updatedAt     DateTime @updatedAt @map("updated_at")
-
-  // リレーション
-  department       Department        @relation(fields: [departmentId], references: [id])
-  shiftType        ShiftType         @relation(fields: [shiftTypeId], references: [id])
+  id               Int               @id @default(autoincrement())
+  date             DateTime
+  departmentId     Int               @map("department_id")
+  shiftTypeId      Int               @map("shift_type_id")
+  description      String?
+  createdAt        DateTime          @default(now()) @map("created_at")
+  updatedAt        DateTime          @updatedAt @map("updated_at")
   shiftAssignments ShiftAssignment[]
+  shiftType        ShiftType         @relation(fields: [shiftTypeId], references: [id])
+  department       Department        @relation(fields: [departmentId], references: [id])
 
-  // 重複防止制約: 同じ日付・部門・シフト種別のシフトは1つまで
   @@unique([date, departmentId, shiftTypeId], name: "unique_shift_per_day")
   @@index([departmentId], map: "idx_shifts_department_id")
   @@index([shiftTypeId], map: "idx_shifts_shift_type_id")
@@ -158,14 +122,12 @@ model Shift {
 
 /// シフト割り当てテーブル（シフトとインストラクターの多対多関係を管理）
 model ShiftAssignment {
-  id           Int      @id @default(autoincrement())
-  shiftId      Int      @map("shift_id")
-  instructorId Int      @map("instructor_id")
-  assignedAt   DateTime @default(now()) @map("assigned_at")
-
-  // リレーション
-  shift      Shift      @relation(fields: [shiftId], references: [id], onDelete: Cascade)
-  instructor Instructor @relation(fields: [instructorId], references: [id], onDelete: Cascade)
+  id           Int        @id @default(autoincrement())
+  shiftId      Int        @map("shift_id")
+  instructorId Int        @map("instructor_id")
+  assignedAt   DateTime   @default(now()) @map("assigned_at")
+  instructor   Instructor @relation(fields: [instructorId], references: [id], onDelete: Cascade)
+  shift        Shift      @relation(fields: [shiftId], references: [id], onDelete: Cascade)
 
   @@unique([shiftId, instructorId], map: "idx_shift_assignment_unique")
   @@index([shiftId], map: "idx_shift_assignments_shift_id")
@@ -177,21 +139,15 @@ model ShiftAssignment {
   @@map("shift_assignments")
 }
 
-// ============================================
-// 認証・権限管理 (Authentication & Authorization)
-// ============================================
-
 /// ユーザー認証・権限管理テーブル
 model User {
-  id           String   @id @default(cuid())
-  lineUserId   String   @unique @map("line_user_id")
-  displayName  String   @map("display_name")
-  role         UserRole @default(MEMBER)
-  isActive     Boolean  @default(true) @map("is_active")
-  createdAt    DateTime @default(now()) @map("created_at")
-  updatedAt    DateTime @updatedAt @map("updated_at")
-
-  // リレーション
+  id                 String            @id @default(cuid())
+  lineUserId         String            @unique @map("line_user_id")
+  displayName        String            @map("display_name")
+  role               String            @default("MEMBER")
+  isActive           Boolean           @default(true) @map("is_active")
+  createdAt          DateTime          @default(now()) @map("created_at")
+  updatedAt          DateTime          @updatedAt @map("updated_at")
   createdInvitations InvitationToken[] @relation("CreatedBy")
 
   @@index([lineUserId], map: "idx_users_line_user_id")
@@ -201,17 +157,9 @@ model User {
   @@map("users")
 }
 
-/// ユーザー権限列挙型
-enum UserRole {
-  ADMIN   /// 管理者: 全機能アクセス可能、ユーザー管理・招待URL管理
-  MANAGER /// マネージャー: 既存のシフト管理機能をアクセス可能
-  MEMBER  /// メンバー: シフト表閲覧のみ
-}
-
 /// 招待URL管理テーブル
 model InvitationToken {
   token       String   @id
-  description String?  // 招待の説明（任意）
   expiresAt   DateTime @map("expires_at")
   isActive    Boolean  @default(true) @map("is_active")
   createdBy   String   @map("created_by")
@@ -219,9 +167,8 @@ model InvitationToken {
   usedCount   Int      @default(0) @map("used_count")
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
-
-  // リレーション
-  creator User @relation("CreatedBy", fields: [createdBy], references: [id])
+  description String?
+  creator     User     @relation("CreatedBy", fields: [createdBy], references: [id])
 
   @@index([expiresAt], map: "idx_invitation_tokens_expires_at")
   @@index([isActive], map: "idx_invitation_tokens_active")

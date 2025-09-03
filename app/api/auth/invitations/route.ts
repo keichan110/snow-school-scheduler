@@ -263,6 +263,7 @@ export async function GET(
 
       return {
         token: token.token,
+        description: token.description || '', // 修正: descriptionフィールドを追加
         expiresAt: token.expiresAt.toISOString(),
         isActive: token.isActive,
         maxUses: token.maxUses,

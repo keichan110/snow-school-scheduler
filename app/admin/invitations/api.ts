@@ -10,9 +10,7 @@ import type {
 
 const API_BASE_URL = '/api/auth/invitations';
 
-/**
- * 有効な招待の存在をチェック
- */
+
 export async function checkActiveInvitation(): Promise<InvitationTokenWithStats | null> {
   const response = await fetch(`${API_BASE_URL}/active`, {
     method: 'GET',
@@ -24,7 +22,7 @@ export async function checkActiveInvitation(): Promise<InvitationTokenWithStats 
 
   if (!response.ok) {
     if (response.status === 404) {
-      return null; // 有効な招待が存在しない
+      return null;
     }
     throw new Error(`有効な招待のチェックに失敗しました: ${response.status}`);
   }
@@ -38,9 +36,7 @@ export async function checkActiveInvitation(): Promise<InvitationTokenWithStats 
   return result.data || null;
 }
 
-/**
- * 招待トークン一覧取得
- */
+
 export async function fetchInvitations(): Promise<InvitationTokenWithStats[]> {
   const response = await fetch(API_BASE_URL, {
     method: 'GET',
@@ -54,18 +50,44 @@ export async function fetchInvitations(): Promise<InvitationTokenWithStats[]> {
     throw new Error(`招待一覧の取得に失敗しました: ${response.status}`);
   }
 
-  const result: InvitationApiResponse<InvitationTokenWithStats[]> = await response.json();
+  const result: InvitationApiResponse<
+    {
+      token: string;
+      description: string;
+      expiresAt: string;
+      isActive: boolean;
+      maxUses: number | null;
+      usedCount: number;
+      createdAt: string;
+      createdBy: string;
+      creatorName: string;
+      creatorRole: string;
+      isExpired: boolean;
+      remainingUses: number | null;
+    }[]
+  > = await response.json();
 
   if (!result.success || !result.data) {
     throw new Error(result.error || '招待一覧の取得に失敗しました');
   }
 
-  return result.data;
+  // APIレスポンスをフロントエンド用の型に変換
+  const convertedData: InvitationTokenWithStats[] = result.data.map((item) => ({
+    token: item.token,
+    description: item.description,
+    expiresAt: new Date(item.expiresAt),
+    isActive: item.isActive,
+    maxUses: item.maxUses,
+    usageCount: item.usedCount,
+    remainingUses: item.remainingUses || 0, // null を 0 に変換
+    createdAt: new Date(item.createdAt),
+    createdBy: item.creatorName,
+  }));
+
+  return convertedData;
 }
 
-/**
- * 招待トークン作成
- */
+
 export async function createInvitation(
   data: CreateInvitationRequest
 ): Promise<InvitationTokenWithStats> {
@@ -82,7 +104,7 @@ export async function createInvitation(
     throw new Error(`招待の作成に失敗しました: ${response.status}`);
   }
 
-  // APIは InvitationUrlData 型を返すので、InvitationTokenWithStats 型に変換
+  // APIレスポンスをフロントエンド用の型に変換
   const result: InvitationApiResponse<{
     token: string;
     invitationUrl: string;
@@ -101,21 +123,19 @@ export async function createInvitation(
     token: apiData.token,
     description: data.description || '',
     expiresAt: new Date(apiData.expiresAt),
-    isActive: true, // 新規作成時は必ずアクティブ
+    isActive: true,
     maxUses: apiData.maxUses,
-    usageCount: 0, // 新規作成時は使用回数0
-    remainingUses: apiData.maxUses || 0,
+    usageCount: 0,
+    remainingUses: apiData.maxUses || 0, // null を 0 に変換
     createdAt: new Date(),
     createdBy: apiData.createdBy,
-    invitationUrl: apiData.invitationUrl, // 招待URLを含める
+    invitationUrl: apiData.invitationUrl,
   };
 
   return convertedData;
 }
 
-/**
- * 招待トークン無効化
- */
+
 export async function deactivateInvitation(token: string): Promise<void> {
   const response = await fetch(`${API_BASE_URL}/${token}`, {
     method: 'DELETE',

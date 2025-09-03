@@ -42,7 +42,7 @@ export default function InvitationModal({
   const [error, setError] = useState<string | null>(null);
   const isEditing = !!invitation;
 
-  // 編集モードの場合は招待データで初期化
+
   useEffect(() => {
     if (invitation) {
       setFormData({
@@ -63,7 +63,7 @@ export default function InvitationModal({
       e.preventDefault();
     }
 
-    // 編集モードでは新規作成を無効化
+
     if (isEditing) {
       setError('編集モードでは新しい招待を作成できません');
       return;
@@ -74,7 +74,7 @@ export default function InvitationModal({
       return;
     }
 
-    // 有効期限のバリデーション（最大1ヶ月）
+
     const maxExpiryDate = addMonths(new Date(), 1);
     if (formData.expiresAt > maxExpiryDate) {
       setError('有効期限は最大1ヶ月までです');
@@ -94,7 +94,7 @@ export default function InvitationModal({
 
       setFormData({
         description: '',
-        expiresAt: addDays(new Date(), 7), // デフォルト1週間
+        expiresAt: addDays(new Date(), 7),
       });
 
       onClose();
@@ -125,7 +125,7 @@ export default function InvitationModal({
   const handleClose = () => {
     setFormData({
       description: '',
-      expiresAt: addDays(new Date(), 7), // デフォルト1週間
+      expiresAt: addDays(new Date(), 7),
     });
     setError(null);
     onClose();
@@ -159,7 +159,7 @@ export default function InvitationModal({
                 </div>
               )}
 
-              {/* 基本情報 */}
+
               <div className="space-y-4">
                 <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
                   <Info className="h-4 w-4" weight="regular" />
@@ -194,7 +194,7 @@ export default function InvitationModal({
 
               <Separator />
 
-              {/* 有効期限設定 */}
+
               <div className="space-y-4">
                 <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
                   <Calendar className="h-4 w-4" weight="regular" />
@@ -246,7 +246,7 @@ export default function InvitationModal({
 
               <Separator />
 
-              {/* 注意事項 */}
+
               <div className="space-y-4">
                 <div className="rounded-lg bg-blue-50 p-4 dark:bg-blue-950/20">
                   <h4 className="mb-2 flex items-center gap-2 text-sm font-medium text-blue-900 dark:text-blue-100">
@@ -273,7 +273,7 @@ export default function InvitationModal({
               </DrawerClose>
 
               {isEditing ? (
-                // 編集モード：削除ボタンのみ表示
+
                 invitation &&
                 invitation.isActive && (
                   <Button
@@ -297,7 +297,7 @@ export default function InvitationModal({
                   </Button>
                 )
               ) : (
-                // 新規作成モード：作成ボタン表示
+
                 <Button
                   type="submit"
                   form="invitation-form"

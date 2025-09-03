@@ -5,28 +5,25 @@ import { ApiResponse } from '@/lib/auth/types';
 
 /**
  * 有効な招待チェックAPI
- *
  * GET /api/auth/invitations/active
- * - 現在有効な招待があるかチェック
- * - 管理者・マネージャーのみアクセス可能
- *
- * @returns 有効な招待がある場合は招待データ、ない場合は404
  */
-export async function GET(
-  request: NextRequest
-): Promise<NextResponse<ApiResponse<{
-  token: string;
-  description: string;
-  expiresAt: Date;
-  isActive: boolean;
-  maxUses: number | null;
-  usageCount: number;
-  remainingUses: number | null;
-  createdAt: Date;
-  createdBy: string;
-}>>> {
+export async function GET(request: NextRequest): Promise<
+  NextResponse<
+    ApiResponse<{
+      token: string;
+      description: string;
+      expiresAt: Date;
+      isActive: boolean;
+      maxUses: number | null;
+      usageCount: number;
+      remainingUses: number | null;
+      createdAt: Date;
+      createdBy: string;
+    }>
+  >
+> {
   try {
-    // 認証トークン取得
+
     const { getAuthTokenFromRequest } = await import('@/lib/auth/middleware');
     const token = getAuthTokenFromRequest(request);
 
@@ -46,7 +43,7 @@ export async function GET(
       );
     }
 
-    // 権限チェック - ADMIN または MANAGER のみ許可
+
     if (user.role !== 'ADMIN' && user.role !== 'MANAGER') {
       return NextResponse.json(
         { success: false, error: 'Insufficient permissions. Admin or Manager role required.' },
@@ -54,7 +51,7 @@ export async function GET(
       );
     }
 
-    // アクティブユーザーチェック
+
     if (!user.isActive) {
       return NextResponse.json(
         { success: false, error: 'User account is inactive' },
@@ -62,10 +59,10 @@ export async function GET(
       );
     }
 
-    // 現在時刻
+
     const now = new Date();
 
-    // 有効な招待をチェック
+
     const activeInvitation = await prisma.invitationToken.findFirst({
       where: {
         isActive: true,
@@ -91,7 +88,7 @@ export async function GET(
       );
     }
 
-    // フロントエンド用の形式に変換
+
     const responseData = {
       token: activeInvitation.token,
       description: activeInvitation.description || '',
@@ -99,7 +96,9 @@ export async function GET(
       isActive: activeInvitation.isActive,
       maxUses: activeInvitation.maxUses,
       usageCount: activeInvitation.usedCount,
-      remainingUses: activeInvitation.maxUses ? activeInvitation.maxUses - activeInvitation.usedCount : null,
+      remainingUses: activeInvitation.maxUses
+        ? activeInvitation.maxUses - activeInvitation.usedCount
+        : null,
       createdAt: activeInvitation.createdAt,
       createdBy: activeInvitation.creator.displayName,
     };
@@ -111,10 +110,7 @@ export async function GET(
       usedCount: activeInvitation.usedCount,
     });
 
-    return NextResponse.json(
-      { success: true, data: responseData },
-      { status: 200 }
-    );
+    return NextResponse.json({ success: true, data: responseData }, { status: 200 });
   } catch (error) {
     console.error('❌ Active invitation check failed:', error);
 

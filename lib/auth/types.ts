@@ -17,6 +17,7 @@ export interface InvitationUrlData {
 // 招待URL一覧取得APIのレスポンス型
 export interface InvitationListItem {
   token: string;
+  description: string; // 修正: descriptionフィールドを追加
   expiresAt: string;
   isActive: boolean;
   maxUses: number | null;

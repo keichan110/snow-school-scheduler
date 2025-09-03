@@ -38,6 +38,7 @@ export interface CreateInvitationTokenParams {
  */
 export interface InvitationTokenDetails {
   token: string;
+  description: string | null; // 修正: descriptionフィールドを追加
   expiresAt: Date;
   isActive: boolean;
   createdBy: string;
