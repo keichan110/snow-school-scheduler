@@ -34,7 +34,6 @@ export default function InvitationWarningModal({
         </DialogHeader>
 
         <div className="space-y-6">
-
           <div className="rounded-lg bg-amber-50 p-4 dark:bg-amber-950/20">
             <div className="flex items-start gap-3">
               <Info
@@ -52,7 +51,6 @@ export default function InvitationWarningModal({
           </div>
 
           <Separator />
-
 
           <div className="space-y-4">
             <h4 className="text-sm font-medium text-muted-foreground">無効化される招待</h4>
@@ -94,7 +92,6 @@ export default function InvitationWarningModal({
 
           <Separator />
 
-
           <div className="rounded-lg bg-red-50 p-4 dark:bg-red-950/20">
             <h4 className="mb-2 flex items-center gap-2 text-sm font-medium text-red-900 dark:text-red-100">
               <Warning className="h-4 w-4" weight="regular" />
@@ -106,7 +103,6 @@ export default function InvitationWarningModal({
               <li>• 既に配布されたURLを持つ方は新しいURLが必要になります</li>
             </ul>
           </div>
-
 
           <div className="flex gap-2">
             <Button variant="outline" onClick={onClose} disabled={isSubmitting} className="flex-1">

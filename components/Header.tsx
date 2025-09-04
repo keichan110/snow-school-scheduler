@@ -11,49 +11,88 @@ import {
   Tag,
   LinkSimple,
   UserGear,
+  type Icon,
 } from '@phosphor-icons/react';
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useState } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
+
+type UserRole = 'ADMIN' | 'MANAGER' | 'MEMBER';
+
+interface MenuItem {
+  href: string;
+  icon: Icon;
+  label: string;
+  requiredRole: UserRole;
+}
 
 export default function Header() {
   const pathname = usePathname();
-  const isAdminPath = pathname.startsWith('/admin');
+  const { user } = useAuth();
   const isMobile = useIsMobile();
   const [sheetOpen, setSheetOpen] = useState(false);
 
-  const adminMenuItems = [
+  const allMenuItems: MenuItem[] = [
     {
       href: '/admin/shifts',
       icon: CalendarDots,
       label: 'シフト管理',
+      requiredRole: 'MANAGER', // MANAGERも利用可能
     },
     {
       href: '/admin/instructors',
       icon: UsersThree,
       label: 'インストラクター管理',
+      requiredRole: 'MANAGER', // MANAGERも利用可能
     },
     {
       href: '/admin/shift-types',
       icon: Tag,
       label: 'シフト種類管理',
+      requiredRole: 'MANAGER', // MANAGERも利用可能
     },
     {
       href: '/admin/certifications',
       icon: Certificate,
       label: '資格管理',
+      requiredRole: 'MANAGER', // MANAGERも利用可能
     },
     {
       href: '/admin/invitations',
       icon: LinkSimple,
       label: '招待管理',
+      requiredRole: 'ADMIN', // ADMINのみ
     },
     {
       href: '/admin/users',
       icon: UserGear,
       label: 'ユーザー管理',
+      requiredRole: 'ADMIN', // ADMINのみ
     },
   ];
+
+  // 権限チェック関数
+  const hasPermission = (requiredRole: UserRole): boolean => {
+    if (!user) return false;
+
+    const roleHierarchy: Record<UserRole, number> = {
+      ADMIN: 3,
+      MANAGER: 2,
+      MEMBER: 1,
+    };
+
+    const userRoleLevel = roleHierarchy[user.role];
+    const requiredRoleLevel = roleHierarchy[requiredRole];
+
+    return userRoleLevel >= requiredRoleLevel;
+  };
+
+  // ユーザーの権限に基づいてメニューアイテムをフィルタリング
+  const visibleMenuItems = allMenuItems.filter((item) => hasPermission(item.requiredRole));
+
+  // 管理者権限を持っているかチェック（管理者表示・メニュー表示判定用）
+  const hasAdminPermission = hasPermission('MANAGER'); // MANAGERレベル以上
 
   return (
     <header className="fixed left-1/2 top-4 z-50 mx-auto w-full max-w-7xl -translate-x-1/2 px-4 sm:px-6 lg:px-8">
@@ -67,16 +106,16 @@ export default function Header() {
                 </div>
                 <div className="flex items-center space-x-2">
                   <h1 className="text-xl font-bold text-foreground">Fuyugyō</h1>
-                  {isAdminPath && (
+                  {hasAdminPermission && (
                     <span className="rounded-md bg-violet-500/90 px-2 py-1 text-xs font-medium text-white shadow-sm">
-                      管理者
+                      {user?.role === 'ADMIN' ? '管理者' : 'マネージャー'}
                     </span>
                   )}
                 </div>
               </Link>
             </div>
 
-            {isAdminPath && (
+            {hasAdminPermission && visibleMenuItems.length > 0 && (
               <>
                 {isMobile ? (
                   <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
@@ -88,7 +127,7 @@ export default function Header() {
                     <SheetContent side="right" className="w-[280px] sm:w-[400px]">
                       <SheetTitle className="mb-4 text-lg font-semibold">管理メニュー</SheetTitle>
                       <nav className="flex flex-col space-y-2">
-                        {adminMenuItems.map((item) => {
+                        {visibleMenuItems.map((item) => {
                           const IconComponent = item.icon;
                           const isActive = pathname === item.href;
 
@@ -116,7 +155,7 @@ export default function Header() {
                   </Sheet>
                 ) : (
                   <nav className="flex items-center space-x-1">
-                    {adminMenuItems.map((item) => {
+                    {visibleMenuItems.map((item) => {
                       const IconComponent = item.icon;
                       const isActive = pathname === item.href;
 

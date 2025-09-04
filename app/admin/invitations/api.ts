@@ -10,7 +10,6 @@ import type {
 
 const API_BASE_URL = '/api/auth/invitations';
 
-
 export async function checkActiveInvitation(): Promise<InvitationTokenWithStats | null> {
   const response = await fetch(`${API_BASE_URL}/active`, {
     method: 'GET',
@@ -35,7 +34,6 @@ export async function checkActiveInvitation(): Promise<InvitationTokenWithStats 
 
   return result.data || null;
 }
-
 
 export async function fetchInvitations(): Promise<InvitationTokenWithStats[]> {
   const response = await fetch(API_BASE_URL, {
@@ -87,7 +85,6 @@ export async function fetchInvitations(): Promise<InvitationTokenWithStats[]> {
   return convertedData;
 }
 
-
 export async function createInvitation(
   data: CreateInvitationRequest
 ): Promise<InvitationTokenWithStats> {
@@ -134,7 +131,6 @@ export async function createInvitation(
 
   return convertedData;
 }
-
 
 export async function deactivateInvitation(token: string): Promise<void> {
   const response = await fetch(`${API_BASE_URL}/${token}`, {

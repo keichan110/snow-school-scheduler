@@ -42,7 +42,6 @@ export default function InvitationModal({
   const [error, setError] = useState<string | null>(null);
   const isEditing = !!invitation;
 
-
   useEffect(() => {
     if (invitation) {
       setFormData({
@@ -63,7 +62,6 @@ export default function InvitationModal({
       e.preventDefault();
     }
 
-
     if (isEditing) {
       setError('編集モードでは新しい招待を作成できません');
       return;
@@ -73,7 +71,6 @@ export default function InvitationModal({
       setError('説明を入力してください');
       return;
     }
-
 
     const maxExpiryDate = addMonths(new Date(), 1);
     if (formData.expiresAt > maxExpiryDate) {
@@ -159,7 +156,6 @@ export default function InvitationModal({
                 </div>
               )}
 
-
               <div className="space-y-4">
                 <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
                   <Info className="h-4 w-4" weight="regular" />
@@ -193,7 +189,6 @@ export default function InvitationModal({
               </div>
 
               <Separator />
-
 
               <div className="space-y-4">
                 <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
@@ -246,7 +241,6 @@ export default function InvitationModal({
 
               <Separator />
 
-
               <div className="space-y-4">
                 <div className="rounded-lg bg-blue-50 p-4 dark:bg-blue-950/20">
                   <h4 className="mb-2 flex items-center gap-2 text-sm font-medium text-blue-900 dark:text-blue-100">
@@ -273,7 +267,6 @@ export default function InvitationModal({
               </DrawerClose>
 
               {isEditing ? (
-
                 invitation &&
                 invitation.isActive && (
                   <Button
@@ -297,7 +290,6 @@ export default function InvitationModal({
                   </Button>
                 )
               ) : (
-
                 <Button
                   type="submit"
                   form="invitation-form"

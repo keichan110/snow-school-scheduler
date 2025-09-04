@@ -183,7 +183,6 @@ export default function InvitationsPage() {
     setExistingActiveInvitation(null);
   };
 
-
   const handleCopyInvitationUrl = async (token: string) => {
     try {
       const baseUrl = window.location.origin;
@@ -331,7 +330,6 @@ export default function InvitationsPage() {
                 const isExpired = invitation.expiresAt && new Date(invitation.expiresAt) < now;
                 const isInactive = !invitation.isActive;
 
-
                 let statusStyles;
                 let StatusIcon;
                 if (isInactive) {
@@ -456,7 +454,6 @@ export default function InvitationsPage() {
         invitation={editingInvitation}
         onDeactivate={handleDeactivate}
       />
-
 
       {existingActiveInvitation && (
         <InvitationWarningModal

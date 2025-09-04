@@ -23,7 +23,6 @@ export async function GET(request: NextRequest): Promise<
   >
 > {
   try {
-
     const { getAuthTokenFromRequest } = await import('@/lib/auth/middleware');
     const token = getAuthTokenFromRequest(request);
 
@@ -43,14 +42,12 @@ export async function GET(request: NextRequest): Promise<
       );
     }
 
-
     if (user.role !== 'ADMIN' && user.role !== 'MANAGER') {
       return NextResponse.json(
         { success: false, error: 'Insufficient permissions. Admin or Manager role required.' },
         { status: 403 }
       );
     }
-
 
     if (!user.isActive) {
       return NextResponse.json(
@@ -59,9 +56,7 @@ export async function GET(request: NextRequest): Promise<
       );
     }
 
-
     const now = new Date();
-
 
     const activeInvitation = await prisma.invitationToken.findFirst({
       where: {
@@ -87,7 +82,6 @@ export async function GET(request: NextRequest): Promise<
         { status: 404 }
       );
     }
-
 
     const responseData = {
       token: activeInvitation.token,
