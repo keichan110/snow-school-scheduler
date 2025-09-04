@@ -9,11 +9,11 @@ import { Shield, Warning, House } from '@phosphor-icons/react';
 
 /**
  * 管理者レイアウト
- * 管理者権限が必要なすべてのページを保護
+ * 管理機能権限（MANAGER以上）が必要なすべてのページを保護
  */
 export default function AdminLayout({ children }: { children: ReactNode }) {
   return (
-    <ProtectedLayout layoutName="Admin" requiredRole="ADMIN" fallback={<AdminAccessDenied />}>
+    <ProtectedLayout layoutName="Admin" requiredRole="MANAGER" fallback={<AdminAccessDenied />}>
       <div className="min-h-screen pt-20">
         <div className="space-y-6 p-4 lg:p-8">
           <div className="rounded-lg bg-card p-4 shadow-sm">
@@ -30,7 +30,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
 }
 
 /**
- * 管理者権限がない場合の表示コンポーネント
+ * 管理権限がない場合の表示コンポーネント
  */
 function AdminAccessDenied() {
   return (
@@ -42,9 +42,9 @@ function AdminAccessDenied() {
           </div>
           <h2 className="mb-3 text-xl font-semibold">アクセス権限がありません</h2>
           <p className="mb-6 text-sm text-muted-foreground">
-            このページにアクセスするには管理者権限が必要です。
+            このページにアクセスするには管理権限（マネージャー以上）が必要です。
             <br />
-            管理者アカウントでログインしてください。
+            管理権限を持つアカウントでログインしてください。
           </p>
           <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
             <Button asChild variant="outline">
@@ -56,7 +56,7 @@ function AdminAccessDenied() {
             <Button asChild>
               <Link href="/login">
                 <Shield className="mr-2 h-4 w-4" />
-                管理者でログイン
+                管理権限でログイン
               </Link>
             </Button>
           </div>

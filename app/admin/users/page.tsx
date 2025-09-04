@@ -21,8 +21,17 @@ import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
 import { ja } from 'date-fns/locale';
 import type { UserWithDetails, UserFormData, UserStats, UserFilters, UserRole } from './types';
+import { AdminGuard } from '@/components/auth/AuthGuard';
 
 export default function UsersPage() {
+  return (
+    <AdminGuard>
+      <UsersPageContent />
+    </AdminGuard>
+  );
+}
+
+function UsersPageContent() {
   const [users, setUsers] = useState<UserWithDetails[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<UserWithDetails[]>([]);
   const [filters, setFilters] = useState<UserFilters>({

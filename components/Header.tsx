@@ -91,8 +91,8 @@ export default function Header() {
   // ユーザーの権限に基づいてメニューアイテムをフィルタリング
   const visibleMenuItems = allMenuItems.filter((item) => hasPermission(item.requiredRole));
 
-  // 管理者権限を持っているかチェック（管理者表示・メニュー表示判定用）
-  const hasAdminPermission = hasPermission('MANAGER'); // MANAGERレベル以上
+  // 管理機能へのアクセス権限チェック（MANAGERレベル以上）
+  const hasManagementAccess = hasPermission('MANAGER'); // MANAGERレベル以上
 
   return (
     <header className="fixed left-1/2 top-4 z-50 mx-auto w-full max-w-7xl -translate-x-1/2 px-4 sm:px-6 lg:px-8">
@@ -106,7 +106,7 @@ export default function Header() {
                 </div>
                 <div className="flex items-center space-x-2">
                   <h1 className="text-xl font-bold text-foreground">Fuyugyō</h1>
-                  {hasAdminPermission && (
+                  {hasManagementAccess && (
                     <span className="rounded-md bg-violet-500/90 px-2 py-1 text-xs font-medium text-white shadow-sm">
                       {user?.role === 'ADMIN' ? '管理者' : 'マネージャー'}
                     </span>
@@ -115,7 +115,7 @@ export default function Header() {
               </Link>
             </div>
 
-            {hasAdminPermission && visibleMenuItems.length > 0 && (
+            {hasManagementAccess && visibleMenuItems.length > 0 && (
               <>
                 {isMobile ? (
                   <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>

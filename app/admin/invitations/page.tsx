@@ -38,8 +38,17 @@ import type {
   InvitationStats,
   CreateInvitationRequest,
 } from './types';
+import { AdminGuard } from '@/components/auth/AuthGuard';
 
 export default function InvitationsPage() {
+  return (
+    <AdminGuard>
+      <InvitationsPageContent />
+    </AdminGuard>
+  );
+}
+
+function InvitationsPageContent() {
   const [invitations, setInvitations] = useState<InvitationTokenWithStats[]>([]);
   const [filteredInvitations, setFilteredInvitations] = useState<InvitationTokenWithStats[]>([]);
   const [showActiveOnly, setShowActiveOnly] = useState<boolean>(true);
