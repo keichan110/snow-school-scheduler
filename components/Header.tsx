@@ -14,7 +14,6 @@ import {
   type Icon,
 } from '@phosphor-icons/react';
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet';
-import { useIsMobile } from '@/hooks/use-mobile';
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -30,7 +29,6 @@ interface MenuItem {
 export default function Header() {
   const pathname = usePathname();
   const { user } = useAuth();
-  const isMobile = useIsMobile();
   const [sheetOpen, setSheetOpen] = useState(false);
 
   const allMenuItems: MenuItem[] = [
@@ -116,45 +114,15 @@ export default function Header() {
             </div>
 
             {hasManagementAccess && visibleMenuItems.length > 0 && (
-              <>
-                {isMobile ? (
-                  <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
-                    <SheetTrigger asChild>
-                      <button className="flex h-10 w-10 items-center justify-center rounded-lg text-muted-foreground transition-all duration-200 hover:bg-accent/50 hover:text-foreground">
-                        <List className="h-5 w-5" weight="regular" />
-                      </button>
-                    </SheetTrigger>
-                    <SheetContent side="right" className="w-[280px] sm:w-[400px]">
-                      <SheetTitle className="mb-4 text-lg font-semibold">管理メニュー</SheetTitle>
-                      <nav className="flex flex-col space-y-2">
-                        {visibleMenuItems.map((item) => {
-                          const IconComponent = item.icon;
-                          const isActive = pathname === item.href;
-
-                          return (
-                            <Link
-                              key={item.href}
-                              href={item.href}
-                              onClick={() => setSheetOpen(false)}
-                              className={`flex items-center space-x-3 rounded-lg px-3 py-3 transition-all duration-200 ${
-                                isActive
-                                  ? 'bg-primary/10 font-medium text-primary shadow-sm'
-                                  : 'text-muted-foreground hover:bg-accent/50 hover:text-foreground'
-                              }`}
-                            >
-                              <IconComponent
-                                className="h-5 w-5"
-                                weight={isActive ? 'fill' : 'regular'}
-                              />
-                              <span className="text-sm">{item.label}</span>
-                            </Link>
-                          );
-                        })}
-                      </nav>
-                    </SheetContent>
-                  </Sheet>
-                ) : (
-                  <nav className="flex items-center space-x-1">
+              <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
+                <SheetTrigger asChild>
+                  <button className="flex h-10 w-10 items-center justify-center rounded-lg text-muted-foreground transition-all duration-200 hover:bg-accent/50 hover:text-foreground">
+                    <List className="h-5 w-5" weight="regular" />
+                  </button>
+                </SheetTrigger>
+                <SheetContent side="right" className="w-[280px] sm:w-[400px]">
+                  <SheetTitle className="mb-4 text-lg font-semibold">管理メニュー</SheetTitle>
+                  <nav className="flex flex-col space-y-2">
                     {visibleMenuItems.map((item) => {
                       const IconComponent = item.icon;
                       const isActive = pathname === item.href;
@@ -163,8 +131,8 @@ export default function Header() {
                         <Link
                           key={item.href}
                           href={item.href}
-                          title={item.label}
-                          className={`flex h-10 w-10 items-center justify-center rounded-lg transition-all duration-200 sm:h-auto sm:w-auto sm:justify-start sm:space-x-2 sm:px-3 sm:py-2 ${
+                          onClick={() => setSheetOpen(false)}
+                          className={`flex items-center space-x-3 rounded-lg px-3 py-3 transition-all duration-200 ${
                             isActive
                               ? 'bg-primary/10 font-medium text-primary shadow-sm'
                               : 'text-muted-foreground hover:bg-accent/50 hover:text-foreground'
@@ -174,13 +142,13 @@ export default function Header() {
                             className="h-5 w-5"
                             weight={isActive ? 'fill' : 'regular'}
                           />
-                          <span className="hidden text-sm sm:inline">{item.label}</span>
+                          <span className="text-sm">{item.label}</span>
                         </Link>
                       );
                     })}
                   </nav>
-                )}
-              </>
+                </SheetContent>
+              </Sheet>
             )}
           </div>
         </div>
