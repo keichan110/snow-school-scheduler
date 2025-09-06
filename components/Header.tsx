@@ -63,7 +63,7 @@ export default function Header() {
       requiredRole: 'MANAGER',
     },
     {
-      href: '/admin/certifications',
+      href: '/certifications',
       icon: Certificate,
       label: '資格管理',
       description: '各種資格・スキルの管理システム',

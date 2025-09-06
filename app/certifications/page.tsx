@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { notFound } from 'next/navigation';
+import { useAuth } from '@/contexts/AuthContext';
 import { Plus, PersonSimpleSki, PersonSimpleSnowboard, SealCheck } from '@phosphor-icons/react';
 import CertificationModal from './CertificationModal';
 import { fetchCertifications, createCertification, updateCertification } from './api';
@@ -25,6 +27,8 @@ import type {
 import { getDepartmentType } from './utils';
 
 export default function CertificationsPage() {
+  const { user, status } = useAuth();
+  
   const [certifications, setCertifications] = useState<CertificationWithDepartment[]>([]);
   const [filteredCertifications, setFilteredCertifications] = useState<
     CertificationWithDepartment[]
@@ -103,10 +107,19 @@ export default function CertificationsPage() {
     setStats({ total, active, ski, snowboard });
   }, [filteredCertifications]);
 
+  // 権限チェック
+  useEffect(() => {
+    if (status !== 'loading' && (!user || (user.role !== 'MANAGER' && user.role !== 'ADMIN'))) {
+      notFound();
+    }
+  }, [user, status]);
+
   // データ取得
   useEffect(() => {
-    loadCertifications();
-  }, []);
+    if (user && (user.role === 'MANAGER' || user.role === 'ADMIN')) {
+      loadCertifications();
+    }
+  }, [user]);
 
   // フィルター適用
   useEffect(() => {
@@ -155,6 +168,25 @@ export default function CertificationsPage() {
       throw error; // モーダル側でエラーハンドリング
     }
   };
+
+  // 認証中の場合
+  if (status === 'loading') {
+    return (
+      <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 md:py-8 lg:px-8">
+        <div className="flex h-64 items-center justify-center">
+          <div className="text-center">
+            <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-4 border-primary-500 border-t-transparent"></div>
+            <p className="text-muted-foreground">認証情報を確認しています...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // 権限不足の場合
+  if (!user || (user.role !== 'MANAGER' && user.role !== 'ADMIN')) {
+    notFound();
+  }
 
   if (isLoading) {
     return (

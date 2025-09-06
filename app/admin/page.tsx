@@ -24,13 +24,6 @@ export default function AdminPage() {
         />
 
         <AdminMenuCard
-          title="資格管理"
-          description="インストラクター資格の管理"
-          href="/admin/certifications"
-          icon="🏅"
-        />
-
-        <AdminMenuCard
           title="シフト種別管理"
           description="シフト種別マスタの管理"
           href="/admin/shift-types"

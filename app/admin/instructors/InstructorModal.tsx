@@ -11,9 +11,9 @@ import {
   PersonSimpleSnowboard,
 } from '@phosphor-icons/react';
 import type { InstructorModalProps, InstructorFormData } from './types';
-import { fetchCertifications } from '../certifications/api';
-import { getDepartmentType } from '../certifications/utils';
-import type { CertificationWithDepartment } from '../certifications/types';
+import { fetchCertifications } from '@/app/certifications/api';
+import { getDepartmentType } from '@/app/certifications/utils';
+import type { CertificationWithDepartment } from '@/app/certifications/types';
 import {
   Drawer,
   DrawerClose,
