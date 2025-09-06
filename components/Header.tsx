@@ -20,7 +20,10 @@ import {
   NavigationMenuList,
   NavigationMenuTrigger,
 } from '@/components/ui/navigation-menu';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
+import { User } from '@phosphor-icons/react';
 
 type UserRole = 'ADMIN' | 'MANAGER' | 'MEMBER';
 
@@ -34,7 +37,7 @@ interface MenuItem {
 
 export default function Header() {
   const pathname = usePathname();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
 
   const allMenuItems: MenuItem[] = [
     {
@@ -124,50 +127,113 @@ export default function Header() {
               </Link>
             </div>
 
-            {hasManagementAccess && visibleMenuItems.length > 0 && (
-              <NavigationMenu>
-                <NavigationMenuList>
-                  <NavigationMenuItem>
-                    <NavigationMenuTrigger className="border-none bg-transparent">
-                      <List className="h-5 w-5" weight="regular" />
-                    </NavigationMenuTrigger>
-                    <NavigationMenuContent>
-                      <div className="w-[400px] p-4">
-                        <div className="grid gap-3">
-                          {visibleMenuItems.map((item) => {
-                            const IconComponent = item.icon;
-                            const isActive = pathname === item.href;
+            <div className="flex items-center gap-2">
+              {/* ユーザーAvatar */}
+              {user && (
+                <NavigationMenu>
+                  <NavigationMenuList>
+                    <NavigationMenuItem>
+                      <NavigationMenuTrigger className="h-auto border-none bg-transparent p-0 hover:bg-transparent data-[state=open]:bg-transparent">
+                        <Avatar className="h-8 w-8 cursor-pointer transition-all hover:ring-2 hover:ring-primary/20">
+                          <AvatarImage src="" alt={user.displayName} />
+                          <AvatarFallback className="bg-gradient-to-br from-blue-100 via-blue-300 to-indigo-400 text-sm font-semibold text-white">
+                            {user.displayName.charAt(0).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                      </NavigationMenuTrigger>
+                      <NavigationMenuContent>
+                        <div className="w-[280px] p-4">
+                          <div className="space-y-4">
+                            {/* ユーザー情報 */}
+                            <div className="flex items-center space-x-3">
+                              <Avatar className="h-12 w-12">
+                                <AvatarImage src="" alt={user.displayName} />
+                                <AvatarFallback className="bg-gradient-to-br from-blue-100 via-blue-300 to-indigo-400 font-semibold text-white">
+                                  {user.displayName.charAt(0).toUpperCase()}
+                                </AvatarFallback>
+                              </Avatar>
+                              <div className="flex-1">
+                                <p className="text-sm font-medium">{user.displayName}</p>
+                                <p className="text-xs text-muted-foreground">
+                                  {user.role === 'ADMIN'
+                                    ? '管理者'
+                                    : user.role === 'MANAGER'
+                                      ? 'マネージャー'
+                                      : 'メンバー'}
+                                </p>
+                              </div>
+                            </div>
 
-                            return (
-                              <Link
-                                key={item.href}
-                                href={item.href}
-                                className={`flex items-start space-x-4 rounded-lg p-3 transition-all duration-200 hover:bg-accent/50 ${
-                                  isActive
-                                    ? 'bg-primary/10 text-primary'
-                                    : 'text-muted-foreground hover:text-foreground'
-                                }`}
+                            {/* ログアウトボタン */}
+                            <div className="border-t pt-2">
+                              <Button
+                                variant="ghost"
+                                className="h-8 w-full justify-start text-sm text-muted-foreground hover:text-foreground"
+                                onClick={async () => {
+                                  await logout();
+                                  window.location.href = '/';
+                                }}
                               >
-                                <IconComponent
-                                  className="h-6 w-6 shrink-0"
-                                  weight={isActive ? 'fill' : 'regular'}
-                                />
-                                <div className="space-y-1">
-                                  <h3 className="text-sm font-medium leading-none">{item.label}</h3>
-                                  <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
-                                    {item.description}
-                                  </p>
-                                </div>
-                              </Link>
-                            );
-                          })}
+                                <User className="mr-2 h-4 w-4" />
+                                ログアウト
+                              </Button>
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                    </NavigationMenuContent>
-                  </NavigationMenuItem>
-                </NavigationMenuList>
-              </NavigationMenu>
-            )}
+                      </NavigationMenuContent>
+                    </NavigationMenuItem>
+                  </NavigationMenuList>
+                </NavigationMenu>
+              )}
+
+              {/* 管理メニュー */}
+              {hasManagementAccess && visibleMenuItems.length > 0 && (
+                <NavigationMenu>
+                  <NavigationMenuList>
+                    <NavigationMenuItem>
+                      <NavigationMenuTrigger className="border-none bg-transparent">
+                        <List className="h-5 w-5" weight="regular" />
+                      </NavigationMenuTrigger>
+                      <NavigationMenuContent>
+                        <div className="w-[400px] p-4">
+                          <div className="grid gap-3">
+                            {visibleMenuItems.map((item) => {
+                              const IconComponent = item.icon;
+                              const isActive = pathname === item.href;
+
+                              return (
+                                <Link
+                                  key={item.href}
+                                  href={item.href}
+                                  className={`flex items-start space-x-4 rounded-lg p-3 transition-all duration-200 hover:bg-accent/50 ${
+                                    isActive
+                                      ? 'bg-primary/10 text-primary'
+                                      : 'text-muted-foreground hover:text-foreground'
+                                  }`}
+                                >
+                                  <IconComponent
+                                    className="h-6 w-6 shrink-0"
+                                    weight={isActive ? 'fill' : 'regular'}
+                                  />
+                                  <div className="space-y-1">
+                                    <h3 className="text-sm font-medium leading-none">
+                                      {item.label}
+                                    </h3>
+                                    <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
+                                      {item.description}
+                                    </p>
+                                  </div>
+                                </Link>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      </NavigationMenuContent>
+                    </NavigationMenuItem>
+                  </NavigationMenuList>
+                </NavigationMenu>
+              )}
+            </div>
           </div>
         </div>
       </div>
