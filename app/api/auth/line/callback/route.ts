@@ -172,6 +172,7 @@ export async function GET(request: NextRequest) {
           data: {
             lineUserId: authResult.profile.userId,
             displayName: authResult.profile.displayName,
+            profileImageUrl: authResult.profile.pictureUrl || null,
             role: 'MEMBER', // 招待経由のユーザーはMEMBER権限
             isActive: true,
           },
@@ -209,13 +210,20 @@ export async function GET(request: NextRequest) {
         isActive: user.isActive,
       });
 
-      // 表示名の更新（LINEで変更された場合）
-      if (user.displayName !== authResult.profile.displayName) {
+      // 表示名とプロフィール画像の更新（LINEで変更された場合）
+      const needsUpdate =
+        user.displayName !== authResult.profile.displayName ||
+        user.profileImageUrl !== (authResult.profile.pictureUrl || null);
+
+      if (needsUpdate) {
         user = await prisma.user.update({
           where: { id: user.id },
-          data: { displayName: authResult.profile.displayName },
+          data: {
+            displayName: authResult.profile.displayName,
+            profileImageUrl: authResult.profile.pictureUrl || null,
+          },
         });
-        console.log('📝 Updated user display name');
+        console.log('📝 Updated user profile (display name and/or image)');
       }
     }
 
@@ -232,7 +240,7 @@ export async function GET(request: NextRequest) {
       userId: user.id,
       lineUserId: user.lineUserId,
       displayName: user.displayName,
-      role: user.role,
+      role: user.role as 'ADMIN' | 'MANAGER' | 'MEMBER',
       isActive: user.isActive,
     };
 

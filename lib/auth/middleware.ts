@@ -18,6 +18,8 @@ export interface AuthenticatedUser {
   lineUserId: string;
   /** 表示名 */
   displayName: string;
+  /** LINEプロフィール画像URL */
+  profileImageUrl?: string | null;
   /** ユーザー権限 */
   role: 'ADMIN' | 'MANAGER' | 'MEMBER';
   /** アクティブフラグ */
@@ -151,7 +153,8 @@ export async function authenticateToken(token: string | null): Promise<Authentic
       id: user.id,
       lineUserId: user.lineUserId,
       displayName: user.displayName,
-      role: user.role,
+      profileImageUrl: user.profileImageUrl,
+      role: user.role as 'ADMIN' | 'MANAGER' | 'MEMBER',
       isActive: user.isActive,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,

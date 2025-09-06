@@ -17,6 +17,8 @@ export interface User {
   lineUserId: string;
   /** 表示名 */
   displayName: string;
+  /** LINEプロフィール画像URL */
+  profileImageUrl?: string | null;
   /** ユーザー権限 */
   role: 'ADMIN' | 'MANAGER' | 'MEMBER';
   /** アクティブフラグ */

@@ -133,9 +133,9 @@ export default function Header() {
                 <NavigationMenu>
                   <NavigationMenuList>
                     <NavigationMenuItem>
-                      <NavigationMenuTrigger className="h-auto border-none bg-transparent p-0 hover:bg-transparent data-[state=open]:bg-transparent">
+                      <NavigationMenuTrigger className="flex h-8 w-8 items-center justify-center border-none bg-transparent p-0 hover:bg-transparent data-[state=open]:bg-transparent">
                         <Avatar className="h-8 w-8 cursor-pointer transition-all hover:ring-2 hover:ring-primary/20">
-                          <AvatarImage src="" alt={user.displayName} />
+                          <AvatarImage src={user.profileImageUrl || ''} alt={user.displayName} />
                           <AvatarFallback className="bg-gradient-to-br from-blue-100 via-blue-300 to-indigo-400 text-sm font-semibold text-white">
                             {user.displayName.charAt(0).toUpperCase()}
                           </AvatarFallback>
@@ -147,7 +147,10 @@ export default function Header() {
                             {/* ユーザー情報 */}
                             <div className="flex items-center space-x-3">
                               <Avatar className="h-12 w-12">
-                                <AvatarImage src="" alt={user.displayName} />
+                                <AvatarImage
+                                  src={user.profileImageUrl || ''}
+                                  alt={user.displayName}
+                                />
                                 <AvatarFallback className="bg-gradient-to-br from-blue-100 via-blue-300 to-indigo-400 font-semibold text-white">
                                   {user.displayName.charAt(0).toUpperCase()}
                                 </AvatarFallback>
