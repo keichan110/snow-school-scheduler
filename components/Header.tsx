@@ -116,13 +116,8 @@ export default function Header() {
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-100 via-blue-300 to-indigo-400">
                   <Snowflake className="h-6 w-6 text-white" weight="bold" />
                 </div>
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center">
                   <h1 className="text-xl font-bold text-foreground">Fuyugyō</h1>
-                  {hasManagementAccess && (
-                    <span className="rounded-md bg-violet-500/90 px-2 py-1 text-xs font-medium text-white shadow-sm">
-                      {user?.role === 'ADMIN' ? '管理者' : 'マネージャー'}
-                    </span>
-                  )}
                 </div>
               </Link>
             </div>
