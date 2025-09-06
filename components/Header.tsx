@@ -7,14 +7,19 @@ import {
   CalendarDots,
   Certificate,
   UsersThree,
-  List,
   Tag,
   LinkSimple,
   UserGear,
+  List,
   type Icon,
 } from '@phosphor-icons/react';
-import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet';
-import { useState } from 'react';
+import {
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuItem,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+} from '@/components/ui/navigation-menu';
 import { useAuth } from '@/contexts/AuthContext';
 
 type UserRole = 'ADMIN' | 'MANAGER' | 'MEMBER';
@@ -23,50 +28,56 @@ interface MenuItem {
   href: string;
   icon: Icon;
   label: string;
+  description: string;
   requiredRole: UserRole;
 }
 
 export default function Header() {
   const pathname = usePathname();
   const { user } = useAuth();
-  const [sheetOpen, setSheetOpen] = useState(false);
 
   const allMenuItems: MenuItem[] = [
     {
       href: '/admin/shifts',
       icon: CalendarDots,
       label: 'シフト管理',
-      requiredRole: 'MANAGER', // MANAGERも利用可能
+      description: 'シフト表の作成・編集・割り当て管理',
+      requiredRole: 'MANAGER',
     },
     {
       href: '/admin/instructors',
       icon: UsersThree,
       label: 'インストラクター管理',
-      requiredRole: 'MANAGER', // MANAGERも利用可能
+      description: 'スタッフ情報の登録・編集・確認',
+      requiredRole: 'MANAGER',
     },
     {
       href: '/admin/shift-types',
       icon: Tag,
-      label: 'シフト種類管理',
-      requiredRole: 'MANAGER', // MANAGERも利用可能
+      label: 'シフト種別管理',
+      description: 'シフトタイプの作成・編集・削除',
+      requiredRole: 'MANAGER',
     },
     {
       href: '/admin/certifications',
       icon: Certificate,
       label: '資格管理',
-      requiredRole: 'MANAGER', // MANAGERも利用可能
+      description: '各種資格・スキルの管理システム',
+      requiredRole: 'MANAGER',
     },
     {
       href: '/admin/invitations',
       icon: LinkSimple,
       label: '招待管理',
-      requiredRole: 'ADMIN', // ADMINのみ
+      description: 'ユーザー招待リンクの発行・管理',
+      requiredRole: 'ADMIN',
     },
     {
       href: '/admin/users',
       icon: UserGear,
       label: 'ユーザー管理',
-      requiredRole: 'ADMIN', // ADMINのみ
+      description: 'システム利用者の管理・権限設定',
+      requiredRole: 'ADMIN',
     },
   ];
 
@@ -114,41 +125,48 @@ export default function Header() {
             </div>
 
             {hasManagementAccess && visibleMenuItems.length > 0 && (
-              <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
-                <SheetTrigger asChild>
-                  <button className="flex h-10 w-10 items-center justify-center rounded-lg text-muted-foreground transition-all duration-200 hover:bg-accent/50 hover:text-foreground">
-                    <List className="h-5 w-5" weight="regular" />
-                  </button>
-                </SheetTrigger>
-                <SheetContent side="right" className="w-[280px] sm:w-[400px]">
-                  <SheetTitle className="mb-4 text-lg font-semibold">管理メニュー</SheetTitle>
-                  <nav className="flex flex-col space-y-2">
-                    {visibleMenuItems.map((item) => {
-                      const IconComponent = item.icon;
-                      const isActive = pathname === item.href;
+              <NavigationMenu>
+                <NavigationMenuList>
+                  <NavigationMenuItem>
+                    <NavigationMenuTrigger className="border-none bg-transparent">
+                      <List className="h-5 w-5" weight="regular" />
+                    </NavigationMenuTrigger>
+                    <NavigationMenuContent>
+                      <div className="w-[400px] p-4">
+                        <div className="grid gap-3">
+                          {visibleMenuItems.map((item) => {
+                            const IconComponent = item.icon;
+                            const isActive = pathname === item.href;
 
-                      return (
-                        <Link
-                          key={item.href}
-                          href={item.href}
-                          onClick={() => setSheetOpen(false)}
-                          className={`flex items-center space-x-3 rounded-lg px-3 py-3 transition-all duration-200 ${
-                            isActive
-                              ? 'bg-primary/10 font-medium text-primary shadow-sm'
-                              : 'text-muted-foreground hover:bg-accent/50 hover:text-foreground'
-                          }`}
-                        >
-                          <IconComponent
-                            className="h-5 w-5"
-                            weight={isActive ? 'fill' : 'regular'}
-                          />
-                          <span className="text-sm">{item.label}</span>
-                        </Link>
-                      );
-                    })}
-                  </nav>
-                </SheetContent>
-              </Sheet>
+                            return (
+                              <Link
+                                key={item.href}
+                                href={item.href}
+                                className={`flex items-start space-x-4 rounded-lg p-3 transition-all duration-200 hover:bg-accent/50 ${
+                                  isActive
+                                    ? 'bg-primary/10 text-primary'
+                                    : 'text-muted-foreground hover:text-foreground'
+                                }`}
+                              >
+                                <IconComponent
+                                  className="h-6 w-6 shrink-0"
+                                  weight={isActive ? 'fill' : 'regular'}
+                                />
+                                <div className="space-y-1">
+                                  <h3 className="text-sm font-medium leading-none">{item.label}</h3>
+                                  <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
+                                    {item.description}
+                                  </p>
+                                </div>
+                              </Link>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </NavigationMenuContent>
+                  </NavigationMenuItem>
+                </NavigationMenuList>
+              </NavigationMenu>
             )}
           </div>
         </div>
