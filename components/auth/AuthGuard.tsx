@@ -2,11 +2,12 @@
 
 import { ReactNode, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { notFound } from 'next/navigation';
 import { useAuth, User } from '@/contexts/AuthContext';
 import { Card, CardContent } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import { Loader2, Lock, AlertTriangle, Home, LogIn } from 'lucide-react';
+import { Loader2, AlertTriangle, Home, LogIn } from 'lucide-react';
 
 /**
  * 認証ガードコンポーネントのProps
@@ -174,41 +175,8 @@ export function AuthGuard({
       return <>{accessDeniedComponent}</>;
     }
 
-    return (
-      <div className="flex min-h-[400px] items-center justify-center p-4">
-        <Card className="w-full max-w-md">
-          <CardContent className="p-6">
-            <div className="flex flex-col items-center space-y-4 text-center">
-              <Lock className="h-12 w-12 text-destructive" />
-              <div className="space-y-2">
-                <h3 className="text-lg font-semibold">アクセス権限がありません</h3>
-                <p className="text-muted-foreground">
-                  このページにアクセスするには{requiredRole}権限が必要です
-                </p>
-              </div>
-
-              <Alert>
-                <AlertDescription>
-                  現在の権限: <span className="font-semibold">{user.role}</span>
-                  <br />
-                  必要な権限: <span className="font-semibold">{requiredRole}</span>
-                </AlertDescription>
-              </Alert>
-
-              <div className="flex w-full flex-col space-y-2">
-                <Button onClick={() => router.back()} variant="outline" className="w-full">
-                  前のページに戻る
-                </Button>
-                <Button onClick={() => router.push('/')} variant="ghost" className="w-full">
-                  <Home className="mr-2 h-4 w-4" />
-                  ホームに戻る
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
+    // 権限がない場合は404ページを表示
+    notFound();
   }
 
   /**

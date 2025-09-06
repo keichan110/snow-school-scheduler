@@ -177,17 +177,6 @@ function UsersPageContent() {
     }
   };
 
-  const getRoleIcon = (role: UserRole) => {
-    switch (role) {
-      case 'ADMIN':
-        return <Crown className="h-4 w-4" />;
-      case 'MANAGER':
-        return <Star className="h-4 w-4" />;
-      case 'MEMBER':
-        return <User className="h-4 w-4" />;
-    }
-  };
-
   if (isLoading) {
     return (
       <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 md:py-8 lg:px-8">

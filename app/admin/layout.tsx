@@ -1,11 +1,9 @@
 'use client';
 
 import { ReactNode } from 'react';
+import { notFound } from 'next/navigation';
 import { ProtectedLayout } from '@/components/auth/ProtectedRoute';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import Link from 'next/link';
-import { Shield, Warning, House } from '@phosphor-icons/react';
+import { Shield } from '@phosphor-icons/react';
 
 /**
  * 管理者レイアウト
@@ -30,38 +28,9 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
 }
 
 /**
- * 管理権限がない場合の表示コンポーネント
+ * 管理権限がない場合の処理
+ * 404ページを表示する
  */
-function AdminAccessDenied() {
-  return (
-    <div className="flex min-h-[60vh] items-center justify-center">
-      <Card className="w-full max-w-md">
-        <CardContent className="p-8 text-center">
-          <div className="mb-4 flex justify-center">
-            <Warning className="h-16 w-16 text-orange-500" />
-          </div>
-          <h2 className="mb-3 text-xl font-semibold">アクセス権限がありません</h2>
-          <p className="mb-6 text-sm text-muted-foreground">
-            このページにアクセスするには管理権限（マネージャー以上）が必要です。
-            <br />
-            管理権限を持つアカウントでログインしてください。
-          </p>
-          <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
-            <Button asChild variant="outline">
-              <Link href="/">
-                <House className="mr-2 h-4 w-4" />
-                ホームへ戻る
-              </Link>
-            </Button>
-            <Button asChild>
-              <Link href="/login">
-                <Shield className="mr-2 h-4 w-4" />
-                管理権限でログイン
-              </Link>
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  );
+function AdminAccessDenied(): never {
+  notFound();
 }

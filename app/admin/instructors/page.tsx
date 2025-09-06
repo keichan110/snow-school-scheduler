@@ -24,8 +24,17 @@ import type {
   CategoryFilterType,
 } from './types';
 import { CertificationBadge } from '@/components/ui/certification-badge';
+import { AdminGuard } from '@/components/auth/AuthGuard';
 
 export default function InstructorsPage() {
+  return (
+    <AdminGuard>
+      <InstructorsPageContent />
+    </AdminGuard>
+  );
+}
+
+function InstructorsPageContent() {
   const [instructors, setInstructors] = useState<InstructorWithCertifications[]>([]);
   const [filteredInstructors, setFilteredInstructors] = useState<InstructorWithCertifications[]>(
     []
@@ -96,8 +105,8 @@ export default function InstructorsPage() {
     // ステータス順でソート（ACTIVE -> INACTIVE -> RETIRED）
     filtered.sort((a, b) => {
       const statusOrder = { ACTIVE: 0, INACTIVE: 1, RETIRED: 2 };
-      const orderA = statusOrder[a.status];
-      const orderB = statusOrder[b.status];
+      const orderA = statusOrder[a.status as keyof typeof statusOrder];
+      const orderB = statusOrder[b.status as keyof typeof statusOrder];
 
       if (orderA !== orderB) {
         return orderA - orderB;
@@ -376,7 +385,7 @@ export default function InstructorsPage() {
                 return (
                   <TableRow
                     key={instructor.id}
-                    className={`cursor-pointer transition-colors ${statusStyles.row} ${
+                    className={`cursor-pointer transition-colors ${statusStyles?.row} ${
                       instructor.status !== 'ACTIVE' ? 'opacity-60' : ''
                     }`}
                     onClick={() => handleOpenModal(instructor)}
@@ -401,14 +410,14 @@ export default function InstructorsPage() {
                     <TableCell>
                       <span
                         className={`whitespace-nowrap font-medium md:whitespace-normal ${
-                          statusStyles.text
+                          statusStyles?.text
                         } ${instructor.status !== 'ACTIVE' ? 'line-through' : ''}`}
                       >
                         {instructor.lastName} {instructor.firstName}
                       </span>
                     </TableCell>
                     <TableCell
-                      className={`whitespace-nowrap md:whitespace-normal ${statusStyles.text} ${
+                      className={`whitespace-nowrap md:whitespace-normal ${statusStyles?.text} ${
                         instructor.status !== 'ACTIVE' ? 'line-through' : ''
                       }`}
                     >
@@ -436,7 +445,7 @@ export default function InstructorsPage() {
                         instructor.status !== 'ACTIVE' ? 'line-through' : ''
                       }`}
                     >
-                      <p className={`line-clamp-2 text-sm ${statusStyles.text} opacity-70`}>
+                      <p className={`line-clamp-2 text-sm ${statusStyles?.text} opacity-70`}>
                         {instructor.notes || '備考なし'}
                       </p>
                     </TableCell>
