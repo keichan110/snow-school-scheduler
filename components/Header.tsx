@@ -56,7 +56,7 @@ export default function Header() {
       requiredRole: 'MANAGER',
     },
     {
-      href: '/admin/shift-types',
+      href: '/shift-types',
       icon: Tag,
       label: 'シフト種別管理',
       description: 'シフトタイプの作成・編集・削除',

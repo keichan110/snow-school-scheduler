@@ -1,6 +1,10 @@
 'use client';
 
+'use client';
+
 import { useState, useEffect, useCallback } from 'react';
+import { notFound } from 'next/navigation';
+import { useAuth } from '@/contexts/AuthContext';
 import { Plus, Tag, SealCheck } from '@phosphor-icons/react';
 import ShiftTypeModal from './ShiftTypeModal';
 import { fetchShiftTypes, createShiftType, updateShiftType } from './api';
@@ -19,6 +23,7 @@ import {
 import type { ShiftType, ShiftTypeFormData, ShiftTypeStats } from './types';
 
 export default function ShiftTypesPage() {
+  const { user, status } = useAuth();
   const [shiftTypes, setShiftTypes] = useState<ShiftType[]>([]);
   const [filteredShiftTypes, setFilteredShiftTypes] = useState<ShiftType[]>([]);
   const [showActiveOnly, setShowActiveOnly] = useState<boolean>(true);
@@ -30,6 +35,13 @@ export default function ShiftTypesPage() {
   const [editingShiftType, setEditingShiftType] = useState<ShiftType | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // 権限チェック
+  useEffect(() => {
+    if (status !== 'loading' && (!user || (user.role !== 'MANAGER' && user.role !== 'ADMIN'))) {
+      notFound();
+    }
+  }, [user, status]);
 
   const loadShiftTypes = async () => {
     try {
@@ -74,8 +86,10 @@ export default function ShiftTypesPage() {
 
   // データ取得
   useEffect(() => {
-    loadShiftTypes();
-  }, []);
+    if (user && (user.role === 'MANAGER' || user.role === 'ADMIN')) {
+      loadShiftTypes();
+    }
+  }, [user]);
 
   // フィルター適用
   useEffect(() => {
@@ -120,6 +134,25 @@ export default function ShiftTypesPage() {
       throw error; // モーダル側でエラーハンドリング
     }
   };
+
+  // 認証中の場合
+  if (status === 'loading') {
+    return (
+      <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 md:py-8 lg:px-8">
+        <div className="flex h-64 items-center justify-center">
+          <div className="text-center">
+            <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-4 border-primary-500 border-t-transparent"></div>
+            <p className="text-muted-foreground">認証情報を確認しています...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // 権限不足の場合
+  if (!user || (user.role !== 'MANAGER' && user.role !== 'ADMIN')) {
+    notFound();
+  }
 
   if (isLoading) {
     return (
