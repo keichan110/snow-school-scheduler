@@ -49,7 +49,7 @@ export default function Header() {
       requiredRole: 'MANAGER',
     },
     {
-      href: '/admin/instructors',
+      href: '/instructors',
       icon: UsersThree,
       label: 'インストラクター管理',
       description: 'スタッフ情報の登録・編集・確認',

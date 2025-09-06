@@ -1,6 +1,10 @@
 'use client';
 
+'use client';
+
 import { useState, useEffect, useCallback } from 'react';
+import { notFound } from 'next/navigation';
+import { useAuth } from '@/contexts/AuthContext';
 import { Plus, SealCheck, PersonSimpleSki, PersonSimpleSnowboard } from '@phosphor-icons/react';
 import InstructorModal from './InstructorModal';
 import { fetchInstructors, createInstructor, updateInstructor } from './api';
@@ -24,17 +28,9 @@ import type {
   CategoryFilterType,
 } from './types';
 import { CertificationBadge } from '@/components/ui/certification-badge';
-import { AdminGuard } from '@/components/auth/AuthGuard';
 
 export default function InstructorsPage() {
-  return (
-    <AdminGuard>
-      <InstructorsPageContent />
-    </AdminGuard>
-  );
-}
-
-function InstructorsPageContent() {
+  const { user, status } = useAuth();
   const [instructors, setInstructors] = useState<InstructorWithCertifications[]>([]);
   const [filteredInstructors, setFilteredInstructors] = useState<InstructorWithCertifications[]>(
     []
@@ -53,6 +49,13 @@ function InstructorsPageContent() {
   );
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // 権限チェック
+  useEffect(() => {
+    if (status !== 'loading' && (!user || (user.role !== 'MANAGER' && user.role !== 'ADMIN'))) {
+      notFound();
+    }
+  }, [user, status]);
 
   const loadInstructors = async () => {
     try {
@@ -151,8 +154,10 @@ function InstructorsPageContent() {
 
   // データ取得
   useEffect(() => {
-    loadInstructors();
-  }, []);
+    if (user && (user.role === 'MANAGER' || user.role === 'ADMIN')) {
+      loadInstructors();
+    }
+  }, [user]);
 
   // フィルター適用
   useEffect(() => {
@@ -201,6 +206,25 @@ function InstructorsPageContent() {
       throw error; // モーダル側でエラーハンドリング
     }
   };
+
+  // 認証中の場合
+  if (status === 'loading') {
+    return (
+      <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 md:py-8 lg:px-8">
+        <div className="flex h-64 items-center justify-center">
+          <div className="text-center">
+            <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-4 border-primary-500 border-t-transparent"></div>
+            <p className="text-muted-foreground">認証情報を確認しています...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // 権限不足の場合
+  if (!user || (user.role !== 'MANAGER' && user.role !== 'ADMIN')) {
+    notFound();
+  }
 
   if (isLoading) {
     return (

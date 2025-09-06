@@ -17,13 +17,6 @@ export default function AdminPage() {
         />
 
         <AdminMenuCard
-          title="インストラクター管理"
-          description="スタッフの登録・編集・管理"
-          href="/admin/instructors"
-          icon="👥"
-        />
-
-        <AdminMenuCard
           title="シフト種別管理"
           description="シフト種別マスタの管理"
           href="/admin/shift-types"
