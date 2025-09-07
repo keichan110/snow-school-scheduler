@@ -2,8 +2,8 @@
 
 import { cn } from '@/lib/utils';
 import { BaseShiftDisplayProps, DepartmentType } from './types';
-import { DepartmentIcon } from '../ui/DepartmentIcon';
-import { ShiftBadge } from '../ui/ShiftBadge';
+import { DepartmentIcon } from '@/components/shared/ui/DepartmentIcon';
+import { ShiftBadge } from '@/components/shared/ui/ShiftBadge';
 import {
   getShiftTypeShort,
   getDepartmentBgClass,

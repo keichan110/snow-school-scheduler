@@ -28,7 +28,7 @@ import { getDepartmentType } from './utils';
 
 export default function CertificationsPage() {
   const { user, status } = useAuth();
-  
+
   const [certifications, setCertifications] = useState<CertificationWithDepartment[]>([]);
   const [filteredCertifications, setFilteredCertifications] = useState<
     CertificationWithDepartment[]

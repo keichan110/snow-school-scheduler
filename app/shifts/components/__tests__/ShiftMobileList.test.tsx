@@ -2,7 +2,7 @@ import React from 'react';
 import { render } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { ShiftMobileList } from '../ShiftMobileList';
-import { ShiftStats } from '@/app/shifts/types';
+import { ShiftStats } from '../../types';
 
 // BaseShiftMobileListをモック化
 jest.mock('../BaseShiftMobileList', () => ({

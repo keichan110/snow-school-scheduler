@@ -16,7 +16,7 @@ interface UnifiedShiftCalendarGridProps extends BaseShiftDisplayProps {
 // 管理者用・公開用で共通の実装を使用
 const BaseShiftCalendar = dynamic(
   () =>
-    import('@/components/shared/shift/BaseShiftCalendar').then((mod) => ({
+    import('./BaseShiftCalendar').then((mod) => ({
       default: mod.BaseShiftCalendar,
     })),
   {

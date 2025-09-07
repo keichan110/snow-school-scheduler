@@ -9,8 +9,8 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { fetchShifts, fetchDepartments, ApiError } from './api';
 import { Shift, Department, ShiftStats, ShiftQueryParams, DayData } from './types';
-import { ShiftCalendarGrid } from '@/components/shared/shift/ShiftCalendarGrid';
-import { ShiftMobileList } from '@/components/shared/shift/ShiftMobileList';
+import { ShiftCalendarGrid } from './components/ShiftCalendarGrid';
+import { ShiftMobileList } from './components/ShiftMobileList';
 import { UnifiedShiftBottomModal } from './components/UnifiedShiftBottomModal';
 import { WeeklyShiftList } from './components/WeeklyShiftList';
 import { ViewToggle } from './components/ViewToggle';
@@ -145,10 +145,10 @@ function PublicShiftsPageContent() {
     if (!selectedDate) {
       return null;
     }
-    
+
     // シフトが設定されていない日付でも dayData を作成
     const shiftsForDate = shiftStats[selectedDate]?.shifts || [];
-    
+
     return {
       date: selectedDate,
       shifts: shiftsForDate,

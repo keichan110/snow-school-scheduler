@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { hasManagePermission, hasPermission } from '@/lib/auth/permissions';
+import { hasManagePermission } from '@/lib/auth/permissions';
 import type { AuthenticatedUser } from '@/lib/auth/types';
 import { DayData } from '../types';
 import { renderDepartmentSections } from '../utils/shiftComponents';
@@ -69,16 +69,21 @@ export function UnifiedShiftBottomModal({
 }: UnifiedShiftBottomModalProps) {
   const { user } = useAuth();
   const { showNotification } = useNotification();
-  
+
   // 管理権限チェック（MANAGER以上）
-  const canManage = user ? hasManagePermission({
-    userId: user.id,
-    lineUserId: user.lineUserId,
-    displayName: user.displayName,
-    role: user.role,
-    isActive: user.isActive
-  } as AuthenticatedUser, 'shifts') : false;
-  
+  const canManage = user
+    ? hasManagePermission(
+        {
+          userId: user.id,
+          lineUserId: user.lineUserId,
+          displayName: user.displayName,
+          role: user.role,
+          isActive: user.isActive,
+        } as AuthenticatedUser,
+        'shifts'
+      )
+    : false;
+
   // 管理機能の状態（権限がある場合のみ初期化）
   const [currentStep, setCurrentStep] = useState<ModalStep>('view');
   const [formData, setFormData] = useState<ShiftFormData>({
@@ -549,16 +554,21 @@ export function UnifiedShiftBottomModal({
       {currentStep === 'view' ? (
         <>
           {localDayData.shifts.length > 0 &&
-            renderDepartmentSections(localDayData.shifts, canManage ? {
-              clickable: true,
-              onShiftClick: (shiftType: string, departmentType: DepartmentType) => {
-                handleDirectEdit(shiftType, departmentType).catch(console.error);
-              },
-              isLoading: isLoading,
-            } : {
-              clickable: false,
-              isLoading: isLoading,
-            })}
+            renderDepartmentSections(
+              localDayData.shifts,
+              canManage
+                ? {
+                    clickable: true,
+                    onShiftClick: (shiftType: string, departmentType: DepartmentType) => {
+                      handleDirectEdit(shiftType, departmentType).catch(console.error);
+                    },
+                    isLoading: isLoading,
+                  }
+                : {
+                    clickable: false,
+                    isLoading: isLoading,
+                  }
+            )}
 
           {errors.submit && (
             <div className="mt-4 rounded-lg border border-red-200 bg-red-50 p-3 dark:border-red-700 dark:bg-red-950">
