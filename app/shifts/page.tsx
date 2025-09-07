@@ -7,15 +7,15 @@ import Header from '@/components/Header';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { fetchShifts, fetchDepartments, ApiError } from '../admin/shifts/api';
-import { Shift, Department, ShiftStats, ShiftQueryParams, DayData } from '../admin/shifts/types';
+import { fetchShifts, fetchDepartments, ApiError } from './api';
+import { Shift, Department, ShiftStats, ShiftQueryParams, DayData } from './types';
 import { ShiftCalendarGrid } from '@/components/shared/shift/ShiftCalendarGrid';
 import { ShiftMobileList } from '@/components/shared/shift/ShiftMobileList';
-import { PublicShiftBottomModal } from './components/PublicShiftBottomModal';
+import { UnifiedShiftBottomModal } from './components/UnifiedShiftBottomModal';
 import { WeeklyShiftList } from './components/WeeklyShiftList';
 import { ViewToggle } from './components/ViewToggle';
 import { WeekNavigation } from './components/WeekNavigation';
-import { isHoliday } from '../admin/shifts/constants/shiftConstants';
+import { isHoliday } from './constants/shiftConstants';
 import { useWeekNavigation } from './hooks/useWeekNavigation';
 import { useMonthNavigation } from './hooks/useMonthNavigation';
 import { useShiftDataTransformation } from './hooks/useShiftDataTransformation';
@@ -123,14 +123,35 @@ function PublicShiftsPageContent() {
     }
   }, []);
 
+  // シフトデータを再読み込み（管理機能用）
+  const handleShiftUpdated = useCallback(async () => {
+    try {
+      const [shiftsData, departmentsData] = await Promise.all([
+        fetchShifts(queryParams),
+        fetchDepartments(),
+      ]);
+
+      setShifts(shiftsData);
+      setDepartments(departmentsData);
+      setShiftStats(transformShiftsToStats(shiftsData, departmentsData));
+    } catch (error) {
+      console.error('Failed to refresh shift data:', error);
+      throw error;
+    }
+  }, [queryParams, transformShiftsToStats]);
+
   // dayData計算
   const dayData = useMemo((): DayData | null => {
-    if (!selectedDate || !shiftStats[selectedDate]) {
+    if (!selectedDate) {
       return null;
     }
+    
+    // シフトが設定されていない日付でも dayData を作成
+    const shiftsForDate = shiftStats[selectedDate]?.shifts || [];
+    
     return {
       date: selectedDate,
-      shifts: shiftStats[selectedDate].shifts,
+      shifts: shiftsForDate,
       isHoliday: isHoliday(selectedDate),
     };
   }, [selectedDate, shiftStats]);
@@ -261,12 +282,13 @@ function PublicShiftsPageContent() {
         </div>
       </div>
 
-      {/* 読み取り専用モーダル */}
-      <PublicShiftBottomModal
+      {/* 統合モーダル（権限ベース） */}
+      <UnifiedShiftBottomModal
         isOpen={isModalOpen}
         onOpenChange={handleModalOpenChange}
         selectedDate={selectedDate}
         dayData={dayData}
+        onShiftUpdated={handleShiftUpdated}
       />
     </div>
   );

@@ -11,7 +11,7 @@ import {
   DrawerTitle,
 } from '@/components/ui/drawer';
 import { Button } from '@/components/ui/button';
-import { DayData } from '@/app/admin/shifts/types';
+import { DayData } from '@/app/shifts/types';
 import { formatDateForDisplay } from '@/shared/utils/dateFormatter';
 
 export interface BaseShiftModalProps {

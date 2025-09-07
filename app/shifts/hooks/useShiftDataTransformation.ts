@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
-import { Shift, Department, ShiftStats, AssignedInstructor } from '../../admin/shifts/types';
-import { getDepartmentTypeById } from '../../admin/shifts/utils/shiftUtils';
+import { Shift, Department, ShiftStats, AssignedInstructor } from '../types';
+import { getDepartmentTypeById } from '../utils/shiftUtils';
 
 /**
  * シフトデータ変換のカスタムフック

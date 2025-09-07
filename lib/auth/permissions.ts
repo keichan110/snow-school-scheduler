@@ -59,15 +59,15 @@ export const PERMISSIONS: PermissionMatrix = {
   },
 
   MANAGER: {
-    // マネージャー: シフト関連機能への CRUD 権限
+    // マネージャー: シフト関連機能への CRUD + manage 権限
     users: ['read'], // 自分の情報のみ
     invitations: [], // 招待URL管理不可
-    departments: ['create', 'read', 'update', 'delete'],
-    instructors: ['create', 'read', 'update', 'delete'],
-    certifications: ['create', 'read', 'update', 'delete'],
-    shifts: ['create', 'read', 'update', 'delete'],
-    'shift-types': ['create', 'read', 'update', 'delete'],
-    'shift-assignments': ['create', 'read', 'update', 'delete'],
+    departments: ['create', 'read', 'update', 'delete', 'manage'],
+    instructors: ['create', 'read', 'update', 'delete', 'manage'],
+    certifications: ['create', 'read', 'update', 'delete', 'manage'],
+    shifts: ['create', 'read', 'update', 'delete', 'manage'],
+    'shift-types': ['create', 'read', 'update', 'delete', 'manage'],
+    'shift-assignments': ['create', 'read', 'update', 'delete', 'manage'],
     'public-shifts': ['read'],
   },
 

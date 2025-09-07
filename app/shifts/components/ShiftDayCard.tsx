@@ -3,7 +3,7 @@
 import React, { useMemo } from 'react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
-import { DayData } from '../../admin/shifts/types';
+import { DayData } from '../types';
 import { renderDepartmentSections } from '../utils/shiftComponents';
 
 interface ShiftDayCardProps {

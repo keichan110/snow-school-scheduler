@@ -1,21 +1,28 @@
 'use client';
 
+import { useState, useEffect } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
+import { hasManagePermission, hasPermission } from '@/lib/auth/permissions';
+import type { AuthenticatedUser } from '@/lib/auth/types';
+import { DayData } from '../types';
+import { renderDepartmentSections } from '../utils/shiftComponents';
+import { PublicShiftModal, AdminShiftModal } from '@/components/shared/modals/BaseShiftModal';
+
+// Admin機能からインポート
 import { ArrowRight, Search, X, Calendar } from 'lucide-react';
 import { User, Check } from '@phosphor-icons/react';
 import { Button } from '@/components/ui/button';
 import { DrawerClose, DrawerFooter } from '@/components/ui/drawer';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
-import { DayData, DepartmentType, Department, ShiftType, ApiResponse } from './types';
-import { DEPARTMENT_STYLES } from './constants/shiftConstants';
+import { DepartmentType, Department, ShiftType, ApiResponse } from '../types';
+import { DEPARTMENT_STYLES } from '../constants/shiftConstants';
 import { CertificationBadge } from '@/components/ui/certification-badge';
-import { useState, useEffect } from 'react';
 import { Edit3 } from 'lucide-react';
-import { prepareShift } from './shiftApiClient';
-import { ExistingShiftData } from './DuplicateShiftDialog';
+import { prepareShift } from '../shiftApiClient';
+import { ExistingShiftData } from '../DuplicateShiftDialog';
 import { useNotification } from '@/components/notifications';
-import { renderDepartmentSections, getDepartmentIcon } from '@/app/shifts/utils/shiftComponents';
-import { AdminShiftModal } from '@/components/shared/modals/BaseShiftModal';
+import { getDepartmentIcon } from '@/app/shifts/utils/shiftComponents';
 
 type ModalStep = 'view' | 'create-step1' | 'create-step2';
 
@@ -45,24 +52,34 @@ interface ShiftFormData {
   selectedInstructorIds: number[];
 }
 
-interface ShiftBottomModalProps {
+interface UnifiedShiftBottomModalProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   selectedDate: string | null;
   dayData: DayData | null;
-  onStartShiftCreation?: () => void;
   onShiftUpdated?: () => Promise<void>;
 }
 
-export function ShiftBottomModal({
+export function UnifiedShiftBottomModal({
   isOpen,
   onOpenChange,
   selectedDate,
   dayData,
-  onStartShiftCreation = () => {}, // eslint-disable-line @typescript-eslint/no-unused-vars
   onShiftUpdated,
-}: ShiftBottomModalProps) {
+}: UnifiedShiftBottomModalProps) {
+  const { user } = useAuth();
   const { showNotification } = useNotification();
+  
+  // 管理権限チェック（MANAGER以上）
+  const canManage = user ? hasManagePermission({
+    userId: user.id,
+    lineUserId: user.lineUserId,
+    displayName: user.displayName,
+    role: user.role,
+    isActive: user.isActive
+  } as AuthenticatedUser, 'shifts') : false;
+  
+  // 管理機能の状態（権限がある場合のみ初期化）
   const [currentStep, setCurrentStep] = useState<ModalStep>('view');
   const [formData, setFormData] = useState<ShiftFormData>({
     departmentId: 0,
@@ -77,12 +94,10 @@ export function ShiftBottomModal({
   const [isLoading, setIsLoading] = useState(false);
   const [isCreatingShift, setIsCreatingShift] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  // 編集モード状態
   const [editMode, setEditMode] = useState<{
     isEdit: boolean;
     existingShift?: ExistingShiftData;
   }>({ isEdit: false });
-  // ローカルシフトデータ状態（更新可能）
   const [localDayData, setLocalDayData] = useState<DayData | null>(dayData);
 
   // dayDataが変更された時にlocalDayDataを更新
@@ -90,10 +105,10 @@ export function ShiftBottomModal({
     setLocalDayData(dayData);
   }, [dayData]);
 
-  // API データ取得
+  // API データ取得（管理権限がある場合のみ）
   useEffect(() => {
     const fetchData = async () => {
-      if (currentStep === 'view') return;
+      if (!canManage || currentStep === 'view') return;
 
       setIsLoading(true);
       try {
@@ -143,11 +158,13 @@ export function ShiftBottomModal({
     };
 
     fetchData();
-  }, [currentStep, formData.departmentId]);
+  }, [canManage, currentStep, formData.departmentId]);
 
   if (!selectedDate || !localDayData) return null;
 
+  // 管理機能のハンドラー（権限がある場合のみ）
   const handleStartShiftCreation = () => {
+    if (!canManage) return;
     setCurrentStep('create-step1');
   };
 
@@ -181,47 +198,44 @@ export function ShiftBottomModal({
   };
 
   const handleNext = async () => {
-    if (validateForm()) {
-      setIsLoading(true);
+    if (!canManage || !validateForm()) return;
 
-      try {
-        // 統合APIコール
-        const prepareResponse = await prepareShift({
-          date: selectedDate!,
-          departmentId: formData.departmentId,
-          shiftTypeId: formData.shiftTypeId,
-        });
+    setIsLoading(true);
 
-        if (prepareResponse.success && prepareResponse.data) {
-          // レスポンスに基づいてモード設定
-          if (prepareResponse.data.mode === 'edit' && prepareResponse.data.shift) {
-            setEditMode({
-              isEdit: true,
-              existingShift: prepareResponse.data.shift,
-            });
-          } else {
-            setEditMode({
-              isEdit: false,
-            });
-          }
+    try {
+      const prepareResponse = await prepareShift({
+        date: selectedDate!,
+        departmentId: formData.departmentId,
+        shiftTypeId: formData.shiftTypeId,
+      });
 
-          // フォームデータを事前設定
-          setFormData((prev) => ({
-            ...prev,
-            notes: prepareResponse.data?.formData.description || '',
-            selectedInstructorIds: prepareResponse.data?.formData.selectedInstructorIds || [],
-          }));
-
-          setCurrentStep('create-step2');
+      if (prepareResponse.success && prepareResponse.data) {
+        if (prepareResponse.data.mode === 'edit' && prepareResponse.data.shift) {
+          setEditMode({
+            isEdit: true,
+            existingShift: prepareResponse.data.shift,
+          });
         } else {
-          setErrors({ submit: prepareResponse.error || 'エラーが発生しました' });
+          setEditMode({
+            isEdit: false,
+          });
         }
-      } catch (error) {
-        console.error('Prepare shift error:', error);
-        setErrors({ submit: 'ネットワークエラーが発生しました' });
-      } finally {
-        setIsLoading(false);
+
+        setFormData((prev) => ({
+          ...prev,
+          notes: prepareResponse.data?.formData.description || '',
+          selectedInstructorIds: prepareResponse.data?.formData.selectedInstructorIds || [],
+        }));
+
+        setCurrentStep('create-step2');
+      } else {
+        setErrors({ submit: prepareResponse.error || 'エラーが発生しました' });
       }
+    } catch (error) {
+      console.error('Prepare shift error:', error);
+      setErrors({ submit: 'ネットワークエラーが発生しました' });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -236,22 +250,13 @@ export function ShiftBottomModal({
     });
   };
 
-  // 直接編集（Step1スキップ）機能
   const handleDirectEdit = async (shiftType: string, departmentType: DepartmentType) => {
-    if (!selectedDate) {
-      setErrors({ submit: '日付が選択されていません' });
-      return;
-    }
+    if (!canManage || !selectedDate || isLoading) return;
 
-    // ローディング中は重複実行を防止
-    if (isLoading) return;
-
-    // エラーをクリア
     setErrors({});
     setIsLoading(true);
 
     try {
-      // 部門とシフト種類の情報を取得
       const [departmentsRes, shiftTypesRes] = await Promise.all([
         fetch('/api/departments'),
         fetch('/api/shift-types'),
@@ -267,7 +272,6 @@ export function ShiftBottomModal({
           departmentsData.data &&
           shiftTypesData.data
         ) {
-          // 部門タイプから部門IDを特定
           const department = departmentsData.data.find((dept) => {
             const name = dept.name.toLowerCase();
             return (
@@ -280,11 +284,9 @@ export function ShiftBottomModal({
             );
           });
 
-          // シフト種類名からシフト種類IDを特定
           const shiftTypeData = shiftTypesData.data.find((type) => type.name === shiftType);
 
           if (department && shiftTypeData) {
-            // フォームデータを設定
             setFormData({
               departmentId: department.id,
               shiftTypeId: shiftTypeData.id,
@@ -292,11 +294,9 @@ export function ShiftBottomModal({
               selectedInstructorIds: [],
             });
 
-            // 部門とシフト種類データを状態に保存
             setDepartments(departmentsData.data);
             setShiftTypes(shiftTypesData.data);
 
-            // 統合APIを呼び出して編集準備
             const prepareResponse = await prepareShift({
               date: selectedDate,
               departmentId: department.id,
@@ -304,7 +304,6 @@ export function ShiftBottomModal({
             });
 
             if (prepareResponse.success && prepareResponse.data) {
-              // レスポンスに基づいてモード設定
               if (prepareResponse.data.mode === 'edit' && prepareResponse.data.shift) {
                 setEditMode({
                   isEdit: true,
@@ -316,14 +315,12 @@ export function ShiftBottomModal({
                 });
               }
 
-              // フォームデータを事前設定
               setFormData((prev) => ({
                 ...prev,
                 notes: prepareResponse.data?.formData.description || '',
                 selectedInstructorIds: prepareResponse.data?.formData.selectedInstructorIds || [],
               }));
 
-              // Step2に直接遷移
               setCurrentStep('create-step2');
             } else {
               setErrors({ submit: prepareResponse.error || 'エラーが発生しました' });
@@ -342,13 +339,13 @@ export function ShiftBottomModal({
   };
 
   const handleCreateShift = async () => {
-    if (formData.selectedInstructorIds.length === 0) {
+    if (!canManage || formData.selectedInstructorIds.length === 0) {
       setErrors({ instructors: '最低1名のインストラクターを選択してください' });
       return;
     }
 
     setIsCreatingShift(true);
-    setErrors({}); // エラーをクリア
+    setErrors({});
 
     try {
       const response = await fetch('/api/shifts', {
@@ -362,7 +359,6 @@ export function ShiftBottomModal({
           shiftTypeId: formData.shiftTypeId,
           description: formData.notes || null,
           assignedInstructorIds: formData.selectedInstructorIds,
-          // 編集モードの場合はforce=trueで送信
           force: editMode.isEdit,
         }),
       });
@@ -370,24 +366,18 @@ export function ShiftBottomModal({
       const result = await response.json();
 
       if (result.success) {
-        // 成功時の処理
         const message = editMode.isEdit
           ? 'シフトが正常に更新されました'
           : 'シフトが正常に作成されました';
 
-        // 新しい通知システム
         showNotification(message, 'success');
 
-        // フォームをリセット
         setFormData({ departmentId: 0, shiftTypeId: 0, notes: '', selectedInstructorIds: [] });
         setErrors({});
         setSearchTerm('');
         setEditMode({ isEdit: false });
-
-        // viewステップに遷移
         setCurrentStep('view');
 
-        // 親コンポーネントにシフトデータの更新を通知し、データ更新完了を待つ
         if (onShiftUpdated) {
           await onShiftUpdated();
         }
@@ -403,7 +393,6 @@ export function ShiftBottomModal({
   };
 
   const handleModalOpenChange = (open: boolean) => {
-    // モーダルが閉じられた時にステップをリセット
     if (!open) {
       setCurrentStep('view');
       setFormData({ departmentId: 0, shiftTypeId: 0, notes: '', selectedInstructorIds: [] });
@@ -414,9 +403,8 @@ export function ShiftBottomModal({
     onOpenChange(open);
   };
 
-  // インストラクター検索（名前・フリガナ）
+  // インストラクター検索
   const filteredInstructors = instructors.filter((instructor) => {
-    // 検索条件のチェック
     if (!searchTerm) return true;
 
     const searchLower = searchTerm.toLowerCase();
@@ -428,7 +416,6 @@ export function ShiftBottomModal({
     );
   });
 
-  // 選択済みインストラクターの取得
   const selectedInstructors = instructors.filter((instructor) =>
     formData.selectedInstructorIds.includes(instructor.id)
   );
@@ -441,7 +428,6 @@ export function ShiftBottomModal({
   };
 
   const renderDepartmentCard = (department: Department) => {
-    // 部門名から判定するための簡易関数
     const getDepartmentType = (name: string): DepartmentType => {
       if (name.toLowerCase().includes('スキー') || name.toLowerCase().includes('ski')) {
         return 'ski';
@@ -457,7 +443,6 @@ export function ShiftBottomModal({
     const departmentType = getDepartmentType(department.name);
     const styles = DEPARTMENT_STYLES[departmentType];
     const isSelected = formData.departmentId === department.id;
-
     const iconElement = getDepartmentIcon(departmentType, cn('h-5 w-5', styles.iconColor));
 
     return (
@@ -479,16 +464,21 @@ export function ShiftBottomModal({
     );
   };
 
-  // 管理者側の空状態コンテンツ
-  const adminEmptyStateContent = (
+  // 権限に基づく空状態コンテンツ
+  const emptyStateContent = canManage ? (
     <div className="py-8 text-center text-muted-foreground">
       <Calendar className="mx-auto mb-4 h-12 w-12 opacity-50" />
       <div className="text-lg font-medium">シフトが設定されていません</div>
       <div className="mt-1 text-sm">新しいシフトを作成できます</div>
     </div>
+  ) : (
+    <div className="py-8 text-center text-muted-foreground">
+      <Calendar className="mx-auto mb-4 h-12 w-12 opacity-50" />
+      <div className="text-lg font-medium">シフトが設定されていません</div>
+    </div>
   );
 
-  // フッター部分
+  // 権限に基づくフッター
   const renderFooter = () => (
     <DrawerFooter>
       {currentStep === 'view' ? (
@@ -498,12 +488,14 @@ export function ShiftBottomModal({
               閉じる
             </Button>
           </DrawerClose>
-          <Button onClick={handleStartShiftCreation} className="gap-2 md:flex-1" size="lg">
-            選択した日でシフト作成を開始
-            <ArrowRight className="h-4 w-4" />
-          </Button>
+          {canManage && (
+            <Button onClick={handleStartShiftCreation} className="gap-2 md:flex-1" size="lg">
+              選択した日でシフト作成を開始
+              <ArrowRight className="h-4 w-4" />
+            </Button>
+          )}
         </div>
-      ) : currentStep === 'create-step1' ? (
+      ) : canManage && currentStep === 'create-step1' ? (
         <div className="flex flex-col gap-2 md:flex-row md:gap-4">
           <Button
             onClick={handleBackToView}
@@ -518,7 +510,7 @@ export function ShiftBottomModal({
             <ArrowRight className="h-4 w-4" />
           </Button>
         </div>
-      ) : (
+      ) : canManage ? (
         <div className="flex flex-col gap-2 md:flex-row md:gap-4">
           <Button
             onClick={handleBackToView}
@@ -537,40 +529,45 @@ export function ShiftBottomModal({
             {isCreatingShift ? '処理中...' : editMode.isEdit ? 'シフトを更新' : 'シフト登録'}
           </Button>
         </div>
-      )}
+      ) : null}
     </DrawerFooter>
   );
 
+  // 権限に基づくモーダル選択
+  const ModalComponent = canManage ? AdminShiftModal : PublicShiftModal;
+
   return (
-    <AdminShiftModal
+    <ModalComponent
       isOpen={isOpen}
       onOpenChange={handleModalOpenChange}
       selectedDate={selectedDate}
       dayData={localDayData}
       showEmptyState={currentStep === 'view'}
-      emptyStateContent={adminEmptyStateContent}
+      emptyStateContent={emptyStateContent}
       footer={renderFooter()}
     >
       {currentStep === 'view' ? (
-        /* シフト表示モード */
         <>
           {localDayData.shifts.length > 0 &&
-            /* 部門別セクション表示（統合版） */
-            renderDepartmentSections(localDayData.shifts, {
+            renderDepartmentSections(localDayData.shifts, canManage ? {
               clickable: true,
-              onShiftClick: handleDirectEdit,
+              onShiftClick: (shiftType: string, departmentType: DepartmentType) => {
+                handleDirectEdit(shiftType, departmentType).catch(console.error);
+              },
+              isLoading: isLoading,
+            } : {
+              clickable: false,
               isLoading: isLoading,
             })}
 
-          {/* エラー表示 */}
           {errors.submit && (
             <div className="mt-4 rounded-lg border border-red-200 bg-red-50 p-3 dark:border-red-700 dark:bg-red-950">
               <p className="text-sm text-red-600 dark:text-red-400">{errors.submit}</p>
             </div>
           )}
         </>
-      ) : (
-        /* シフト作成フォームモード */
+      ) : canManage ? (
+        /* 管理機能のフォーム（権限がある場合のみ表示） */
         <div className="mx-auto max-w-2xl space-y-6">
           {/* 進捗ステップ */}
           <div className="mb-6 flex items-center justify-center space-x-2">
@@ -603,7 +600,6 @@ export function ShiftBottomModal({
           </div>
 
           {currentStep === 'create-step2' && (
-            /* 選択した部門とシフト種別の表示 */
             <div className="mb-6 space-y-1 text-center">
               <div className="text-sm text-muted-foreground">
                 {departments.find((d) => d.id === formData.departmentId)?.name} -{' '}
@@ -613,7 +609,6 @@ export function ShiftBottomModal({
           )}
 
           {currentStep === 'create-step2' && editMode.isEdit && (
-            /* 編集モード表示 */
             <div className="mb-4 rounded-lg border-2 border-blue-200 bg-blue-50 p-4 dark:border-blue-700 dark:bg-blue-950">
               <div className="mb-2 flex items-center gap-2">
                 <Edit3 className="h-5 w-5 text-blue-600 dark:text-blue-400" />
@@ -784,13 +779,9 @@ export function ShiftBottomModal({
                       ) : (
                         filteredInstructors.map((instructor) => {
                           const isSelected = formData.selectedInstructorIds.includes(instructor.id);
-
-                          // 選択された部門に対応する資格を持っているかチェック
                           const hasRequiredCertification = instructor.certifications.some(
                             (cert) => cert.department.id === formData.departmentId
                           );
-
-                          // 該当部門の資格名を取得
                           const departmentCertifications = instructor.certifications.filter(
                             (cert) => cert.department.id === formData.departmentId
                           );
@@ -884,7 +875,7 @@ export function ShiftBottomModal({
             </>
           )}
         </div>
-      )}
-    </AdminShiftModal>
+      ) : null}
+    </ModalComponent>
   );
 }

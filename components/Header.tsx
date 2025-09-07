@@ -42,7 +42,7 @@ export default function Header() {
 
   const allMenuItems: MenuItem[] = [
     {
-      href: '/admin/shifts',
+      href: '/shifts',
       icon: CalendarDots,
       label: 'シフト管理',
       description: 'シフト表の作成・編集・割り当て管理',

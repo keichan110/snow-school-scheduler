@@ -10,13 +10,6 @@ export default function AdminPage() {
       {/* 管理機能メニュー */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         <AdminMenuCard
-          title="シフト管理"
-          description="シフトの作成・編集・割り当て管理"
-          href="/admin/shifts"
-          icon="📅"
-        />
-
-        <AdminMenuCard
           title="招待管理"
           description="新規メンバー招待URLの作成・管理"
           href="/admin/invitations"

@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import { BaseShiftModal, PublicShiftModal, AdminShiftModal } from '../BaseShiftModal';
-import { DayData, DepartmentType } from '@/app/admin/shifts/types';
+import { DayData, DepartmentType } from '@/app/shifts/types';
 
 // Mock data
 const mockDayDataEmpty: DayData = {

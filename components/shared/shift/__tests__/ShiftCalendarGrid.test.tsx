@@ -2,7 +2,7 @@ import React from 'react';
 import { render } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { ShiftCalendarGrid } from '../ShiftCalendarGrid';
-import { ShiftStats } from '@/app/admin/shifts/types';
+import { ShiftStats } from '@/app/shifts/types';
 
 // BaseShiftCalendarをモック化
 jest.mock('../BaseShiftCalendar', () => ({

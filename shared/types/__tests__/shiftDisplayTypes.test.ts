@@ -3,7 +3,7 @@ import {
   ShiftCalendarGridProps,
   ShiftMobileListProps,
 } from '../shiftDisplayTypes';
-import { ShiftStats } from '@/app/admin/shifts/types';
+import { ShiftStats } from '@/app/shifts/types';
 
 describe('shiftDisplayTypes', () => {
   // テスト用のモックデータ

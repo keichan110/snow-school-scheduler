@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import { ShiftStats, DayData } from '../../admin/shifts/types';
+import { ShiftStats, DayData } from '../types';
 import { ShiftDayCard } from './ShiftDayCard';
 import { getWeekDates, formatDateToString } from '../utils/weekCalculations';
 
