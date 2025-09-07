@@ -34,6 +34,9 @@ function PublicShiftsPageContent() {
   const [error, setError] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalInitialStep, setModalInitialStep] = useState<
+    'view' | 'create-step1' | 'create-step2'
+  >('view');
 
   // カスタムフックを使用
   const { currentYear, currentMonth, monthlyQueryParams, navigateMonth } = useMonthNavigation();
@@ -112,14 +115,36 @@ function PublicShiftsPageContent() {
   // 日付選択ハンドラー（月間ビュー用）
   const handleMonthlyDateSelect = useCallback((date: string) => {
     setSelectedDate(date);
+    setModalInitialStep('view');
     setIsModalOpen(true);
   }, []);
+
+  // 週間ビュー専用：空の日付または新規追加ボタンクリック時
+  const handleWeeklyDateSelect = useCallback((date: string) => {
+    setSelectedDate(date);
+    setModalInitialStep('create-step1');
+    setIsModalOpen(true);
+    // 週間ビューでは直接シフト作成画面（create-step1）へ
+  }, []);
+
+  // 週間ビュー専用：既存シフト詳細クリック時（インストラクター選択画面へ直行）
+  const handleWeeklyShiftDetailSelect = useCallback(
+    (date: string, _shiftType: string, _departmentType: string) => {
+      setSelectedDate(date);
+      setModalInitialStep('create-step2');
+      setIsModalOpen(true);
+      // 週間ビューでは直接インストラクター選択画面（create-step2）へ
+      // TODO: 将来的には shiftType と departmentType を使用して事前設定可能
+    },
+    []
+  );
 
   // モーダル開閉ハンドラー
   const handleModalOpenChange = useCallback((open: boolean) => {
     setIsModalOpen(open);
     if (!open) {
       setSelectedDate(null);
+      setModalInitialStep('view');
     }
   }, []);
 
@@ -273,6 +298,9 @@ function PublicShiftsPageContent() {
                       baseDate={weeklyBaseDate}
                       shiftStats={shiftStats}
                       isHoliday={isHoliday}
+                      selectedDate={selectedDate}
+                      onDateSelect={handleWeeklyDateSelect}
+                      onShiftDetailSelect={handleWeeklyShiftDetailSelect}
                     />
                   </div>
                 )}
@@ -289,6 +317,7 @@ function PublicShiftsPageContent() {
         selectedDate={selectedDate}
         dayData={dayData}
         onShiftUpdated={handleShiftUpdated}
+        initialStep={modalInitialStep}
       />
     </div>
   );

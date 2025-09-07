@@ -58,6 +58,7 @@ interface UnifiedShiftBottomModalProps {
   selectedDate: string | null;
   dayData: DayData | null;
   onShiftUpdated?: () => Promise<void>;
+  initialStep?: 'view' | 'create-step1' | 'create-step2';
 }
 
 export function UnifiedShiftBottomModal({
@@ -66,6 +67,7 @@ export function UnifiedShiftBottomModal({
   selectedDate,
   dayData,
   onShiftUpdated,
+  initialStep = 'view',
 }: UnifiedShiftBottomModalProps) {
   const { user } = useAuth();
   const { showNotification } = useNotification();
@@ -85,7 +87,7 @@ export function UnifiedShiftBottomModal({
     : false;
 
   // 管理機能の状態（権限がある場合のみ初期化）
-  const [currentStep, setCurrentStep] = useState<ModalStep>('view');
+  const [currentStep, setCurrentStep] = useState<ModalStep>(initialStep);
   const [formData, setFormData] = useState<ShiftFormData>({
     departmentId: 0,
     shiftTypeId: 0,
@@ -109,6 +111,11 @@ export function UnifiedShiftBottomModal({
   useEffect(() => {
     setLocalDayData(dayData);
   }, [dayData]);
+
+  // initialStepが変更された時にcurrentStepを更新
+  useEffect(() => {
+    setCurrentStep(initialStep);
+  }, [initialStep]);
 
   // API データ取得（管理権限がある場合のみ）
   useEffect(() => {

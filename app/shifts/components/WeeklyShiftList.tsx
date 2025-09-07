@@ -9,9 +9,19 @@ interface WeeklyShiftListProps {
   baseDate: Date;
   shiftStats: ShiftStats;
   isHoliday: (date: string) => boolean;
+  selectedDate?: string | null;
+  onDateSelect?: (date: string) => void;
+  onShiftDetailSelect?: (date: string, shiftType: string, departmentType: string) => void;
 }
 
-export function WeeklyShiftList({ baseDate, shiftStats, isHoliday }: WeeklyShiftListProps) {
+export function WeeklyShiftList({
+  baseDate,
+  shiftStats,
+  isHoliday,
+  selectedDate,
+  onDateSelect,
+  onShiftDetailSelect,
+}: WeeklyShiftListProps) {
   // 週の日付データを計算
   const weekDays = useMemo(() => {
     const weekDates = getWeekDates(baseDate);
@@ -46,8 +56,11 @@ export function WeeklyShiftList({ baseDate, shiftStats, isHoliday }: WeeklyShift
             date={date}
             dateString={dateString}
             dayData={dayData}
-            isSelected={false}
-            onDateSelect={() => {}}
+            isSelected={selectedDate === dateString}
+            onDateSelect={() => onDateSelect?.(dateString)}
+            onShiftDetailSelect={(shiftType, departmentType) =>
+              onShiftDetailSelect?.(dateString, shiftType, departmentType)
+            }
           />
         ))}
       </div>
