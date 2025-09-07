@@ -2,6 +2,9 @@
 
 import { useState, useEffect, useMemo, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useAuth } from '@/contexts/AuthContext';
+import { hasManagePermission } from '@/lib/auth/permissions';
+import type { AuthenticatedUser } from '@/lib/auth/types';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import Header from '@/components/Header';
 import { Button } from '@/components/ui/button';
@@ -9,7 +12,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { fetchShifts, fetchDepartments, ApiError } from './api';
 import { Shift, Department, ShiftStats, ShiftQueryParams, DayData } from './types';
-import { ShiftCalendarGrid } from './components/ShiftCalendarGrid';
+import { MonthlyCalendarWithDetails } from './components/MonthlyCalendarWithDetails';
 import { ShiftMobileList } from './components/ShiftMobileList';
 import { UnifiedShiftBottomModal } from './components/UnifiedShiftBottomModal';
 import { WeeklyShiftList } from './components/WeeklyShiftList';
@@ -25,6 +28,7 @@ type ViewMode = 'monthly' | 'weekly';
 function PublicShiftsPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { user } = useAuth();
 
   const [viewMode, setViewMode] = useState<ViewMode>('monthly');
   const [, setShifts] = useState<Shift[]>([]);
@@ -34,9 +38,23 @@ function PublicShiftsPageContent() {
   const [error, setError] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [modalInitialStep, setModalInitialStep] = useState<
-    'view' | 'create-step1' | 'create-step2'
-  >('view');
+  const [modalInitialStep, setModalInitialStep] = useState<'create-step1' | 'create-step2'>(
+    'create-step1'
+  );
+
+  // 管理権限チェック
+  const canManage = user
+    ? hasManagePermission(
+        {
+          userId: user.id,
+          lineUserId: user.lineUserId,
+          displayName: user.displayName,
+          role: user.role,
+          isActive: user.isActive,
+        } as AuthenticatedUser,
+        'shifts'
+      )
+    : false;
 
   // カスタムフックを使用
   const { currentYear, currentMonth, monthlyQueryParams, navigateMonth } = useMonthNavigation();
@@ -115,8 +133,8 @@ function PublicShiftsPageContent() {
   // 日付選択ハンドラー（月間ビュー用）
   const handleMonthlyDateSelect = useCallback((date: string) => {
     setSelectedDate(date);
-    setModalInitialStep('view');
-    setIsModalOpen(true);
+    // 月間ビューでは日付選択でシフト詳細セクションが表示される
+    // 管理者の場合は必要に応じてモーダルを開く
   }, []);
 
   // 週間ビュー専用：空の日付または新規追加ボタンクリック時
@@ -128,23 +146,33 @@ function PublicShiftsPageContent() {
   }, []);
 
   // 週間ビュー専用：既存シフト詳細クリック時（インストラクター選択画面へ直行）
-  const handleWeeklyShiftDetailSelect = useCallback(
-    (date: string, _shiftType: string, _departmentType: string) => {
-      setSelectedDate(date);
-      setModalInitialStep('create-step2');
-      setIsModalOpen(true);
-      // 週間ビューでは直接インストラクター選択画面（create-step2）へ
-      // TODO: 将来的には shiftType と departmentType を使用して事前設定可能
-    },
-    []
-  );
+  const handleWeeklyShiftDetailSelect = useCallback((date: string) => {
+    setSelectedDate(date);
+    setModalInitialStep('create-step2');
+    setIsModalOpen(true);
+    // 週間ビューでは直接インストラクター選択画面（create-step2）へ
+  }, []);
+
+  // シフト詳細セクションから新規作成モーダルを開く
+  const handleCreateShift = useCallback(() => {
+    if (!canManage || !selectedDate) return;
+    setModalInitialStep('create-step1');
+    setIsModalOpen(true);
+  }, [canManage, selectedDate]);
+
+  // シフト詳細セクション用：シフト詳細クリック時（管理機能）
+  const handleShiftDetailClick = useCallback(() => {
+    if (!canManage || !selectedDate) return;
+
+    setModalInitialStep('create-step2');
+    setIsModalOpen(true);
+  }, [canManage, selectedDate]);
 
   // モーダル開閉ハンドラー
   const handleModalOpenChange = useCallback((open: boolean) => {
     setIsModalOpen(open);
     if (!open) {
-      setSelectedDate(null);
-      setModalInitialStep('view');
+      setModalInitialStep('create-step1');
     }
   }, []);
 
@@ -269,13 +297,16 @@ function PublicShiftsPageContent() {
                   <>
                     {/* デスクトップ・タブレット用カレンダー */}
                     <div className="hidden sm:block">
-                      <ShiftCalendarGrid
+                      <MonthlyCalendarWithDetails
                         year={currentYear}
                         month={currentMonth}
                         shiftStats={shiftStats}
                         isHoliday={isHoliday}
                         selectedDate={selectedDate}
                         onDateSelect={handleMonthlyDateSelect}
+                        canManage={canManage}
+                        onShiftDetailClick={handleShiftDetailClick}
+                        onCreateShift={handleCreateShift}
                       />
                     </div>
 
