@@ -14,13 +14,13 @@ import {
   Gear,
   type Icon,
 } from '@phosphor-icons/react';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import {
-  NavigationMenu,
-  NavigationMenuContent,
-  NavigationMenuItem,
-  NavigationMenuList,
-  NavigationMenuTrigger,
-} from '@/components/ui/navigation-menu';
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
@@ -112,7 +112,74 @@ export default function Header() {
       <div className="rounded-2xl border border-border/20 bg-background/80 shadow-lg backdrop-blur-md">
         <div className="px-6 py-3">
           <div className="flex items-center justify-between">
-            <div className="flex items-center">
+            <div className="flex items-center gap-4">
+              {/* 管理メニューDrawer（左端） */}
+              {hasManagementAccess && visibleMenuItems.length > 0 && (
+                <Sheet>
+                  <SheetTrigger asChild>
+                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                      <List className="h-5 w-5" weight="regular" />
+                    </Button>
+                  </SheetTrigger>
+                  <SheetContent side="left" className="w-[400px] max-w-[calc(100vw-2rem)] p-0">
+                    <div className="p-6">
+                      <div className="grid gap-3">
+                        {visibleMenuItems.map((item) => {
+                          const IconComponent = item.icon;
+                          const isActive = pathname === item.href;
+
+                          return (
+                            <Link
+                              key={item.href}
+                              href={item.href}
+                              className={`flex items-start space-x-4 rounded-lg p-3 transition-all duration-200 hover:bg-accent/50 ${
+                                isActive
+                                  ? 'bg-primary/10 text-primary'
+                                  : 'text-muted-foreground hover:text-foreground'
+                              }`}
+                            >
+                              <IconComponent
+                                className="h-6 w-6 shrink-0"
+                                weight={isActive ? 'fill' : 'regular'}
+                              />
+                              <div className="space-y-1">
+                                <h3 className="text-sm font-medium leading-none">{item.label}</h3>
+                                <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
+                                  {item.description}
+                                </p>
+                              </div>
+                            </Link>
+                          );
+                        })}
+
+                        {/* 管理者機能 (ADMIN のみ) */}
+                        {user && user.role === 'ADMIN' && (
+                          <Link
+                            href="/admin"
+                            className={`flex items-start space-x-4 rounded-lg p-3 transition-all duration-200 hover:bg-accent/50 ${
+                              pathname === '/admin'
+                                ? 'bg-primary/10 text-primary'
+                                : 'text-muted-foreground hover:text-foreground'
+                            }`}
+                          >
+                            <Gear
+                              className="h-6 w-6 shrink-0"
+                              weight={pathname === '/admin' ? 'fill' : 'regular'}
+                            />
+                            <div className="space-y-1">
+                              <h3 className="text-sm font-medium leading-none">管理</h3>
+                              <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
+                                システム管理機能へのアクセス
+                              </p>
+                            </div>
+                          </Link>
+                        )}
+                      </div>
+                    </div>
+                  </SheetContent>
+                </Sheet>
+              )}
+
               <Link href="/" className="flex items-center space-x-2">
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-100 via-blue-300 to-indigo-400">
                   <Snowflake className="h-6 w-6 text-white" weight="bold" />
@@ -126,134 +193,58 @@ export default function Header() {
             <div className="flex items-center gap-2">
               {/* ユーザーAvatar */}
               {user && (
-                <NavigationMenu>
-                  <NavigationMenuList>
-                    <NavigationMenuItem>
-                      <NavigationMenuTrigger className="flex h-8 w-8 items-center justify-center border-none bg-transparent p-0 hover:bg-transparent data-[state=open]:bg-transparent">
-                        <Avatar className="h-8 w-8 cursor-pointer transition-all hover:ring-2 hover:ring-primary/20">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                      <Avatar className="h-8 w-8 cursor-pointer transition-all hover:ring-2 hover:ring-primary/20">
+                        <AvatarImage src={user.profileImageUrl || ''} alt={user.displayName} />
+                        <AvatarFallback className="bg-gradient-to-br from-blue-100 via-blue-300 to-indigo-400 text-sm font-semibold text-white">
+                          {user.displayName.charAt(0).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-[280px] p-4">
+                    <div className="space-y-4">
+                      {/* ユーザー情報 */}
+                      <div className="flex items-center space-x-3">
+                        <Avatar className="h-12 w-12">
                           <AvatarImage src={user.profileImageUrl || ''} alt={user.displayName} />
-                          <AvatarFallback className="bg-gradient-to-br from-blue-100 via-blue-300 to-indigo-400 text-sm font-semibold text-white">
+                          <AvatarFallback className="bg-gradient-to-br from-blue-100 via-blue-300 to-indigo-400 font-semibold text-white">
                             {user.displayName.charAt(0).toUpperCase()}
                           </AvatarFallback>
                         </Avatar>
-                      </NavigationMenuTrigger>
-                      <NavigationMenuContent>
-                        <div className="max-h-[400px] w-[280px] overflow-y-auto p-4">
-                          <div className="space-y-4">
-                            {/* ユーザー情報 */}
-                            <div className="flex items-center space-x-3">
-                              <Avatar className="h-12 w-12">
-                                <AvatarImage
-                                  src={user.profileImageUrl || ''}
-                                  alt={user.displayName}
-                                />
-                                <AvatarFallback className="bg-gradient-to-br from-blue-100 via-blue-300 to-indigo-400 font-semibold text-white">
-                                  {user.displayName.charAt(0).toUpperCase()}
-                                </AvatarFallback>
-                              </Avatar>
-                              <div className="flex-1">
-                                <p className="text-sm font-medium">{user.displayName}</p>
-                                <p className="text-xs text-muted-foreground">
-                                  {user.role === 'ADMIN'
-                                    ? '管理者'
-                                    : user.role === 'MANAGER'
-                                      ? 'マネージャー'
-                                      : 'メンバー'}
-                                </p>
-                              </div>
-                            </div>
-
-                            {/* ログアウトボタン */}
-                            <div className="border-t pt-2">
-                              <Button
-                                variant="ghost"
-                                className="h-8 w-full justify-start text-sm text-muted-foreground hover:text-foreground"
-                                onClick={async () => {
-                                  await logout();
-                                  window.location.href = '/';
-                                }}
-                              >
-                                <User className="mr-2 h-4 w-4" />
-                                ログアウト
-                              </Button>
-                            </div>
-                          </div>
+                        <div className="flex-1">
+                          <p className="text-sm font-medium">{user.displayName}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {user.role === 'ADMIN'
+                              ? '管理者'
+                              : user.role === 'MANAGER'
+                                ? 'マネージャー'
+                                : 'メンバー'}
+                          </p>
                         </div>
-                      </NavigationMenuContent>
-                    </NavigationMenuItem>
-                  </NavigationMenuList>
-                </NavigationMenu>
-              )}
+                      </div>
 
-              {/* 管理メニュー */}
-              {hasManagementAccess && visibleMenuItems.length > 0 && (
-                <NavigationMenu>
-                  <NavigationMenuList>
-                    <NavigationMenuItem>
-                      <NavigationMenuTrigger className="border-none bg-transparent">
-                        <List className="h-5 w-5" weight="regular" />
-                      </NavigationMenuTrigger>
-                      <NavigationMenuContent>
-                        <div className="w-[400px] p-4">
-                          <div className="grid gap-3">
-                            {visibleMenuItems.map((item) => {
-                              const IconComponent = item.icon;
-                              const isActive = pathname === item.href;
-
-                              return (
-                                <Link
-                                  key={item.href}
-                                  href={item.href}
-                                  className={`flex items-start space-x-4 rounded-lg p-3 transition-all duration-200 hover:bg-accent/50 ${
-                                    isActive
-                                      ? 'bg-primary/10 text-primary'
-                                      : 'text-muted-foreground hover:text-foreground'
-                                  }`}
-                                >
-                                  <IconComponent
-                                    className="h-6 w-6 shrink-0"
-                                    weight={isActive ? 'fill' : 'regular'}
-                                  />
-                                  <div className="space-y-1">
-                                    <h3 className="text-sm font-medium leading-none">
-                                      {item.label}
-                                    </h3>
-                                    <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
-                                      {item.description}
-                                    </p>
-                                  </div>
-                                </Link>
-                              );
-                            })}
-
-                            {/* 管理者機能 (ADMIN のみ) */}
-                            {user && user.role === 'ADMIN' && (
-                              <Link
-                                href="/admin"
-                                className={`flex items-start space-x-4 rounded-lg p-3 transition-all duration-200 hover:bg-accent/50 ${
-                                  pathname === '/admin'
-                                    ? 'bg-primary/10 text-primary'
-                                    : 'text-muted-foreground hover:text-foreground'
-                                }`}
-                              >
-                                <Gear
-                                  className="h-6 w-6 shrink-0"
-                                  weight={pathname === '/admin' ? 'fill' : 'regular'}
-                                />
-                                <div className="space-y-1">
-                                  <h3 className="text-sm font-medium leading-none">管理</h3>
-                                  <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
-                                    システム管理機能へのアクセス
-                                  </p>
-                                </div>
-                              </Link>
-                            )}
-                          </div>
-                        </div>
-                      </NavigationMenuContent>
-                    </NavigationMenuItem>
-                  </NavigationMenuList>
-                </NavigationMenu>
+                      {/* ログアウトボタン */}
+                      <div className="border-t pt-2">
+                        <DropdownMenuItem asChild>
+                          <Button
+                            variant="ghost"
+                            className="h-8 w-full justify-start text-sm text-muted-foreground hover:text-foreground"
+                            onClick={async () => {
+                              await logout();
+                              window.location.href = '/';
+                            }}
+                          >
+                            <User className="mr-2 h-4 w-4" />
+                            ログアウト
+                          </Button>
+                        </DropdownMenuItem>
+                      </div>
+                    </div>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               )}
             </div>
           </div>
