@@ -45,7 +45,7 @@ export async function GET(request: NextRequest) {
       });
 
       // エラーページにリダイレクト（将来実装）
-      return NextResponse.redirect(new URL('/auth/error?reason=cancelled', request.url), {
+      return NextResponse.redirect(new URL('/error?reason=cancelled', request.url), {
         status: 302,
       });
     }
@@ -59,7 +59,7 @@ export async function GET(request: NextRequest) {
         code: !!code,
         state: !!receivedState,
       });
-      return NextResponse.redirect(new URL('/auth/error?reason=invalid_callback', request.url), {
+      return NextResponse.redirect(new URL('/error?reason=invalid_callback', request.url), {
         status: 302,
       });
     }
@@ -68,7 +68,7 @@ export async function GET(request: NextRequest) {
     const sessionCookie = request.cookies.get('auth-session')?.value;
     if (!sessionCookie) {
       console.error('❌ Authentication session not found');
-      return NextResponse.redirect(new URL('/auth/error?reason=session_expired', request.url), {
+      return NextResponse.redirect(new URL('/error?reason=session_expired', request.url), {
         status: 302,
       });
     }
@@ -78,7 +78,7 @@ export async function GET(request: NextRequest) {
       sessionData = JSON.parse(sessionCookie);
     } catch (parseError) {
       console.error('❌ Invalid session data format:', parseError);
-      return NextResponse.redirect(new URL('/auth/error?reason=invalid_session', request.url), {
+      return NextResponse.redirect(new URL('/error?reason=invalid_session', request.url), {
         status: 302,
       });
     }
@@ -89,7 +89,7 @@ export async function GET(request: NextRequest) {
       console.error('❌ Authentication session expired:', {
         ageMinutes: Math.round(sessionAge / 60000),
       });
-      return NextResponse.redirect(new URL('/auth/error?reason=session_expired', request.url), {
+      return NextResponse.redirect(new URL('/error?reason=session_expired', request.url), {
         status: 302,
       });
     }
@@ -106,7 +106,7 @@ export async function GET(request: NextRequest) {
 
     if (!authResult.success || !authResult.profile) {
       console.error('❌ LINE authentication flow failed:', authResult.error);
-      return NextResponse.redirect(new URL('/auth/error?reason=auth_failed', request.url), {
+      return NextResponse.redirect(new URL('/error?reason=auth_failed', request.url), {
         status: 302,
       });
     }
@@ -136,7 +136,7 @@ export async function GET(request: NextRequest) {
       if (!sessionData.inviteToken) {
         console.error('❌ New user registration requires invitation token');
         return NextResponse.redirect(
-          new URL('/auth/error?reason=invitation_required', request.url),
+          new URL('/error?reason=invitation_required', request.url),
           {
             status: 302,
           }
@@ -161,7 +161,7 @@ export async function GET(request: NextRequest) {
                 ? 'invitation_inactive'
                 : 'invitation_invalid';
 
-        return NextResponse.redirect(new URL(`/auth/error?reason=${errorReason}`, request.url), {
+        return NextResponse.redirect(new URL(`/error?reason=${errorReason}`, request.url), {
           status: 302,
         });
       }
@@ -195,7 +195,7 @@ export async function GET(request: NextRequest) {
       } catch (createError) {
         console.error('❌ Failed to create user:', createError);
         return NextResponse.redirect(
-          new URL('/auth/error?reason=user_creation_failed', request.url),
+          new URL('/error?reason=user_creation_failed', request.url),
           {
             status: 302,
           }
@@ -230,7 +230,7 @@ export async function GET(request: NextRequest) {
     // 非アクティブユーザーのチェック
     if (!user.isActive) {
       console.warn('⚠️ Inactive user attempted login:', { userId: user.id });
-      return NextResponse.redirect(new URL('/auth/error?reason=inactive_user', request.url), {
+      return NextResponse.redirect(new URL('/error?reason=inactive_user', request.url), {
         status: 302,
       });
     }
@@ -283,7 +283,7 @@ export async function GET(request: NextRequest) {
     console.error('❌ Authentication callback error:', error);
 
     // システムエラー時のリダイレクト
-    return NextResponse.redirect(new URL('/auth/error?reason=system_error', request.url), {
+    return NextResponse.redirect(new URL('/error?reason=system_error', request.url), {
       status: 302,
     });
   }
@@ -303,13 +303,13 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       console.log('🚫 LINE authentication cancelled (POST):', error);
-      return NextResponse.redirect(new URL('/auth/error?reason=cancelled', request.url), {
+      return NextResponse.redirect(new URL('/error?reason=cancelled', request.url), {
         status: 302,
       });
     }
 
     if (!code || !state) {
-      return NextResponse.redirect(new URL('/auth/error?reason=invalid_callback', request.url), {
+      return NextResponse.redirect(new URL('/error?reason=invalid_callback', request.url), {
         status: 302,
       });
     }
@@ -323,7 +323,7 @@ export async function POST(request: NextRequest) {
     return await GET(modifiedRequest);
   } catch (error) {
     console.error('❌ POST callback processing error:', error);
-    return NextResponse.redirect(new URL('/auth/error?reason=system_error', request.url), {
+    return NextResponse.redirect(new URL('/error?reason=system_error', request.url), {
       status: 302,
     });
   }

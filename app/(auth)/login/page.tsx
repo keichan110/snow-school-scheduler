@@ -11,12 +11,15 @@ import { Loader2, MessageCircle, Shield, Users } from 'lucide-react';
 /**
  * ログインページ
  * LINE認証を使用したログイン機能を提供
+ * URLパラメータから招待コードを自動取得して使用
  */
 export default function LoginPage() {
   const router = useRouter();
   const { status, user } = useAuth();
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [inviteToken, setInviteToken] = useState<string | null>(null);
+  const [hasInvite, setHasInvite] = useState(false);
 
   /**
    * 既に認証済みの場合はホームページにリダイレクト
@@ -29,6 +32,22 @@ export default function LoginPage() {
   }, [status, user, router]);
 
   /**
+   * URLパラメータから招待トークンを取得
+   */
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      const inviteParam = urlParams.get('invite');
+      
+      if (inviteParam) {
+        console.log('🎫 Invitation token detected:', inviteParam.substring(0, 16) + '...');
+        setInviteToken(inviteParam);
+        setHasInvite(true);
+      }
+    }
+  }, []);
+
+  /**
    * LINE認証開始
    */
   const handleLineLogin = async () => {
@@ -36,10 +55,18 @@ export default function LoginPage() {
       setIsLoggingIn(true);
       setError(null);
 
-      console.log('🔐 Starting LINE authentication flow...');
+      console.log('🔐 Starting LINE authentication flow...', {
+        hasInvite,
+        inviteToken: inviteToken?.substring(0, 16) + '...' || 'none',
+      });
+
+      // 招待トークンがある場合はURLパラメータとして追加
+      const loginUrl = inviteToken 
+        ? `/api/auth/line/login?invite=${encodeURIComponent(inviteToken)}`
+        : '/api/auth/line/login';
 
       // 直接APIエンドポイントにナビゲート（302リダイレクトを受け入れる）
-      window.location.href = '/api/auth/line/login';
+      window.location.href = loginUrl;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'ログインに失敗しました';
       console.error('❌ LINE login error:', errorMessage);
@@ -91,10 +118,28 @@ export default function LoginPage() {
                 スキー・スノーボードスクール
                 <br />
                 シフト管理システム
+                {hasInvite && (
+                  <>
+                    <br />
+                    <span className="text-primary font-medium">📧 招待により参加</span>
+                  </>
+                )}
               </CardDescription>
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
+            {/* 招待情報表示 */}
+            {hasInvite && (
+              <Alert className="border-primary/20 bg-primary/5">
+                <Users className="h-4 w-4" />
+                <AlertDescription>
+                  <strong>招待を受け取りました</strong>
+                  <br />
+                  LINEログインするだけでシステムをご利用いただけます。
+                </AlertDescription>
+              </Alert>
+            )}
+
             {/* エラー表示 */}
             {error && (
               <Alert variant="destructive">
@@ -125,9 +170,10 @@ export default function LoginPage() {
             {/* 説明テキスト */}
             <div className="space-y-2 text-center text-sm text-muted-foreground">
               <p>
-                LINEアカウントでログインすることで、
-                <br />
-                シフト管理機能をご利用いただけます。
+                {hasInvite 
+                  ? '招待コードの入力は不要です。LINEログインするだけでご利用いただけます。'
+                  : 'LINEアカウントでログインすることで、シフト管理機能をご利用いただけます。'
+                }
               </p>
             </div>
           </CardContent>

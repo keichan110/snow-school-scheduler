@@ -16,7 +16,7 @@ export default function AuthErrorPage() {
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
 
-  const error = searchParams?.get('error') || 'unknown';
+  const error = searchParams?.get('error') || searchParams?.get('reason') || 'unknown';
   const description = searchParams?.get('description') || '';
 
   useEffect(() => {
@@ -64,6 +64,51 @@ export default function AuthErrorPage() {
           message: 'LINEアカウントでの認証に失敗しました。アカウントの設定をご確認ください。',
           icon: <Shield className="h-8 w-8 text-red-500" />,
           canRetry: true,
+          severity: 'error' as const,
+        };
+
+      case 'invitation_required':
+        return {
+          title: '招待が必要です',
+          message: 'このシステムは招待制です。管理者から送られた招待URLを使用してログインしてください。',
+          icon: <Shield className="h-8 w-8 text-blue-500" />,
+          canRetry: false,
+          severity: 'warning' as const,
+        };
+
+      case 'invitation_invalid':
+        return {
+          title: '招待コードが無効です',
+          message: '招待コードが無効か、既に使用済みです。管理者に新しい招待URLを依頼してください。',
+          icon: <XCircle className="h-8 w-8 text-red-500" />,
+          canRetry: false,
+          severity: 'error' as const,
+        };
+
+      case 'invitation_expired':
+        return {
+          title: '招待コードの有効期限切れ',
+          message: '招待コードの有効期限が切れています。管理者に新しい招待URLを依頼してください。',
+          icon: <XCircle className="h-8 w-8 text-orange-500" />,
+          canRetry: false,
+          severity: 'warning' as const,
+        };
+
+      case 'invitation_exhausted':
+        return {
+          title: '招待コードの使用上限に達しました',
+          message: 'この招待コードは使用回数の上限に達しています。管理者に新しい招待URLを依頼してください。',
+          icon: <XCircle className="h-8 w-8 text-orange-500" />,
+          canRetry: false,
+          severity: 'warning' as const,
+        };
+
+      case 'invitation_inactive':
+        return {
+          title: '招待コードが無効化されています',
+          message: 'この招待コードは管理者により無効化されています。管理者に新しい招待URLを依頼してください。',
+          icon: <XCircle className="h-8 w-8 text-red-500" />,
+          canRetry: false,
           severity: 'error' as const,
         };
 
