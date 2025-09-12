@@ -251,8 +251,9 @@ export default function Header() {
                   size="sm"
                   text="Log in"
                   onClick={() => {
-                    // LINE認証処理をここに実装
-                    console.log('LINE login clicked');
+                    // LINE認証開始（招待なしの通常ログイン）
+                    console.log('🔐 Starting LINE authentication from header...');
+                    window.location.href = '/api/auth/line/login';
                   }}
                 />
               )}
