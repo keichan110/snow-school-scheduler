@@ -23,6 +23,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
+import { LineLoginButton } from '@/components/ui/line-login-button';
 import { useAuth } from '@/contexts/AuthContext';
 import { User } from '@phosphor-icons/react';
 
@@ -191,8 +192,8 @@ export default function Header() {
             </div>
 
             <div className="flex items-center gap-2">
-              {/* ユーザーAvatar */}
-              {user && (
+              {/* ログイン状態による表示切り替え */}
+              {user ? (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
@@ -245,6 +246,15 @@ export default function Header() {
                     </div>
                   </DropdownMenuContent>
                 </DropdownMenu>
+              ) : (
+                <LineLoginButton
+                  size="sm"
+                  text="Log in"
+                  onClick={() => {
+                    // LINE認証処理をここに実装
+                    console.log('LINE login clicked');
+                  }}
+                />
               )}
             </div>
           </div>

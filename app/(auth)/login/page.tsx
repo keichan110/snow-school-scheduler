@@ -38,7 +38,7 @@ export default function LoginPage() {
     if (typeof window !== 'undefined') {
       const urlParams = new URLSearchParams(window.location.search);
       const inviteParam = urlParams.get('invite');
-      
+
       if (inviteParam) {
         console.log('🎫 Invitation token detected:', inviteParam.substring(0, 16) + '...');
         setInviteToken(inviteParam);
@@ -61,7 +61,7 @@ export default function LoginPage() {
       });
 
       // 招待トークンがある場合はURLパラメータとして追加
-      const loginUrl = inviteToken 
+      const loginUrl = inviteToken
         ? `/api/auth/line/login?invite=${encodeURIComponent(inviteToken)}`
         : '/api/auth/line/login';
 
@@ -121,7 +121,7 @@ export default function LoginPage() {
                 {hasInvite && (
                   <>
                     <br />
-                    <span className="text-primary font-medium">📧 招待により参加</span>
+                    <span className="font-medium text-primary">📧 招待により参加</span>
                   </>
                 )}
               </CardDescription>
@@ -170,10 +170,9 @@ export default function LoginPage() {
             {/* 説明テキスト */}
             <div className="space-y-2 text-center text-sm text-muted-foreground">
               <p>
-                {hasInvite 
+                {hasInvite
                   ? '招待コードの入力は不要です。LINEログインするだけでご利用いただけます。'
-                  : 'LINEアカウントでログインすることで、シフト管理機能をご利用いただけます。'
-                }
+                  : 'LINEアカウントでログインすることで、シフト管理機能をご利用いただけます。'}
               </p>
             </div>
           </CardContent>

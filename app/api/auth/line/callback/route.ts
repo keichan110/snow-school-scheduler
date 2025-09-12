@@ -135,12 +135,9 @@ export async function GET(request: NextRequest) {
       // 招待トークンの検証
       if (!sessionData.inviteToken) {
         console.error('❌ New user registration requires invitation token');
-        return NextResponse.redirect(
-          new URL('/error?reason=invitation_required', request.url),
-          {
-            status: 302,
-          }
-        );
+        return NextResponse.redirect(new URL('/error?reason=invitation_required', request.url), {
+          status: 302,
+        });
       }
 
       // 招待トークンの有効性チェック
@@ -194,12 +191,9 @@ export async function GET(request: NextRequest) {
         }
       } catch (createError) {
         console.error('❌ Failed to create user:', createError);
-        return NextResponse.redirect(
-          new URL('/error?reason=user_creation_failed', request.url),
-          {
-            status: 302,
-          }
-        );
+        return NextResponse.redirect(new URL('/error?reason=user_creation_failed', request.url), {
+          status: 302,
+        });
       }
     } else {
       // 既存ユーザーの場合
