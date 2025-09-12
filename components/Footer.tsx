@@ -6,6 +6,20 @@ export default function Footer() {
           <div className="mb-4 text-sm text-muted-foreground md:mb-0">
             © 2025 Keisuke Ito. All rights reserved.
           </div>
+          <div className="flex gap-6 text-sm">
+            <a
+              href="/terms"
+              className="text-muted-foreground transition-colors hover:text-foreground"
+            >
+              利用規約
+            </a>
+            <a
+              href="/privacy"
+              className="text-muted-foreground transition-colors hover:text-foreground"
+            >
+              プライバシーポリシー
+            </a>
+          </div>
         </div>
       </div>
     </footer>
