@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
+import { LineLoginButton } from '@/components/ui/line-login-button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2, MessageCircle, Shield, Users } from 'lucide-react';
@@ -115,13 +116,19 @@ export default function SignupPage() {
             <div className="space-y-2">
               <CardTitle className="text-2xl font-bold">新規登録</CardTitle>
               <CardDescription className="text-center">
-                スキー・スノーボードスクール
-                <br />
-                シフト管理システム
-                {hasInvite && (
+                {hasInvite ? (
                   <>
+                    <span className="text-lg font-medium text-primary">ようこそ！</span>
                     <br />
-                    <span className="font-medium text-primary">📧 招待により参加</span>
+                    スキー・スノーボードスクール
+                    <br />
+                    シフト管理システムへ招待されています
+                  </>
+                ) : (
+                  <>
+                    スキー・スノーボードスクール
+                    <br />
+                    シフト管理システム
                   </>
                 )}
               </CardDescription>
@@ -147,25 +154,24 @@ export default function SignupPage() {
               </Alert>
             )}
 
-            {/* LINEログインボタン */}
-            <Button
-              onClick={handleLineSignup}
-              disabled={isSigningUp}
-              className="w-full bg-[#06C755] text-white hover:bg-[#05B84C] disabled:opacity-50"
-              size="lg"
-            >
-              {isSigningUp ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  登録中...
-                </>
-              ) : (
-                <>
-                  <MessageCircle className="mr-2 h-4 w-4" />
-                  LINEで新規登録
-                </>
-              )}
-            </Button>
+            {/* LINE新規登録ボタン */}
+            {isSigningUp ? (
+              <Button
+                disabled
+                className="w-full bg-[#06C755] text-white disabled:opacity-50"
+                size="lg"
+              >
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                登録中...
+              </Button>
+            ) : (
+              <LineLoginButton
+                size="lg"
+                text="Sign up"
+                onClick={handleLineSignup}
+                className="w-full"
+              />
+            )}
 
             {/* 説明テキスト */}
             <div className="space-y-2 text-center text-sm text-muted-foreground">
@@ -178,35 +184,29 @@ export default function SignupPage() {
           </CardContent>
         </Card>
 
-        {/* 機能紹介カード */}
-        <Card className="border-0 bg-card/30 backdrop-blur-sm">
-          <CardContent className="p-6">
-            <div className="space-y-4">
-              <h3 className="text-center font-semibold text-foreground">主な機能</h3>
-              <div className="grid gap-3 text-sm">
-                <div className="flex items-center space-x-3">
-                  <Users className="h-4 w-4 flex-shrink-0 text-primary" />
-                  <span className="text-muted-foreground">シフト表の確認・管理</span>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <Shield className="h-4 w-4 flex-shrink-0 text-primary" />
-                  <span className="text-muted-foreground">インストラクター情報管理</span>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <MessageCircle className="h-4 w-4 flex-shrink-0 text-primary" />
-                  <span className="text-muted-foreground">リアルタイム更新通知</span>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
         {/* 注意事項 */}
         <div className="text-center text-xs text-muted-foreground">
           <p>
             新規登録することで、
             <br />
-            利用規約とプライバシーポリシーに同意したものとみなします。
+            <a
+              href="/terms"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary hover:underline"
+            >
+              利用規約
+            </a>
+            と
+            <a
+              href="/privacy"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary hover:underline"
+            >
+              プライバシーポリシー
+            </a>
+            に同意したものとみなします。
           </p>
         </div>
       </div>
