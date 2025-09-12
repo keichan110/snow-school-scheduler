@@ -9,14 +9,14 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2, MessageCircle, Shield, Users } from 'lucide-react';
 
 /**
- * ログインページ
- * LINE認証を使用したログイン機能を提供
+ * サインアップページ
+ * 招待トークンを利用したLINE認証による新規登録機能を提供
  * URLパラメータから招待コードを自動取得して使用
  */
-export default function LoginPage() {
+export default function SignupPage() {
   const router = useRouter();
   const { status, user } = useAuth();
-  const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const [isSigningUp, setIsSigningUp] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [inviteToken, setInviteToken] = useState<string | null>(null);
   const [hasInvite, setHasInvite] = useState(false);
@@ -48,14 +48,14 @@ export default function LoginPage() {
   }, []);
 
   /**
-   * LINE認証開始
+   * LINE認証による新規登録開始
    */
-  const handleLineLogin = async () => {
+  const handleLineSignup = async () => {
     try {
-      setIsLoggingIn(true);
+      setIsSigningUp(true);
       setError(null);
 
-      console.log('🔐 Starting LINE authentication flow...', {
+      console.log('🆕 Starting LINE signup flow...', {
         hasInvite,
         inviteToken: inviteToken?.substring(0, 16) + '...' || 'none',
       });
@@ -68,10 +68,10 @@ export default function LoginPage() {
       // 直接APIエンドポイントにナビゲート（302リダイレクトを受け入れる）
       window.location.href = loginUrl;
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'ログインに失敗しました';
-      console.error('❌ LINE login error:', errorMessage);
+      const errorMessage = err instanceof Error ? err.message : '新規登録に失敗しました';
+      console.error('❌ LINE signup error:', errorMessage);
       setError(errorMessage);
-      setIsLoggingIn(false);
+      setIsSigningUp(false);
     }
   };
 
@@ -113,7 +113,7 @@ export default function LoginPage() {
               <Shield className="h-6 w-6 text-primary" />
             </div>
             <div className="space-y-2">
-              <CardTitle className="text-2xl font-bold">ログイン</CardTitle>
+              <CardTitle className="text-2xl font-bold">新規登録</CardTitle>
               <CardDescription className="text-center">
                 スキー・スノーボードスクール
                 <br />
@@ -135,7 +135,7 @@ export default function LoginPage() {
                 <AlertDescription>
                   <strong>招待を受け取りました</strong>
                   <br />
-                  LINEログインするだけでシステムをご利用いただけます。
+                  LINEアカウントで新規登録してシステムをご利用いただけます。
                 </AlertDescription>
               </Alert>
             )}
@@ -149,20 +149,20 @@ export default function LoginPage() {
 
             {/* LINEログインボタン */}
             <Button
-              onClick={handleLineLogin}
-              disabled={isLoggingIn}
+              onClick={handleLineSignup}
+              disabled={isSigningUp}
               className="w-full bg-[#06C755] text-white hover:bg-[#05B84C] disabled:opacity-50"
               size="lg"
             >
-              {isLoggingIn ? (
+              {isSigningUp ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  認証中...
+                  登録中...
                 </>
               ) : (
                 <>
                   <MessageCircle className="mr-2 h-4 w-4" />
-                  LINEでログイン
+                  LINEで新規登録
                 </>
               )}
             </Button>
@@ -171,8 +171,8 @@ export default function LoginPage() {
             <div className="space-y-2 text-center text-sm text-muted-foreground">
               <p>
                 {hasInvite
-                  ? '招待コードの入力は不要です。LINEログインするだけでご利用いただけます。'
-                  : 'LINEアカウントでログインすることで、シフト管理機能をご利用いただけます。'}
+                  ? '招待コードの入力は不要です。LINEアカウントで新規登録してご利用いただけます。'
+                  : 'LINEアカウントで新規登録することで、シフト管理機能をご利用いただけます。'}
               </p>
             </div>
           </CardContent>
@@ -204,7 +204,7 @@ export default function LoginPage() {
         {/* 注意事項 */}
         <div className="text-center text-xs text-muted-foreground">
           <p>
-            ログインすることで、
+            新規登録することで、
             <br />
             利用規約とプライバシーポリシーに同意したものとみなします。
           </p>
