@@ -1,7 +1,7 @@
 import { GET, PUT } from './route';
 import { prisma } from '@/lib/db';
 import { NextResponse } from 'next/server';
-import { InstructorStatus } from '@prisma/client';
+import { InstructorStatus } from '@/shared/types/common';
 
 // Request グローバルオブジェクトのモック
 global.Request = class MockRequest {

@@ -1,6 +1,6 @@
 // NextResponse import removed as it's only used in return type
 import { prisma } from '@/lib/db';
-import { InstructorStatus } from '@prisma/client';
+import { InstructorStatus } from '@/shared/types/common';
 import {
   createSuccessResponse,
   createErrorResponse,

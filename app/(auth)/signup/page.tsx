@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { LineLoginButton } from '@/components/ui/line-login-button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Loader2, MessageCircle, Shield, Users } from 'lucide-react';
+import { Loader2, Shield, Users } from 'lucide-react';
 
 /**
  * サインアップページ

@@ -211,7 +211,7 @@ export function MonthlyCalendarWithDetails({
                     }}
                     {...(canManage && onShiftDetailClick
                       ? {
-                          onShiftDetailSelect: (_shiftType: string, _departmentType: string) => {
+                          onShiftDetailSelect: () => {
                             onShiftDetailClick();
                           },
                         }

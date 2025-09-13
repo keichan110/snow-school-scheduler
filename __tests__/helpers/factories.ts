@@ -12,8 +12,8 @@ import type {
   Shift,
   ShiftType,
   ShiftAssignment,
-  InstructorStatus,
 } from '@prisma/client';
+import type { InstructorStatus } from '@/shared/types/common';
 
 // カウンター（ユニークなID生成用）
 let departmentCounter = 1;
