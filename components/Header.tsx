@@ -23,7 +23,6 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { LineLoginButton } from '@/components/ui/line-login-button';
 import { useAuth } from '@/contexts/AuthContext';
 import { User } from '@phosphor-icons/react';
 
@@ -39,7 +38,7 @@ interface MenuItem {
 
 export default function Header() {
   const pathname = usePathname();
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
 
   const allMenuItems: MenuItem[] = [
     {
@@ -192,8 +191,8 @@ export default function Header() {
             </div>
 
             <div className="flex items-center gap-2">
-              {/* ログイン状態による表示切り替え */}
-              {user ? (
+              {/* ログイン済みユーザーのアバター・ドロップダウン */}
+              {user && (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
@@ -247,16 +246,6 @@ export default function Header() {
                     </div>
                   </DropdownMenuContent>
                 </DropdownMenu>
-              ) : (
-                <LineLoginButton
-                  size="sm"
-                  text="Log in"
-                  onClick={() => {
-                    // LINE認証開始（招待なしの通常ログイン）
-                    console.log('🔐 Starting LINE authentication from header...');
-                    window.location.href = '/api/auth/line/login';
-                  }}
-                />
               )}
             </div>
           </div>

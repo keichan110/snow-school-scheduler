@@ -8,7 +8,7 @@ import { Snowflake } from '@phosphor-icons/react';
 
 /**
  * ログインページ
- * 
+ *
  * このページの目的：
  * 1. 保護されたページからのリダイレクト先として機能
  * 2. ログイン完了後に元のページに戻る
@@ -96,7 +96,7 @@ export default function LoginPage() {
           </div>
         </div>
         <div className="relative z-10 space-y-8 text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-400 mx-auto"></div>
+          <div className="mx-auto h-12 w-12 animate-spin rounded-full border-b-2 border-slate-400"></div>
           <p className="text-slate-600">読み込み中...</p>
         </div>
       </div>
@@ -138,11 +138,7 @@ export default function LoginPage() {
 
         {/* LINE Login Button - 追加された唯一の新要素 */}
         <div className="flex justify-center">
-          <LineLoginButton
-            onClick={handleLineLogin}
-            size="lg"
-            text="LINEでログイン"
-          />
+          <LineLoginButton onClick={handleLineLogin} size="lg" text="LINEでログイン" />
         </div>
 
         {/* Subtle decoration */}

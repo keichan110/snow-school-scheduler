@@ -68,7 +68,11 @@ export async function POST(request: NextRequest) {
     };
 
     // LINE認証URLを生成（自動ログイン無効化フラグを適用）
-    const authUrl = generateLineAuthUrl(state, requestData.inviteToken, requestData.disableAutoLogin || false);
+    const authUrl = generateLineAuthUrl(
+      state,
+      requestData.inviteToken,
+      requestData.disableAutoLogin || false
+    );
 
     // レスポンスを作成してセッション情報をCookieに設定
     const response = NextResponse.redirect(authUrl, { status: 302 });

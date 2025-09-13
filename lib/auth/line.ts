@@ -90,8 +90,8 @@ export function generateState(length: number = 32): string {
  * ```
  */
 export function generateLineAuthUrl(
-  state: string, 
-  inviteToken?: string, 
+  state: string,
+  inviteToken?: string,
   disableAutoLogin: boolean = false
 ): string {
   const baseUrl = 'https://access.line.me/oauth2/v2.1/authorize';

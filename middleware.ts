@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 /**
- * Next.js Middleware - 基本的なAPIルート保護
+ * Next.js Middleware - APIルート保護とページ認証リダイレクト
  *
  * Edge Runtime制限により、JWTの完全検証は各APIルートで実行
- * middlewareでは基本的なトークン存在チェックのみ実行
+ * middlewareでは基本的なトークン存在チェックと認証リダイレクトのみ実行
  */
 
 // 認証不要なAPIパス（完全一致）
@@ -20,10 +20,19 @@ const PUBLIC_API_PREFIXES = [
   '/api/auth/invitations/', // 招待URL検証は認証不要
 ];
 
+// 認証不要なページパス（完全一致）
+const PUBLIC_PAGE_PATHS = new Set(['/login', '/terms', '/privacy']);
+
+// 認証不要なページパス（プレフィックス一致）
+const PUBLIC_PAGE_PREFIXES = [
+  '/_next/', // Next.js内部ファイル
+  '/favicon.ico',
+];
+
 /**
  * APIパスが認証不要かチェック
  */
-function isPublicPath(pathname: string): boolean {
+function isPublicApiPath(pathname: string): boolean {
   // 完全一致チェック
   if (PUBLIC_API_PATHS.has(pathname)) {
     return true;
@@ -31,6 +40,19 @@ function isPublicPath(pathname: string): boolean {
 
   // プレフィックス一致チェック
   return PUBLIC_API_PREFIXES.some((prefix) => pathname.startsWith(prefix));
+}
+
+/**
+ * ページパスが認証不要かチェック
+ */
+function isPublicPagePath(pathname: string): boolean {
+  // 完全一致チェック
+  if (PUBLIC_PAGE_PATHS.has(pathname)) {
+    return true;
+  }
+
+  // プレフィックス一致チェック
+  return PUBLIC_PAGE_PREFIXES.some((prefix) => pathname.startsWith(prefix));
 }
 
 /**
@@ -69,37 +91,60 @@ function createAuthErrorResponse(message: string = 'Authentication required') {
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // APIルートのみを対象とする
-  if (!pathname.startsWith('/api/')) {
-    return NextResponse.next();
-  }
-
   // デバッグモードでのみログ出力
   if (process.env.NODE_ENV === 'development') {
-    console.log('🛡️ Middleware: Checking API access:', pathname);
+    console.log('🛡️ Middleware: Checking access:', pathname);
   }
 
-  // 認証不要なAPIパスはそのまま通す
-  if (isPublicPath(pathname)) {
+  // APIルートの処理
+  if (pathname.startsWith('/api/')) {
+    // 認証不要なAPIパスはそのまま通す
+    if (isPublicApiPath(pathname)) {
+      if (process.env.NODE_ENV === 'development') {
+        console.log('✅ Middleware: Public API access allowed');
+      }
+      return NextResponse.next();
+    }
+
+    // JWTトークン存在チェック
+    const token = getJwtToken(request);
+    if (!token) {
+      if (process.env.NODE_ENV === 'development') {
+        console.log('❌ Middleware: No JWT token found for API');
+      }
+      return createAuthErrorResponse();
+    }
+
+    // トークンが存在する場合、APIルートに処理を委譲
     if (process.env.NODE_ENV === 'development') {
-      console.log('✅ Middleware: Public API access allowed');
+      console.log('✅ Middleware: Token found, delegating to API route');
     }
     return NextResponse.next();
   }
 
-  // JWTトークン存在チェック
+  // ページルートの処理
+  // 認証不要なページパスはそのまま通す
+  if (isPublicPagePath(pathname)) {
+    if (process.env.NODE_ENV === 'development') {
+      console.log('✅ Middleware: Public page access allowed');
+    }
+    return NextResponse.next();
+  }
+
+  // ページアクセスの認証チェック
   const token = getJwtToken(request);
   if (!token) {
     if (process.env.NODE_ENV === 'development') {
-      console.log('❌ Middleware: No JWT token found');
+      console.log('❌ Middleware: No JWT token found, redirecting to login');
     }
-    return createAuthErrorResponse();
+    // 認証が必要なページにアクセスした場合、/loginにリダイレクト
+    const loginUrl = new URL('/login', request.url);
+    return NextResponse.redirect(loginUrl);
   }
 
-  // トークンが存在する場合、APIルートに処理を委譲
-  // 詳細な認証・権限チェックは各APIルートで実行
+  // トークンが存在する場合、ページに処理を委譲
   if (process.env.NODE_ENV === 'development') {
-    console.log('✅ Middleware: Token found, delegating to API route');
+    console.log('✅ Middleware: Token found, allowing page access');
   }
   return NextResponse.next();
 }
