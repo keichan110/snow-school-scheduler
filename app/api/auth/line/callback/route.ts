@@ -25,6 +25,7 @@ interface AuthSession {
   state: string;
   createdAt: number;
   inviteToken?: string;
+  redirectUrl?: string; // 認証完了後のリダイレクト先
 }
 
 /**
@@ -243,8 +244,9 @@ export async function GET(request: NextRequest) {
       console.log('🎫 JWT generated for user:', user.displayName);
     }
 
-    // 認証成功レスポンスの作成
-    const successUrl = new URL('/', request.url); // ホームページにリダイレクト
+    // 認証成功レスポンスの作成（保存されたリダイレクト先を使用）
+    const redirectPath = sessionData.redirectUrl || '/'; // デフォルトはホームページ
+    const successUrl = new URL(redirectPath, request.url);
     const response = NextResponse.redirect(successUrl, { status: 302 });
 
     // JWTをCookieに設定

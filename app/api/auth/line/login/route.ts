@@ -122,18 +122,20 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // URLパラメータから招待トークンを取得
+    // URLパラメータから招待トークンとリダイレクト先を取得
     const { searchParams } = new URL(request.url);
     const inviteToken = searchParams.get('invite') || undefined;
+    const redirectUrl = searchParams.get('redirect') || '/'; // 認証後の戻り先
 
     // CSRF防止用のstateを生成
     const state = generateState(32);
 
-    // セッション管理用の情報をCookieに保存
+    // セッション管理用の情報をCookieに保存（リダイレクト先も含める）
     const sessionData = {
       state,
       createdAt: Date.now(),
       inviteToken,
+      redirectUrl, // 認証完了後の戻り先を保存
     };
 
     // LINE認証URLを生成
