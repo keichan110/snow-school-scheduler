@@ -77,7 +77,7 @@ export default function Header() {
       requiredRole: 'ADMIN',
     },
     {
-      href: '/admin/users',
+      href: '/users',
       icon: UserGear,
       label: 'ユーザー管理',
       description: 'システム利用者の管理・権限設定',

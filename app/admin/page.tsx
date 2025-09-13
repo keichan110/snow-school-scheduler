@@ -19,7 +19,7 @@ export default function AdminPage() {
         <AdminMenuCard
           title="ユーザー管理"
           description="システムユーザーの権限・状態管理"
-          href="/admin/users"
+          href="/users"
           icon="👤"
         />
       </div>
