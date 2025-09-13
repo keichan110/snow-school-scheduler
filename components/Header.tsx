@@ -11,7 +11,6 @@ import {
   LinkSimple,
   UserGear,
   List,
-  Gear,
   type Icon,
 } from '@phosphor-icons/react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
@@ -151,29 +150,6 @@ export default function Header() {
                             </Link>
                           );
                         })}
-
-                        {/* 管理者機能 (ADMIN のみ) */}
-                        {user && user.role === 'ADMIN' && (
-                          <Link
-                            href="/admin"
-                            className={`flex items-start space-x-4 rounded-lg p-3 transition-all duration-200 hover:bg-accent/50 ${
-                              pathname === '/admin'
-                                ? 'bg-primary/10 text-primary'
-                                : 'text-muted-foreground hover:text-foreground'
-                            }`}
-                          >
-                            <Gear
-                              className="h-6 w-6 shrink-0"
-                              weight={pathname === '/admin' ? 'fill' : 'regular'}
-                            />
-                            <div className="space-y-1">
-                              <h3 className="text-sm font-medium leading-none">管理</h3>
-                              <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
-                                システム管理機能へのアクセス
-                              </p>
-                            </div>
-                          </Link>
-                        )}
                       </div>
                     </div>
                   </SheetContent>
