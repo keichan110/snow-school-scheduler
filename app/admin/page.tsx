@@ -12,7 +12,7 @@ export default function AdminPage() {
         <AdminMenuCard
           title="招待管理"
           description="新規メンバー招待URLの作成・管理"
-          href="/admin/invitations"
+          href="/invitations"
           icon="🔗"
         />
 

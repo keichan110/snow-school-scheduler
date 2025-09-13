@@ -70,7 +70,7 @@ export default function Header() {
       requiredRole: 'MANAGER',
     },
     {
-      href: '/admin/invitations',
+      href: '/invitations',
       icon: LinkSimple,
       label: '招待管理',
       description: 'ユーザー招待リンクの発行・管理',
