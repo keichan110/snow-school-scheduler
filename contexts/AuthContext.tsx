@@ -219,15 +219,19 @@ export function AuthProvider({ children }: AuthProviderProps) {
    */
   const logout = async () => {
     try {
+      // API呼び出しでサーバー側のログアウト処理
       await performLogout();
+      console.log('🚪 Server logout completed');
     } catch (error) {
       console.warn('⚠️ Logout API failed, but clearing local state:', error);
     } finally {
-      // API成功・失敗に関わらずクライアント状態をクリア
+      // ローカル状態をクリア
       setUser(null);
       setStatus('unauthenticated');
       setError(null);
       console.log('🚪 User logged out (local state cleared)');
+
+      // 注意：リダイレクト処理は呼び出し側（専用ログアウトページ）で実行
     }
   };
 

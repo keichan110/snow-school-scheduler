@@ -17,6 +17,7 @@ import { generateState, generateLineAuthUrl, validateLineAuthConfig } from '@/li
 
 interface LoginRequest {
   inviteToken?: string;
+  disableAutoLogin?: boolean; // 自動ログイン無効化フラグ
 }
 
 /**
@@ -66,8 +67,8 @@ export async function POST(request: NextRequest) {
       inviteToken: requestData.inviteToken || undefined,
     };
 
-    // LINE認証URLを生成
-    const authUrl = generateLineAuthUrl(state, requestData.inviteToken);
+    // LINE認証URLを生成（自動ログイン無効化フラグを適用）
+    const authUrl = generateLineAuthUrl(state, requestData.inviteToken, requestData.disableAutoLogin || false);
 
     // レスポンスを作成してセッション情報をCookieに設定
     const response = NextResponse.redirect(authUrl, { status: 302 });
@@ -122,10 +123,11 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // URLパラメータから招待トークンとリダイレクト先を取得
+    // URLパラメータから招待トークン、リダイレクト先、自動ログイン設定を取得
     const { searchParams } = new URL(request.url);
     const inviteToken = searchParams.get('invite') || undefined;
     const redirectUrl = searchParams.get('redirect') || '/'; // 認証後の戻り先
+    const disableAutoLogin = searchParams.get('disable_auto_login') === 'true'; // 自動ログイン無効化フラグ
 
     // CSRF防止用のstateを生成
     const state = generateState(32);
@@ -138,8 +140,8 @@ export async function GET(request: NextRequest) {
       redirectUrl, // 認証完了後の戻り先を保存
     };
 
-    // LINE認証URLを生成
-    const authUrl = generateLineAuthUrl(state, inviteToken);
+    // LINE認証URLを生成（自動ログイン無効化フラグを適用）
+    const authUrl = generateLineAuthUrl(state, inviteToken, disableAutoLogin);
 
     // レスポンスを作成してセッション情報をCookieに設定
     const response = NextResponse.redirect(authUrl, { status: 302 });

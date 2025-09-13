@@ -233,9 +233,10 @@ export default function Header() {
                           <Button
                             variant="ghost"
                             className="h-8 w-full justify-start text-sm text-muted-foreground hover:text-foreground"
-                            onClick={async () => {
-                              await logout();
-                              window.location.href = '/';
+                            onClick={() => {
+                              // 専用ログアウトページにリダイレクト
+                              // これにより保護されたページでの状態競合を回避
+                              window.location.href = '/logout';
                             }}
                           >
                             <User className="mr-2 h-4 w-4" />

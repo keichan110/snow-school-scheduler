@@ -49,7 +49,7 @@ interface ProtectedRouteProps {
 export function ProtectedRoute({
   children,
   requiredRole,
-  redirectTo = '/api/auth/line/login', // LINE認証エンドポイントに直接リダイレクト
+  redirectTo = '/login', // シンプルなログインページパスに戻す
   accessDeniedRedirectTo = '/',
   showMessage = false,
 }: ProtectedRouteProps) {
@@ -83,15 +83,13 @@ export function ProtectedRoute({
     // 未認証の場合
     if (status === 'unauthenticated' || !user) {
       const currentUrl = window.location.pathname + window.location.search;
-      
+      const redirectUrl = `${redirectTo}?redirect=${encodeURIComponent(currentUrl)}`;
+
       if (showMessage) {
-        console.log('🔐 Authentication required, redirecting to LINE login...');
+        console.log('🔐 Authentication required, redirecting to login...');
       }
 
-      // LINE認証に直接リダイレクト（現在のURLを保存してログイン後に戻る）
-      // redirectパラメータを使用して、認証完了後の戻り先を指定
-      const lineLoginUrl = `/api/auth/line/login?redirect=${encodeURIComponent(currentUrl)}`;
-      window.location.href = lineLoginUrl;
+      router.push(redirectUrl);
       return;
     }
 
@@ -166,7 +164,7 @@ export async function getServerAuthCheck(
         isAuthenticated: false,
         hasPermission: false,
         user: null,
-        redirectUrl: '/api/auth/line/login', // LINEログインに直接リダイレクト
+        redirectUrl: '/login', // シンプルなログインページにリダイレクト
       };
     }
 
@@ -179,7 +177,7 @@ export async function getServerAuthCheck(
         isAuthenticated: false,
         hasPermission: false,
         user: null,
-        redirectUrl: '/api/auth/line/login', // LINEログインに直接リダイレクト
+        redirectUrl: '/login', // シンプルなログインページにリダイレクト
       };
     }
 

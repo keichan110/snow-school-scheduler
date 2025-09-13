@@ -89,7 +89,11 @@ export function generateState(length: number = 32): string {
  * // ユーザーをauthUrlにリダイレクト
  * ```
  */
-export function generateLineAuthUrl(state: string, inviteToken?: string): string {
+export function generateLineAuthUrl(
+  state: string, 
+  inviteToken?: string, 
+  disableAutoLogin: boolean = false
+): string {
   const baseUrl = 'https://access.line.me/oauth2/v2.1/authorize';
 
   const params = new URLSearchParams({
@@ -100,6 +104,12 @@ export function generateLineAuthUrl(state: string, inviteToken?: string): string
     scope: 'profile openid',
     ui_locales: 'ja-JP', // 日本語表示
   });
+
+  // ログアウト後の再認証時は自動ログインを無効化
+  // これによりLINEの自動ログイン機能による意図しない再ログインを防ぐ
+  if (disableAutoLogin) {
+    params.set('disable_auto_login', 'true');
+  }
 
   return `${baseUrl}?${params.toString()}`;
 }
