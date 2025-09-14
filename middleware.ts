@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { secureLog } from '@/lib/utils/logging';
 
 /**
  * Next.js Middleware - APIルート保護とページ認証リダイレクト
@@ -92,60 +93,46 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // デバッグモードでのみログ出力
-  if (process.env.NODE_ENV === 'development') {
-    console.log('🛡️ Middleware: Checking access:', pathname);
-  }
+  secureLog('info', 'Middleware: Checking access', { pathname });
 
   // APIルートの処理
   if (pathname.startsWith('/api/')) {
     // 認証不要なAPIパスはそのまま通す
     if (isPublicApiPath(pathname)) {
-      if (process.env.NODE_ENV === 'development') {
-        console.log('✅ Middleware: Public API access allowed');
-      }
+      secureLog('info', 'Middleware: Public API access allowed');
       return NextResponse.next();
     }
 
     // JWTトークン存在チェック
     const token = getJwtToken(request);
     if (!token) {
-      if (process.env.NODE_ENV === 'development') {
-        console.log('❌ Middleware: No JWT token found for API');
-      }
+      secureLog('warn', 'Middleware: No JWT token found for API');
       return createAuthErrorResponse();
     }
 
     // トークンが存在する場合、APIルートに処理を委譲
-    if (process.env.NODE_ENV === 'development') {
-      console.log('✅ Middleware: Token found, delegating to API route');
-    }
+    secureLog('info', 'Middleware: Token found, delegating to API route', { hasToken: !!token });
     return NextResponse.next();
   }
 
   // ページルートの処理
   // 認証不要なページパスはそのまま通す
   if (isPublicPagePath(pathname)) {
-    if (process.env.NODE_ENV === 'development') {
-      console.log('✅ Middleware: Public page access allowed');
-    }
+    secureLog('info', 'Middleware: Public page access allowed');
     return NextResponse.next();
   }
 
   // ページアクセスの認証チェック
   const token = getJwtToken(request);
   if (!token) {
-    if (process.env.NODE_ENV === 'development') {
-      console.log('❌ Middleware: No JWT token found, redirecting to login');
-    }
+    secureLog('warn', 'Middleware: No JWT token found, redirecting to login');
     // 認証が必要なページにアクセスした場合、/loginにリダイレクト
     const loginUrl = new URL('/login', request.url);
     return NextResponse.redirect(loginUrl);
   }
 
   // トークンが存在する場合、ページに処理を委譲
-  if (process.env.NODE_ENV === 'development') {
-    console.log('✅ Middleware: Token found, allowing page access');
-  }
+  secureLog('info', 'Middleware: Token found, allowing page access', { hasToken: !!token });
   return NextResponse.next();
 }
 

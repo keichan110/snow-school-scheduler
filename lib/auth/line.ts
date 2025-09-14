@@ -1,4 +1,5 @@
 import { lineAuthConfig } from '@/lib/env';
+import { logDebugConfig } from '@/lib/utils/logging';
 
 /**
  * LINE OAuth2 認証クライアント
@@ -383,6 +384,15 @@ export function validateLineAuthConfig(): {
  * @returns マスクされた設定情報
  */
 export function getDebugConfig() {
+  const config = {
+    channelId: lineAuthConfig.channelId,
+    channelSecret: lineAuthConfig.channelSecret,
+    callbackUrl: lineAuthConfig.callbackUrl,
+    configValid: validateLineAuthConfig().isValid,
+  };
+  
+  logDebugConfig(config);
+  
   return {
     channelId: lineAuthConfig.channelId,
     channelSecret: lineAuthConfig.channelSecret ? '****' : 'NOT_SET',

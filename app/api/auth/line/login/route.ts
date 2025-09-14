@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { generateState, generateLineAuthUrl, validateLineAuthConfig } from '@/lib/auth/line';
+import { secureLog, secureAuthLog } from '@/lib/utils/logging';
 
 /**
  * LINE認証開始API
@@ -29,7 +30,7 @@ export async function POST(request: NextRequest) {
     // LINE認証設定の妥当性チェック
     const configCheck = validateLineAuthConfig();
     if (!configCheck.isValid) {
-      console.error('❌ LINE authentication configuration is invalid:', configCheck.errors);
+      secureLog('error', 'LINE authentication configuration is invalid', { errors: configCheck.errors });
       return NextResponse.json(
         {
           success: false,
@@ -86,15 +87,17 @@ export async function POST(request: NextRequest) {
       path: '/',
     });
 
-    console.log('🔐 LINE authentication flow initiated:', {
+    secureAuthLog('LINE authentication flow initiated', {
       hasInviteToken: !!requestData.inviteToken,
-      state: state.substring(0, 8) + '...',
-      authUrl: authUrl.substring(0, 50) + '...',
+      state: state,
+      hasAuthUrl: !!authUrl,
     });
 
     return response;
   } catch (error) {
-    console.error('❌ LINE authentication initiation error:', error);
+    secureLog('error', 'LINE authentication initiation error', { 
+      message: error instanceof Error ? error.message : 'Unknown error' 
+    });
     return NextResponse.json(
       {
         success: false,
@@ -116,7 +119,7 @@ export async function GET(request: NextRequest) {
     // LINE認証設定の妥当性チェック
     const configCheck = validateLineAuthConfig();
     if (!configCheck.isValid) {
-      console.error('❌ LINE authentication configuration is invalid:', configCheck.errors);
+      secureLog('error', 'LINE authentication configuration is invalid', { errors: configCheck.errors });
       return NextResponse.json(
         {
           success: false,
@@ -159,15 +162,17 @@ export async function GET(request: NextRequest) {
       path: '/',
     });
 
-    console.log('🔐 LINE authentication flow initiated via GET:', {
+    secureAuthLog('LINE authentication flow initiated via GET', {
       hasInviteToken: !!inviteToken,
-      state: state.substring(0, 8) + '...',
-      authUrl: authUrl.substring(0, 50) + '...',
+      state: state,
+      hasAuthUrl: !!authUrl,
     });
 
     return response;
   } catch (error) {
-    console.error('❌ LINE authentication initiation error (GET):', error);
+    secureLog('error', 'LINE authentication initiation error (GET)', { 
+      message: error instanceof Error ? error.message : 'Unknown error' 
+    });
     return NextResponse.json(
       {
         success: false,
