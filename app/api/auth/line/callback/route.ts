@@ -75,7 +75,7 @@ export async function GET(request: NextRequest) {
     let sessionData: AuthSession;
     try {
       sessionData = JSON.parse(sessionCookie);
-    } catch (_parseError) {
+    } catch {
       console.error('❌ Invalid session data format');
       return NextResponse.redirect(new URL('/error?reason=invalid_session', request.url), {
         status: 302,
@@ -182,7 +182,7 @@ export async function GET(request: NextRequest) {
           // 使用回数増加に失敗してもユーザー作成は成功しているので警告レベル
           console.warn('⚠️ Failed to increment invitation token usage:', incrementError);
         }
-      } catch (_createError) {
+      } catch {
         console.error('❌ Failed to create user');
         return NextResponse.redirect(new URL('/error?reason=user_creation_failed', request.url), {
           status: 302,
@@ -255,7 +255,7 @@ export async function GET(request: NextRequest) {
     });
 
     return response;
-  } catch (_error) {
+  } catch {
     console.error('❌ Authentication callback failed');
 
     // システムエラー時のリダイレクト
@@ -297,7 +297,7 @@ export async function POST(request: NextRequest) {
 
     const modifiedRequest = new NextRequest(urlWithParams);
     return await GET(modifiedRequest);
-  } catch (_error) {
+  } catch {
     console.error('❌ POST callback processing failed');
     return NextResponse.redirect(new URL('/error?reason=system_error', request.url), {
       status: 302,

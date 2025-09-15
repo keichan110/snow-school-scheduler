@@ -18,12 +18,6 @@ import { ApiResponse } from '@/lib/auth/types';
  * ```
  */
 
-interface RouteParams {
-  params: {
-    token: string;
-  };
-}
-
 interface DeactivationResponse {
   message: string;
   token: string;
@@ -33,10 +27,10 @@ interface DeactivationResponse {
 
 export async function DELETE(
   request: NextRequest,
-  { params }: RouteParams
+  context: { params: Promise<{ token: string }> }
 ): Promise<NextResponse<ApiResponse<DeactivationResponse>>> {
   try {
-    const { token } = params;
+    const { token } = await context.params;
 
     // 認証トークン取得（Cookieまたは Authorization ヘッダー）
     const { getAuthTokenFromRequest } = await import('@/lib/auth/middleware');

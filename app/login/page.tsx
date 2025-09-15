@@ -5,16 +5,12 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { LineLoginButton } from '@/components/ui/line-login-button';
 import { Snowflake } from '@phosphor-icons/react';
+import { Suspense } from 'react';
 
 /**
- * ログインページ
- *
- * このページの目的：
- * 1. 保護されたページからのリダイレクト先として機能
- * 2. ログイン完了後に元のページに戻る
- * 3. シンプルで明確なログインフロー提供
+ * ログインページのメインコンテンツ
  */
-export default function LoginPage() {
+function LoginPageContent() {
   const { user, status } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -149,5 +145,21 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+/**
+ * ログインページ
+ *
+ * このページの目的：
+ * 1. 保護されたページからのリダイレクト先として機能
+ * 2. ログイン完了後に元のページに戻る
+ * 3. シンプルで明確なログインフロー提供
+ */
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div>読み込み中...</div>}>
+      <LoginPageContent />
+    </Suspense>
   );
 }

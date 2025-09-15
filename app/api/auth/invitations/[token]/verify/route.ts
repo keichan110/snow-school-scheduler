@@ -16,18 +16,12 @@ import { ApiResponse, InvitationValidationData } from '@/lib/auth/types';
  * ```
  */
 
-interface RouteParams {
-  params: {
-    token: string;
-  };
-}
-
 export async function GET(
   request: NextRequest,
-  { params }: RouteParams
+  context: { params: Promise<{ token: string }> }
 ): Promise<NextResponse<ApiResponse<InvitationValidationData>>> {
   try {
-    const { token } = params;
+    const { token } = await context.params;
 
     // トークンパラメータの基本チェック
     if (!token || typeof token !== 'string' || token.trim().length === 0) {

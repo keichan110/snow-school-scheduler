@@ -6,12 +6,12 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertTriangle, Home, RefreshCw, Shield, XCircle } from 'lucide-react';
+import { Suspense } from 'react';
 
 /**
- * 認証エラーページ
- * LINE認証エラー、権限エラー、セッションエラーなどを表示
+ * 認証エラーページのメインコンポーネント
  */
-export default function AuthErrorPage() {
+function AuthErrorContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
@@ -215,5 +215,17 @@ export default function AuthErrorPage() {
         </Card>
       </div>
     </div>
+  );
+}
+
+/**
+ * 認証エラーページ
+ * LINE認証エラー、権限エラー、セッションエラーなどを表示
+ */
+export default function AuthErrorPage() {
+  return (
+    <Suspense fallback={<div>読み込み中...</div>}>
+      <AuthErrorContent />
+    </Suspense>
   );
 }
