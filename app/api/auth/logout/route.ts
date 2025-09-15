@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { clearAuthCookies, deleteCookie } from '@/lib/utils/cookies';
 import { getAuthTokenFromRequest, authenticateFromRequest } from '@/lib/auth/middleware';
 
 /**
@@ -50,23 +51,8 @@ export async function POST(request: NextRequest) {
       { status: 200 }
     );
 
-    // 認証Cookieの削除
-    response.cookies.set('auth-token', '', {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 0, // 即座に削除
-      path: '/',
-    });
-
-    // 認証セッションCookieも削除（残っている場合）
-    response.cookies.set('auth-session', '', {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 0,
-      path: '/',
-    });
+    // 全認証関連Cookieを安全に削除
+    clearAuthCookies(response);
 
     console.log('✅ Logout completed successfully:', {
       userWasLoggedIn: !!currentUser,
@@ -88,21 +74,11 @@ export async function POST(request: NextRequest) {
     );
 
     // Cookieクリア
-    response.cookies.set('auth-token', '', {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 0,
-      path: '/',
-    });
+    // 認証Cookieを安全に削除
+    clearAuthCookies(response);
 
-    response.cookies.set('auth-session', '', {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 0,
-      path: '/',
-    });
+    // auth-sessionも統一ユーティリティで削除
+    deleteCookie(response, 'auth-session');
 
     return response;
   }
@@ -157,21 +133,11 @@ export async function GET(request: NextRequest) {
     });
 
     // 認証Cookieの削除
-    response.cookies.set('auth-token', '', {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 0,
-      path: '/',
-    });
+    // 認証Cookieを安全に削除
+    clearAuthCookies(response);
 
-    response.cookies.set('auth-session', '', {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 0,
-      path: '/',
-    });
+    // auth-sessionも統一ユーティリティで削除
+    deleteCookie(response, 'auth-session');
 
     console.log('✅ Logout with redirect completed:', {
       userWasLoggedIn: !!currentUser,
@@ -188,21 +154,11 @@ export async function GET(request: NextRequest) {
       status: 302,
     });
 
-    response.cookies.set('auth-token', '', {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 0,
-      path: '/',
-    });
+    // 認証Cookieを安全に削除
+    clearAuthCookies(response);
 
-    response.cookies.set('auth-session', '', {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 0,
-      path: '/',
-    });
+    // auth-sessionも統一ユーティリティで削除
+    deleteCookie(response, 'auth-session');
 
     return response;
   }
@@ -239,21 +195,11 @@ export async function DELETE(request: NextRequest) {
     );
 
     // Cookieクリア
-    response.cookies.set('auth-token', '', {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 0,
-      path: '/',
-    });
+    // 認証Cookieを安全に削除
+    clearAuthCookies(response);
 
-    response.cookies.set('auth-session', '', {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 0,
-      path: '/',
-    });
+    // auth-sessionも統一ユーティリティで削除
+    deleteCookie(response, 'auth-session');
 
     console.log('✅ DELETE logout completed:', {
       userWasLoggedIn: !!currentUser,
@@ -273,21 +219,11 @@ export async function DELETE(request: NextRequest) {
       { status: 200 }
     );
 
-    response.cookies.set('auth-token', '', {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 0,
-      path: '/',
-    });
+    // 認証Cookieを安全に削除
+    clearAuthCookies(response);
 
-    response.cookies.set('auth-session', '', {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 0,
-      path: '/',
-    });
+    // auth-sessionも統一ユーティリティで削除
+    deleteCookie(response, 'auth-session');
 
     return response;
   }

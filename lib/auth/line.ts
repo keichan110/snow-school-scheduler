@@ -390,9 +390,9 @@ export function getDebugConfig() {
     callbackUrl: lineAuthConfig.callbackUrl,
     configValid: validateLineAuthConfig().isValid,
   };
-  
+
   logDebugConfig(config);
-  
+
   return {
     channelId: lineAuthConfig.channelId,
     channelSecret: lineAuthConfig.channelSecret ? '****' : 'NOT_SET',

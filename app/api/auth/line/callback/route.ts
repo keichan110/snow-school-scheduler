@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { setAuthCookie, deleteCookie } from '@/lib/utils/cookies';
 import { executeLineAuthFlow } from '@/lib/auth/line';
 import { generateJwt } from '@/lib/auth/jwt';
 import { validateInvitationToken, incrementTokenUsage } from '@/lib/auth/invitations';
@@ -249,23 +250,11 @@ export async function GET(request: NextRequest) {
     const successUrl = new URL(redirectPath, request.url);
     const response = NextResponse.redirect(successUrl, { status: 302 });
 
-    // JWTをCookieに設定
-    response.cookies.set('auth-token', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 48 * 60 * 60, // 48時間
-      path: '/',
-    });
+    // JWTをCookieに設定（セキュアな設定を適用）
+    setAuthCookie(response, token);
 
     // 認証セッションCookieの削除
-    response.cookies.set('auth-session', '', {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 0,
-      path: '/',
-    });
+    deleteCookie(response, 'auth-session');
 
     console.log('🎉 Authentication completed successfully:', {
       userId: user.id,

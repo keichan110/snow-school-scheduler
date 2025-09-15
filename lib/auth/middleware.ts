@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { setAuthCookie as setSecureAuthCookie, clearAuthCookies } from '@/lib/utils/cookies';
 import { cookies } from 'next/headers';
 import { verifyJwt } from './jwt';
 import { prisma } from '@/lib/db';
@@ -304,13 +305,7 @@ export async function withAuth(
 export function setAuthCookie(token: string): NextResponse {
   const response = NextResponse.json({ success: true });
 
-  response.cookies.set('auth-token', token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    maxAge: 48 * 60 * 60, // 48時間（JWTの有効期限と同じ）
-    path: '/',
-  });
+  setSecureAuthCookie(response, token);
 
   return response;
 }
@@ -323,15 +318,7 @@ export function setAuthCookie(token: string): NextResponse {
  */
 export function clearAuthCookie(): NextResponse {
   const response = NextResponse.json({ success: true });
-
-  response.cookies.set('auth-token', '', {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    maxAge: 0, // 即座に削除
-    path: '/',
-  });
-
+  clearAuthCookies(response);
   return response;
 }
 

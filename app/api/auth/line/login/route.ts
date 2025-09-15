@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { generateState, generateLineAuthUrl, validateLineAuthConfig } from '@/lib/auth/line';
 import { secureLog, secureAuthLog } from '@/lib/utils/logging';
+import { setSessionCookie } from '@/lib/utils/cookies';
 
 /**
  * LINE認証開始API
@@ -30,7 +31,9 @@ export async function POST(request: NextRequest) {
     // LINE認証設定の妥当性チェック
     const configCheck = validateLineAuthConfig();
     if (!configCheck.isValid) {
-      secureLog('error', 'LINE authentication configuration is invalid', { errors: configCheck.errors });
+      secureLog('error', 'LINE authentication configuration is invalid', {
+        errors: configCheck.errors,
+      });
       return NextResponse.json(
         {
           success: false,
@@ -79,13 +82,7 @@ export async function POST(request: NextRequest) {
     const response = NextResponse.redirect(authUrl, { status: 302 });
 
     // セッション情報をCookieに保存（一時的、認証完了まで）
-    response.cookies.set('auth-session', JSON.stringify(sessionData), {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 10 * 60, // 10分間（認証フロー完了まで）
-      path: '/',
-    });
+    setSessionCookie(response, JSON.stringify(sessionData));
 
     secureAuthLog('LINE authentication flow initiated', {
       hasInviteToken: !!requestData.inviteToken,
@@ -95,8 +92,8 @@ export async function POST(request: NextRequest) {
 
     return response;
   } catch (error) {
-    secureLog('error', 'LINE authentication initiation error', { 
-      message: error instanceof Error ? error.message : 'Unknown error' 
+    secureLog('error', 'LINE authentication initiation error', {
+      message: error instanceof Error ? error.message : 'Unknown error',
     });
     return NextResponse.json(
       {
@@ -119,7 +116,9 @@ export async function GET(request: NextRequest) {
     // LINE認証設定の妥当性チェック
     const configCheck = validateLineAuthConfig();
     if (!configCheck.isValid) {
-      secureLog('error', 'LINE authentication configuration is invalid', { errors: configCheck.errors });
+      secureLog('error', 'LINE authentication configuration is invalid', {
+        errors: configCheck.errors,
+      });
       return NextResponse.json(
         {
           success: false,
@@ -154,13 +153,7 @@ export async function GET(request: NextRequest) {
     const response = NextResponse.redirect(authUrl, { status: 302 });
 
     // セッション情報をCookieに保存（一時的、認証完了まで）
-    response.cookies.set('auth-session', JSON.stringify(sessionData), {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 10 * 60, // 10分間（認証フロー完了まで）
-      path: '/',
-    });
+    setSessionCookie(response, JSON.stringify(sessionData));
 
     secureAuthLog('LINE authentication flow initiated via GET', {
       hasInviteToken: !!inviteToken,
@@ -170,8 +163,8 @@ export async function GET(request: NextRequest) {
 
     return response;
   } catch (error) {
-    secureLog('error', 'LINE authentication initiation error (GET)', { 
-      message: error instanceof Error ? error.message : 'Unknown error' 
+    secureLog('error', 'LINE authentication initiation error (GET)', {
+      message: error instanceof Error ? error.message : 'Unknown error',
     });
     return NextResponse.json(
       {

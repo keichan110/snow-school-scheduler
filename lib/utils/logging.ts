@@ -12,19 +12,28 @@ interface SensitiveData {
  */
 export function maskSensitiveData(data: SensitiveData): SensitiveData {
   const sensitiveKeys = [
-    'token', 'accesstoken', 'secret', 'channelsecret', 
-    'password', 'auth', 'authorization', 'jwt',
-    'code', 'state', 'clientsecret', 'apikey'
+    'token',
+    'accesstoken',
+    'secret',
+    'channelsecret',
+    'password',
+    'auth',
+    'authorization',
+    'jwt',
+    'code',
+    'state',
+    'clientsecret',
+    'apikey',
   ];
-  
+
   const masked = { ...data };
-  
+
   for (const [key, value] of Object.entries(masked)) {
     const keyLower = key.toLowerCase();
-    const isSensitive = sensitiveKeys.some(sensitive => 
+    const isSensitive = sensitiveKeys.some((sensitive) =>
       keyLower.includes(sensitive.toLowerCase())
     );
-    
+
     if (isSensitive && typeof value === 'string') {
       if (value.length <= 8) {
         masked[key] = '****';
@@ -33,7 +42,7 @@ export function maskSensitiveData(data: SensitiveData): SensitiveData {
       }
     }
   }
-  
+
   return masked;
 }
 
@@ -46,9 +55,9 @@ export function secureLog(level: 'info' | 'warn' | 'error', message: string, dat
   if (process.env.NODE_ENV !== 'development') {
     return;
   }
-  
+
   const maskedData = data ? maskSensitiveData(data) : undefined;
-  
+
   switch (level) {
     case 'info':
       console.info(`🛡️ ${message}`, maskedData);
@@ -66,20 +75,25 @@ export function secureLog(level: 'info' | 'warn' | 'error', message: string, dat
  * 認証関連の情報をセキュアにログ出力
  * 機密情報を含む可能性があるデータを安全に記録
  */
-export function secureAuthLog(message: string, data?: {
-  hasToken?: boolean;
-  hasCode?: boolean;
-  hasSecret?: boolean;
-  state?: string;
-  userId?: string;
-  [key: string]: unknown;
-}) {
-  const safeData = data ? {
-    ...data,
-    // state は最初の8文字のみ表示
-    state: data.state ? `${data.state.substring(0, 8)}...` : undefined,
-  } : undefined;
-  
+export function secureAuthLog(
+  message: string,
+  data?: {
+    hasToken?: boolean;
+    hasCode?: boolean;
+    hasSecret?: boolean;
+    state?: string;
+    userId?: string;
+    [key: string]: unknown;
+  }
+) {
+  const safeData = data
+    ? {
+        ...data,
+        // state は最初の8文字のみ表示
+        state: data.state ? `${data.state.substring(0, 8)}...` : undefined,
+      }
+    : undefined;
+
   secureLog('info', `🔐 ${message}`, safeData);
 }
 
@@ -91,7 +105,7 @@ export function logDebugConfig(config: Record<string, unknown>) {
   if (process.env.NODE_ENV !== 'development') {
     return;
   }
-  
+
   const maskedConfig = maskSensitiveData(config);
   secureLog('info', 'Debug configuration', maskedConfig);
 }
