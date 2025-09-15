@@ -8,7 +8,7 @@ import {
   getDepartmentIcon,
   DepartmentSectionOptions,
 } from '../shiftComponents';
-import { AssignedInstructor, ShiftSummary } from '../../../admin/shifts/types';
+import { AssignedInstructor, ShiftSummary } from '../../types';
 
 // テスト用のモックデータ
 const mockAssignedInstructors: AssignedInstructor[] = [

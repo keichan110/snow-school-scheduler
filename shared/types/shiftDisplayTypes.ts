@@ -1,4 +1,4 @@
-import { ShiftStats } from '@/app/admin/shifts/types';
+import { ShiftStats } from '@/app/shifts/types';
 
 /**
  * シフト表示コンポーネントの基本Props型

@@ -2,19 +2,23 @@
 
 import { useState, useEffect, useMemo, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useAuth } from '@/contexts/AuthContext';
+import { hasManagePermission } from '@/lib/auth/permissions';
+import type { AuthenticatedUser } from '@/lib/auth/types';
+import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import Header from '@/components/Header';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { fetchShifts, fetchDepartments, ApiError } from '../admin/shifts/api';
-import { Shift, Department, ShiftStats, ShiftQueryParams, DayData } from '../admin/shifts/types';
-import { ShiftCalendarGrid } from '@/components/shared/shift/ShiftCalendarGrid';
-import { ShiftMobileList } from '@/components/shared/shift/ShiftMobileList';
-import { PublicShiftBottomModal } from './components/PublicShiftBottomModal';
+import { fetchShifts, fetchDepartments, ApiError } from './api';
+import { Shift, Department, ShiftStats, ShiftQueryParams, DayData } from './types';
+import { MonthlyCalendarWithDetails } from './components/MonthlyCalendarWithDetails';
+import { ShiftMobileList } from './components/ShiftMobileList';
+import { UnifiedShiftBottomModal } from './components/UnifiedShiftBottomModal';
 import { WeeklyShiftList } from './components/WeeklyShiftList';
 import { ViewToggle } from './components/ViewToggle';
 import { WeekNavigation } from './components/WeekNavigation';
-import { isHoliday } from '../admin/shifts/constants/shiftConstants';
+import { isHoliday } from './constants/shiftConstants';
 import { useWeekNavigation } from './hooks/useWeekNavigation';
 import { useMonthNavigation } from './hooks/useMonthNavigation';
 import { useShiftDataTransformation } from './hooks/useShiftDataTransformation';
@@ -24,6 +28,7 @@ type ViewMode = 'monthly' | 'weekly';
 function PublicShiftsPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { user } = useAuth();
 
   const [viewMode, setViewMode] = useState<ViewMode>('monthly');
   const [, setShifts] = useState<Shift[]>([]);
@@ -33,6 +38,23 @@ function PublicShiftsPageContent() {
   const [error, setError] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalInitialStep, setModalInitialStep] = useState<'create-step1' | 'create-step2'>(
+    'create-step1'
+  );
+
+  // 管理権限チェック
+  const canManage = user
+    ? hasManagePermission(
+        {
+          userId: user.id,
+          lineUserId: user.lineUserId,
+          displayName: user.displayName,
+          role: user.role,
+          isActive: user.isActive,
+        } as AuthenticatedUser,
+        'shifts'
+      )
+    : false;
 
   // カスタムフックを使用
   const { currentYear, currentMonth, monthlyQueryParams, navigateMonth } = useMonthNavigation();
@@ -111,25 +133,78 @@ function PublicShiftsPageContent() {
   // 日付選択ハンドラー（月間ビュー用）
   const handleMonthlyDateSelect = useCallback((date: string) => {
     setSelectedDate(date);
-    setIsModalOpen(true);
+    // 月間ビューでは日付選択でシフト詳細セクションが表示される
+    // 管理者の場合は必要に応じてモーダルを開く
   }, []);
+
+  // 週間ビュー専用：空の日付または新規追加ボタンクリック時
+  const handleWeeklyDateSelect = useCallback((date: string) => {
+    setSelectedDate(date);
+    setModalInitialStep('create-step1');
+    setIsModalOpen(true);
+    // 週間ビューでは直接シフト作成画面（create-step1）へ
+  }, []);
+
+  // 週間ビュー専用：既存シフト詳細クリック時（インストラクター選択画面へ直行）
+  const handleWeeklyShiftDetailSelect = useCallback((date: string) => {
+    setSelectedDate(date);
+    setModalInitialStep('create-step2');
+    setIsModalOpen(true);
+    // 週間ビューでは直接インストラクター選択画面（create-step2）へ
+  }, []);
+
+  // シフト詳細セクションから新規作成モーダルを開く
+  const handleCreateShift = useCallback(() => {
+    if (!canManage || !selectedDate) return;
+    setModalInitialStep('create-step1');
+    setIsModalOpen(true);
+  }, [canManage, selectedDate]);
+
+  // シフト詳細セクション用：シフト詳細クリック時（管理機能）
+  const handleShiftDetailClick = useCallback(() => {
+    if (!canManage || !selectedDate) return;
+
+    setModalInitialStep('create-step2');
+    setIsModalOpen(true);
+  }, [canManage, selectedDate]);
 
   // モーダル開閉ハンドラー
   const handleModalOpenChange = useCallback((open: boolean) => {
     setIsModalOpen(open);
     if (!open) {
-      setSelectedDate(null);
+      setModalInitialStep('create-step1');
     }
   }, []);
 
+  // シフトデータを再読み込み（管理機能用）
+  const handleShiftUpdated = useCallback(async () => {
+    try {
+      const [shiftsData, departmentsData] = await Promise.all([
+        fetchShifts(queryParams),
+        fetchDepartments(),
+      ]);
+
+      setShifts(shiftsData);
+      setDepartments(departmentsData);
+      setShiftStats(transformShiftsToStats(shiftsData, departmentsData));
+    } catch (error) {
+      console.error('Failed to refresh shift data:', error);
+      throw error;
+    }
+  }, [queryParams, transformShiftsToStats]);
+
   // dayData計算
   const dayData = useMemo((): DayData | null => {
-    if (!selectedDate || !shiftStats[selectedDate]) {
+    if (!selectedDate) {
       return null;
     }
+
+    // シフトが設定されていない日付でも dayData を作成
+    const shiftsForDate = shiftStats[selectedDate]?.shifts || [];
+
     return {
       date: selectedDate,
-      shifts: shiftStats[selectedDate].shifts,
+      shifts: shiftsForDate,
       isHoliday: isHoliday(selectedDate),
     };
   }, [selectedDate, shiftStats]);
@@ -222,13 +297,16 @@ function PublicShiftsPageContent() {
                   <>
                     {/* デスクトップ・タブレット用カレンダー */}
                     <div className="hidden sm:block">
-                      <ShiftCalendarGrid
+                      <MonthlyCalendarWithDetails
                         year={currentYear}
                         month={currentMonth}
                         shiftStats={shiftStats}
                         isHoliday={isHoliday}
                         selectedDate={selectedDate}
                         onDateSelect={handleMonthlyDateSelect}
+                        canManage={canManage}
+                        onShiftDetailClick={handleShiftDetailClick}
+                        onCreateShift={handleCreateShift}
                       />
                     </div>
 
@@ -251,6 +329,9 @@ function PublicShiftsPageContent() {
                       baseDate={weeklyBaseDate}
                       shiftStats={shiftStats}
                       isHoliday={isHoliday}
+                      selectedDate={selectedDate}
+                      onDateSelect={handleWeeklyDateSelect}
+                      onShiftDetailSelect={handleWeeklyShiftDetailSelect}
                     />
                   </div>
                 )}
@@ -260,12 +341,14 @@ function PublicShiftsPageContent() {
         </div>
       </div>
 
-      {/* 読み取り専用モーダル */}
-      <PublicShiftBottomModal
+      {/* 統合モーダル（権限ベース） */}
+      <UnifiedShiftBottomModal
         isOpen={isModalOpen}
         onOpenChange={handleModalOpenChange}
         selectedDate={selectedDate}
         dayData={dayData}
+        onShiftUpdated={handleShiftUpdated}
+        initialStep={modalInitialStep}
       />
     </div>
   );
@@ -273,17 +356,19 @@ function PublicShiftsPageContent() {
 
 export default function PublicShiftsPage() {
   return (
-    <Suspense
-      fallback={
-        <div className="flex min-h-screen items-center justify-center">
-          <div className="text-center">
-            <div className="mx-auto h-8 w-8 animate-spin rounded-full border-b-2 border-blue-600"></div>
-            <div className="mt-2 text-muted-foreground">読み込み中...</div>
+    <ProtectedRoute>
+      <Suspense
+        fallback={
+          <div className="flex min-h-screen items-center justify-center">
+            <div className="text-center">
+              <div className="mx-auto h-8 w-8 animate-spin rounded-full border-b-2 border-blue-600"></div>
+              <div className="mt-2 text-muted-foreground">読み込み中...</div>
+            </div>
           </div>
-        </div>
-      }
-    >
-      <PublicShiftsPageContent />
-    </Suspense>
+        }
+      >
+        <PublicShiftsPageContent />
+      </Suspense>
+    </ProtectedRoute>
   );
 }

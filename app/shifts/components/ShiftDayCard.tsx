@@ -3,7 +3,7 @@
 import React, { useMemo } from 'react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
-import { DayData } from '../../admin/shifts/types';
+import { DayData } from '../types';
 import { renderDepartmentSections } from '../utils/shiftComponents';
 
 interface ShiftDayCardProps {
@@ -12,12 +12,16 @@ interface ShiftDayCardProps {
   dayData: DayData;
   isSelected: boolean;
   onDateSelect: () => void;
+  onShiftDetailSelect?: (shiftType: string, departmentType: string) => void;
 }
 
 // 設計書に基づくメモ化コンポーネント
 export const ShiftDayCard = React.memo<ShiftDayCardProps>(function ShiftDayCard({
   date,
   dayData,
+  isSelected,
+  onDateSelect,
+  onShiftDetailSelect,
 }: ShiftDayCardProps) {
   // 設計書に基づく日付情報のメモ化
   const dateInfo = useMemo(() => {
@@ -60,12 +64,16 @@ export const ShiftDayCard = React.memo<ShiftDayCardProps>(function ShiftDayCard(
 
   return (
     <Card
-      className={cn('transition-all duration-200', {
+      className={cn('cursor-pointer transition-all duration-200', {
         'opacity-60': !dayData.shifts || dayData.shifts.length === 0,
         'border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950/30':
           isHoliday || dateInfo.isSunday,
         'border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/30': dateInfo.isSaturday,
+        'border-blue-400 bg-blue-100 shadow-lg dark:border-blue-600 dark:bg-blue-900/50':
+          isSelected,
+        'hover:border-gray-300 hover:shadow-md dark:hover:border-gray-600': !isSelected,
       })}
+      onClick={onDateSelect}
     >
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
@@ -89,6 +97,11 @@ export const ShiftDayCard = React.memo<ShiftDayCardProps>(function ShiftDayCard(
                 祝日
               </div>
             )}
+            {isSelected && (
+              <div className="rounded-full bg-blue-100 px-2 py-1 text-xs font-medium text-blue-600 dark:bg-blue-950/30 dark:text-blue-400">
+                選択中
+              </div>
+            )}
           </div>
 
           {/* シフト総数 */}
@@ -107,12 +120,37 @@ export const ShiftDayCard = React.memo<ShiftDayCardProps>(function ShiftDayCard(
             /* シフトなしの場合 */
             <div className="py-8 text-center text-muted-foreground">
               <div className="mt-1 text-sm">シフトなし</div>
+              <div className="mt-2 text-xs text-blue-600 dark:text-blue-400">
+                タップしてシフトを作成
+              </div>
             </div>
           ) : (
             /* シフトがある場合 - 統合版関数を使用 */
             <>
-              {/* 部門別セクション表示（統合版・表示専用） */}
-              {renderDepartmentSections(dayData.shifts)}
+              {/* 部門別セクション表示（週間ビューはクリック可能） */}
+              {renderDepartmentSections(
+                dayData.shifts,
+                onShiftDetailSelect
+                  ? {
+                      clickable: true,
+                      onShiftClick: onShiftDetailSelect,
+                    }
+                  : undefined
+              )}
+
+              {/* 新規追加ボタン */}
+              <div className="mt-4 flex justify-center">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDateSelect();
+                  }}
+                  className="flex items-center gap-2 rounded-md border border-dashed border-gray-300 px-3 py-2 text-sm text-muted-foreground transition-colors hover:border-blue-400 hover:text-blue-600 dark:border-gray-600 dark:hover:border-blue-500 dark:hover:text-blue-400"
+                >
+                  <span className="text-lg">+</span>
+                  新規シフト追加
+                </button>
+              </div>
             </>
           )}
         </div>

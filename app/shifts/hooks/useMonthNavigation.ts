@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo } from 'react';
-import { ShiftQueryParams } from '../../admin/shifts/types';
+import { ShiftQueryParams } from '../types';
 
 /**
  * 月間ナビゲーションのカスタムフック

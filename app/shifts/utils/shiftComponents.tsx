@@ -3,9 +3,9 @@
 import React from 'react';
 import { Calendar, User, PersonSimpleSki, PersonSimpleSnowboard } from '@phosphor-icons/react';
 import { cn } from '@/lib/utils';
-import { DepartmentType, DayData, AssignedInstructor } from '../../admin/shifts/types';
-import { getDepartmentBgClass } from '../../admin/shifts/utils/shiftUtils';
-import { DEPARTMENT_STYLES, DEPARTMENT_NAMES } from '../../admin/shifts/constants/shiftConstants';
+import { DepartmentType, DayData, AssignedInstructor } from '../types';
+import { getDepartmentBgClass } from '../utils/shiftUtils';
+import { DEPARTMENT_STYLES, DEPARTMENT_NAMES } from '../constants/shiftConstants';
 
 /**
  * インストラクターチップを生成する共通関数

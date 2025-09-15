@@ -1,6 +1,3 @@
-import Link from 'next/link';
-import { SlidersHorizontal } from '@phosphor-icons/react/dist/ssr';
-
 export default function Footer() {
   return (
     <footer className="bg-transparent py-8">
@@ -9,14 +6,19 @@ export default function Footer() {
           <div className="mb-4 text-sm text-muted-foreground md:mb-0">
             © 2025 Keisuke Ito. All rights reserved.
           </div>
-          <div className="flex space-x-6 text-sm">
-            <Link
-              href="/admin"
-              className="flex items-center text-muted-foreground transition-colors hover:text-foreground"
+          <div className="flex gap-6 text-sm">
+            <a
+              href="/terms"
+              className="text-muted-foreground transition-colors hover:text-foreground"
             >
-              <SlidersHorizontal className="mr-2 h-4 w-4" weight="regular" />
-              管理者機能
-            </Link>
+              利用規約
+            </a>
+            <a
+              href="/privacy"
+              className="text-muted-foreground transition-colors hover:text-foreground"
+            >
+              プライバシーポリシー
+            </a>
           </div>
         </div>
       </div>

@@ -49,6 +49,13 @@ jobs:
 
       - name: Build application
         run: npm run build
+        env:
+          NODE_ENV: test
+          DATABASE_URL: 'file:./test.db'
+          JWT_SECRET: 'test-jwt-secret-key-for-ci-build-only-must-be-at-least-32-characters-long'
+          LINE_CHANNEL_ID: '1234567890'
+          LINE_CHANNEL_SECRET: '0123456789abcdef0123456789abcdef'
+          NEXTAUTH_URL: 'http://localhost:3000'
 
       - name: Security audit
         run: npm audit --audit-level=moderate

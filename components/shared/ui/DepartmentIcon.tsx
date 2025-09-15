@@ -1,7 +1,7 @@
 'use client';
 
 import { PersonSimpleSki, PersonSimpleSnowboard, Calendar } from '@phosphor-icons/react';
-import { DepartmentType } from '../shift/types';
+import { DepartmentType } from '@/app/shifts/components/types';
 
 interface DepartmentIconProps {
   department: DepartmentType;
