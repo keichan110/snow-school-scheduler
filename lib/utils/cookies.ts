@@ -140,7 +140,7 @@ export function validateCookieOptions(options: SecureCookieOptions): {
   }
 
   // 有効期限チェック（認証トークン）
-  if (options.name.includes('token') && options.maxAge && options.maxAge > 48 * 60 * 60) {
+  if (options.name.includes('token') && options.maxAge && options.maxAge >= 48 * 60 * 60) {
     warnings.push('Auth tokens should have shorter expiration time (max 48 hours)');
   }
 

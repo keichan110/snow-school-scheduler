@@ -9,7 +9,7 @@ jest.mock('@/lib/utils', () => ({
   cn: jest.fn((...classes) => classes.filter(Boolean).join(' ')),
 }));
 
-jest.mock('../../ui/DepartmentIcon', () => ({
+jest.mock('../../../../components/shared/ui/DepartmentIcon', () => ({
   DepartmentIcon: jest.fn(({ department, size }) => (
     <div data-testid="department-icon" data-department={department} data-size={size}>
       {department}-icon
@@ -17,7 +17,7 @@ jest.mock('../../ui/DepartmentIcon', () => ({
   )),
 }));
 
-jest.mock('../../ui/ShiftBadge', () => ({
+jest.mock('../../../../components/shared/ui/ShiftBadge', () => ({
   ShiftBadge: jest.fn(({ count }) => (
     <div data-testid="shift-badge" data-count={count}>
       {count}名
