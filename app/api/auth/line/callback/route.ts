@@ -57,10 +57,7 @@ export async function GET(request: NextRequest) {
     const receivedState = searchParams.get('state');
 
     if (!code || !receivedState) {
-      console.error('❌ Missing required callback parameters:', {
-        code: !!code,
-        state: !!receivedState,
-      });
+      console.error('❌ Missing required callback parameters');
       return NextResponse.redirect(new URL('/error?reason=invalid_callback', request.url), {
         status: 302,
       });
@@ -69,7 +66,7 @@ export async function GET(request: NextRequest) {
     // セッション情報の取得と検証
     const sessionCookie = request.cookies.get('auth-session')?.value;
     if (!sessionCookie) {
-      console.error('❌ Authentication session not found');
+      console.error('❌ Authentication session error');
       return NextResponse.redirect(new URL('/error?reason=session_expired', request.url), {
         status: 302,
       });
@@ -78,8 +75,8 @@ export async function GET(request: NextRequest) {
     let sessionData: AuthSession;
     try {
       sessionData = JSON.parse(sessionCookie);
-    } catch (parseError) {
-      console.error('❌ Invalid session data format:', parseError);
+    } catch (_parseError) {
+      console.error('❌ Invalid session data format');
       return NextResponse.redirect(new URL('/error?reason=invalid_session', request.url), {
         status: 302,
       });
@@ -88,9 +85,7 @@ export async function GET(request: NextRequest) {
     // セッション有効期限チェック（10分）
     const sessionAge = Date.now() - sessionData.createdAt;
     if (sessionAge > 10 * 60 * 1000) {
-      console.error('❌ Authentication session expired:', {
-        ageMinutes: Math.round(sessionAge / 60000),
-      });
+      console.error('❌ Authentication session expired');
       return NextResponse.redirect(new URL('/error?reason=session_expired', request.url), {
         status: 302,
       });
@@ -107,7 +102,7 @@ export async function GET(request: NextRequest) {
     const authResult = await executeLineAuthFlow(code, receivedState, sessionData.state);
 
     if (!authResult.success || !authResult.profile) {
-      console.error('❌ LINE authentication flow failed:', authResult.error);
+      console.error('❌ LINE authentication flow failed');
       return NextResponse.redirect(new URL('/error?reason=auth_failed', request.url), {
         status: 302,
       });
@@ -145,11 +140,7 @@ export async function GET(request: NextRequest) {
       // 招待トークンの有効性チェック
       const tokenValidation = await validateInvitationToken(sessionData.inviteToken);
       if (!tokenValidation.isValid) {
-        console.error('❌ Invalid invitation token:', {
-          token: sessionData.inviteToken.substring(0, 16) + '...',
-          error: tokenValidation.error,
-          errorCode: tokenValidation.errorCode,
-        });
+        console.error('❌ Invalid invitation token');
 
         const errorReason =
           tokenValidation.errorCode === 'EXPIRED'
@@ -191,8 +182,8 @@ export async function GET(request: NextRequest) {
           // 使用回数増加に失敗してもユーザー作成は成功しているので警告レベル
           console.warn('⚠️ Failed to increment invitation token usage:', incrementError);
         }
-      } catch (createError) {
-        console.error('❌ Failed to create user:', createError);
+      } catch (_createError) {
+        console.error('❌ Failed to create user');
         return NextResponse.redirect(new URL('/error?reason=user_creation_failed', request.url), {
           status: 302,
         });
@@ -264,8 +255,8 @@ export async function GET(request: NextRequest) {
     });
 
     return response;
-  } catch (error) {
-    console.error('❌ Authentication callback error:', error);
+  } catch (_error) {
+    console.error('❌ Authentication callback failed');
 
     // システムエラー時のリダイレクト
     return NextResponse.redirect(new URL('/error?reason=system_error', request.url), {
@@ -306,8 +297,8 @@ export async function POST(request: NextRequest) {
 
     const modifiedRequest = new NextRequest(urlWithParams);
     return await GET(modifiedRequest);
-  } catch (error) {
-    console.error('❌ POST callback processing error:', error);
+  } catch (_error) {
+    console.error('❌ POST callback processing failed');
     return NextResponse.redirect(new URL('/error?reason=system_error', request.url), {
       status: 302,
     });

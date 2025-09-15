@@ -33,8 +33,8 @@ export default function LogoutPage() {
           console.log('🏠 Redirecting to home page...');
           window.location.href = '/';
         }, 500);
-      } catch (error) {
-        console.error('❌ Logout failed:', error);
+      } catch (_error) {
+        console.error('❌ Logout failed');
         // エラーが発生してもホームページにリダイレクト
         setTimeout(() => {
           window.location.href = '/';

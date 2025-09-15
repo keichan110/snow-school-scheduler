@@ -60,8 +60,8 @@ export async function POST(request: NextRequest) {
     });
 
     return response;
-  } catch (error) {
-    console.error('❌ Logout error:', error);
+  } catch (_error) {
+    console.error('❌ Logout failed');
 
     // エラーが発生してもCookieは削除する
     const response = NextResponse.json(
@@ -146,8 +146,8 @@ export async function GET(request: NextRequest) {
     });
 
     return response;
-  } catch (error) {
-    console.error('❌ Logout error (GET):', error);
+  } catch (_error) {
+    console.error('❌ Logout GET request failed');
 
     // エラーが発生してもルートにリダイレクトしてCookieをクリア
     const response = NextResponse.redirect(new URL('/', request.url), {
@@ -207,8 +207,8 @@ export async function DELETE(request: NextRequest) {
     });
 
     return response;
-  } catch (error) {
-    console.error('❌ DELETE logout error:', error);
+  } catch (_error) {
+    console.error('❌ DELETE logout failed');
 
     const response = NextResponse.json(
       {

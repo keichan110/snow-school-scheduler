@@ -85,8 +85,8 @@ export async function GET(request: NextRequest) {
     };
 
     return NextResponse.json(response, { status: 200 });
-  } catch (error) {
-    console.error('❌ User info retrieval error:', error);
+  } catch (_error) {
+    console.error('❌ User info retrieval failed');
 
     const response: ErrorResponse = {
       success: false,
@@ -213,8 +213,8 @@ export async function POST(request: NextRequest) {
     };
 
     return NextResponse.json(response, { status: 200 });
-  } catch (error) {
-    console.error('❌ User info update error:', error);
+  } catch (_error) {
+    console.error('❌ User info update failed');
 
     const response: ErrorResponse = {
       success: false,

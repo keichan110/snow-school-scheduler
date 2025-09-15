@@ -110,7 +110,7 @@ async function fetchUserInfo(): Promise<User | null> {
       updatedAt: new Date(data.user.updatedAt),
     };
   } catch (error) {
-    console.error('❌ Failed to fetch user info:', error);
+    console.error('❌ User authentication failed');
     throw error;
   }
 }
@@ -210,7 +210,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setError(errorMessage);
       setStatus('error');
       setUser(null);
-      console.error('❌ Authentication error:', errorMessage);
+      // 機密情報を含まない安全なログ出力
+      console.error('❌ Authentication failed');
     }
   };
 
@@ -254,7 +255,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to update display name';
       setError(errorMessage);
-      console.error('❌ Display name update failed:', errorMessage);
+      // 機密情報を含まない安全なログ出力
+      console.error('❌ Display name update failed');
       return false;
     }
   };
