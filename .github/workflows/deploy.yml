@@ -79,10 +79,10 @@ jobs:
         run: |
           echo "Waiting for deployment to be available..."
           sleep 30
-          
+
           # ヘルスチェックAPI呼び出し
           RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" https://snow-school-scheduler.YOUR_SUBDOMAIN.workers.dev/api/health)
-          
+
           if [ "$RESPONSE" = "200" ]; then
             echo "✅ Health check passed! Application is running correctly."
           else

@@ -17,22 +17,27 @@
 2. **「Create Token」** をクリック
 3. **「Custom token」** を選択
 4. 以下の権限を設定：
+
    ```
    Account - Cloudflare Workers Script:Edit
    Account - Cloudflare D1:Edit
    Zone - Zone Settings:Read (ドメイン使用時)
    ```
-   
+
    **権限が見つからない場合の代替設定：**
+
    ```
    Account - Cloudflare Workers:Edit
    Account - Cloudflare D1:Edit
    ```
+
    または、より広範囲な権限：
+
    ```
    Zone - All Zones:Edit
    Account - All Accounts:Edit
    ```
+
 5. **Account Resources**: 「Include - All accounts」を選択
 6. **Zone Resources**: 「Include - All zones」を選択（ドメイン使用時）
 7. **IP Address Filtering**: 必要に応じて制限（推奨：制限なし）
@@ -75,15 +80,15 @@ GitHubリポジトリの **Settings > Secrets and variables > Actions** で以�
 
 #### 必須設定（Repository secrets）
 
-| Secret名 | 値 | 説明 |
-|---------|---|-----|
-| `CLOUDFLARE_API_TOKEN` | 手順1で取得したAPIトークン | Cloudflare API認証 |
-| `CLOUDFLARE_ACCOUNT_ID` | 手順2で取得したAccount ID | Cloudflareアカウント識別 |
-| `DATABASE_URL` | `file:./prod.db` | D1データベース接続URL |
-| `JWT_SECRET` | 64文字以上のランダム文字列 | JWT署名用秘密鍵 |
-| `LINE_CHANNEL_ID` | LINE Developersから取得 | LINE認証チャンネルID |
-| `LINE_CHANNEL_SECRET` | LINE Developersから取得 | LINE認証チャンネルシークレット |
-| `NEXTAUTH_URL` | `https://snow-school-scheduler.YOUR_SUBDOMAIN.workers.dev` | 本番環境URL |
+| Secret名                | 値                                                         | 説明                           |
+| ----------------------- | ---------------------------------------------------------- | ------------------------------ |
+| `CLOUDFLARE_API_TOKEN`  | 手順1で取得したAPIトークン                                 | Cloudflare API認証             |
+| `CLOUDFLARE_ACCOUNT_ID` | 手順2で取得したAccount ID                                  | Cloudflareアカウント識別       |
+| `DATABASE_URL`          | `file:./prod.db`                                           | D1データベース接続URL          |
+| `JWT_SECRET`            | 64文字以上のランダム文字列                                 | JWT署名用秘密鍵                |
+| `LINE_CHANNEL_ID`       | LINE Developersから取得                                    | LINE認証チャンネルID           |
+| `LINE_CHANNEL_SECRET`   | LINE Developersから取得                                    | LINE認証チャンネルシークレット |
+| `NEXTAUTH_URL`          | `https://snow-school-scheduler.YOUR_SUBDOMAIN.workers.dev` | 本番環境URL                    |
 
 #### JWT_SECRET の生成方法
 
@@ -157,6 +162,7 @@ curl https://snow-school-scheduler.YOUR_SUBDOMAIN.workers.dev/api/health
 ```
 
 期待されるレスポンス：
+
 ```json
 {
   "status": "ok",
@@ -176,10 +182,12 @@ curl https://snow-school-scheduler.YOUR_SUBDOMAIN.workers.dev/api/health
 ### よくあるエラー
 
 #### ❌ "Database not found" エラー
+
 - `wrangler.toml` の `database_id` が正しく設定されているか確認
 - D1データベースが作成されているか確認
 
 #### ❌ "Unauthorized" エラー
+
 - `CLOUDFLARE_API_TOKEN` が正しく設定されているか確認
 - APIトークンに以下の権限があるか確認：
   - `Cloudflare Workers Script:Edit` または `Cloudflare Workers:Edit`
@@ -187,10 +195,12 @@ curl https://snow-school-scheduler.YOUR_SUBDOMAIN.workers.dev/api/health
 - トークンのAccount ResourcesとZone Resourcesが正しく設定されているか確認
 
 #### ❌ LINE認証エラー
+
 - `LINE_CHANNEL_ID` と `LINE_CHANNEL_SECRET` が正しく設定されているか確認
 - Callback URLが実際のWorkers URLと一致しているか確認
 
 #### ❌ ビルドエラー
+
 - 全ての環境変数が設定されているか確認
 - `npm run typecheck` と `npm run lint` がローカルで成功するか確認
 
@@ -239,16 +249,19 @@ wrangler d1 info snow-school-scheduler
 ## ⚙️ Pure Workers特有の注意事項
 
 ### Next.js App Router対応
+
 - `compatibility_flags = ["nodejs_compat"]` が設定済み
 - Server Componentsは完全サポート
 - API RoutesはWorkers Request/Response APIで動作
 
 ### パフォーマンス最適化
+
 - Cold Start時間: 約10-50ms
 - メモリ制限: 128MB
 - 実行時間制限: 30秒（CPU時間）
 
 ### ファイルシステム制限
+
 - ローカルファイル読み込み不可
 - 静的アセットはWorkers KVまたはR2使用推奨
 

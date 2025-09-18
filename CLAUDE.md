@@ -69,7 +69,7 @@ app/
 │   ├── error/               # 認証エラー
 │   └── layout.tsx
 ├── auth/                    # 認証API・エラーページ
-│   └── error/              
+│   └── error/
 ├── api/                     # API Routes (RESTful設計)
 │   ├── auth/               # 認証関連API
 │   │   ├── line/           # LINE認証（login, callback）
@@ -192,7 +192,7 @@ docs/                       # プロジェクトドキュメント
 - **LINE認証**: LINE Login APIによる安全な認証システム
 - **JWT管理**: jsonwebtokenによるセッション管理
 - **招待システム**: 安全な招待URL生成・検証機能
-- **環境変数管理**: NEXT_PUBLIC_プレフィックス適切使用
+- **環境変数管理**: NEXT*PUBLIC*プレフィックス適切使用
 - **入力値バリデーション**: Zodによる型安全な入力検証
 - **データベース**: Prismaパラメータ化クエリでSQLインジェクション防止
 - **セキュリティヘッダー**: XSS、フレーミング攻撃防止ヘッダー設定
@@ -228,6 +228,7 @@ DELETE /api/[resource]/[id] → 削除
 #### 実装済みAPI エンドポイント
 
 **基本リソースAPI**
+
 - `/api/health` - ヘルスチェック
 - `/api/departments` - 部門管理 (CRUD)
 - `/api/instructors` - インストラクター管理 (CRUD)
@@ -237,6 +238,7 @@ DELETE /api/[resource]/[id] → 削除
 - `/api/shifts/prepare` - シフト作成準備データ（特殊エンドポイント）
 
 **認証・ユーザー管理API**
+
 - `/api/auth/line/login` - LINE認証開始
 - `/api/auth/line/callback` - LINE認証コールバック
 - `/api/auth/me` - 現在のユーザー情報取得
