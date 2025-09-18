@@ -31,7 +31,10 @@
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "db:studio": "prisma studio",
-    "db:seed": "npx tsx prisma/seed.ts"
+    "db:seed": "npx tsx prisma/seed.ts",
+    "wrangler:login": "wrangler login",
+    "cf:d1:create": "wrangler d1 create snow-school-scheduler",
+    "cf:d1:migrations:apply:local": "wrangler d1 migrations apply snow-school-scheduler --local"
   },
   "dependencies": {
     "@phosphor-icons/react": "^2.1.10",

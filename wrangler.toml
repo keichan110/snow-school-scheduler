@@ -1,0 +1,14 @@
+name = "snow-school-scheduler"
+main = ".next/standalone/server.js"
+compatibility_date = "2024-09-16"
+compatibility_flags = ["nodejs_compat"]
+
+# D1データベースバインディング
+[[d1_databases]]
+binding = "DB"
+database_name = "snow-school-scheduler"
+database_id = "ia39eae08-e034-45a3-b85a-d7e9d1b57c30"
+
+# 環境変数（非機密情報のみ）
+[vars]
+NODE_ENV = "production"

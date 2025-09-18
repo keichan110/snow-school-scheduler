@@ -1,0 +1,91 @@
+name: Deploy to Cloudflare Workers
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: # 手動実行も可能
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: github.repository == 'keichan110/snow-school-scheduler' # 意図しないforkでの実行防止
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Prisma client
+        run: npm run db:generate
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+      - name: Validate Prisma schema
+        run: npx prisma validate
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+      - name: Run quality checks
+        run: |
+          npm run typecheck
+          npm run lint
+          npm run test:ci
+
+      - name: Build application
+        run: npm run build
+        env:
+          NODE_ENV: production
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          LINE_CHANNEL_ID: ${{ secrets.LINE_CHANNEL_ID }}
+          LINE_CHANNEL_SECRET: ${{ secrets.LINE_CHANNEL_SECRET }}
+          NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL }}
+
+      - name: Deploy to Cloudflare Workers
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: deploy
+
+      - name: Apply D1 database migrations
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: d1 migrations apply snow-school-scheduler --env=production
+
+      - name: Notify deployment status
+        if: failure()
+        run: |
+          echo "Deployment failed! Check the logs above for details."
+          exit 1
+
+  health-check:
+    runs-on: ubuntu-latest
+    needs: deploy
+    if: success()
+
+    steps:
+      - name: Health check
+        run: |
+          echo "Waiting for deployment to be available..."
+          sleep 30
+          
+          # ヘルスチェックAPI呼び出し
+          RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" https://snow-school-scheduler.YOUR_SUBDOMAIN.workers.dev/api/health)
+          
+          if [ "$RESPONSE" = "200" ]; then
+            echo "✅ Health check passed! Application is running correctly."
+          else
+            echo "❌ Health check failed! HTTP status: $RESPONSE"
+            exit 1
+          fi
