@@ -31,6 +31,9 @@ yarn-error.log*
 # Vercel
 .vercel
 
+# OpenNext
+.open-next
+
 # Turbo
 .turbo
 
