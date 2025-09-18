@@ -1,6 +1,6 @@
 name = "snow-school-scheduler"
 main = ".open-next/worker.js"
-compatibility_date = "2024-09-16"
+compatibility_date = "2024-09-23"
 compatibility_flags = ["nodejs_compat"]
 
 # D1データベースバインディング
