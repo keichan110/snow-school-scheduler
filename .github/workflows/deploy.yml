@@ -76,7 +76,7 @@ jobs:
   health-check:
     runs-on: ubuntu-latest
     needs: deploy
-    if: false # 初回デプロイ時は無効化。デプロイ後にURLを確認してから有効化予定
+    if: success()
 
     steps:
       - name: Health check
