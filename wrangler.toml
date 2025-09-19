@@ -7,7 +7,7 @@ compatibility_flags = ["nodejs_compat"]
 [[d1_databases]]
 binding = "DB"
 database_name = "snow-school-scheduler"
-database_id = "ia39eae08-e034-45a3-b85a-d7e9d1b57c30"
+database_id = "a39eae08-e034-45a3-b85a-d7e9d1b57c30"
 
 # 環境変数（非機密情報のみ）
 [vars]
