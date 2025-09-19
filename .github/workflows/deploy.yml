@@ -50,6 +50,16 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: deploy
 
+      - name: Prepare D1 migrations
+        run: |
+          mkdir -p migrations
+          if [ -d "prisma/migrations" ]; then
+            find prisma/migrations -name "migration.sql" -exec cp {} migrations/ \;
+            echo "Copied Prisma migrations to D1 migrations directory"
+          else
+            echo "No Prisma migrations found"
+          fi
+
       - name: Apply D1 database migrations
         uses: cloudflare/wrangler-action@v3
         with:
