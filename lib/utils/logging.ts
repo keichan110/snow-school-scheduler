@@ -51,8 +51,8 @@ export function maskSensitiveData(data: SensitiveData): SensitiveData {
  * 開発環境でのみ機密情報をマスクしてログ出力
  */
 export function secureLog(level: 'info' | 'warn' | 'error', message: string, data?: SensitiveData) {
-  // 本番環境ではログを出力しない
-  if (process.env.NODE_ENV !== 'development') {
+  // Cloudflare Workers本番環境では絶対にログを出力しない
+  if (process.env.NODE_ENV === 'production') {
     return;
   }
 
@@ -102,7 +102,7 @@ export function secureAuthLog(
  * 開発環境でのトラブルシューティング用
  */
 export function logDebugConfig(config: Record<string, unknown>) {
-  if (process.env.NODE_ENV !== 'development') {
+  if (process.env.NODE_ENV === 'production') {
     return;
   }
 
