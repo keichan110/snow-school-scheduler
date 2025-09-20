@@ -86,7 +86,6 @@ export async function POST(request: NextRequest) {
 
     secureAuthLog('LINE authentication flow initiated', {
       hasInviteToken: !!requestData.inviteToken,
-      state: state,
       hasAuthUrl: !!authUrl,
     });
 
@@ -157,7 +156,6 @@ export async function GET(request: NextRequest) {
 
     secureAuthLog('LINE authentication flow initiated via GET', {
       hasInviteToken: !!inviteToken,
-      state: state,
       hasAuthUrl: !!authUrl,
     });
 

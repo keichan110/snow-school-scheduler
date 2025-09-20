@@ -8,7 +8,8 @@ const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
 
   // データベース設定
-  DATABASE_URL: z.string().min(1, '⚠️ DATABASE_URL is required'),
+  // Cloudflare Workers + D1環境ではDATABASE_URLは不要（D1バインディングを使用）
+  DATABASE_URL: z.string().min(1, '⚠️ DATABASE_URL is required').optional(),
 
   // 認証関連設定
   JWT_SECRET: z
@@ -60,7 +61,13 @@ export type Environment = z.infer<typeof envSchema>;
  */
 function createEnv(): Environment {
   try {
-    const parsed = envSchema.parse(process.env);
+    // Cloudflare Workers環境でDATABASE_URLが未設定の場合はダミー値を設定
+    const processEnv = { ...process.env };
+    if (!processEnv.DATABASE_URL && processEnv.NODE_ENV === 'production') {
+      processEnv.DATABASE_URL = 'file:./db.sqlite'; // D1バインディング用ダミー
+    }
+
+    const parsed = envSchema.parse(processEnv);
 
     // 開発環境での警告表示
     if (parsed.NODE_ENV === 'development') {
