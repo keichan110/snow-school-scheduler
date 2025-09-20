@@ -1,8 +1,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { MarkdownContent } from '@/components/markdown-content';
+import { TERMS_CONTENT, TERMS_TITLE, TERMS_METADATA } from './content';
 
-export default async function TermsPage() {
-  const { TERMS_CONTENT, TERMS_TITLE, TERMS_METADATA } = await import('./content');
+export default function TermsPage() {
 
   return (
     <div className="container mx-auto max-w-4xl px-4 py-8">
