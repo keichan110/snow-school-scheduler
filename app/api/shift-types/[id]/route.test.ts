@@ -1,26 +1,7 @@
 import { GET, PUT } from './route';
 import { prisma } from '@/lib/db';
-import { NextResponse } from 'next/server';
-
-// Request グローバルオブジェクトのモック
-global.Request = class MockRequest {
-  url: string;
-  method: string;
-  private _body: unknown;
-
-  constructor(url: string, options?: { method?: string; body?: unknown }) {
-    this.url = url;
-    this.method = options?.method || 'GET';
-    this._body = options?.body;
-  }
-
-  async json(): Promise<unknown> {
-    if (typeof this._body === 'string') {
-      return JSON.parse(this._body);
-    }
-    return this._body || {};
-  }
-} as unknown as typeof Request;
+import { NextRequest, NextResponse } from 'next/server';
+import { authenticateFromRequest } from '@/lib/auth/middleware';
 
 type ShiftType = {
   id: number;
@@ -47,6 +28,11 @@ jest.mock('next/server', () => ({
   },
 }));
 
+// 認証ミドルウェアをモック化
+jest.mock('@/lib/auth/middleware', () => ({
+  authenticateFromRequest: jest.fn(),
+}));
+
 const mockPrisma = prisma as jest.Mocked<typeof prisma>;
 const mockShiftTypeFindUnique = mockPrisma.shiftType.findUnique as jest.MockedFunction<
   typeof prisma.shiftType.findUnique
@@ -55,6 +41,9 @@ const mockShiftTypeUpdate = mockPrisma.shiftType.update as jest.MockedFunction<
   typeof prisma.shiftType.update
 >;
 const mockNextResponse = NextResponse as jest.Mocked<typeof NextResponse>;
+const mockAuthenticateFromRequest = authenticateFromRequest as jest.MockedFunction<
+  typeof authenticateFromRequest
+>;
 
 describe('GET /api/shift-types/[id]', () => {
   beforeEach(() => {
@@ -101,7 +90,7 @@ describe('GET /api/shift-types/[id]', () => {
       };
 
       // Act
-      await GET(new Request('http://localhost'), mockContext);
+      await GET(new NextRequest('http://localhost'), mockContext);
 
       // Assert
       expect(mockShiftTypeFindUnique).toHaveBeenCalledWith({
@@ -128,7 +117,7 @@ describe('GET /api/shift-types/[id]', () => {
       };
 
       // Act
-      await GET(new Request('http://localhost'), mockContext);
+      await GET(new NextRequest('http://localhost'), mockContext);
 
       // Assert
       expect(mockNextResponse.json).toHaveBeenCalledWith(mockShiftType);
@@ -145,7 +134,7 @@ describe('GET /api/shift-types/[id]', () => {
       };
 
       // Act
-      await GET(new Request('http://localhost'), mockContext);
+      await GET(new NextRequest('http://localhost'), mockContext);
 
       // Assert
       expect(mockShiftTypeFindUnique).toHaveBeenCalledWith({
@@ -170,7 +159,7 @@ describe('GET /api/shift-types/[id]', () => {
       };
 
       // Act
-      await GET(new Request('http://localhost'), mockContext);
+      await GET(new NextRequest('http://localhost'), mockContext);
 
       // Assert
       expect(mockShiftTypeFindUnique).not.toHaveBeenCalled();
@@ -198,7 +187,7 @@ describe('GET /api/shift-types/[id]', () => {
       };
 
       // Act
-      await GET(new Request('http://localhost'), mockContext);
+      await GET(new NextRequest('http://localhost'), mockContext);
 
       // Assert
       expect(mockShiftTypeFindUnique).toHaveBeenCalledWith({
@@ -238,7 +227,7 @@ describe('GET /api/shift-types/[id]', () => {
       };
 
       // Act
-      await GET(new Request('http://localhost'), mockContext);
+      await GET(new NextRequest('http://localhost'), mockContext);
 
       // Assert
       expect(mockShiftTypeFindUnique).toHaveBeenCalledWith({
@@ -255,7 +244,7 @@ describe('GET /api/shift-types/[id]', () => {
       };
 
       // Act
-      await GET(new Request('http://localhost'), mockContext);
+      await GET(new NextRequest('http://localhost'), mockContext);
 
       // Assert
       expect(mockShiftTypeFindUnique).toHaveBeenCalledTimes(1);
@@ -267,10 +256,23 @@ describe('PUT /api/shift-types/[id]', () => {
   // NextRequest.jsonをモック化
   const mockRequest = {
     json: jest.fn(),
-  } as unknown as Request;
+  } as unknown as NextRequest;
 
   beforeEach(() => {
     jest.clearAllMocks();
+    // 認証成功をデフォルトでモック
+    mockAuthenticateFromRequest.mockResolvedValue({
+      success: true,
+      user: {
+        id: '1',
+        lineUserId: 'test-user',
+        displayName: 'Test User',
+        role: 'ADMIN',
+        isActive: true,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+    });
     // NextResponse.jsonのデフォルトモック実装
     mockNextResponse.json.mockImplementation((data, init) => {
       return {

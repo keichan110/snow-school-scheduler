@@ -1,27 +1,8 @@
 import { GET, POST } from './route';
 import { prisma } from '@/lib/db';
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { InstructorStatus } from '@/shared/types/common';
-
-// Request グローバルオブジェクトのモック
-global.Request = class MockRequest {
-  url: string;
-  method: string;
-  private _body: unknown;
-
-  constructor(url: string, options?: { method?: string; body?: unknown }) {
-    this.url = url;
-    this.method = options?.method || 'GET';
-    this._body = options?.body;
-  }
-
-  async json(): Promise<unknown> {
-    if (typeof this._body === 'string') {
-      return JSON.parse(this._body);
-    }
-    return this._body || {};
-  }
-} as unknown as typeof Request;
+import { authenticateFromRequest } from '@/lib/auth/middleware';
 
 type Instructor = {
   id: number;
@@ -72,6 +53,11 @@ jest.mock('next/server', () => ({
   },
 }));
 
+// 認証ミドルウェアをモック化
+jest.mock('@/lib/auth/middleware', () => ({
+  authenticateFromRequest: jest.fn(),
+}));
+
 const mockPrisma = prisma as jest.Mocked<typeof prisma>;
 const mockInstructorFindMany = mockPrisma.instructor.findMany as jest.MockedFunction<
   typeof prisma.instructor.findMany
@@ -89,6 +75,9 @@ const mockInstructorCertificationCreateMany = mockPrisma.instructorCertification
   .createMany as jest.MockedFunction<typeof prisma.instructorCertification.createMany>;
 const mockTransaction = mockPrisma.$transaction as jest.MockedFunction<typeof prisma.$transaction>;
 const mockNextResponse = NextResponse as jest.Mocked<typeof NextResponse>;
+const mockAuthenticateFromRequest = authenticateFromRequest as jest.MockedFunction<
+  typeof authenticateFromRequest
+>;
 
 describe('GET /api/instructors', () => {
   beforeEach(() => {
@@ -175,7 +164,7 @@ describe('GET /api/instructors', () => {
 
       mockInstructorFindMany.mockResolvedValue(mockInstructors);
 
-      const mockRequest = new Request('http://localhost:3000/api/instructors');
+      const mockRequest = new NextRequest('http://localhost:3000/api/instructors');
 
       // Act
       await GET(mockRequest);
@@ -280,7 +269,7 @@ describe('GET /api/instructors', () => {
 
       mockInstructorFindMany.mockResolvedValue(mockInstructors);
 
-      const mockRequest = new Request('http://localhost:3000/api/instructors?status=ACTIVE');
+      const mockRequest = new NextRequest('http://localhost:3000/api/instructors?status=ACTIVE');
 
       // Act
       await GET(mockRequest);
@@ -313,7 +302,7 @@ describe('GET /api/instructors', () => {
       const mockInstructors: Instructor[] = [];
       mockInstructorFindMany.mockResolvedValue(mockInstructors);
 
-      const mockRequest = new Request('http://localhost:3000/api/instructors');
+      const mockRequest = new NextRequest('http://localhost:3000/api/instructors');
 
       // Act
       await GET(mockRequest);
@@ -335,7 +324,7 @@ describe('GET /api/instructors', () => {
   describe('異常系', () => {
     it('無効なstatusパラメータでバリデーションエラーが返されること', async () => {
       // Arrange
-      const mockRequest = new Request('http://localhost:3000/api/instructors?status=INVALID');
+      const mockRequest = new NextRequest('http://localhost:3000/api/instructors?status=INVALID');
 
       // Act
       await GET(mockRequest);
@@ -359,7 +348,7 @@ describe('GET /api/instructors', () => {
       mockInstructorFindMany.mockRejectedValue(mockError);
 
       const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
-      const mockRequest = new Request('http://localhost:3000/api/instructors');
+      const mockRequest = new NextRequest('http://localhost:3000/api/instructors');
 
       // Act
       await GET(mockRequest);
@@ -393,7 +382,7 @@ describe('GET /api/instructors', () => {
     it('インストラクターデータが姓名順（昇順）でソートされて取得されること', async () => {
       // Arrange
       mockInstructorFindMany.mockResolvedValue([]);
-      const mockRequest = new Request('http://localhost:3000/api/instructors');
+      const mockRequest = new NextRequest('http://localhost:3000/api/instructors');
 
       // Act
       await GET(mockRequest);
@@ -424,7 +413,7 @@ describe('GET /api/instructors', () => {
     it('findManyが1回だけ呼ばれること', async () => {
       // Arrange
       mockInstructorFindMany.mockResolvedValue([]);
-      const mockRequest = new Request('http://localhost:3000/api/instructors');
+      const mockRequest = new NextRequest('http://localhost:3000/api/instructors');
 
       // Act
       await GET(mockRequest);
@@ -436,7 +425,7 @@ describe('GET /api/instructors', () => {
     it('資格情報が適切にincludeされていること', async () => {
       // Arrange
       mockInstructorFindMany.mockResolvedValue([]);
-      const mockRequest = new Request('http://localhost:3000/api/instructors');
+      const mockRequest = new NextRequest('http://localhost:3000/api/instructors');
 
       // Act
       await GET(mockRequest);
@@ -469,6 +458,19 @@ describe('GET /api/instructors', () => {
 describe('POST /api/instructors', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    // 認証成功をデフォルトでモック
+    mockAuthenticateFromRequest.mockResolvedValue({
+      success: true,
+      user: {
+        id: '1',
+        lineUserId: 'test-user',
+        displayName: 'Test User',
+        role: 'ADMIN',
+        isActive: true,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+    });
     // NextResponse.jsonのデフォルトモック実装
     mockNextResponse.json.mockImplementation((data, init) => {
       return {
@@ -541,7 +543,7 @@ describe('POST /api/instructors', () => {
         } as any);
       });
 
-      const mockRequest = new Request('http://localhost:3000/api/instructors', {
+      const mockRequest = new NextRequest('http://localhost:3000/api/instructors', {
         method: 'POST',
         body: JSON.stringify(requestBody),
         headers: { 'Content-Type': 'application/json' },
@@ -650,7 +652,7 @@ describe('POST /api/instructors', () => {
         } as any);
       });
 
-      const mockRequest = new Request('http://localhost:3000/api/instructors', {
+      const mockRequest = new NextRequest('http://localhost:3000/api/instructors', {
         method: 'POST',
         body: JSON.stringify(requestBody),
         headers: { 'Content-Type': 'application/json' },
@@ -721,7 +723,7 @@ describe('POST /api/instructors', () => {
         // lastName が不足
       };
 
-      const mockRequest = new Request('http://localhost:3000/api/instructors', {
+      const mockRequest = new NextRequest('http://localhost:3000/api/instructors', {
         method: 'POST',
         body: JSON.stringify(requestBody),
         headers: { 'Content-Type': 'application/json' },
@@ -750,7 +752,7 @@ describe('POST /api/instructors', () => {
         status: 'INVALID_STATUS',
       };
 
-      const mockRequest = new Request('http://localhost:3000/api/instructors', {
+      const mockRequest = new NextRequest('http://localhost:3000/api/instructors', {
         method: 'POST',
         body: JSON.stringify(requestBody),
         headers: { 'Content-Type': 'application/json' },
@@ -792,7 +794,7 @@ describe('POST /api/instructors', () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       mockCertificationFindMany.mockResolvedValue(mockExistingCertifications as any);
 
-      const mockRequest = new Request('http://localhost:3000/api/instructors', {
+      const mockRequest = new NextRequest('http://localhost:3000/api/instructors', {
         method: 'POST',
         body: JSON.stringify(requestBody),
         headers: { 'Content-Type': 'application/json' },
@@ -838,7 +840,7 @@ describe('POST /api/instructors', () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       mockCertificationFindMany.mockResolvedValue(mockExistingCertifications as any);
 
-      const mockRequest = new Request('http://localhost:3000/api/instructors', {
+      const mockRequest = new NextRequest('http://localhost:3000/api/instructors', {
         method: 'POST',
         body: JSON.stringify(requestBody),
         headers: { 'Content-Type': 'application/json' },
@@ -875,7 +877,7 @@ describe('POST /api/instructors', () => {
       mockTransaction.mockRejectedValue(mockError);
 
       const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
-      const mockRequest = new Request('http://localhost:3000/api/instructors', {
+      const mockRequest = new NextRequest('http://localhost:3000/api/instructors', {
         method: 'POST',
         body: JSON.stringify(requestBody),
         headers: { 'Content-Type': 'application/json' },
@@ -911,7 +913,7 @@ describe('POST /api/instructors', () => {
     it('JSONパースエラーが発生した場合に500エラーが返されること', async () => {
       // Arrange
       const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
-      const mockRequest = new Request('http://localhost:3000/api/instructors', {
+      const mockRequest = new NextRequest('http://localhost:3000/api/instructors', {
         method: 'POST',
         body: 'invalid json',
         headers: { 'Content-Type': 'application/json' },
@@ -952,7 +954,7 @@ describe('POST /api/instructors', () => {
         // lastName, firstName が不足
       };
 
-      const mockRequest = new Request('http://localhost:3000/api/instructors', {
+      const mockRequest = new NextRequest('http://localhost:3000/api/instructors', {
         method: 'POST',
         body: JSON.stringify(requestBody),
         headers: { 'Content-Type': 'application/json' },
@@ -981,7 +983,7 @@ describe('POST /api/instructors', () => {
         certificationIds: 'not-array',
       };
 
-      const mockRequest = new Request('http://localhost:3000/api/instructors', {
+      const mockRequest = new NextRequest('http://localhost:3000/api/instructors', {
         method: 'POST',
         body: JSON.stringify(requestBody),
         headers: { 'Content-Type': 'application/json' },
@@ -1058,7 +1060,7 @@ describe('POST /api/instructors', () => {
           } as unknown as NextResponse;
         });
 
-        const mockRequest = new Request('http://localhost:3000/api/instructors', {
+        const mockRequest = new NextRequest('http://localhost:3000/api/instructors', {
           method: 'POST',
           body: JSON.stringify(requestBody),
           headers: { 'Content-Type': 'application/json' },
@@ -1154,7 +1156,7 @@ describe('POST /api/instructors', () => {
         return await callback(mockTx);
       });
 
-      const mockRequest = new Request('http://localhost:3000/api/instructors', {
+      const mockRequest = new NextRequest('http://localhost:3000/api/instructors', {
         method: 'POST',
         body: JSON.stringify(requestBody),
         headers: { 'Content-Type': 'application/json' },

@@ -60,7 +60,7 @@ describe('GET /api/certifications', () => {
     mockAuthenticateFromRequest.mockResolvedValue({
       success: true,
       user: {
-        id: 1,
+        id: '1',
         lineUserId: 'test-line-user',
         displayName: 'Test User',
         profileImageUrl: null,
@@ -133,7 +133,7 @@ describe('GET /api/certifications', () => {
       mockCertificationFindMany.mockResolvedValue(mockCertifications);
 
       // Act
-      await GET();
+      await GET(new NextRequest('http://localhost'));
 
       // Assert
       expect(mockCertificationFindMany).toHaveBeenCalledWith({
@@ -163,7 +163,7 @@ describe('GET /api/certifications', () => {
       mockCertificationFindMany.mockResolvedValue(mockCertifications);
 
       // Act
-      await GET();
+      await GET(new NextRequest('http://localhost'));
 
       // Assert
       expect(mockCertificationFindMany).toHaveBeenCalledWith({
@@ -210,7 +210,7 @@ describe('GET /api/certifications', () => {
       mockCertificationFindMany.mockResolvedValue(mockCertifications);
 
       // Act
-      await GET();
+      await GET(new NextRequest('http://localhost'));
 
       // Assert
       expect(mockNextResponse.json).toHaveBeenCalledWith({
@@ -233,7 +233,7 @@ describe('GET /api/certifications', () => {
       const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
 
       // Act
-      await GET();
+      await GET(new NextRequest('http://localhost'));
 
       // Assert
       expect(mockCertificationFindMany).toHaveBeenCalledWith({
@@ -273,7 +273,7 @@ describe('GET /api/certifications', () => {
       const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
 
       // Act
-      await GET();
+      await GET(new NextRequest('http://localhost'));
 
       // Assert
       expect(consoleSpy).toHaveBeenCalledWith('Certifications API error:', mockError);
@@ -310,7 +310,7 @@ describe('GET /api/certifications', () => {
       mockCertificationFindMany.mockResolvedValue(mockCertifications as Certification[]);
 
       // Act
-      await GET();
+      await GET(new NextRequest('http://localhost'));
 
       // Assert
       expect(mockCertificationFindMany).toHaveBeenCalledWith({
@@ -331,7 +331,7 @@ describe('GET /api/certifications', () => {
       mockCertificationFindMany.mockResolvedValue([]);
 
       // Act
-      await GET();
+      await GET(new NextRequest('http://localhost'));
 
       // Assert
       expect(mockCertificationFindMany).toHaveBeenCalledTimes(1);
@@ -342,7 +342,7 @@ describe('GET /api/certifications', () => {
       mockCertificationFindMany.mockResolvedValue([]);
 
       // Act
-      await GET();
+      await GET(new NextRequest('http://localhost'));
 
       // Assert
       expect(mockCertificationFindMany).toHaveBeenCalledWith(
@@ -369,6 +369,20 @@ describe('POST /api/certifications', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    // 認証成功をデフォルトでモック
+    mockAuthenticateFromRequest.mockResolvedValue({
+      success: true,
+      user: {
+        id: '1',
+        lineUserId: 'test-line-user',
+        displayName: 'Test User',
+        profileImageUrl: null,
+        role: 'ADMIN',
+        isActive: true,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+    });
     // NextResponse.jsonのデフォルトモック実装
     mockNextResponse.json.mockImplementation((data, init) => {
       return {

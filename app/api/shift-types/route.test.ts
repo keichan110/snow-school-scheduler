@@ -52,7 +52,7 @@ describe('GET /api/shift-types', () => {
     mockAuthenticateFromRequest.mockResolvedValue({
       success: true,
       user: {
-        id: 1,
+        id: '1',
         lineUserId: 'test-line-user',
         displayName: 'Test User',
         profileImageUrl: null,
@@ -109,7 +109,7 @@ describe('GET /api/shift-types', () => {
       mockShiftTypeFindMany.mockResolvedValue(mockShiftTypes);
 
       // Act
-      await GET();
+      await GET(new NextRequest('http://localhost'));
 
       // Assert
       expect(mockShiftTypeFindMany).toHaveBeenCalledWith({
@@ -133,7 +133,7 @@ describe('GET /api/shift-types', () => {
       mockShiftTypeFindMany.mockResolvedValue(mockShiftTypes);
 
       // Act
-      await GET();
+      await GET(new NextRequest('http://localhost'));
 
       // Assert
       expect(mockShiftTypeFindMany).toHaveBeenCalledWith({
@@ -166,7 +166,7 @@ describe('GET /api/shift-types', () => {
       mockShiftTypeFindMany.mockResolvedValue(mockShiftTypes);
 
       // Act
-      await GET();
+      await GET(new NextRequest('http://localhost'));
 
       // Assert
       expect(mockNextResponse.json).toHaveBeenCalledWith({
@@ -189,7 +189,7 @@ describe('GET /api/shift-types', () => {
       const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
 
       // Act
-      await GET();
+      await GET(new NextRequest('http://localhost'));
 
       // Assert
       expect(mockShiftTypeFindMany).toHaveBeenCalledWith({
@@ -223,7 +223,7 @@ describe('GET /api/shift-types', () => {
       const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
 
       // Act
-      await GET();
+      await GET(new NextRequest('http://localhost'));
 
       // Assert
       expect(consoleSpy).toHaveBeenCalledWith('ShiftTypes API error:', mockError);
@@ -252,7 +252,7 @@ describe('GET /api/shift-types', () => {
       mockShiftTypeFindMany.mockResolvedValue(mockShiftTypes as ShiftType[]);
 
       // Act
-      await GET();
+      await GET(new NextRequest('http://localhost'));
 
       // Assert
       expect(mockShiftTypeFindMany).toHaveBeenCalledWith({
@@ -267,7 +267,7 @@ describe('GET /api/shift-types', () => {
       mockShiftTypeFindMany.mockResolvedValue([]);
 
       // Act
-      await GET();
+      await GET(new NextRequest('http://localhost'));
 
       // Assert
       expect(mockShiftTypeFindMany).toHaveBeenCalledTimes(1);
@@ -283,6 +283,20 @@ describe('POST /api/shift-types', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    // 認証成功をデフォルトでモック
+    mockAuthenticateFromRequest.mockResolvedValue({
+      success: true,
+      user: {
+        id: '1',
+        lineUserId: 'test-line-user',
+        displayName: 'Test User',
+        profileImageUrl: null,
+        role: 'ADMIN',
+        isActive: true,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+    });
     // NextResponse.jsonのデフォルトモック実装
     mockNextResponse.json.mockImplementation((data, init) => {
       return {

@@ -1,6 +1,6 @@
 import { GET } from './route';
 import { prisma } from '@/lib/db';
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 
 type Department = {
   id: number;
@@ -88,7 +88,7 @@ describe('GET /api/departments', () => {
       mockDepartmentFindMany.mockResolvedValue(mockDepartments);
 
       // Act
-      await GET();
+      await GET(new NextRequest('http://localhost'));
 
       // Assert
       expect(mockDepartmentFindMany).toHaveBeenCalledWith({
@@ -112,7 +112,7 @@ describe('GET /api/departments', () => {
       mockDepartmentFindMany.mockResolvedValue(mockDepartments);
 
       // Act
-      await GET();
+      await GET(new NextRequest('http://localhost'));
 
       // Assert
       expect(mockDepartmentFindMany).toHaveBeenCalledWith({
@@ -147,7 +147,7 @@ describe('GET /api/departments', () => {
       mockDepartmentFindMany.mockResolvedValue(mockDepartments);
 
       // Act
-      await GET();
+      await GET(new NextRequest('http://localhost'));
 
       // Assert
       expect(mockNextResponse.json).toHaveBeenCalledWith({
@@ -170,7 +170,7 @@ describe('GET /api/departments', () => {
       const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
 
       // Act
-      await GET();
+      await GET(new NextRequest('http://localhost'));
 
       // Assert
       expect(mockDepartmentFindMany).toHaveBeenCalledWith({
@@ -204,7 +204,7 @@ describe('GET /api/departments', () => {
       const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
 
       // Act
-      await GET();
+      await GET(new NextRequest('http://localhost'));
 
       // Assert
       expect(consoleSpy).toHaveBeenCalledWith('Departments API error:', mockError);
@@ -233,7 +233,7 @@ describe('GET /api/departments', () => {
       mockDepartmentFindMany.mockResolvedValue(mockDepartments as Department[]);
 
       // Act
-      await GET();
+      await GET(new NextRequest('http://localhost'));
 
       // Assert
       expect(mockDepartmentFindMany).toHaveBeenCalledWith({
@@ -248,7 +248,7 @@ describe('GET /api/departments', () => {
       mockDepartmentFindMany.mockResolvedValue([]);
 
       // Act
-      await GET();
+      await GET(new NextRequest('http://localhost'));
 
       // Assert
       expect(mockDepartmentFindMany).toHaveBeenCalledTimes(1);
