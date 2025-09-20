@@ -49,7 +49,20 @@ export async function GET(request: NextRequest) {
   }
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
+  const authResult = await authenticateFromRequest(request);
+  if (!authResult.success) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'Authentication required',
+        data: null,
+        message: null,
+      },
+      { status: 401 }
+    );
+  }
+
   try {
     const body = await request.json();
 

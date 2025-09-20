@@ -1,6 +1,7 @@
 import { GET, POST } from './route';
 import { prisma } from '@/lib/db';
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
+import { authenticateFromRequest } from '@/lib/auth/middleware';
 
 type Certification = {
   id: number;
@@ -35,6 +36,11 @@ jest.mock('next/server', () => ({
   },
 }));
 
+// 認証ミドルウェアをモック化
+jest.mock('@/lib/auth/middleware', () => ({
+  authenticateFromRequest: jest.fn(),
+}));
+
 const mockPrisma = prisma as jest.Mocked<typeof prisma>;
 const mockCertificationFindMany = mockPrisma.certification.findMany as jest.MockedFunction<
   typeof prisma.certification.findMany
@@ -43,10 +49,27 @@ const mockCertificationCreate = mockPrisma.certification.create as jest.MockedFu
   typeof prisma.certification.create
 >;
 const mockNextResponse = NextResponse as jest.Mocked<typeof NextResponse>;
+const mockAuthenticateFromRequest = authenticateFromRequest as jest.MockedFunction<
+  typeof authenticateFromRequest
+>;
 
 describe('GET /api/certifications', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    // 認証成功をデフォルトでモック
+    mockAuthenticateFromRequest.mockResolvedValue({
+      success: true,
+      user: {
+        id: 1,
+        lineUserId: 'test-line-user',
+        displayName: 'Test User',
+        profileImageUrl: null,
+        role: 'ADMIN',
+        isActive: true,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+    });
     // NextResponse.jsonのデフォルトモック実装
     mockNextResponse.json.mockImplementation((data, init) => {
       return {
@@ -342,7 +365,7 @@ describe('POST /api/certifications', () => {
   // NextRequest.jsonをモック化
   const mockRequest = {
     json: jest.fn(),
-  } as unknown as Request;
+  } as unknown as NextRequest;
 
   beforeEach(() => {
     jest.clearAllMocks();
