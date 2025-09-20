@@ -1,11 +1,12 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
+import { authenticateFromRequest } from '@/lib/auth/middleware';
 
 interface RouteContext {
   params: Promise<{ id: string }>;
 }
 
-export async function GET(request: Request, context: RouteContext) {
+export async function GET(request: NextRequest, context: RouteContext) {
   try {
     const { id } = await context.params;
 
@@ -87,7 +88,19 @@ export async function GET(request: Request, context: RouteContext) {
   }
 }
 
-export async function PUT(request: Request, context: RouteContext) {
+export async function PUT(request: NextRequest, context: RouteContext) {
+  const authResult = await authenticateFromRequest(request);
+  if (!authResult.success) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'Authentication required',
+        data: null,
+        message: null,
+      },
+      { status: 401 }
+    );
+  }
   try {
     const { id } = await context.params;
 
