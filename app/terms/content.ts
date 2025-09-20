@@ -82,6 +82,6 @@ export const TERMS_CONTENT = `## 第1条（適用）
 export const TERMS_TITLE = '利用規約';
 
 export const TERMS_METADATA = {
-  '制定日': '2025年9月12日',
-  '最終更新日': '2025年9月12日'
+  制定日: '2025年9月12日',
+  最終更新日: '2025年9月12日',
 };
