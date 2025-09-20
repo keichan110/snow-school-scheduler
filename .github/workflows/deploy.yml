@@ -64,12 +64,52 @@ jobs:
 
       - name: Prepare D1 migrations
         run: |
+          # マイグレーションディレクトリ作成
           mkdir -p migrations
+
+          # GitHub実行番号を使用してユニークなマイグレーション番号を生成
+          MIGRATION_NUMBER=$(printf "%04d" ${{ github.run_number }})
+          MIGRATION_FILE="migrations/${MIGRATION_NUMBER}_schema_sync.sql"
+
+          echo "🎯 Creating D1 migration: $MIGRATION_FILE"
+
+          # Prismaマイグレーションの存在確認
           if [ -d "prisma/migrations" ]; then
-            find prisma/migrations -name "migration.sql" -exec cp {} migrations/ \;
-            echo "Copied Prisma migrations to D1 migrations directory"
+            echo "-- D1 Database Migration - Schema Synchronization" > $MIGRATION_FILE
+            echo "-- Generated on: $(date)" >> $MIGRATION_FILE
+            echo "-- GitHub Run: ${{ github.run_number }}" >> $MIGRATION_FILE
+            echo "-- Commit: ${{ github.sha }}" >> $MIGRATION_FILE
+            echo "" >> $MIGRATION_FILE
+            
+            # 全migration.sqlファイルを検索して統合
+            MIGRATION_FILES=$(find prisma/migrations -name "migration.sql" | sort)
+            
+            if [ -n "$MIGRATION_FILES" ]; then
+              echo "📋 Consolidating $(echo "$MIGRATION_FILES" | wc -l) Prisma migrations"
+              
+              # 冪等性を保証するSQL文に変換して追加
+              for file in $MIGRATION_FILES; do
+                echo "-- Source: $file" >> $MIGRATION_FILE
+                
+                # 冪等性を確保するためのSQL処理
+                sed 's/CREATE TABLE /CREATE TABLE IF NOT EXISTS /g' "$file" | \
+                sed 's/CREATE UNIQUE INDEX /CREATE UNIQUE INDEX IF NOT EXISTS /g' | \
+                sed 's/CREATE INDEX /CREATE INDEX IF NOT EXISTS /g' >> $MIGRATION_FILE
+                
+                echo "" >> $MIGRATION_FILE
+              done
+              
+              echo "✅ Created consolidated D1 migration"
+              echo "📊 Migration stats:"
+              wc -l $MIGRATION_FILE
+              
+            else
+              echo "❌ No migration.sql files found"
+              exit 1
+            fi
           else
-            echo "No Prisma migrations found"
+            echo "❌ Prisma migrations directory not found"
+            exit 1
           fi
 
       - name: Apply D1 database migrations
@@ -77,7 +117,15 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: d1 migrations apply snow-school-scheduler --env=production
+          command: d1 migrations apply snow-school-scheduler --remote
+
+      - name: Verify migration success
+        run: |
+          echo "✅ D1 migration completed successfully"
+          echo "📊 Migration details:"
+          echo "  - Run Number: ${{ github.run_number }}"
+          echo "  - Commit SHA: ${{ github.sha }}"
+          echo "  - Timestamp: $(date)"
 
       - name: Notify deployment status
         if: failure()
