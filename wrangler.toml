@@ -24,7 +24,4 @@ INVITE_DEFAULT_EXPIRES = "168h"
 # Observability設定
 [observability]
 enabled = true
-
-# Workers Logs設定
-[[workers_logs]]
-enabled = true
+head_sampling_rate = 1.0
