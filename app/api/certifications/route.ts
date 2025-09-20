@@ -1,7 +1,20 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
+import { authenticateFromRequest } from '@/lib/auth/middleware';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const authResult = await authenticateFromRequest(request);
+  if (!authResult.success) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'Authentication required',
+        data: null,
+        message: null,
+      },
+      { status: 401 }
+    );
+  }
   try {
     const certifications = await prisma.certification.findMany({
       include: {
