@@ -17,3 +17,6 @@ binding = "ASSETS"
 # 環境変数（非機密情報のみ）
 [vars]
 NODE_ENV = "production"
+NEXTAUTH_URL = "https://snow-school-scheduler.ittooco.workers.dev"
+JWT_EXPIRES_IN = "48h"
+INVITE_DEFAULT_EXPIRES = "168h"
