@@ -21,11 +21,25 @@ jest.mock('@/lib/db', () => ({
   },
 }));
 
-// NextResponseをモック化
+// NextResponseとNextRequestをモック化
 jest.mock('next/server', () => ({
   NextResponse: {
     json: jest.fn(),
   },
+  NextRequest: jest.fn((url, init) => ({
+    url,
+    ...init,
+    headers: new Headers(init?.headers),
+    cookies: {
+      get: jest.fn().mockReturnValue({ value: 'test-token' }),
+    },
+    json: init?.body
+      ? () => Promise.resolve(JSON.parse(init.body as string))
+      : () => Promise.resolve({}),
+    nextUrl: {
+      searchParams: new URL(url as string).searchParams,
+    },
+  })),
 }));
 
 // 認証ミドルウェアをモック化

@@ -2,6 +2,7 @@ import { GET, POST } from './route';
 import { prisma } from '@/lib/db';
 import { NextResponse } from 'next/server';
 import { NextRequest } from 'next/server';
+import { authenticateFromRequest } from '@/lib/auth/middleware';
 
 // Mock types
 type Department = {
@@ -70,11 +71,30 @@ jest.mock('@/lib/db', () => ({
   },
 }));
 
-// NextResponseをモック化
+// NextResponseとNextRequestをモック化
 jest.mock('next/server', () => ({
   NextResponse: {
     json: jest.fn(),
   },
+  NextRequest: jest.fn((url, init) => ({
+    url,
+    ...init,
+    headers: new Headers(init?.headers),
+    cookies: {
+      get: jest.fn().mockReturnValue({ value: 'test-token' }),
+    },
+    json: init?.body
+      ? () => Promise.resolve(JSON.parse(init.body as string))
+      : () => Promise.resolve({}),
+    nextUrl: {
+      searchParams: new URL(url as string).searchParams,
+    },
+  })),
+}));
+
+// 認証ミドルウェアをモック化
+jest.mock('@/lib/auth/middleware', () => ({
+  authenticateFromRequest: jest.fn(),
 }));
 
 const mockPrisma = prisma as jest.Mocked<typeof prisma>;
@@ -86,6 +106,9 @@ const mockShiftFindUnique = mockPrisma.shift.findUnique as jest.MockedFunction<
 >;
 const mockTransaction = mockPrisma.$transaction as jest.MockedFunction<typeof prisma.$transaction>;
 const mockNextResponse = NextResponse as jest.Mocked<typeof NextResponse>;
+const mockAuthenticateFromRequest = authenticateFromRequest as jest.MockedFunction<
+  typeof authenticateFromRequest
+>;
 
 // テスト用のモックデータ
 const mockDepartment: Department = {
@@ -142,6 +165,19 @@ const mockShift: Shift = {
 describe('Shifts API', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    // 認証成功をデフォルトでモック
+    mockAuthenticateFromRequest.mockResolvedValue({
+      success: true,
+      user: {
+        id: '1',
+        lineUserId: 'test-user',
+        displayName: 'Test User',
+        role: 'ADMIN',
+        isActive: true,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+    });
     // NextResponse.jsonのデフォルトモック実装
     mockNextResponse.json.mockImplementation((data, init) => {
       return {
@@ -173,9 +209,7 @@ describe('Shifts API', () => {
         url.searchParams.set(key, value);
       });
 
-      return {
-        nextUrl: url,
-      } as NextRequest;
+      return new NextRequest(url.toString());
     };
 
     describe('正常系', () => {
@@ -334,9 +368,10 @@ describe('Shifts API', () => {
 
   describe('POST /api/shifts', () => {
     const createMockPostRequest = (body: Record<string, unknown>) => {
-      return {
-        json: async () => body,
-      } as NextRequest;
+      return new NextRequest('http://localhost/api/shifts', {
+        method: 'POST',
+        body: JSON.stringify(body),
+      });
     };
 
     describe('正常系', () => {
