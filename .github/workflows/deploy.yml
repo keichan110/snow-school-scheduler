@@ -39,35 +39,20 @@ jobs:
           NODE_ENV: production
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
-          LINE_CHANNEL_ID: ${{ secrets.LINE_CHANNEL_ID }}
+          LINE_CHANNEL_ID: ${{ vars.LINE_CHANNEL_ID }}
           LINE_CHANNEL_SECRET: ${{ secrets.LINE_CHANNEL_SECRET }}
           NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL }}
 
       - name: Configure Cloudflare Workers runtime environment
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: secret put JWT_SECRET --from-env JWT_SECRET
+        run: |
+          echo "$JWT_SECRET" | npx wrangler secret put JWT_SECRET
+          echo "$LINE_CHANNEL_ID" | npx wrangler secret put LINE_CHANNEL_ID
+          echo "$LINE_CHANNEL_SECRET" | npx wrangler secret put LINE_CHANNEL_SECRET
         env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
-
-      - name: Configure LINE Channel ID
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: secret put LINE_CHANNEL_ID --from-env LINE_CHANNEL_ID
-        env:
           LINE_CHANNEL_ID: ${{ vars.LINE_CHANNEL_ID }}
-
-      - name: Configure LINE Channel Secret
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: secret put LINE_CHANNEL_SECRET --from-env LINE_CHANNEL_SECRET
-        env:
           LINE_CHANNEL_SECRET: ${{ secrets.LINE_CHANNEL_SECRET }}
 
       - name: Deploy to Cloudflare Workers
