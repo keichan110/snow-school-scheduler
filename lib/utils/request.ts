@@ -225,10 +225,9 @@ function buildAllowedReferrerOrigins(env: string | undefined): Set<string> {
   const nextAuthOrigin = extractOrigin(process.env.NEXTAUTH_URL);
   const nextPublicAppOrigin = extractOrigin(process.env.NEXT_PUBLIC_APP_URL);
 
-  if (env === 'production') {
-    addOrigin(nextAuthOrigin);
-  } else {
-    addOrigin(nextAuthOrigin);
+  addOrigin(nextAuthOrigin);
+
+  if (env !== 'production') {
     addOrigin(nextPublicAppOrigin);
     addOrigin('http://localhost:3000');
     addOrigin('http://127.0.0.1:3000');
