@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { extractUserFromToken } from '@/lib/auth/jwt';
 import { prisma } from '@/lib/db';
 import {
   createInvitationToken,
@@ -8,6 +7,7 @@ import {
 } from '@/lib/auth/invitations';
 import { ApiResponse, InvitationUrlData, InvitationListItem } from '@/lib/auth/types';
 import { z } from 'zod';
+import { authenticateFromRequest, checkUserRole } from '@/lib/auth/middleware';
 
 /**
  * 招待URL作成API
@@ -37,41 +37,26 @@ export async function POST(
   request: NextRequest
 ): Promise<NextResponse<ApiResponse<InvitationUrlData>>> {
   try {
-    // 認証トークン取得（Cookieまたは Authorization ヘッダー）
-    const { getAuthTokenFromRequest } = await import('@/lib/auth/middleware');
-    const token = getAuthTokenFromRequest(request);
-
-    if (!token) {
+    const authResult = await authenticateFromRequest(request);
+    if (!authResult.success || !authResult.user) {
       return NextResponse.json(
-        { success: false, error: 'Authentication token required' },
-        { status: 401 }
+        { success: false, error: authResult.error ?? 'Authentication required' },
+        { status: authResult.statusCode ?? 401 }
       );
     }
 
-    const user = extractUserFromToken(token);
-
-    if (!user) {
+    const roleResult = checkUserRole(authResult.user, 'MANAGER');
+    if (!roleResult.success || !roleResult.user) {
       return NextResponse.json(
-        { success: false, error: 'Invalid or expired token' },
-        { status: 401 }
+        {
+          success: false,
+          error: roleResult.error ?? 'Insufficient permissions. Admin or Manager role required.',
+        },
+        { status: roleResult.statusCode ?? 403 }
       );
     }
 
-    // 権限チェック - ADMIN または MANAGER のみ許可
-    if (user.role !== 'ADMIN' && user.role !== 'MANAGER') {
-      return NextResponse.json(
-        { success: false, error: 'Insufficient permissions. Admin or Manager role required.' },
-        { status: 403 }
-      );
-    }
-
-    // アクティブユーザーチェック
-    if (!user.isActive) {
-      return NextResponse.json(
-        { success: false, error: 'User account is inactive' },
-        { status: 403 }
-      );
-    }
+    const user = roleResult.user;
 
     // リクエストボディの解析とバリデーション
     let requestBody: CreateInvitationRequest;
@@ -109,7 +94,7 @@ export async function POST(
 
     // 招待トークン作成パラメータの準備
     const createParams: CreateInvitationTokenParams = {
-      createdBy: user.userId,
+      createdBy: user.id,
       ...(requestBody.description && { description: requestBody.description }),
       expiresAt: expiresAt,
     };
@@ -184,40 +169,26 @@ export async function GET(
   request: NextRequest
 ): Promise<NextResponse<ApiResponse<InvitationListItem[]>>> {
   try {
-    // 認証トークン取得（Cookieまたは Authorization ヘッダー）
-    const { getAuthTokenFromRequest } = await import('@/lib/auth/middleware');
-    const token = getAuthTokenFromRequest(request);
-
-    if (!token) {
+    const authResult = await authenticateFromRequest(request);
+    if (!authResult.success || !authResult.user) {
       return NextResponse.json(
-        { success: false, error: 'Authentication token required' },
-        { status: 401 }
-      );
-    }
-    const user = extractUserFromToken(token);
-
-    if (!user) {
-      return NextResponse.json(
-        { success: false, error: 'Invalid or expired token' },
-        { status: 401 }
+        { success: false, error: authResult.error ?? 'Authentication required' },
+        { status: authResult.statusCode ?? 401 }
       );
     }
 
-    // 権限チェック - ADMIN または MANAGER のみ許可
-    if (user.role !== 'ADMIN' && user.role !== 'MANAGER') {
+    const roleResult = checkUserRole(authResult.user, 'MANAGER');
+    if (!roleResult.success || !roleResult.user) {
       return NextResponse.json(
-        { success: false, error: 'Insufficient permissions. Admin or Manager role required.' },
-        { status: 403 }
+        {
+          success: false,
+          error: roleResult.error ?? 'Insufficient permissions. Admin or Manager role required.',
+        },
+        { status: roleResult.statusCode ?? 403 }
       );
     }
 
-    // アクティブユーザーチェック
-    if (!user.isActive) {
-      return NextResponse.json(
-        { success: false, error: 'User account is inactive' },
-        { status: 403 }
-      );
-    }
+    const user = roleResult.user;
 
     // クエリパラメータの解析
     const { searchParams } = new URL(request.url);
@@ -250,7 +221,7 @@ export async function GET(
       });
     } else {
       // 自分が作成した招待トークンのみ取得
-      tokens = await getInvitationTokensByCreator(user.userId, includeInactive);
+      tokens = await getInvitationTokensByCreator(user.id, includeInactive);
     }
 
     // 現在時刻
