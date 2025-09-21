@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { extractUserFromToken } from '@/lib/auth/jwt';
 import { prisma } from '@/lib/db';
 import { ApiResponse } from '@/lib/auth/types';
+import { authenticateFromRequest, checkUserRole } from '@/lib/auth/middleware';
 
 /**
  * 招待URL無効化API
@@ -32,41 +32,26 @@ export async function DELETE(
   try {
     const { token } = await context.params;
 
-    // 認証トークン取得（Cookieまたは Authorization ヘッダー）
-    const { getAuthTokenFromRequest } = await import('@/lib/auth/middleware');
-    const authToken = getAuthTokenFromRequest(request);
-
-    if (!authToken) {
+    const authResult = await authenticateFromRequest(request);
+    if (!authResult.success || !authResult.user) {
       return NextResponse.json(
-        { success: false, error: 'Authentication token required' },
-        { status: 401 }
+        { success: false, error: authResult.error ?? 'Authentication required' },
+        { status: authResult.statusCode ?? 401 }
       );
     }
 
-    const user = extractUserFromToken(authToken);
-
-    if (!user) {
+    const roleResult = checkUserRole(authResult.user, 'MANAGER');
+    if (!roleResult.success || !roleResult.user) {
       return NextResponse.json(
-        { success: false, error: 'Invalid or expired token' },
-        { status: 401 }
+        {
+          success: false,
+          error: roleResult.error ?? 'Insufficient permissions. Admin or Manager role required.',
+        },
+        { status: roleResult.statusCode ?? 403 }
       );
     }
 
-    // 権限チェック - ADMIN または MANAGER のみ許可
-    if (user.role !== 'ADMIN' && user.role !== 'MANAGER') {
-      return NextResponse.json(
-        { success: false, error: 'Insufficient permissions. Admin or Manager role required.' },
-        { status: 403 }
-      );
-    }
-
-    // アクティブユーザーチェック
-    if (!user.isActive) {
-      return NextResponse.json(
-        { success: false, error: 'User account is inactive' },
-        { status: 403 }
-      );
-    }
+    const user = roleResult.user;
 
     // トークンパラメータの基本チェック
     if (!token || typeof token !== 'string' || token.trim().length === 0) {
@@ -109,7 +94,7 @@ export async function DELETE(
     // 権限チェック - 作成者または管理者のみ無効化可能
     const canDeactivate =
       user.role === 'ADMIN' || // 管理者は全ての招待URLを無効化可能
-      invitationToken.createdBy === user.userId; // 作成者は自分の招待URLを無効化可能
+      invitationToken.createdBy === user.id; // 作成者は自分の招待URLを無効化可能
 
     if (!canDeactivate) {
       return NextResponse.json(

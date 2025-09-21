@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { secureLog } from '@/lib/utils/logging';
+import { checkRateLimit } from '@/lib/api/rate-limiting';
+import { getClientIp } from '@/lib/utils/request';
 
 /**
  * Next.js Middleware - APIルート保護とページ認証リダイレクト
@@ -89,6 +91,26 @@ function createAuthErrorResponse(message: string = 'Authentication required') {
   );
 }
 
+/**
+ * Rate Limitエラーレスポンス生成
+ */
+function createRateLimitErrorResponse(resetTime: number, limit: number, ruleId: string) {
+  const headers = new Headers();
+  headers.set('X-RateLimit-Limit', limit.toString());
+  headers.set('X-RateLimit-Remaining', '0');
+  headers.set('X-RateLimit-Reset', Math.ceil(resetTime / 1000).toString());
+  headers.set('X-RateLimit-Bucket', ruleId);
+
+  return NextResponse.json(
+    {
+      success: false,
+      error: 'Too many requests',
+      code: 'RATE_LIMIT_EXCEEDED',
+    },
+    { status: 429, headers }
+  );
+}
+
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
@@ -97,10 +119,46 @@ export async function middleware(request: NextRequest) {
 
   // APIルートの処理
   if (pathname.startsWith('/api/')) {
+    // プリフライト要求はレートリミット対象外（CORS通過専用）
+    if (request.method === 'OPTIONS') {
+      secureLog('info', 'Middleware: Skipping rate limit for OPTIONS request', { pathname });
+      return NextResponse.next();
+    }
+
+    // Rate Limitチェック
+    const ip = getClientIp(request);
+    const rateLimitResult = checkRateLimit(ip, pathname);
+
+    if (!rateLimitResult.allowed) {
+      secureLog('warn', 'Rate limit exceeded', {
+        ip,
+        pathname,
+        remaining: rateLimitResult.remaining,
+        ruleId: rateLimitResult.ruleId,
+      });
+      return createRateLimitErrorResponse(
+        rateLimitResult.resetTime,
+        rateLimitResult.limit,
+        rateLimitResult.ruleId
+      );
+    }
+
+    // Rate Limitヘッダーを追加する関数
+    const addRateLimitHeaders = (response: NextResponse) => {
+      response.headers.set('X-RateLimit-Limit', rateLimitResult.limit.toString());
+      response.headers.set('X-RateLimit-Remaining', rateLimitResult.remaining.toString());
+      response.headers.set(
+        'X-RateLimit-Reset',
+        Math.ceil(rateLimitResult.resetTime / 1000).toString()
+      );
+      response.headers.set('X-RateLimit-Bucket', rateLimitResult.ruleId);
+      return response;
+    };
+
     // 認証不要なAPIパスはそのまま通す
     if (isPublicApiPath(pathname)) {
       secureLog('info', 'Middleware: Public API access allowed');
-      return NextResponse.next();
+      return addRateLimitHeaders(NextResponse.next());
     }
 
     // JWTトークン存在チェック
@@ -112,7 +170,7 @@ export async function middleware(request: NextRequest) {
 
     // トークンが存在する場合、APIルートに処理を委譲
     secureLog('info', 'Middleware: Token found, delegating to API route', { hasToken: !!token });
-    return NextResponse.next();
+    return addRateLimitHeaders(NextResponse.next());
   }
 
   // ページルートの処理

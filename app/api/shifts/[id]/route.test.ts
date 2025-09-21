@@ -1,6 +1,7 @@
 import { GET, PUT, DELETE } from './route';
 import { prisma } from '@/lib/db';
 import { NextRequest, NextResponse } from 'next/server';
+import { authenticateFromRequest } from '@/lib/auth/middleware';
 
 // Mock types (同じ型定義を再利用)
 type Department = {
@@ -70,13 +71,31 @@ jest.mock('@/lib/db', () => ({
   },
 }));
 
-// NextResponseをモック化
+// NextResponseとNextRequestをモック化
 jest.mock('next/server', () => ({
   NextResponse: jest.fn().mockImplementation((body, init) => ({
     status: init?.status || 200,
     json: async () => body,
     headers: new Headers(),
   })),
+  NextRequest: jest.fn((url, init) => ({
+    url,
+    ...init,
+    headers: new Headers(init?.headers),
+    cookies: {
+      get: jest.fn().mockReturnValue({ value: 'test-token' }),
+    },
+    json: init?.body
+      ? () => Promise.resolve(JSON.parse(init.body as string))
+      : () => Promise.resolve({}),
+    nextUrl: {
+      searchParams: new URL(url as string).searchParams,
+    },
+  })),
+}));
+
+jest.mock('@/lib/auth/middleware', () => ({
+  authenticateFromRequest: jest.fn(),
 }));
 
 // NextResponseをjsonとコンストラクタの両方でモック化
@@ -89,6 +108,9 @@ const mockShiftFindUnique = mockPrisma.shift.findUnique as jest.MockedFunction<
   typeof prisma.shift.findUnique
 >;
 const mockTransaction = mockPrisma.$transaction as jest.MockedFunction<typeof prisma.$transaction>;
+const mockAuthenticateFromRequest = authenticateFromRequest as jest.MockedFunction<
+  typeof authenticateFromRequest
+>;
 
 // テスト用のモックデータ
 const mockDepartment: Department = {
@@ -145,6 +167,18 @@ const mockShift: Shift = {
 describe('Shifts [id] API', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockAuthenticateFromRequest.mockResolvedValue({
+      success: true,
+      user: {
+        id: '1',
+        lineUserId: 'test-user',
+        displayName: 'Test User',
+        role: 'ADMIN',
+        isActive: true,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+    });
     // NextResponse.jsonのデフォルトモック実装
     mockNextResponseJson.mockImplementation(
       (
@@ -198,7 +232,7 @@ describe('Shifts [id] API', () => {
   });
 
   describe('GET /api/shifts/[id]', () => {
-    const createMockGetRequest = () => ({}) as NextRequest;
+    const createMockGetRequest = () => new NextRequest('http://localhost/api/shifts/1');
     const createMockContext = (id: string) => ({
       params: Promise.resolve({ id }),
     });
@@ -324,9 +358,10 @@ describe('Shifts [id] API', () => {
 
   describe('PUT /api/shifts/[id]', () => {
     const createMockPutRequest = (body: Record<string, unknown>) =>
-      ({
-        json: async () => body,
-      }) as NextRequest;
+      new NextRequest('http://localhost/api/shifts/1', {
+        method: 'PUT',
+        body: JSON.stringify(body),
+      });
     const createMockContext = (id: string) => ({
       params: Promise.resolve({ id }),
     });
@@ -443,7 +478,8 @@ describe('Shifts [id] API', () => {
   });
 
   describe('DELETE /api/shifts/[id]', () => {
-    const createMockDeleteRequest = () => ({}) as NextRequest;
+    const createMockDeleteRequest = () =>
+      new NextRequest('http://localhost/api/shifts/1', { method: 'DELETE' });
     const createMockContext = (id: string) => ({
       params: Promise.resolve({ id }),
     });

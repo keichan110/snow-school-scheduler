@@ -1,4 +1,5 @@
 // NextResponse import removed as it's only used in return type
+import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/db';
 import { InstructorStatus } from '@/shared/types/common';
 import {
@@ -9,8 +10,17 @@ import {
 } from '@/lib/api/response';
 import { isOneOf, validate, commonSchemas } from '@/lib/api/validation';
 import { ApiErrorType, HttpStatus, ApiSuccessResponse, ApiErrorResponse } from '@/lib/api/types';
+import { authenticateFromRequest } from '@/lib/auth/middleware';
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
+  // 個人情報保護のため認証必須
+  const authResult = await authenticateFromRequest(request);
+  if (!authResult.success) {
+    return createErrorResponse('Authentication required', {
+      type: ApiErrorType.UNAUTHORIZED,
+      status: HttpStatus.UNAUTHORIZED,
+    });
+  }
   return withApiErrorHandling<ApiSuccessResponse<unknown[]> | ApiErrorResponse>(async () => {
     const { searchParams } = new URL(request.url);
     const statusParam = searchParams.get('status');
@@ -102,7 +112,14 @@ export async function GET(request: Request) {
   }, 'GET /api/instructors');
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
+  const authResult = await authenticateFromRequest(request);
+  if (!authResult.success) {
+    return createErrorResponse('Authentication required', {
+      type: ApiErrorType.UNAUTHORIZED,
+      status: HttpStatus.UNAUTHORIZED,
+    });
+  }
   return withApiErrorHandling<ApiSuccessResponse<unknown> | ApiErrorResponse>(async () => {
     const body = await request.json();
 

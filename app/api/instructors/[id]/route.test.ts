@@ -1,27 +1,8 @@
 import { GET, PUT } from './route';
 import { prisma } from '@/lib/db';
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { InstructorStatus } from '@/shared/types/common';
-
-// Request グローバルオブジェクトのモック
-global.Request = class MockRequest {
-  url: string;
-  method: string;
-  private _body: unknown;
-
-  constructor(url: string, options?: { method?: string; body?: unknown }) {
-    this.url = url;
-    this.method = options?.method || 'GET';
-    this._body = options?.body;
-  }
-
-  async json(): Promise<unknown> {
-    if (typeof this._body === 'string') {
-      return JSON.parse(this._body);
-    }
-    return this._body || {};
-  }
-} as unknown as typeof Request;
+import { authenticateFromRequest } from '@/lib/auth/middleware';
 
 type InstructorWithCertifications = {
   id: number;
@@ -65,11 +46,30 @@ jest.mock('@/lib/db', () => ({
   },
 }));
 
-// NextResponseをモック化
+// NextResponseとNextRequestをモック化
 jest.mock('next/server', () => ({
   NextResponse: {
     json: jest.fn(),
   },
+  NextRequest: jest.fn((url, init) => ({
+    url,
+    ...init,
+    headers: new Headers(init?.headers),
+    cookies: {
+      get: jest.fn().mockReturnValue({ value: 'test-token' }),
+    },
+    json: init?.body
+      ? () => Promise.resolve(JSON.parse(init.body as string))
+      : () => Promise.resolve({}),
+    nextUrl: {
+      searchParams: new URL(url as string).searchParams,
+    },
+  })),
+}));
+
+// 認証ミドルウェアをモック化
+jest.mock('@/lib/auth/middleware', () => ({
+  authenticateFromRequest: jest.fn(),
 }));
 
 const mockPrisma = prisma as jest.Mocked<typeof prisma>;
@@ -88,6 +88,9 @@ const mockInstructorCertificationCreateMany = mockPrisma.instructorCertification
   .createMany as jest.MockedFunction<typeof prisma.instructorCertification.createMany>;
 const mockTransaction = mockPrisma.$transaction as jest.MockedFunction<typeof prisma.$transaction>;
 const mockNextResponse = NextResponse as jest.Mocked<typeof NextResponse>;
+const mockAuthenticateFromRequest = authenticateFromRequest as jest.MockedFunction<
+  typeof authenticateFromRequest
+>;
 
 describe('GET /api/instructors/[id]', () => {
   beforeEach(() => {
@@ -159,7 +162,7 @@ describe('GET /api/instructors/[id]', () => {
 
       mockInstructorFindUnique.mockResolvedValue(mockInstructor);
 
-      const mockRequest = new Request('http://localhost:3000/api/instructors/1');
+      const mockRequest = new NextRequest('http://localhost:3000/api/instructors/1');
       const context = { params: Promise.resolve({ id: '1' }) };
 
       // Act
@@ -243,7 +246,7 @@ describe('GET /api/instructors/[id]', () => {
 
       mockInstructorFindUnique.mockResolvedValue(mockInstructor);
 
-      const mockRequest = new Request('http://localhost:3000/api/instructors/2');
+      const mockRequest = new NextRequest('http://localhost:3000/api/instructors/2');
       const context = { params: Promise.resolve({ id: '2' }) };
 
       // Act
@@ -286,7 +289,7 @@ describe('GET /api/instructors/[id]', () => {
 
       mockInstructorFindUnique.mockResolvedValue(mockInstructor);
 
-      const mockRequest = new Request('http://localhost:3000/api/instructors/123');
+      const mockRequest = new NextRequest('http://localhost:3000/api/instructors/123');
       const context = { params: Promise.resolve({ id: '123' }) };
 
       // Act
@@ -320,7 +323,7 @@ describe('GET /api/instructors/[id]', () => {
       // Arrange
       mockInstructorFindUnique.mockResolvedValue(null);
 
-      const mockRequest = new Request('http://localhost:3000/api/instructors/999');
+      const mockRequest = new NextRequest('http://localhost:3000/api/instructors/999');
       const context = { params: Promise.resolve({ id: '999' }) };
 
       // Act
@@ -360,7 +363,7 @@ describe('GET /api/instructors/[id]', () => {
 
     it('無効なID（数値でない）が指定された場合に400エラーが返されること', async () => {
       // Arrange
-      const mockRequest = new Request('http://localhost:3000/api/instructors/invalid');
+      const mockRequest = new NextRequest('http://localhost:3000/api/instructors/invalid');
       const context = { params: Promise.resolve({ id: 'invalid' }) };
 
       // Act
@@ -381,7 +384,7 @@ describe('GET /api/instructors/[id]', () => {
 
     it('負の数値IDが指定された場合に400エラーが返されること', async () => {
       // Arrange
-      const mockRequest = new Request('http://localhost:3000/api/instructors/-1');
+      const mockRequest = new NextRequest('http://localhost:3000/api/instructors/-1');
       const context = { params: Promise.resolve({ id: '-1' }) };
 
       // Act
@@ -402,7 +405,7 @@ describe('GET /api/instructors/[id]', () => {
 
     it('0のIDが指定された場合に400エラーが返されること', async () => {
       // Arrange
-      const mockRequest = new Request('http://localhost:3000/api/instructors/0');
+      const mockRequest = new NextRequest('http://localhost:3000/api/instructors/0');
       const context = { params: Promise.resolve({ id: '0' }) };
 
       // Act
@@ -427,7 +430,7 @@ describe('GET /api/instructors/[id]', () => {
       mockInstructorFindUnique.mockRejectedValue(mockError);
 
       const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
-      const mockRequest = new Request('http://localhost:3000/api/instructors/1');
+      const mockRequest = new NextRequest('http://localhost:3000/api/instructors/1');
       const context = { params: Promise.resolve({ id: '1' }) };
 
       // Act
@@ -468,7 +471,7 @@ describe('GET /api/instructors/[id]', () => {
 
       mockInstructorFindUnique.mockResolvedValue(mockInstructor);
 
-      const mockRequest = new Request('http://localhost:3000/api/instructors/1');
+      const mockRequest = new NextRequest('http://localhost:3000/api/instructors/1');
       const context = { params: Promise.resolve({ id: '1' }) };
 
       // Act
@@ -482,7 +485,7 @@ describe('GET /api/instructors/[id]', () => {
       // Arrange
       mockInstructorFindUnique.mockResolvedValue(null);
 
-      const mockRequest = new Request('http://localhost:3000/api/instructors/1');
+      const mockRequest = new NextRequest('http://localhost:3000/api/instructors/1');
       const context = { params: Promise.resolve({ id: '1' }) };
 
       // Act
@@ -515,7 +518,7 @@ describe('GET /api/instructors/[id]', () => {
       // Arrange
       mockInstructorFindUnique.mockResolvedValue(null);
 
-      const mockRequest = new Request('http://localhost:3000/api/instructors/42');
+      const mockRequest = new NextRequest('http://localhost:3000/api/instructors/42');
       const context = { params: Promise.resolve({ id: '42' }) };
 
       // Act
@@ -561,7 +564,7 @@ describe('GET /api/instructors/[id]', () => {
 
       mockInstructorFindUnique.mockResolvedValue(mockInstructor);
 
-      const mockRequest = new Request('http://localhost:3000/api/instructors/1');
+      const mockRequest = new NextRequest('http://localhost:3000/api/instructors/1');
       const context = { params: Promise.resolve({ id: '1' }) };
 
       // Act
@@ -598,7 +601,7 @@ describe('GET /api/instructors/[id]', () => {
       // Arrange
       mockInstructorFindUnique.mockResolvedValue(null);
 
-      const mockRequest = new Request('http://localhost:3000/api/instructors/999');
+      const mockRequest = new NextRequest('http://localhost:3000/api/instructors/999');
       const context = { params: Promise.resolve({ id: '999' }) };
 
       // Act
@@ -623,6 +626,19 @@ describe('GET /api/instructors/[id]', () => {
 describe('PUT /api/instructors/[id]', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    // 認証成功をデフォルトでモック
+    mockAuthenticateFromRequest.mockResolvedValue({
+      success: true,
+      user: {
+        id: '1',
+        lineUserId: 'test-user',
+        displayName: 'Test User',
+        role: 'ADMIN',
+        isActive: true,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+    });
     // NextResponse.jsonのデフォルトモック実装
     mockNextResponse.json.mockImplementation((data, init) => {
       return {
@@ -724,7 +740,7 @@ describe('PUT /api/instructors/[id]', () => {
         } as never);
       });
 
-      const mockRequest = new Request('http://localhost:3000/api/instructors/1', {
+      const mockRequest = new NextRequest('http://localhost:3000/api/instructors/1', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(requestBody),
@@ -816,7 +832,7 @@ describe('PUT /api/instructors/[id]', () => {
         } as never);
       });
 
-      const mockRequest = new Request('http://localhost:3000/api/instructors/2', {
+      const mockRequest = new NextRequest('http://localhost:3000/api/instructors/2', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(requestBody),
@@ -858,7 +874,7 @@ describe('PUT /api/instructors/[id]', () => {
 
       mockInstructorFindUnique.mockResolvedValue(null);
 
-      const mockRequest = new Request('http://localhost:3000/api/instructors/999', {
+      const mockRequest = new NextRequest('http://localhost:3000/api/instructors/999', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(requestBody),
@@ -888,7 +904,7 @@ describe('PUT /api/instructors/[id]', () => {
         // firstName が不足
       };
 
-      const mockRequest = new Request('http://localhost:3000/api/instructors/1', {
+      const mockRequest = new NextRequest('http://localhost:3000/api/instructors/1', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(requestBody),
@@ -919,7 +935,7 @@ describe('PUT /api/instructors/[id]', () => {
         status: 'INVALID_STATUS',
       };
 
-      const mockRequest = new Request('http://localhost:3000/api/instructors/1', {
+      const mockRequest = new NextRequest('http://localhost:3000/api/instructors/1', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(requestBody),
@@ -964,7 +980,7 @@ describe('PUT /api/instructors/[id]', () => {
       mockInstructorFindUnique.mockResolvedValue(existingInstructor as never);
       mockCertificationFindMany.mockResolvedValue(existingCertifications as never);
 
-      const mockRequest = new Request('http://localhost:3000/api/instructors/1', {
+      const mockRequest = new NextRequest('http://localhost:3000/api/instructors/1', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(requestBody),
@@ -994,7 +1010,7 @@ describe('PUT /api/instructors/[id]', () => {
         firstName: '花子',
       };
 
-      const mockRequest = new Request('http://localhost:3000/api/instructors/invalid', {
+      const mockRequest = new NextRequest('http://localhost:3000/api/instructors/invalid', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(requestBody),
@@ -1028,7 +1044,7 @@ describe('PUT /api/instructors/[id]', () => {
       mockInstructorFindUnique.mockRejectedValue(mockError);
 
       const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
-      const mockRequest = new Request('http://localhost:3000/api/instructors/1', {
+      const mockRequest = new NextRequest('http://localhost:3000/api/instructors/1', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(requestBody),
@@ -1105,7 +1121,7 @@ describe('PUT /api/instructors/[id]', () => {
         } as never);
       });
 
-      const mockRequest = new Request('http://localhost:3000/api/instructors/1', {
+      const mockRequest = new NextRequest('http://localhost:3000/api/instructors/1', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(requestBody),

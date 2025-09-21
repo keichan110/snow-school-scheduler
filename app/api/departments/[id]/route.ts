@@ -1,7 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
+import { authenticateFromRequest } from '@/lib/auth/middleware';
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const authResult = await authenticateFromRequest(request);
+  if (!authResult.success) {
+    return NextResponse.json(
+      {
+        success: false,
+        data: null,
+        message: null,
+        error: 'Authentication required',
+      },
+      { status: 401 }
+    );
+  }
+
   try {
     // パラメータを解決
     const resolvedParams = await params;

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { extractUserFromToken } from '@/lib/auth/jwt';
 import { prisma } from '@/lib/db';
 import { ApiResponse } from '@/lib/auth/types';
+import { authenticateFromRequest, checkUserRole } from '@/lib/auth/middleware';
 
 /**
  * 有効な招待チェックAPI
@@ -23,36 +23,22 @@ export async function GET(request: NextRequest): Promise<
   >
 > {
   try {
-    const { getAuthTokenFromRequest } = await import('@/lib/auth/middleware');
-    const token = getAuthTokenFromRequest(request);
-
-    if (!token) {
+    const authResult = await authenticateFromRequest(request);
+    if (!authResult.success || !authResult.user) {
       return NextResponse.json(
-        { success: false, error: 'Authentication token required' },
-        { status: 401 }
+        { success: false, error: authResult.error ?? 'Authentication required' },
+        { status: authResult.statusCode ?? 401 }
       );
     }
 
-    const user = extractUserFromToken(token);
-
-    if (!user) {
+    const roleResult = checkUserRole(authResult.user, 'MANAGER');
+    if (!roleResult.success || !roleResult.user) {
       return NextResponse.json(
-        { success: false, error: 'Invalid or expired token' },
-        { status: 401 }
-      );
-    }
-
-    if (user.role !== 'ADMIN' && user.role !== 'MANAGER') {
-      return NextResponse.json(
-        { success: false, error: 'Insufficient permissions. Admin or Manager role required.' },
-        { status: 403 }
-      );
-    }
-
-    if (!user.isActive) {
-      return NextResponse.json(
-        { success: false, error: 'User account is inactive' },
-        { status: 403 }
+        {
+          success: false,
+          error: roleResult.error ?? 'Insufficient permissions. Admin or Manager role required.',
+        },
+        { status: roleResult.statusCode ?? 403 }
       );
     }
 

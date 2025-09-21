@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/db';
+import { authenticateFromRequest } from '@/lib/auth/middleware';
 
 interface Params {
   id: string;
@@ -95,6 +96,18 @@ export async function GET(request: NextRequest, context: { params: Promise<Param
 }
 
 export async function PUT(request: NextRequest, context: { params: Promise<Params> }) {
+  const authResult = await authenticateFromRequest(request);
+  if (!authResult.success) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'Authentication required',
+        data: null,
+        message: null,
+      },
+      { status: 401 }
+    );
+  }
   try {
     const params = await context.params;
     const id = parseInt(params.id);
@@ -231,6 +244,18 @@ export async function PUT(request: NextRequest, context: { params: Promise<Param
 }
 
 export async function DELETE(request: NextRequest, context: { params: Promise<Params> }) {
+  const authResult = await authenticateFromRequest(request);
+  if (!authResult.success) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'Authentication required',
+        data: null,
+        message: null,
+      },
+      { status: 401 }
+    );
+  }
   try {
     const params = await context.params;
     const id = parseInt(params.id);

@@ -582,6 +582,199 @@ paths:
         '500':
           $ref: '#/components/responses/ServerError'
 
+  /api/auth/invitations:
+    post:
+      summary: 招待トークン作成
+      description: 管理者またはマネージャーが新しい招待トークンを作成します。
+      tags:
+        - 招待管理
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InvitationCreateInput'
+      responses:
+        '201':
+          description: 招待トークンの作成に成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/InvitationUrl'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+    get:
+      summary: 招待トークン一覧取得
+      description: 作成済みの招待トークン一覧を取得します。管理者は `showAll=true` で全件取得できます。
+      tags:
+        - 招待管理
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: includeInactive
+          in: query
+          description: 無効化済みトークンを含める場合は `true`
+          schema:
+            type: boolean
+        - name: showAll
+          in: query
+          description: 管理者のみ指定可能。全ユーザーのトークンを表示します。
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: 招待トークン一覧
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiListResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/InvitationToken'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /api/auth/invitations/{token}:
+    parameters:
+      - name: token
+        in: path
+        required: true
+        description: 招待トークン文字列
+        schema:
+          type: string
+
+    delete:
+      summary: 招待トークン無効化
+      description: 管理者または作成者が招待トークンを無効化します。
+      tags:
+        - 招待管理
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: 招待トークンの無効化に成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/InvitationDeactivation'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: すでに無効化済み
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+              example:
+                success: false
+                error: 'Invitation token is already inactive'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /api/auth/invitations/active:
+    get:
+      summary: 最新の有効な招待トークン取得
+      description: 現在利用可能な最新の招待トークン情報を返します。
+      tags:
+        - 招待管理
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: 有効な招待トークン情報
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/ActiveInvitation'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /api/auth/invitations/{token}/verify:
+    parameters:
+      - name: token
+        in: path
+        required: true
+        description: 招待トークン文字列
+        schema:
+          type: string
+
+    get:
+      summary: 招待トークン検証
+      description: 認証なしで招待トークンの有効性を検証します。
+      tags:
+        - 招待管理
+      responses:
+        '200':
+          description: 招待トークンが有効
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/InvitationValidation'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '410':
+          description: トークンは存在したが現在は利用不可
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+              example:
+                success: false
+                error: 'Expired invitation token'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
     put:
       summary: シフト更新
       description: 指定されたシフトを更新
@@ -647,8 +840,6 @@ components:
             $ref: '#/components/schemas/ApiErrorResponse'
           example:
             success: false
-            data: null
-            message: null
             error: 'Resource not found'
 
     ValidationError:
@@ -659,8 +850,6 @@ components:
             $ref: '#/components/schemas/ApiErrorResponse'
           example:
             success: false
-            data: null
-            message: null
             error: 'Validation failed'
 
     ServerError:
@@ -671,9 +860,33 @@ components:
             $ref: '#/components/schemas/ApiErrorResponse'
           example:
             success: false
-            data: null
-            message: null
             error: 'Internal server error'
+
+    Unauthorized:
+      description: 認証が必要です
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiErrorResponse'
+          example:
+            success: false
+            error: 'Authentication token required'
+
+    Forbidden:
+      description: 権限が不足しています
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiErrorResponse'
+          example:
+            success: false
+            error: 'Insufficient permissions. Admin or Manager role required.'
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
 
   schemas:
     # 軽量版スキーマ
@@ -722,6 +935,8 @@ components:
     # 基本レスポンス
     ApiResponse:
       type: object
+      required:
+        - success
       properties:
         success:
           type: boolean
@@ -729,10 +944,6 @@ components:
         data:
           type: object
           nullable: true
-        message:
-          type: string
-          nullable: true
-          example: 'Operation completed successfully'
         error:
           type: string
           nullable: true
@@ -740,6 +951,8 @@ components:
 
     ApiListResponse:
       type: object
+      required:
+        - success
       properties:
         success:
           type: boolean
@@ -751,9 +964,6 @@ components:
         count:
           type: integer
           example: 10
-        message:
-          type: string
-          nullable: true
         error:
           type: string
           nullable: true
@@ -761,20 +971,16 @@ components:
 
     ApiErrorResponse:
       type: object
+      required:
+        - success
+        - error
       properties:
         success:
           type: boolean
           example: false
-        data:
-          type: object
-          nullable: true
-          example: null
-        message:
-          type: string
-          nullable: true
         error:
           type: string
-          example: 'Error message'
+          example: 'Invalid invitation token'
 
     # 部門関連
     Department:
@@ -1225,6 +1431,123 @@ components:
           description: '事前選択されるインストラクターIDの配列'
           example: [3, 5]
 
+    InvitationCreateInput:
+      type: object
+      required:
+        - expiresAt
+      properties:
+        description:
+          type: string
+          nullable: true
+          example: '新人スタッフ用招待'
+        expiresAt:
+          type: string
+          format: date-time
+          example: '2025-01-15T12:00:00Z'
+
+    InvitationUrl:
+      type: object
+      properties:
+        token:
+          type: string
+          example: 'inv_abcd1234'
+        invitationUrl:
+          type: string
+          example: 'https://app.example.com/login?invite=inv_abcd1234'
+        expiresAt:
+          type: string
+          format: date-time
+        maxUses:
+          type: integer
+          nullable: true
+          example: 5
+        createdBy:
+          type: string
+          example: 'user_admin_01'
+
+    InvitationToken:
+      type: object
+      properties:
+        token:
+          type: string
+        description:
+          type: string
+        expiresAt:
+          type: string
+          format: date-time
+        isActive:
+          type: boolean
+        maxUses:
+          type: integer
+          nullable: true
+        usedCount:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+        createdBy:
+          type: string
+        creatorName:
+          type: string
+        creatorRole:
+          type: string
+          enum: [ADMIN, MANAGER, MEMBER]
+        isExpired:
+          type: boolean
+        remainingUses:
+          type: integer
+          nullable: true
+
+    InvitationDeactivation:
+      type: object
+      properties:
+        message:
+          type: string
+          example: 'Invitation token deactivated successfully'
+        token:
+          type: string
+        deactivatedAt:
+          type: string
+          format: date-time
+        deactivatedBy:
+          type: string
+
+    ActiveInvitation:
+      type: object
+      properties:
+        token:
+          type: string
+        description:
+          type: string
+          nullable: true
+        expiresAt:
+          type: string
+          format: date-time
+        isActive:
+          type: boolean
+        maxUses:
+          type: integer
+          nullable: true
+        usageCount:
+          type: integer
+        remainingUses:
+          type: integer
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        createdBy:
+          type: string
+
+    InvitationValidation:
+      type: object
+      required:
+        - isValid
+      properties:
+        isValid:
+          type: boolean
+          example: true
+
 tags:
   - name: システム
     description: システム関連のエンドポイント
@@ -1238,3 +1561,5 @@ tags:
     description: シフト種類マスタの管理
   - name: シフト管理
     description: シフト枠の管理
+  - name: 招待管理
+    description: 招待トークンおよび認証周りの管理

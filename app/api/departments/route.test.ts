@@ -1,6 +1,7 @@
 import { GET } from './route';
 import { prisma } from '@/lib/db';
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
+import { authenticateFromRequest } from '@/lib/auth/middleware';
 
 type Department = {
   id: number;
@@ -21,11 +22,30 @@ jest.mock('@/lib/db', () => ({
   },
 }));
 
-// NextResponseをモック化
+// NextResponseとNextRequestをモック化
 jest.mock('next/server', () => ({
   NextResponse: {
     json: jest.fn(),
   },
+  NextRequest: jest.fn((url, init) => ({
+    url,
+    ...init,
+    headers: new Headers(init?.headers),
+    cookies: {
+      get: jest.fn().mockReturnValue({ value: 'test-token' }),
+    },
+    json: init?.body
+      ? () => Promise.resolve(JSON.parse(init.body as string))
+      : () => Promise.resolve({}),
+    nextUrl: {
+      searchParams: new URL(url as string).searchParams,
+    },
+  })),
+}));
+
+// 認証ミドルウェアをモック化
+jest.mock('@/lib/auth/middleware', () => ({
+  authenticateFromRequest: jest.fn(),
 }));
 
 const mockPrisma = prisma as jest.Mocked<typeof prisma>;
@@ -33,10 +53,26 @@ const mockDepartmentFindMany = mockPrisma.department.findMany as jest.MockedFunc
   typeof prisma.department.findMany
 >;
 const mockNextResponse = NextResponse as jest.Mocked<typeof NextResponse>;
+const mockAuthenticateFromRequest = authenticateFromRequest as jest.MockedFunction<
+  typeof authenticateFromRequest
+>;
 
 describe('GET /api/departments', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    // 認証成功をデフォルトでモック
+    mockAuthenticateFromRequest.mockResolvedValue({
+      success: true,
+      user: {
+        id: '1',
+        lineUserId: 'test-user',
+        displayName: 'Test User',
+        role: 'ADMIN',
+        isActive: true,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+    });
     // NextResponse.jsonのデフォルトモック実装
     mockNextResponse.json.mockImplementation((data, init) => {
       return {
@@ -88,7 +124,7 @@ describe('GET /api/departments', () => {
       mockDepartmentFindMany.mockResolvedValue(mockDepartments);
 
       // Act
-      await GET();
+      await GET(new NextRequest('http://localhost'));
 
       // Assert
       expect(mockDepartmentFindMany).toHaveBeenCalledWith({
@@ -112,7 +148,7 @@ describe('GET /api/departments', () => {
       mockDepartmentFindMany.mockResolvedValue(mockDepartments);
 
       // Act
-      await GET();
+      await GET(new NextRequest('http://localhost'));
 
       // Assert
       expect(mockDepartmentFindMany).toHaveBeenCalledWith({
@@ -147,7 +183,7 @@ describe('GET /api/departments', () => {
       mockDepartmentFindMany.mockResolvedValue(mockDepartments);
 
       // Act
-      await GET();
+      await GET(new NextRequest('http://localhost'));
 
       // Assert
       expect(mockNextResponse.json).toHaveBeenCalledWith({
@@ -170,7 +206,7 @@ describe('GET /api/departments', () => {
       const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
 
       // Act
-      await GET();
+      await GET(new NextRequest('http://localhost'));
 
       // Assert
       expect(mockDepartmentFindMany).toHaveBeenCalledWith({
@@ -204,7 +240,7 @@ describe('GET /api/departments', () => {
       const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
 
       // Act
-      await GET();
+      await GET(new NextRequest('http://localhost'));
 
       // Assert
       expect(consoleSpy).toHaveBeenCalledWith('Departments API error:', mockError);
@@ -233,7 +269,7 @@ describe('GET /api/departments', () => {
       mockDepartmentFindMany.mockResolvedValue(mockDepartments as Department[]);
 
       // Act
-      await GET();
+      await GET(new NextRequest('http://localhost'));
 
       // Assert
       expect(mockDepartmentFindMany).toHaveBeenCalledWith({
@@ -248,7 +284,7 @@ describe('GET /api/departments', () => {
       mockDepartmentFindMany.mockResolvedValue([]);
 
       // Act
-      await GET();
+      await GET(new NextRequest('http://localhost'));
 
       // Assert
       expect(mockDepartmentFindMany).toHaveBeenCalledTimes(1);

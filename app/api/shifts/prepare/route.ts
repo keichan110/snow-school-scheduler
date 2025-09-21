@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { NextRequest } from 'next/server';
+import { authenticateFromRequest } from '@/lib/auth/middleware';
 
 // 既存シフトデータの型定義（レスポンス用）
 interface ExistingShiftData {
@@ -105,6 +106,17 @@ function formatExistingShift(shift: ShiftWithRelations): ExistingShiftData {
 }
 
 export async function GET(request: NextRequest) {
+  const authResult = await authenticateFromRequest(request);
+  if (!authResult.success) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'Authentication required',
+      },
+      { status: 401 }
+    );
+  }
+
   try {
     const { searchParams } = request.nextUrl;
     const date = searchParams.get('date');
