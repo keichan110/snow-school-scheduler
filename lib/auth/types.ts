@@ -33,13 +33,6 @@ export interface InvitationListItem {
 // 招待URL検証APIのレスポンス型
 export interface InvitationValidationData {
   isValid: boolean;
-  token?: string;
-  expiresAt?: string;
-  maxUses?: number | null;
-  usedCount?: number;
-  remainingUses?: number | null;
-  createdBy?: string;
-  creatorName?: string;
   error?: string;
   errorCode?: 'NOT_FOUND' | 'EXPIRED' | 'INACTIVE' | 'MAX_USES_EXCEEDED';
 }

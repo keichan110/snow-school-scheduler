@@ -43,28 +43,20 @@ export async function GET(
     // 招待トークン検証実行
     const validationResult = await validateInvitationToken(decodedToken);
 
-    if (validationResult.isValid && validationResult.token) {
+    if (validationResult.isValid) {
       // 有効なトークンの場合
-      const tokenData = validationResult.token;
-      const remainingUses = tokenData.maxUses ? tokenData.maxUses - tokenData.usedCount : null;
-
       const responseData: InvitationValidationData = {
         isValid: true,
-        token: tokenData.token,
-        expiresAt: tokenData.expiresAt.toISOString(),
-        maxUses: tokenData.maxUses,
-        usedCount: tokenData.usedCount,
-        remainingUses,
-        createdBy: tokenData.creator.id,
-        creatorName: tokenData.creator.displayName,
       };
 
-      console.log('✅ Invitation token is valid:', {
-        token: tokenData.token,
-        expiresAt: tokenData.expiresAt,
-        remainingUses,
-        createdBy: tokenData.creator.displayName,
-      });
+      if (validationResult.token) {
+        console.log('✅ Invitation token is valid:', {
+          token: validationResult.token.token,
+          expiresAt: validationResult.token.expiresAt,
+        });
+      } else {
+        console.log('✅ Invitation token is valid (token meta unavailable)');
+      }
 
       return NextResponse.json({ success: true, data: responseData }, { status: 200 });
     } else {
@@ -85,26 +77,6 @@ export async function GET(
           statusCode = 400;
       }
 
-      const errorData: InvitationValidationData = {
-        isValid: false,
-        ...(validationResult.error && { error: validationResult.error }),
-        ...(validationResult.errorCode && { errorCode: validationResult.errorCode }),
-      };
-
-      // 無効だが詳細情報が利用可能な場合（期限切れ、使用回数超過等）
-      if (validationResult.token) {
-        const tokenData = validationResult.token;
-        errorData.token = tokenData.token;
-        errorData.expiresAt = tokenData.expiresAt.toISOString();
-        errorData.maxUses = tokenData.maxUses;
-        errorData.usedCount = tokenData.usedCount;
-        errorData.remainingUses = tokenData.maxUses
-          ? tokenData.maxUses - tokenData.usedCount
-          : null;
-        errorData.createdBy = tokenData.creator.id;
-        errorData.creatorName = tokenData.creator.displayName;
-      }
-
       console.log('❌ Invitation token validation failed:', {
         token: decodedToken,
         error: validationResult.error,
@@ -112,10 +84,13 @@ export async function GET(
         statusCode,
       });
 
-      return NextResponse.json(
-        { success: false, error: validationResult.error || 'Invalid invitation token' },
-        { status: statusCode }
-      );
+      const errorMessage = validationResult.error || 'Invalid invitation token';
+      const errorResponse: ApiResponse<InvitationValidationData> = {
+        success: false,
+        error: errorMessage,
+      };
+
+      return NextResponse.json(errorResponse, { status: statusCode });
     }
   } catch (error) {
     console.error('❌ Invitation token verification failed:', error);
