@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { generateState, generateLineAuthUrl, validateLineAuthConfig } from '@/lib/auth/line';
 import { secureLog, secureAuthLog } from '@/lib/utils/logging';
 import { setSessionCookie } from '@/lib/utils/cookies';
+import { getClientIp, getRequestUserAgent } from '@/lib/utils/request';
 
 /**
  * LINE認証開始API
@@ -27,12 +28,16 @@ interface LoginRequest {
  * LINE認証フローを開始
  */
 export async function POST(request: NextRequest) {
+  const clientIp = getClientIp(request);
+  const userAgent = getRequestUserAgent(request);
   try {
     // LINE認証設定の妥当性チェック
     const configCheck = validateLineAuthConfig();
     if (!configCheck.isValid) {
       secureLog('error', 'LINE authentication configuration is invalid', {
         errors: configCheck.errors,
+        ip: clientIp,
+        userAgent,
       });
       return NextResponse.json(
         {
@@ -87,12 +92,17 @@ export async function POST(request: NextRequest) {
     secureAuthLog('LINE authentication flow initiated', {
       hasInviteToken: !!requestData.inviteToken,
       hasAuthUrl: !!authUrl,
+      disableAutoLogin: Boolean(requestData.disableAutoLogin),
+      ip: clientIp,
+      userAgent,
     });
 
     return response;
   } catch (error) {
     secureLog('error', 'LINE authentication initiation error', {
       message: error instanceof Error ? error.message : 'Unknown error',
+      ip: clientIp,
+      userAgent,
     });
     return NextResponse.json(
       {
@@ -111,12 +121,16 @@ export async function POST(request: NextRequest) {
  * URLパラメータから招待トークンを取得
  */
 export async function GET(request: NextRequest) {
+  const clientIp = getClientIp(request);
+  const userAgent = getRequestUserAgent(request);
   try {
     // LINE認証設定の妥当性チェック
     const configCheck = validateLineAuthConfig();
     if (!configCheck.isValid) {
       secureLog('error', 'LINE authentication configuration is invalid', {
         errors: configCheck.errors,
+        ip: clientIp,
+        userAgent,
       });
       return NextResponse.json(
         {
@@ -157,12 +171,18 @@ export async function GET(request: NextRequest) {
     secureAuthLog('LINE authentication flow initiated via GET', {
       hasInviteToken: !!inviteToken,
       hasAuthUrl: !!authUrl,
+      redirectUrl,
+      disableAutoLogin,
+      ip: clientIp,
+      userAgent,
     });
 
     return response;
   } catch (error) {
     secureLog('error', 'LINE authentication initiation error (GET)', {
       message: error instanceof Error ? error.message : 'Unknown error',
+      ip: clientIp,
+      userAgent,
     });
     return NextResponse.json(
       {

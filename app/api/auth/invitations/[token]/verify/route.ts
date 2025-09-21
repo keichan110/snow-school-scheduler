@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { validateInvitationToken } from '@/lib/auth/invitations';
 import { ApiResponse, InvitationValidationData } from '@/lib/auth/types';
+import { secureAuthLog, secureLog } from '@/lib/utils/logging';
+import { getClientIp, getRequestUserAgent } from '@/lib/utils/request';
 
 /**
  * 招待URL検証API
@@ -20,6 +22,16 @@ export async function GET(
   request: NextRequest,
   context: { params: Promise<{ token: string }> }
 ): Promise<NextResponse<ApiResponse<InvitationValidationData>>> {
+  const clientIp = getClientIp(request);
+  const userAgent = getRequestUserAgent(request);
+  const maskTokenValue = (value: string): string => {
+    if (value.length <= 8) {
+      return '****';
+    }
+    return `${value.substring(0, 4)}...${value.substring(value.length - 4)}`;
+  };
+  let maskedToken = '(unavailable)';
+
   try {
     const { token } = await context.params;
 
@@ -33,11 +45,12 @@ export async function GET(
 
     // URL デコード（必要に応じて）
     const decodedToken = decodeURIComponent(token.trim());
+    maskedToken = maskTokenValue(decodedToken);
 
-    console.log('🔍 Validating invitation token:', {
-      originalToken: token,
-      decodedToken,
-      requestUrl: request.url,
+    secureAuthLog('Invitation token verification attempt', {
+      maskedToken,
+      ip: clientIp,
+      userAgent,
     });
 
     // 招待トークン検証実行
@@ -49,14 +62,12 @@ export async function GET(
         isValid: true,
       };
 
-      if (validationResult.token) {
-        console.log('✅ Invitation token is valid:', {
-          token: validationResult.token.token,
-          expiresAt: validationResult.token.expiresAt,
-        });
-      } else {
-        console.log('✅ Invitation token is valid (token meta unavailable)');
-      }
+      secureAuthLog('Invitation token verification succeeded', {
+        maskedToken,
+        ip: clientIp,
+        userAgent,
+        hasMetadata: Boolean(validationResult.token),
+      });
 
       return NextResponse.json({ success: true, data: responseData }, { status: 200 });
     } else {
@@ -77,11 +88,13 @@ export async function GET(
           statusCode = 400;
       }
 
-      console.log('❌ Invitation token validation failed:', {
-        token: decodedToken,
+      secureLog('warn', 'Invitation token verification rejected', {
+        maskedToken,
         error: validationResult.error,
         errorCode: validationResult.errorCode,
         statusCode,
+        ip: clientIp,
+        userAgent,
       });
 
       const errorMessage = validationResult.error || 'Invalid invitation token';
@@ -93,7 +106,12 @@ export async function GET(
       return NextResponse.json(errorResponse, { status: statusCode });
     }
   } catch (error) {
-    console.error('❌ Invitation token verification failed:', error);
+    secureLog('error', 'Invitation token verification error', {
+      maskedToken,
+      ip: clientIp,
+      userAgent,
+      message: error instanceof Error ? error.message : 'Unknown error',
+    });
 
     let errorMessage = 'Failed to verify invitation token';
     if (error instanceof Error) {

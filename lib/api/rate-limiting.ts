@@ -8,42 +8,106 @@ interface RateLimitEntry {
   resetTime: number;
 }
 
-interface RateLimitConfig {
+export interface RateLimitConfig {
   windowMs: number; // 時間窓（ミリ秒）
   maxRequests: number; // 最大リクエスト数
 }
 
+type RateLimitRule =
+  | {
+      id: string;
+      type: 'regex';
+      pattern: RegExp;
+      config: RateLimitConfig;
+    }
+  | {
+      id: string;
+      type: 'exact';
+      path: string;
+      config: RateLimitConfig;
+    }
+  | {
+      id: string;
+      type: 'prefix';
+      prefix: string;
+      config: RateLimitConfig;
+    };
+
 // メモリベースのストレージ
 const rateLimitStore = new Map<string, RateLimitEntry>();
 
-// 設定
-const RATE_LIMIT_CONFIGS: Record<string, RateLimitConfig> = {
-  '/api/auth/': { windowMs: 15 * 60 * 1000, maxRequests: 10 }, // 15分に10回
-  '/api/': { windowMs: 60 * 1000, maxRequests: 100 }, // 1分に100回
-};
+// ルール設定（上から順にマッチを評価）
+const RATE_LIMIT_RULES: RateLimitRule[] = [
+  {
+    id: 'auth-invitation-verify',
+    type: 'regex',
+    pattern: /^\/api\/auth\/invitations\/[^/]+\/verify$/,
+    config: { windowMs: 60 * 1000, maxRequests: 5 }, // 1分に5回
+  },
+  {
+    id: 'auth-line-login',
+    type: 'exact',
+    path: '/api/auth/line/login',
+    config: { windowMs: 60 * 1000, maxRequests: 5 }, // 1分に5回
+  },
+  {
+    id: 'auth-general',
+    type: 'prefix',
+    prefix: '/api/auth/',
+    config: { windowMs: 15 * 60 * 1000, maxRequests: 10 }, // 15分に10回
+  },
+  {
+    id: 'api-general',
+    type: 'prefix',
+    prefix: '/api/',
+    config: { windowMs: 60 * 1000, maxRequests: 100 }, // 1分に100回
+  },
+];
 
-/**
- * IPアドレスとパスから識別子を生成
- */
-function generateIdentifier(ip: string, pathname: string): string {
-  // 認証APIは特別扱い
-  if (pathname.startsWith('/api/auth/')) {
-    return `auth:${ip}`;
+function findRateLimitRule(pathname: string): RateLimitRule {
+  if (RATE_LIMIT_RULES.length === 0) {
+    throw new Error('Rate limit rules are not configured');
   }
-  return `general:${ip}`;
+
+  for (const rule of RATE_LIMIT_RULES) {
+    switch (rule.type) {
+      case 'exact':
+        if (pathname === rule.path) {
+          return rule;
+        }
+        break;
+      case 'prefix':
+        if (pathname.startsWith(rule.prefix)) {
+          return rule;
+        }
+        break;
+      case 'regex':
+        if (rule.pattern.test(pathname)) {
+          return rule;
+        }
+        break;
+    }
+  }
+
+  // 最後のルールはフォールバック
+  const fallbackRule = RATE_LIMIT_RULES[RATE_LIMIT_RULES.length - 1];
+  if (!fallbackRule) {
+    throw new Error('Rate limit fallback rule not found');
+  }
+  return fallbackRule;
 }
 
 /**
- * 適用するRate Limit設定を取得
+ * IPアドレスとルールIDから識別子を生成
  */
-function getRateLimitConfig(pathname: string): RateLimitConfig {
-  if (pathname.startsWith('/api/auth/')) {
-    return (
-      RATE_LIMIT_CONFIGS['/api/auth/'] ??
-      RATE_LIMIT_CONFIGS['/api/'] ?? { windowMs: 15 * 60 * 1000, maxRequests: 10 }
-    );
-  }
-  return RATE_LIMIT_CONFIGS['/api/'] ?? { windowMs: 60 * 1000, maxRequests: 100 };
+function generateIdentifier(ip: string, ruleId: string): string {
+  const sanitizedIp = ip || '127.0.0.1';
+  return `${ruleId}|${sanitizedIp}`;
+}
+
+function extractRuleIdFromKey(key: string): string {
+  const [ruleId] = key.split('|');
+  return ruleId ?? 'unknown';
 }
 
 /**
@@ -69,14 +133,16 @@ export function checkRateLimit(
   remaining: number;
   resetTime: number;
   limit: number;
+  ruleId: string;
 } {
   // 定期的なクリーンアップ（10%の確率で実行）
   if (Math.random() < 0.1) {
     cleanupExpiredEntries();
   }
 
-  const identifier = generateIdentifier(ip, pathname);
-  const config = getRateLimitConfig(pathname);
+  const rule = findRateLimitRule(pathname);
+  const identifier = generateIdentifier(ip, rule.id);
+  const config = rule.config;
   const now = Date.now();
   const resetTime = now + config.windowMs;
 
@@ -96,6 +162,7 @@ export function checkRateLimit(
       remaining: config.maxRequests - 1,
       resetTime,
       limit: config.maxRequests,
+      ruleId: rule.id,
     };
   }
 
@@ -110,6 +177,7 @@ export function checkRateLimit(
     remaining,
     resetTime: entry.resetTime,
     limit: config.maxRequests,
+    ruleId: rule.id,
   };
 }
 
@@ -118,24 +186,18 @@ export function checkRateLimit(
  */
 export function getRateLimitStatus(): {
   totalEntries: number;
-  authEntries: number;
-  generalEntries: number;
+  buckets: Record<string, number>;
 } {
-  let authEntries = 0;
-  let generalEntries = 0;
+  const buckets: Record<string, number> = {};
 
   for (const key of rateLimitStore.keys()) {
-    if (key.startsWith('auth:')) {
-      authEntries++;
-    } else {
-      generalEntries++;
-    }
+    const ruleId = extractRuleIdFromKey(key);
+    buckets[ruleId] = (buckets[ruleId] ?? 0) + 1;
   }
 
   return {
     totalEntries: rateLimitStore.size,
-    authEntries,
-    generalEntries,
+    buckets,
   };
 }
 
