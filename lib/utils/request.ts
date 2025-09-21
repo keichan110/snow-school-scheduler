@@ -1,3 +1,4 @@
+import { isIP, isIPv4, isIPv6 } from 'is-ip';
 import { NextRequest } from 'next/server';
 
 const TRUSTED_HEADER_CANDIDATES = [
@@ -6,63 +7,48 @@ const TRUSTED_HEADER_CANDIDATES = [
   'cf-connecting-ipv6',
 ] as const;
 
-function sanitizeIpValue(value: string | null | undefined): string | null {
+function normalizeIpCandidate(value: string | null | undefined): string | null {
   if (typeof value !== 'string') {
     return null;
   }
 
   const trimmed = value.trim();
-  if (!trimmed) {
+  if (!trimmed || /[\s\t\n\r]/.test(trimmed)) {
     return null;
   }
 
-  if (/[\s\t\n\r]/.test(trimmed)) {
-    return null;
-  }
-
-  // IPv4 + optional port (e.g. 203.0.113.1 or 203.0.113.1:8080)
-  const ipv4Match = trimmed.match(/^([0-9]{1,3}(?:\.[0-9]{1,3}){3})(?::([0-9]{1,5}))?$/);
-  if (ipv4Match) {
-    const address = ipv4Match[1];
-    if (!address) {
-      return null;
-    }
-    const port = ipv4Match[2];
-    const segments = address.split('.');
-    const isValidSegments = segments.every((segment) => {
-      const numeric = Number(segment);
-      return numeric >= 0 && numeric <= 255;
-    });
-    if (!isValidSegments) {
-      return null;
-    }
-
-    if (port && Number(port) > 65535) {
-      return null;
-    }
-
-    return address;
-  }
-
-  // IPv6 (plain) e.g. 2001:db8::1 or ::ffff:192.0.2.128
-  if (/^[0-9A-Fa-f:.]+$/.test(trimmed) && trimmed.length <= 45) {
+  if (isIP(trimmed)) {
     return trimmed;
   }
 
-  // IPv6 with brackets and optional port e.g. [2001:db8::1]:443
-  const ipv6BracketMatch = trimmed.match(/^\[([0-9A-Fa-f:.]+)\](?::([0-9]{1,5}))?$/);
-  if (ipv6BracketMatch) {
-    const address = ipv6BracketMatch[1];
+  const bracketMatch = trimmed.match(/^\[([^\]]+)\](?::([0-9]{1,5}))?$/);
+  if (bracketMatch) {
+    const address = bracketMatch[1];
+    const portPart = bracketMatch[2];
     if (!address) {
       return null;
     }
-    const port = ipv6BracketMatch[2];
-    if (port && Number(port) > 65535) {
+    if (portPart) {
+      const port = Number(portPart);
+      if (Number.isNaN(port) || port > 65535) {
+        return null;
+      }
+    }
+    return isIPv6(address) ? address : null;
+  }
+
+  const ipv4PortMatch = trimmed.match(/^([^:]+):([0-9]{1,5})$/);
+  if (ipv4PortMatch) {
+    const address = ipv4PortMatch[1];
+    const portString = ipv4PortMatch[2];
+    if (!address) {
       return null;
     }
-    if (address.length <= 45 && /^[0-9A-Fa-f:.]+$/.test(address)) {
-      return address;
+    const port = Number(portString);
+    if (Number.isNaN(port) || port > 65535) {
+      return null;
     }
+    return isIPv4(address) ? address : null;
   }
 
   return null;
@@ -79,8 +65,8 @@ function extractIpFromHeader(
   }
 
   const values = options?.allowMultiple ? rawValue.split(',') : [rawValue];
-  for (const value of values) {
-    const sanitized = sanitizeIpValue(value);
+  for (const candidate of values) {
+    const sanitized = normalizeIpCandidate(candidate);
     if (sanitized) {
       return sanitized;
     }
@@ -101,14 +87,13 @@ export function getClientIp(request: NextRequest): string {
 
   const candidateIps: Array<string | null> = [];
 
-  // Cloudflare Workers runtime exposes request.cf.connectingIP
-  candidateIps.push(sanitizeIpValue(requestWithMeta.cf?.connectingIP));
+  candidateIps.push(normalizeIpCandidate(requestWithMeta.cf?.connectingIP));
 
   for (const headerName of TRUSTED_HEADER_CANDIDATES) {
     candidateIps.push(extractIpFromHeader(request, headerName));
   }
 
-  candidateIps.push(sanitizeIpValue(requestWithMeta.ip));
+  candidateIps.push(normalizeIpCandidate(requestWithMeta.ip));
   candidateIps.push(extractIpFromHeader(request, 'x-real-ip'));
   candidateIps.push(extractIpFromHeader(request, 'x-forwarded-for', { allowMultiple: true }));
 

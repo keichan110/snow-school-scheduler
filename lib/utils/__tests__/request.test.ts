@@ -1,5 +1,12 @@
 import { getClientIp } from '../request';
 import type { NextRequest } from 'next/server';
+import { isIP as nodeIsIP, isIPv4 as nodeIsIPv4, isIPv6 as nodeIsIPv6 } from 'node:net';
+
+jest.mock('is-ip', () => ({
+  isIP: (value: string) => nodeIsIP(value) !== 0,
+  isIPv4: (value: string) => nodeIsIPv4(value),
+  isIPv6: (value: string) => nodeIsIPv6(value),
+}));
 
 describe('getClientIp', () => {
   const createRequest = (
@@ -79,6 +86,16 @@ describe('getClientIp', () => {
     });
 
     expect(getClientIp(request)).toBe('203.0.113.50');
+  });
+
+  it('handles IPv6 addresses with bracketed port notation', () => {
+    const request = createRequest({
+      headers: {
+        'x-forwarded-for': '[2001:db8::1]:443, [2001:db8::2]',
+      },
+    });
+
+    expect(getClientIp(request)).toBe('2001:db8::1');
   });
 
   it('returns loopback IP when no headers are present', () => {
