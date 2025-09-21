@@ -119,6 +119,12 @@ export async function middleware(request: NextRequest) {
 
   // APIルートの処理
   if (pathname.startsWith('/api/')) {
+    // プリフライト要求はレートリミット対象外（CORS通過専用）
+    if (request.method === 'OPTIONS') {
+      secureLog('info', 'Middleware: Skipping rate limit for OPTIONS request', { pathname });
+      return NextResponse.next();
+    }
+
     // Rate Limitチェック
     const ip = getClientIp(request);
     const rateLimitResult = checkRateLimit(ip, pathname);
