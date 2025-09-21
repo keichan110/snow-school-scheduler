@@ -199,3 +199,61 @@ export function getRequestUserAgent(request: NextRequest): string {
   }
   return 'unknown';
 }
+
+function extractOrigin(value: string | null | undefined): string | null {
+  if (!value) {
+    return null;
+  }
+
+  try {
+    return new URL(value).origin;
+  } catch (error) {
+    return null;
+  }
+}
+
+function buildAllowedReferrerOrigins(env: string | undefined): Set<string> {
+  const allowedOrigins = new Set<string>();
+
+  const addOrigin = (candidate: string | null) => {
+    if (!candidate) {
+      return;
+    }
+    allowedOrigins.add(candidate);
+  };
+
+  const nextAuthOrigin = extractOrigin(process.env.NEXTAUTH_URL);
+  const nextPublicAppOrigin = extractOrigin(process.env.NEXT_PUBLIC_APP_URL);
+
+  if (env === 'production') {
+    addOrigin(nextAuthOrigin);
+  } else {
+    addOrigin(nextAuthOrigin);
+    addOrigin(nextPublicAppOrigin);
+    addOrigin('http://localhost:3000');
+    addOrigin('http://127.0.0.1:3000');
+  }
+
+  return allowedOrigins;
+}
+
+export function isAllowedReferrer(request: NextRequest): boolean {
+  const refererHeader = request.headers.get('referer');
+  const env = process.env.NODE_ENV;
+
+  if (!refererHeader) {
+    return env !== 'production';
+  }
+
+  const refererOrigin = extractOrigin(refererHeader);
+  if (!refererOrigin) {
+    return false;
+  }
+
+  const allowedOrigins = buildAllowedReferrerOrigins(env);
+  if (allowedOrigins.size === 0) {
+    return env !== 'production';
+  }
+
+  return allowedOrigins.has(refererOrigin);
+}
