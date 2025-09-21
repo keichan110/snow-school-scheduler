@@ -4,6 +4,10 @@
 
 import { NextRequest } from 'next/server';
 
+jest.mock('@/lib/auth/middleware', () => ({
+  authenticateFromRequest: jest.fn(),
+}));
+
 // Prismaをモック化
 jest.mock('@/lib/db', () => ({
   prisma: {
@@ -15,9 +19,13 @@ jest.mock('@/lib/db', () => ({
 
 import { GET } from './route';
 import { prisma } from '@/lib/db';
+import { authenticateFromRequest } from '@/lib/auth/middleware';
 
 const mockFindUnique = prisma.department.findUnique as jest.MockedFunction<
   typeof prisma.department.findUnique
+>;
+const mockAuthenticateFromRequest = authenticateFromRequest as jest.MockedFunction<
+  typeof authenticateFromRequest
 >;
 
 describe('/api/departments/[id] GET', () => {
@@ -25,11 +33,43 @@ describe('/api/departments/[id] GET', () => {
     jest.clearAllMocks();
     // console.errorをモック化してログ出力を抑制
     jest.spyOn(console, 'error').mockImplementation(() => {});
+    mockAuthenticateFromRequest.mockResolvedValue({
+      success: true,
+      user: {
+        id: '1',
+        lineUserId: 'test-user',
+        displayName: 'Test User',
+        role: 'ADMIN',
+        isActive: true,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+    });
   });
 
   afterEach(() => {
     // console.errorのモックを復元
     jest.restoreAllMocks();
+  });
+
+  it('認証に失敗した場合、401エラーを返す', async () => {
+    mockAuthenticateFromRequest.mockResolvedValueOnce({
+      success: false,
+      error: 'Authentication required',
+    });
+
+    const request = new NextRequest('http://localhost:3000/api/departments/1');
+    const response = await GET(request, { params: Promise.resolve({ id: '1' }) });
+    const data = await response.json();
+
+    expect(response.status).toBe(401);
+    expect(data).toEqual({
+      success: false,
+      data: null,
+      message: null,
+      error: 'Authentication required',
+    });
+    expect(mockFindUnique).not.toHaveBeenCalled();
   });
 
   it('部門が存在する場合、部門詳細を返す', async () => {

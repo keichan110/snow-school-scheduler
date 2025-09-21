@@ -478,7 +478,8 @@ describe('Shifts [id] API', () => {
   });
 
   describe('DELETE /api/shifts/[id]', () => {
-    const createMockDeleteRequest = () => new NextRequest('http://localhost/api/shifts/1', { method: 'DELETE' });
+    const createMockDeleteRequest = () =>
+      new NextRequest('http://localhost/api/shifts/1', { method: 'DELETE' });
     const createMockContext = (id: string) => ({
       params: Promise.resolve({ id }),
     });
