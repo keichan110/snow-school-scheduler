@@ -1,12 +1,5 @@
 import { getClientIp } from '../request';
 import type { NextRequest } from 'next/server';
-import { isIP as nodeIsIP, isIPv4 as nodeIsIPv4, isIPv6 as nodeIsIPv6 } from 'node:net';
-
-jest.mock('is-ip', () => ({
-  isIP: (value: string) => nodeIsIP(value) !== 0,
-  isIPv4: (value: string) => nodeIsIPv4(value),
-  isIPv6: (value: string) => nodeIsIPv6(value),
-}));
 
 describe('getClientIp', () => {
   const createRequest = (
@@ -96,6 +89,26 @@ describe('getClientIp', () => {
     });
 
     expect(getClientIp(request)).toBe('2001:db8::1');
+  });
+
+  it('accepts IPv4-mapped IPv6 addresses', () => {
+    const request = createRequest({
+      headers: {
+        'x-forwarded-for': '::ffff:203.0.113.5',
+      },
+    });
+
+    expect(getClientIp(request)).toBe('::ffff:203.0.113.5');
+  });
+
+  it('skips malformed IPv4-mapped IPv6 entries', () => {
+    const request = createRequest({
+      headers: {
+        'x-forwarded-for': ':1.2.3.4, ::ffff:203.0.113.5',
+      },
+    });
+
+    expect(getClientIp(request)).toBe('::ffff:203.0.113.5');
   });
 
   it('returns loopback IP when no headers are present', () => {
