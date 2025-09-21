@@ -64,7 +64,7 @@ export function setSessionCookie(response: NextResponse, sessionData: string) {
     name: 'auth-session',
     value: sessionData,
     maxAge: 10 * 60, // 10分間（認証フロー完了まで）
-    sameSite: 'strict', // CSRF攻撃対策
+    sameSite: 'lax', // 外部IdPリダイレクト後のトップレベル遷移でも送信される必要がある
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
   });

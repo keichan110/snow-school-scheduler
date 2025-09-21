@@ -146,7 +146,7 @@ describe('setSessionCookie', () => {
     expect(mockResponse.cookies.set).toHaveBeenCalledWith('auth-session', sessionData, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      sameSite: 'lax',
       maxAge: 10 * 60, // 10分間
       path: '/',
     });
