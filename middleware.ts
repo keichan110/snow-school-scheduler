@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { secureLog } from '@/lib/utils/logging';
 import { checkRateLimit } from '@/lib/api/rate-limiting';
-import { getClientIp } from '@/lib/utils/request';
+import { getClientIp, isAllowedReferrer } from '@/lib/utils/request';
 
 /**
  * Next.js Middleware - APIルート保護とページ認証リダイレクト
@@ -111,6 +111,17 @@ function createRateLimitErrorResponse(resetTime: number, limit: number, ruleId: 
   );
 }
 
+function createReferrerErrorResponse() {
+  return NextResponse.json(
+    {
+      success: false,
+      error: 'Forbidden',
+      code: 'INVALID_REFERRER',
+    },
+    { status: 403 }
+  );
+}
+
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
@@ -159,6 +170,15 @@ export async function middleware(request: NextRequest) {
     if (isPublicApiPath(pathname)) {
       secureLog('info', 'Middleware: Public API access allowed');
       return addRateLimitHeaders(NextResponse.next());
+    }
+
+    if (!isAllowedReferrer(request)) {
+      secureLog('warn', 'Middleware: Blocked by referrer policy', {
+        pathname,
+        hasRefererHeader: Boolean(request.headers.get('referer')),
+        nodeEnv: process.env.NODE_ENV,
+      });
+      return addRateLimitHeaders(createReferrerErrorResponse());
     }
 
     // JWTトークン存在チェック
