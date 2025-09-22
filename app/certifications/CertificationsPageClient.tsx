@@ -97,7 +97,7 @@ export default function CertificationsPageClient() {
   const { data: certifications } = useCertificationsQuery();
 
   const filteredCertifications = useMemo(
-    () => filterCertifications(certifications, currentDepartment, showActiveOnly),
+    () => filterCertifications(certifications ?? [], currentDepartment, showActiveOnly),
     [certifications, currentDepartment, showActiveOnly]
   );
 
