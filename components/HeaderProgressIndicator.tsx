@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useIsFetching } from '@tanstack/react-query';
-import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
 
 const MIN_VISIBLE_MS = 200;
@@ -90,17 +89,20 @@ export function HeaderProgressIndicator() {
 
   if (!shouldRender) return null;
 
+  const clampedProgress = Math.max(0, Math.min(progress, 100));
+
   return (
     <div
       className={cn(
-        'pointer-events-none absolute inset-x-0 bottom-0 transition-opacity duration-200',
+        'pointer-events-none absolute inset-0 z-0 overflow-hidden transition-opacity duration-200 ease-out',
         visible ? 'opacity-100' : 'opacity-0'
       )}
       aria-hidden
     >
-      <Progress
-        value={Math.max(0, Math.min(progress, 100))}
-        className="h-0.5 w-full rounded-none border-0 bg-primary/10 sm:h-1"
+      <div className="absolute inset-0 bg-primary/[0.03]" />
+      <div
+        className="absolute inset-y-0 left-0 bg-gradient-to-r from-primary/[0.12] via-primary/[0.08] to-transparent transition-[width] duration-300 ease-out"
+        style={{ width: `${clampedProgress}%` }}
       />
     </div>
   );

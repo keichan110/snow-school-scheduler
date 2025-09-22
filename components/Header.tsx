@@ -121,7 +121,7 @@ export default function Header() {
     <header className="fixed left-1/2 top-4 z-50 mx-auto w-full max-w-7xl -translate-x-1/2 px-4 sm:px-6 lg:px-8">
       <div className="relative overflow-hidden rounded-2xl border border-border/20 bg-background/80 shadow-lg backdrop-blur-md">
         <HeaderProgressIndicator />
-        <div className="px-6 py-3">
+        <div className="relative z-10 px-6 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               {/* 管理メニューDrawer（左端） */}
