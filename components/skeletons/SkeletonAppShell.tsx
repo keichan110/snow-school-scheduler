@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils';
 import { SkeletonCardGrid } from './SkeletonCardGrid';
 import { SkeletonSection } from './SkeletonSection';
 
-export interface SkeletonAppShellProps extends HTMLAttributes<HTMLDivElement> {}
+export type SkeletonAppShellProps = HTMLAttributes<HTMLDivElement>;
 
 /**
  * SkeletonAppShell surfaces a lightweight, shared placeholder so users know a route change is in progress.

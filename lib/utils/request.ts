@@ -207,7 +207,7 @@ function extractOrigin(value: string | null | undefined): string | null {
 
   try {
     return new URL(value).origin;
-  } catch (error) {
+  } catch {
     return null;
   }
 }
