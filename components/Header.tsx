@@ -1,7 +1,8 @@
 'use client';
 
+import { useCallback } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import {
   Snowflake,
   CalendarDots,
@@ -13,7 +14,7 @@ import {
   List,
   type Icon,
 } from '@phosphor-icons/react';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,6 +25,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { User } from '@phosphor-icons/react';
+import { HeaderProgressIndicator } from '@/components/HeaderProgressIndicator';
 
 type UserRole = 'ADMIN' | 'MANAGER' | 'MEMBER';
 
@@ -37,7 +39,16 @@ interface MenuItem {
 
 export default function Header() {
   const pathname = usePathname();
+  const router = useRouter();
   const { user } = useAuth();
+
+  const handlePrefetch = useCallback(
+    (href: string) => {
+      if (!href) return;
+      router.prefetch(href);
+    },
+    [router]
+  );
 
   const allMenuItems: MenuItem[] = [
     {
@@ -108,8 +119,9 @@ export default function Header() {
 
   return (
     <header className="fixed left-1/2 top-4 z-50 mx-auto w-full max-w-7xl -translate-x-1/2 px-4 sm:px-6 lg:px-8">
-      <div className="rounded-2xl border border-border/20 bg-background/80 shadow-lg backdrop-blur-md">
-        <div className="px-6 py-3">
+      <div className="relative overflow-hidden rounded-2xl border border-border/20 bg-background/80 shadow-lg backdrop-blur-md">
+        <HeaderProgressIndicator />
+        <div className="relative z-10 px-6 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               {/* 管理メニューDrawer（左端） */}
@@ -128,26 +140,30 @@ export default function Header() {
                           const isActive = pathname === item.href;
 
                           return (
-                            <Link
-                              key={item.href}
-                              href={item.href}
-                              className={`flex items-start space-x-4 rounded-lg p-3 transition-all duration-200 hover:bg-accent/50 ${
-                                isActive
-                                  ? 'bg-primary/10 text-primary'
-                                  : 'text-muted-foreground hover:text-foreground'
-                              }`}
-                            >
-                              <IconComponent
-                                className="h-6 w-6 shrink-0"
-                                weight={isActive ? 'fill' : 'regular'}
-                              />
-                              <div className="space-y-1">
-                                <h3 className="text-sm font-medium leading-none">{item.label}</h3>
-                                <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
-                                  {item.description}
-                                </p>
-                              </div>
-                            </Link>
+                            <SheetClose key={item.href} asChild>
+                              <Link
+                                href={item.href}
+                                prefetch
+                                onMouseEnter={() => handlePrefetch(item.href)}
+                                onFocus={() => handlePrefetch(item.href)}
+                                className={`flex items-start space-x-4 rounded-lg p-3 transition-all duration-200 hover:bg-accent/50 ${
+                                  isActive
+                                    ? 'bg-primary/10 text-primary'
+                                    : 'text-muted-foreground hover:text-foreground'
+                                }`}
+                              >
+                                <IconComponent
+                                  className="h-6 w-6 shrink-0"
+                                  weight={isActive ? 'fill' : 'regular'}
+                                />
+                                <div className="space-y-1">
+                                  <h3 className="text-sm font-medium leading-none">{item.label}</h3>
+                                  <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
+                                    {item.description}
+                                  </p>
+                                </div>
+                              </Link>
+                            </SheetClose>
                           );
                         })}
                       </div>
@@ -156,7 +172,13 @@ export default function Header() {
                 </Sheet>
               )}
 
-              <Link href="/" className="flex items-center space-x-2">
+              <Link
+                href="/"
+                prefetch
+                onMouseEnter={() => handlePrefetch('/')}
+                onFocus={() => handlePrefetch('/')}
+                className="flex items-center space-x-2"
+              >
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-100 via-blue-300 to-indigo-400">
                   <Snowflake className="h-6 w-6 text-white" weight="bold" />
                 </div>

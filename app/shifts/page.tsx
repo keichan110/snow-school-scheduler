@@ -1,7 +1,9 @@
 'use client';
 
-import { useState, useEffect, useMemo, useCallback, Suspense } from 'react';
+import { Suspense, useCallback, useEffect, useMemo, useState, useTransition } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { ErrorBoundary } from 'react-error-boundary';
+import { QueryErrorResetBoundary, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
 import { hasManagePermission } from '@/lib/auth/permissions';
 import type { AuthenticatedUser } from '@/lib/auth/types';
@@ -10,8 +12,12 @@ import Header from '@/components/Header';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { fetchShifts, fetchDepartments, ApiError } from './api';
-import { Shift, Department, ShiftStats, ShiftQueryParams, DayData } from './types';
+import {
+  publicShiftsDepartmentsQueryKeys,
+  publicShiftsQueryKeys,
+  useDepartmentsQuery,
+  usePublicShiftsQuery,
+} from '@/features/shifts';
 import { MonthlyCalendarWithDetails } from './components/MonthlyCalendarWithDetails';
 import { ShiftMobileList } from './components/ShiftMobileList';
 import { UnifiedShiftBottomModal } from './components/UnifiedShiftBottomModal';
@@ -22,27 +28,27 @@ import { isHoliday } from './constants/shiftConstants';
 import { useWeekNavigation } from './hooks/useWeekNavigation';
 import { useMonthNavigation } from './hooks/useMonthNavigation';
 import { useShiftDataTransformation } from './hooks/useShiftDataTransformation';
+import type { DayData, ShiftQueryParams, ShiftStats } from './types';
+import { PublicShiftsSuspenseFallback } from './components/PublicShiftsSuspenseFallback';
+import { PublicShiftsErrorState } from './components/PublicShiftsErrorState';
 
 type ViewMode = 'monthly' | 'weekly';
 
 function PublicShiftsPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const queryClient = useQueryClient();
   const { user } = useAuth();
 
   const [viewMode, setViewMode] = useState<ViewMode>('monthly');
-  const [, setShifts] = useState<Shift[]>([]);
-  const [, setDepartments] = useState<Department[]>([]);
-  const [shiftStats, setShiftStats] = useState<ShiftStats>({});
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [pendingView, setPendingView] = useState<ViewMode | null>(null);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalInitialStep, setModalInitialStep] = useState<'create-step1' | 'create-step2'>(
     'create-step1'
   );
+  const [isPending, startTransition] = useTransition();
 
-  // 管理権限チェック
   const canManage = user
     ? hasManagePermission(
         {
@@ -56,12 +62,10 @@ function PublicShiftsPageContent() {
       )
     : false;
 
-  // カスタムフックを使用
   const { currentYear, currentMonth, monthlyQueryParams, navigateMonth } = useMonthNavigation();
   const { weeklyBaseDate, weeklyQueryParams, navigateWeek, handleDateSelect } = useWeekNavigation();
   const { transformShiftsToStats } = useShiftDataTransformation();
 
-  // URLパラメータからビューモードを設定
   useEffect(() => {
     const view = searchParams.get('view') as ViewMode;
     if (view === 'weekly' || view === 'monthly') {
@@ -69,106 +73,58 @@ function PublicShiftsPageContent() {
     }
   }, [searchParams]);
 
-  // Memoized query parameters
   const queryParams = useMemo<ShiftQueryParams>(() => {
-    if (viewMode === 'weekly') {
-      return weeklyQueryParams;
-    }
-    return monthlyQueryParams;
+    return viewMode === 'weekly' ? weeklyQueryParams : monthlyQueryParams;
   }, [viewMode, weeklyQueryParams, monthlyQueryParams]);
 
-  // データ取得
-  useEffect(() => {
-    let isCancelled = false;
+  const { data: shifts } = usePublicShiftsQuery({ params: queryParams });
+  const { data: departments } = useDepartmentsQuery();
 
-    const loadData = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-
-        const [shiftsData, departmentsData] = await Promise.all([
-          fetchShifts(queryParams),
-          fetchDepartments(),
-        ]);
-
-        if (!isCancelled) {
-          setShifts(shiftsData);
-          setDepartments(departmentsData);
-          setShiftStats(transformShiftsToStats(shiftsData, departmentsData));
-        }
-      } catch (error) {
-        if (!isCancelled) {
-          console.error('Failed to load data:', error);
-          const errorMessage =
-            error instanceof ApiError
-              ? error.message
-              : error instanceof Error
-                ? error.message
-                : 'データの読み込みに失敗しました';
-          setError(errorMessage);
-        }
-      } finally {
-        if (!isCancelled) {
-          setLoading(false);
-        }
-      }
-    };
-
-    loadData();
-
-    return () => {
-      isCancelled = true;
-    };
-  }, [queryParams, transformShiftsToStats]);
-
-  // ビュー変更ハンドラー
-  const handleViewChange = useCallback(
-    (newView: ViewMode) => {
-      setViewMode(newView);
-      router.push(`/shifts?view=${newView}`, { scroll: false });
-    },
-    [router]
+  const shiftStats = useMemo<ShiftStats>(
+    () => transformShiftsToStats(shifts, departments),
+    [shifts, departments, transformShiftsToStats]
   );
 
-  // 日付選択ハンドラー（月間ビュー用）
+  const handleViewChange = useCallback(
+    (newView: ViewMode) => {
+      if (newView === viewMode) return;
+      setPendingView(newView);
+      startTransition(() => {
+        setViewMode(newView);
+        router.push(`/shifts?view=${newView}`, { scroll: false });
+      });
+    },
+    [router, viewMode]
+  );
+
   const handleMonthlyDateSelect = useCallback((date: string) => {
     setSelectedDate(date);
-    // 月間ビューでは日付選択でシフト詳細セクションが表示される
-    // 管理者の場合は必要に応じてモーダルを開く
   }, []);
 
-  // 週間ビュー専用：空の日付または新規追加ボタンクリック時
   const handleWeeklyDateSelect = useCallback((date: string) => {
     setSelectedDate(date);
     setModalInitialStep('create-step1');
     setIsModalOpen(true);
-    // 週間ビューでは直接シフト作成画面（create-step1）へ
   }, []);
 
-  // 週間ビュー専用：既存シフト詳細クリック時（インストラクター選択画面へ直行）
   const handleWeeklyShiftDetailSelect = useCallback((date: string) => {
     setSelectedDate(date);
     setModalInitialStep('create-step2');
     setIsModalOpen(true);
-    // 週間ビューでは直接インストラクター選択画面（create-step2）へ
   }, []);
 
-  // シフト詳細セクションから新規作成モーダルを開く
   const handleCreateShift = useCallback(() => {
     if (!canManage || !selectedDate) return;
     setModalInitialStep('create-step1');
     setIsModalOpen(true);
   }, [canManage, selectedDate]);
 
-  // シフト詳細セクション用：シフト詳細クリック時（管理機能）
   const handleShiftDetailClick = useCallback(() => {
     if (!canManage || !selectedDate) return;
-
     setModalInitialStep('create-step2');
     setIsModalOpen(true);
   }, [canManage, selectedDate]);
 
-  // モーダル開閉ハンドラー
   const handleModalOpenChange = useCallback((open: boolean) => {
     setIsModalOpen(open);
     if (!open) {
@@ -176,30 +132,18 @@ function PublicShiftsPageContent() {
     }
   }, []);
 
-  // シフトデータを再読み込み（管理機能用）
   const handleShiftUpdated = useCallback(async () => {
-    try {
-      const [shiftsData, departmentsData] = await Promise.all([
-        fetchShifts(queryParams),
-        fetchDepartments(),
-      ]);
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: publicShiftsQueryKeys.all }),
+      queryClient.invalidateQueries({ queryKey: publicShiftsDepartmentsQueryKeys.all }),
+    ]);
+  }, [queryClient]);
 
-      setShifts(shiftsData);
-      setDepartments(departmentsData);
-      setShiftStats(transformShiftsToStats(shiftsData, departmentsData));
-    } catch (error) {
-      console.error('Failed to refresh shift data:', error);
-      throw error;
-    }
-  }, [queryParams, transformShiftsToStats]);
-
-  // dayData計算
-  const dayData = useMemo((): DayData | null => {
+  const dayData = useMemo<DayData | null>(() => {
     if (!selectedDate) {
       return null;
     }
 
-    // シフトが設定されていない日付でも dayData を作成
     const shiftsForDate = shiftStats[selectedDate]?.shifts || [];
 
     return {
@@ -209,28 +153,17 @@ function PublicShiftsPageContent() {
     };
   }, [selectedDate, shiftStats]);
 
-  if (error) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="text-center">
-          <div className="mb-2 text-lg font-medium text-red-600 dark:text-red-400">
-            エラーが発生しました
-          </div>
-          <div className="text-sm text-muted-foreground">{error}</div>
-          <Button onClick={() => window.location.reload()} className="mt-4" type="button">
-            再読み込み
-          </Button>
-        </div>
-      </div>
-    );
-  }
+  useEffect(() => {
+    if (!isPending) {
+      setPendingView(null);
+    }
+  }, [isPending]);
 
   return (
     <div className="min-h-screen">
       <Header />
 
       <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 md:py-8 lg:px-8">
-        {/* ページタイトル */}
         <div className="mb-6 text-center md:mb-8">
           <h1 className="mb-2 text-2xl font-bold text-foreground md:text-3xl">シフト状況確認</h1>
           <p className="px-2 text-sm text-muted-foreground md:text-base">
@@ -238,44 +171,43 @@ function PublicShiftsPageContent() {
           </p>
         </div>
 
-        {/* ビュー切り替えボタン */}
         <div className="mb-6 flex justify-center">
-          <ViewToggle currentView={viewMode} onViewChange={handleViewChange} />
+          <ViewToggle
+            currentView={viewMode}
+            onViewChange={handleViewChange}
+            isPending={isPending}
+            pendingView={pendingView}
+          />
         </div>
 
-        {/* シフト状況 */}
         <div className="mb-8">
           {viewMode === 'monthly' ? (
-            <>
-              {/* 月ナビゲーション - 固定ヘッダー */}
-              <div className="sticky top-20 z-40 -mx-4 mb-4 border-b border-border/30 px-4 backdrop-blur-sm">
-                <div className="flex items-center justify-between py-3">
-                  <Button
-                    variant="outline"
-                    onClick={() => navigateMonth(-1)}
-                    className="flex touch-manipulation items-center gap-1 px-2 py-2 hover:shadow-md md:gap-2 md:px-4"
-                  >
-                    <ChevronLeft className="h-4 w-4" />
-                    <span className="hidden text-sm font-medium sm:inline">前月</span>
-                  </Button>
+            <div className="sticky top-20 z-40 -mx-4 mb-4 border-b border-border/30 px-4 backdrop-blur-sm">
+              <div className="flex items-center justify-between py-3">
+                <Button
+                  variant="outline"
+                  onClick={() => navigateMonth(-1)}
+                  className="flex touch-manipulation items-center gap-1 px-2 py-2 hover:shadow-md md:gap-2 md:px-4"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                  <span className="hidden text-sm font-medium sm:inline">前月</span>
+                </Button>
 
-                  <h2 className="text-lg font-bold text-foreground md:text-xl">
-                    {currentYear}年{currentMonth}月
-                  </h2>
+                <h2 className="text-lg font-bold text-foreground md:text-xl">
+                  {currentYear}年{currentMonth}月
+                </h2>
 
-                  <Button
-                    variant="outline"
-                    onClick={() => navigateMonth(1)}
-                    className="flex touch-manipulation items-center gap-1 px-2 py-2 hover:shadow-md md:gap-2 md:px-4"
-                  >
-                    <span className="hidden text-sm font-medium sm:inline">翌月</span>
-                    <ChevronRight className="h-4 w-4" />
-                  </Button>
-                </div>
+                <Button
+                  variant="outline"
+                  onClick={() => navigateMonth(1)}
+                  className="flex touch-manipulation items-center gap-1 px-2 py-2 hover:shadow-md md:gap-2 md:px-4"
+                >
+                  <span className="hidden text-sm font-medium sm:inline">翌月</span>
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
               </div>
-            </>
+            </div>
           ) : (
-            /* 週間ナビゲーション */
             <WeekNavigation
               baseDate={weeklyBaseDate}
               onNavigate={navigateWeek}
@@ -283,65 +215,52 @@ function PublicShiftsPageContent() {
             />
           )}
 
-          {loading ? (
-            <div className="flex items-center justify-center py-8">
-              <div className="text-center">
-                <div className="mx-auto h-8 w-8 animate-spin rounded-full border-b-2 border-blue-600"></div>
-                <div className="mt-2 text-muted-foreground">読み込み中...</div>
-              </div>
-            </div>
-          ) : (
-            <ScrollArea className="h-[calc(100vh-20rem)]">
-              <div className="pb-8">
-                {viewMode === 'monthly' ? (
-                  <>
-                    {/* デスクトップ・タブレット用カレンダー */}
-                    <div className="hidden sm:block">
-                      <MonthlyCalendarWithDetails
-                        year={currentYear}
-                        month={currentMonth}
-                        shiftStats={shiftStats}
-                        isHoliday={isHoliday}
-                        selectedDate={selectedDate}
-                        onDateSelect={handleMonthlyDateSelect}
-                        canManage={canManage}
-                        onShiftDetailClick={handleShiftDetailClick}
-                        onCreateShift={handleCreateShift}
-                      />
-                    </div>
-
-                    {/* モバイル用リスト表示 */}
-                    <div className="block px-4 sm:hidden">
-                      <ShiftMobileList
-                        year={currentYear}
-                        month={currentMonth}
-                        shiftStats={shiftStats}
-                        isHoliday={isHoliday}
-                        selectedDate={selectedDate}
-                        onDateSelect={handleMonthlyDateSelect}
-                      />
-                    </div>
-                  </>
-                ) : (
-                  /* 週間ビュー */
-                  <div className="px-4">
-                    <WeeklyShiftList
-                      baseDate={weeklyBaseDate}
+          <ScrollArea className="h-[calc(100vh-20rem)]">
+            <div className="pb-8">
+              {viewMode === 'monthly' ? (
+                <>
+                  <div className="hidden sm:block">
+                    <MonthlyCalendarWithDetails
+                      year={currentYear}
+                      month={currentMonth}
                       shiftStats={shiftStats}
                       isHoliday={isHoliday}
                       selectedDate={selectedDate}
-                      onDateSelect={handleWeeklyDateSelect}
-                      onShiftDetailSelect={handleWeeklyShiftDetailSelect}
+                      onDateSelect={handleMonthlyDateSelect}
+                      canManage={canManage}
+                      onShiftDetailClick={handleShiftDetailClick}
+                      onCreateShift={handleCreateShift}
                     />
                   </div>
-                )}
-              </div>
-            </ScrollArea>
-          )}
+
+                  <div className="block px-4 sm:hidden">
+                    <ShiftMobileList
+                      year={currentYear}
+                      month={currentMonth}
+                      shiftStats={shiftStats}
+                      isHoliday={isHoliday}
+                      selectedDate={selectedDate}
+                      onDateSelect={handleMonthlyDateSelect}
+                    />
+                  </div>
+                </>
+              ) : (
+                <div className="px-4">
+                  <WeeklyShiftList
+                    baseDate={weeklyBaseDate}
+                    shiftStats={shiftStats}
+                    isHoliday={isHoliday}
+                    selectedDate={selectedDate}
+                    onDateSelect={handleWeeklyDateSelect}
+                    onShiftDetailSelect={handleWeeklyShiftDetailSelect}
+                  />
+                </div>
+              )}
+            </div>
+          </ScrollArea>
         </div>
       </div>
 
-      {/* 統合モーダル（権限ベース） */}
       <UnifiedShiftBottomModal
         isOpen={isModalOpen}
         onOpenChange={handleModalOpenChange}
@@ -357,18 +276,26 @@ function PublicShiftsPageContent() {
 export default function PublicShiftsPage() {
   return (
     <ProtectedRoute>
-      <Suspense
-        fallback={
-          <div className="flex min-h-screen items-center justify-center">
-            <div className="text-center">
-              <div className="mx-auto h-8 w-8 animate-spin rounded-full border-b-2 border-blue-600"></div>
-              <div className="mt-2 text-muted-foreground">読み込み中...</div>
-            </div>
-          </div>
-        }
-      >
-        <PublicShiftsPageContent />
-      </Suspense>
+      <QueryErrorResetBoundary>
+        {({ reset }) => (
+          <ErrorBoundary
+            onReset={reset}
+            fallbackRender={({ error, resetErrorBoundary }) => (
+              <PublicShiftsErrorState
+                error={error}
+                onRetry={() => {
+                  reset();
+                  resetErrorBoundary();
+                }}
+              />
+            )}
+          >
+            <Suspense fallback={<PublicShiftsSuspenseFallback />}>
+              <PublicShiftsPageContent />
+            </Suspense>
+          </ErrorBoundary>
+        )}
+      </QueryErrorResetBoundary>
     </ProtectedRoute>
   );
 }

@@ -7,7 +7,7 @@ import { useAuth, User } from '@/contexts/AuthContext';
 import { Card, CardContent } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import { Loader2, AlertTriangle, Home, LogIn } from 'lucide-react';
+import { AlertTriangle, Home, Loader2, LogIn } from 'lucide-react';
 
 /**
  * 認証ガードコンポーネントのProps
@@ -99,14 +99,7 @@ export function AuthGuard({
       return <>{loadingComponent}</>;
     }
 
-    return (
-      <div className="flex min-h-[400px] items-center justify-center">
-        <div className="flex flex-col items-center space-y-4">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          <p className="text-muted-foreground">認証状態を確認しています...</p>
-        </div>
-      </div>
-    );
+    return <>{children}</>;
   }
 
   /**
