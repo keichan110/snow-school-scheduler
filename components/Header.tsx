@@ -25,6 +25,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { User } from '@phosphor-icons/react';
+import { HeaderProgressIndicator } from '@/components/HeaderProgressIndicator';
 
 type UserRole = 'ADMIN' | 'MANAGER' | 'MEMBER';
 
@@ -118,7 +119,8 @@ export default function Header() {
 
   return (
     <header className="fixed left-1/2 top-4 z-50 mx-auto w-full max-w-7xl -translate-x-1/2 px-4 sm:px-6 lg:px-8">
-      <div className="rounded-2xl border border-border/20 bg-background/80 shadow-lg backdrop-blur-md">
+      <div className="relative overflow-hidden rounded-2xl border border-border/20 bg-background/80 shadow-lg backdrop-blur-md">
+        <HeaderProgressIndicator />
         <div className="px-6 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
