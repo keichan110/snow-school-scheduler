@@ -18,24 +18,14 @@ export const instructorsQueryKeys = {
 export type InstructorsQueryKey = ReturnType<typeof instructorsQueryKeys.list>;
 
 type InstructorsQueryOptions<TData> = Omit<
-  UseSuspenseQueryOptions<
-    InstructorWithCertifications[],
-    Error,
-    TData,
-    InstructorsQueryKey
-  >,
+  UseSuspenseQueryOptions<InstructorWithCertifications[], Error, TData, InstructorsQueryKey>,
   'queryKey' | 'queryFn' | 'suspense'
 >;
 
 export function useInstructorsQuery<TData = InstructorWithCertifications[]>(
   options: InstructorsQueryOptions<TData> = {}
 ): UseSuspenseQueryResult<TData, Error> {
-  return useSuspenseQuery<
-    InstructorWithCertifications[],
-    Error,
-    TData,
-    InstructorsQueryKey
-  >({
+  return useSuspenseQuery<InstructorWithCertifications[], Error, TData, InstructorsQueryKey>({
     queryKey: instructorsQueryKeys.list(),
     queryFn: fetchInstructors,
     ...options,

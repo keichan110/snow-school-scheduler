@@ -138,12 +138,7 @@ export default function ShiftTypesPageClient() {
 
       handleCloseModal();
     },
-    [
-      createShiftTypeMutation,
-      editingShiftType,
-      handleCloseModal,
-      updateShiftTypeMutation,
-    ]
+    [createShiftTypeMutation, editingShiftType, handleCloseModal, updateShiftTypeMutation]
   );
 
   return (

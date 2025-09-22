@@ -2,12 +2,7 @@
 
 import { useCallback, useMemo, useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import {
-  Plus,
-  SealCheck,
-  PersonSimpleSki,
-  PersonSimpleSnowboard,
-} from '@phosphor-icons/react';
+import { Plus, SealCheck, PersonSimpleSki, PersonSimpleSnowboard } from '@phosphor-icons/react';
 
 import { instructorsQueryKeys, useInstructorsQuery } from '@/features/instructors';
 import { Button } from '@/components/ui/button';
@@ -120,8 +115,9 @@ export default function InstructorsPageClient() {
   const [currentCategory, setCurrentCategory] = useState<CategoryFilterType>('all');
   const [showActiveOnly, setShowActiveOnly] = useState<boolean>(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingInstructor, setEditingInstructor] =
-    useState<InstructorWithCertifications | null>(null);
+  const [editingInstructor, setEditingInstructor] = useState<InstructorWithCertifications | null>(
+    null
+  );
 
   const queryClient = useQueryClient();
   const { data: instructors } = useInstructorsQuery();

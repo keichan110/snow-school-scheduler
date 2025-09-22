@@ -18,24 +18,14 @@ export const certificationsQueryKeys = {
 export type CertificationsQueryKey = ReturnType<typeof certificationsQueryKeys.list>;
 
 type CertificationsQueryOptions<TData> = Omit<
-  UseSuspenseQueryOptions<
-    CertificationWithDepartment[],
-    Error,
-    TData,
-    CertificationsQueryKey
-  >,
+  UseSuspenseQueryOptions<CertificationWithDepartment[], Error, TData, CertificationsQueryKey>,
   'queryKey' | 'queryFn' | 'suspense'
 >;
 
 export function useCertificationsQuery<TData = CertificationWithDepartment[]>(
   options: CertificationsQueryOptions<TData> = {}
 ): UseSuspenseQueryResult<TData, Error> {
-  return useSuspenseQuery<
-    CertificationWithDepartment[],
-    Error,
-    TData,
-    CertificationsQueryKey
-  >({
+  return useSuspenseQuery<CertificationWithDepartment[], Error, TData, CertificationsQueryKey>({
     queryKey: certificationsQueryKeys.list(),
     queryFn: fetchCertifications,
     ...options,

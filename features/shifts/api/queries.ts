@@ -1,4 +1,8 @@
-import { useSuspenseQuery, type UseSuspenseQueryOptions, type UseSuspenseQueryResult } from '@tanstack/react-query';
+import {
+  useSuspenseQuery,
+  type UseSuspenseQueryOptions,
+  type UseSuspenseQueryResult,
+} from '@tanstack/react-query';
 import { fetchShifts, fetchDepartments, ApiError } from '@/app/shifts/api';
 import type { Shift, Department, ShiftQueryParams } from '@/app/shifts/types';
 
@@ -64,7 +68,8 @@ type PublicShiftsQueryOptions<TData> = Omit<
   'queryKey' | 'queryFn' | 'suspense'
 >;
 
-export interface UsePublicShiftsQueryOptions<TData = Shift[]> extends PublicShiftsQueryOptions<TData> {
+export interface UsePublicShiftsQueryOptions<TData = Shift[]>
+  extends PublicShiftsQueryOptions<TData> {
   readonly params?: ShiftQueryParams;
 }
 

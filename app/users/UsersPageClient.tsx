@@ -23,13 +23,7 @@ import {
 
 import UserModal from './UserModal';
 import { deactivateUser, getRoleColor, getRoleDisplayName, updateUser } from './api';
-import type {
-  UserFilters,
-  UserFormData,
-  UserRole,
-  UserStats,
-  UserWithDetails,
-} from './types';
+import type { UserFilters, UserFormData, UserRole, UserStats, UserWithDetails } from './types';
 
 const ROLE_ORDER: Record<UserRole, number> = {
   ADMIN: 0,
@@ -66,11 +60,7 @@ function matchesFilters(user: UserWithDetails, filters: UserFilters): boolean {
   const matchesRole = filters.role === 'all' ? true : user.role === filters.role;
 
   const matchesStatus =
-    filters.status === 'all'
-      ? true
-      : filters.status === 'active'
-      ? user.isActive
-      : !user.isActive;
+    filters.status === 'all' ? true : filters.status === 'active' ? user.isActive : !user.isActive;
 
   return matchesRole && matchesStatus;
 }
@@ -243,7 +233,11 @@ export default function UsersPageClient() {
           </div>
 
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <Tabs value={filters.role} onValueChange={handleRoleFilterChange} className="w-full sm:w-auto">
+            <Tabs
+              value={filters.role}
+              onValueChange={handleRoleFilterChange}
+              className="w-full sm:w-auto"
+            >
               <TabsList className="grid w-full grid-cols-4 sm:w-auto">
                 <TabsTrigger value="all">すべて</TabsTrigger>
                 <TabsTrigger value="ADMIN" className="flex items-center gap-1">
@@ -362,7 +356,9 @@ export default function UsersPageClient() {
                         >
                           {user.displayName}
                         </p>
-                        <p className="text-xs text-muted-foreground">ID: {user.id.substring(0, 8)}...</p>
+                        <p className="text-xs text-muted-foreground">
+                          ID: {user.id.substring(0, 8)}...
+                        </p>
                       </div>
                     </TableCell>
                     <TableCell>

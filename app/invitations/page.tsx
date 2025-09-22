@@ -8,7 +8,7 @@ import InvitationsPageClient from './InvitationsPageClient';
 function InvitationsPageFallback() {
   return (
     <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 md:py-8 lg:px-8">
-      <div className="mb-6 md:mb-8 space-y-3">
+      <div className="mb-6 space-y-3 md:mb-8">
         <div className="h-8 w-48 rounded-md bg-muted/70" />
         <div className="h-4 w-72 rounded-md bg-muted/50" />
       </div>

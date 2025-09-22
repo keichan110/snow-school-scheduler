@@ -67,7 +67,9 @@ export default function ShiftsError({ error, reset }: ShiftsErrorProps) {
             <AlertTriangle className="h-6 w-6" aria-hidden="true" />
           </div>
           <div>
-            <CardTitle className="text-lg font-semibold sm:text-xl">シフト情報を読み込めませんでした</CardTitle>
+            <CardTitle className="text-lg font-semibold sm:text-xl">
+              シフト情報を読み込めませんでした
+            </CardTitle>
             <p className="mt-1 text-sm text-muted-foreground">
               ネットワークまたはサーバーの問題が発生しています。再試行するか、時間をおいてから再度アクセスしてください。
             </p>

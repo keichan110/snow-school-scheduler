@@ -30,11 +30,7 @@ import {
 
 import InvitationModal from './InvitationModal';
 import InvitationWarningModal from './InvitationWarningModal';
-import {
-  checkActiveInvitation,
-  createInvitation,
-  deactivateInvitation,
-} from './api';
+import { checkActiveInvitation, createInvitation, deactivateInvitation } from './api';
 import type {
   CreateInvitationRequest,
   InvitationFormData,
@@ -81,9 +77,7 @@ function calculateStats(invitations: InvitationTokenWithStats[]): InvitationStat
       return;
     }
 
-    const isExpired = invitation.expiresAt
-      ? new Date(invitation.expiresAt).getTime() < now
-      : false;
+    const isExpired = invitation.expiresAt ? new Date(invitation.expiresAt).getTime() < now : false;
 
     if (isExpired) {
       expired += 1;
@@ -164,12 +158,11 @@ export default function InvitationsPageClient() {
 
   const stats = useMemo(() => calculateStats(invitations), [invitations]);
 
-  const {
-    mutateAsync: createInvitationMutateAsync,
-    isPending: isCreatingInvitation,
-  } = useMutation({
-    mutationFn: (data: CreateInvitationRequest) => createInvitation(data),
-  });
+  const { mutateAsync: createInvitationMutateAsync, isPending: isCreatingInvitation } = useMutation(
+    {
+      mutationFn: (data: CreateInvitationRequest) => createInvitation(data),
+    }
+  );
 
   const { mutateAsync: deactivateInvitationMutateAsync } = useMutation({
     mutationFn: (token: string) => deactivateInvitation(token),
@@ -206,10 +199,7 @@ export default function InvitationsPageClient() {
   );
 
   const executeInvitationCreation = useCallback(
-    async (
-      formData: InvitationFormData,
-      activeInvitation: InvitationTokenWithStats | null
-    ) => {
+    async (formData: InvitationFormData, activeInvitation: InvitationTokenWithStats | null) => {
       const requestData: CreateInvitationRequest = {
         description: formData.description,
         expiresAt: formData.expiresAt.toISOString(),
@@ -326,7 +316,10 @@ export default function InvitationsPageClient() {
           <CardContent className="px-3 py-2">
             <div className="flex items-center justify-center divide-x divide-border">
               <div className="flex items-center gap-2 px-4 py-1">
-                <UserCheck className="h-4 w-4 text-green-600 dark:text-green-400" weight="regular" />
+                <UserCheck
+                  className="h-4 w-4 text-green-600 dark:text-green-400"
+                  weight="regular"
+                />
                 <div className="text-base font-bold text-green-600 dark:text-green-400">
                   {stats.active}
                 </div>
@@ -362,7 +355,11 @@ export default function InvitationsPageClient() {
 
           <div className="flex items-center justify-end">
             <div className="flex items-center space-x-2">
-              <Switch id="active-only" checked={showActiveOnly} onCheckedChange={handleActiveFilterChange} />
+              <Switch
+                id="active-only"
+                checked={showActiveOnly}
+                onCheckedChange={handleActiveFilterChange}
+              />
               <Label htmlFor="active-only" className="flex cursor-pointer items-center gap-1">
                 {showActiveOnly ? (
                   <Eye className="h-4 w-4 text-green-600 dark:text-green-400" />
@@ -408,7 +405,10 @@ export default function InvitationsPageClient() {
                     <TableCell>
                       <StatusIcon className={`h-5 w-5 ${statusStyles.icon}`} weight="regular" />
                     </TableCell>
-                    <TableCell className="cursor-pointer" onClick={() => handleOpenModal(invitation)}>
+                    <TableCell
+                      className="cursor-pointer"
+                      onClick={() => handleOpenModal(invitation)}
+                    >
                       <p
                         className={`line-clamp-2 text-sm font-medium ${statusStyles.text} ${
                           isInactiveLabel ? 'line-through' : ''
@@ -417,7 +417,10 @@ export default function InvitationsPageClient() {
                         {invitation.description || '説明なし'}
                       </p>
                     </TableCell>
-                    <TableCell className="cursor-pointer" onClick={() => handleOpenModal(invitation)}>
+                    <TableCell
+                      className="cursor-pointer"
+                      onClick={() => handleOpenModal(invitation)}
+                    >
                       <span
                         className={`font-mono text-sm ${statusStyles.text} ${
                           isInactiveLabel ? 'line-through' : ''
@@ -426,7 +429,10 @@ export default function InvitationsPageClient() {
                         {invitation.usageCount}
                       </span>
                     </TableCell>
-                    <TableCell className="cursor-pointer" onClick={() => handleOpenModal(invitation)}>
+                    <TableCell
+                      className="cursor-pointer"
+                      onClick={() => handleOpenModal(invitation)}
+                    >
                       {invitation.expiresAt ? (
                         <span
                           className={`text-sm ${statusStyles.text} ${
@@ -439,7 +445,10 @@ export default function InvitationsPageClient() {
                         <span className="text-sm text-muted-foreground">なし</span>
                       )}
                     </TableCell>
-                    <TableCell className="cursor-pointer" onClick={() => handleOpenModal(invitation)}>
+                    <TableCell
+                      className="cursor-pointer"
+                      onClick={() => handleOpenModal(invitation)}
+                    >
                       <span
                         className={`text-sm text-muted-foreground ${
                           isInactiveLabel ? 'line-through' : ''

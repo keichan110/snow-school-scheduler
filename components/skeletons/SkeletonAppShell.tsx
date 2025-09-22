@@ -14,10 +14,7 @@ export function SkeletonAppShell({ className, ...rest }: SkeletonAppShellProps) 
   return (
     <div
       aria-hidden="true"
-      className={cn(
-        'mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 md:py-8 lg:px-8',
-        className
-      )}
+      className={cn('mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 md:py-8 lg:px-8', className)}
       {...rest}
     >
       <div className="space-y-8">
