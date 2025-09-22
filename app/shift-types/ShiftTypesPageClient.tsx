@@ -67,8 +67,8 @@ export default function ShiftTypesPageClient() {
   );
 
   const stats = useMemo<ShiftTypeStats>(
-    () => calculateStats(filteredShiftTypes),
-    [filteredShiftTypes]
+    () => calculateStats(shiftTypes ?? []),
+    [shiftTypes]
   );
 
   const createShiftTypeMutation = useMutation<ShiftType, Error, ShiftTypeFormData>({
