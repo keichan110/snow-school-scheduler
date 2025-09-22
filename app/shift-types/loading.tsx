@@ -1,11 +1,6 @@
-import { Suspense } from 'react';
-
-import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import { SkeletonTable } from '@/components/skeletons';
 
-import ShiftTypesPageClient from './ShiftTypesPageClient';
-
-function ShiftTypesPageFallback() {
+export default function Loading() {
   return (
     <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 md:py-8 lg:px-8">
       <div className="mb-6 md:mb-8 space-y-3">
@@ -43,15 +38,5 @@ function ShiftTypesPageFallback() {
         </div>
       </div>
     </div>
-  );
-}
-
-export default function ShiftTypesPage() {
-  return (
-    <ProtectedRoute requiredRole="MANAGER">
-      <Suspense fallback={<ShiftTypesPageFallback />}>
-        <ShiftTypesPageClient />
-      </Suspense>
-    </ProtectedRoute>
   );
 }
