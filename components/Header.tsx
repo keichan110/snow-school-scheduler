@@ -14,7 +14,7 @@ import {
   List,
   type Icon,
 } from '@phosphor-icons/react';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -140,29 +140,30 @@ export default function Header() {
                           const isActive = pathname === item.href;
 
                           return (
-                            <Link
-                              key={item.href}
-                              href={item.href}
-                              prefetch
-                              onMouseEnter={() => handlePrefetch(item.href)}
-                              onFocus={() => handlePrefetch(item.href)}
-                              className={`flex items-start space-x-4 rounded-lg p-3 transition-all duration-200 hover:bg-accent/50 ${
-                                isActive
-                                  ? 'bg-primary/10 text-primary'
-                                  : 'text-muted-foreground hover:text-foreground'
-                              }`}
-                            >
-                              <IconComponent
-                                className="h-6 w-6 shrink-0"
-                                weight={isActive ? 'fill' : 'regular'}
-                              />
-                              <div className="space-y-1">
-                                <h3 className="text-sm font-medium leading-none">{item.label}</h3>
-                                <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
-                                  {item.description}
-                                </p>
-                              </div>
-                            </Link>
+                            <SheetClose key={item.href} asChild>
+                              <Link
+                                href={item.href}
+                                prefetch
+                                onMouseEnter={() => handlePrefetch(item.href)}
+                                onFocus={() => handlePrefetch(item.href)}
+                                className={`flex items-start space-x-4 rounded-lg p-3 transition-all duration-200 hover:bg-accent/50 ${
+                                  isActive
+                                    ? 'bg-primary/10 text-primary'
+                                    : 'text-muted-foreground hover:text-foreground'
+                                }`}
+                              >
+                                <IconComponent
+                                  className="h-6 w-6 shrink-0"
+                                  weight={isActive ? 'fill' : 'regular'}
+                                />
+                                <div className="space-y-1">
+                                  <h3 className="text-sm font-medium leading-none">{item.label}</h3>
+                                  <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
+                                    {item.description}
+                                  </p>
+                                </div>
+                              </Link>
+                            </SheetClose>
                           );
                         })}
                       </div>
