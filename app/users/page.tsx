@@ -5,6 +5,7 @@ import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import UsersPageClient from './UsersPageClient';
 import Loading from './loading';
 
+export const dynamic = 'force-dynamic';
 export default function UsersPage() {
   return (
     <ProtectedRoute requiredRole="ADMIN">
