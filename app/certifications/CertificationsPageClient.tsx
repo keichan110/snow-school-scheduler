@@ -102,8 +102,8 @@ export default function CertificationsPageClient() {
   );
 
   const stats = useMemo<CertificationStats>(
-    () => calculateStats(filteredCertifications),
-    [filteredCertifications]
+    () => calculateStats(certifications ?? []),
+    [certifications]
   );
 
   const createCertificationMutation = useMutation<
