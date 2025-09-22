@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
+import { Suspense, useCallback, useEffect, useMemo, useState, useTransition } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ErrorBoundary } from 'react-error-boundary';
 import { QueryErrorResetBoundary, useQueryClient } from '@tanstack/react-query';
@@ -41,11 +41,13 @@ function PublicShiftsPageContent() {
   const { user } = useAuth();
 
   const [viewMode, setViewMode] = useState<ViewMode>('monthly');
+  const [pendingView, setPendingView] = useState<ViewMode | null>(null);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalInitialStep, setModalInitialStep] = useState<'create-step1' | 'create-step2'>(
     'create-step1'
   );
+  const [isPending, startTransition] = useTransition();
 
   const canManage = user
     ? hasManagePermission(
@@ -85,10 +87,14 @@ function PublicShiftsPageContent() {
 
   const handleViewChange = useCallback(
     (newView: ViewMode) => {
-      setViewMode(newView);
-      router.push(`/shifts?view=${newView}`, { scroll: false });
+      if (newView === viewMode) return;
+      setPendingView(newView);
+      startTransition(() => {
+        setViewMode(newView);
+        router.push(`/shifts?view=${newView}`, { scroll: false });
+      });
     },
-    [router]
+    [router, viewMode]
   );
 
   const handleMonthlyDateSelect = useCallback((date: string) => {
@@ -147,6 +153,12 @@ function PublicShiftsPageContent() {
     };
   }, [selectedDate, shiftStats]);
 
+  useEffect(() => {
+    if (!isPending) {
+      setPendingView(null);
+    }
+  }, [isPending]);
+
   return (
     <div className="min-h-screen">
       <Header />
@@ -160,7 +172,12 @@ function PublicShiftsPageContent() {
         </div>
 
         <div className="mb-6 flex justify-center">
-          <ViewToggle currentView={viewMode} onViewChange={handleViewChange} />
+          <ViewToggle
+            currentView={viewMode}
+            onViewChange={handleViewChange}
+            isPending={isPending}
+            pendingView={pendingView}
+          />
         </div>
 
         <div className="mb-8">

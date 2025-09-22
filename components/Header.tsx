@@ -1,7 +1,8 @@
 'use client';
 
+import { useCallback } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import {
   Snowflake,
   CalendarDots,
@@ -37,7 +38,16 @@ interface MenuItem {
 
 export default function Header() {
   const pathname = usePathname();
+  const router = useRouter();
   const { user } = useAuth();
+
+  const handlePrefetch = useCallback(
+    (href: string) => {
+      if (!href) return;
+      router.prefetch(href);
+    },
+    [router]
+  );
 
   const allMenuItems: MenuItem[] = [
     {
@@ -131,6 +141,9 @@ export default function Header() {
                             <Link
                               key={item.href}
                               href={item.href}
+                              prefetch
+                              onMouseEnter={() => handlePrefetch(item.href)}
+                              onFocus={() => handlePrefetch(item.href)}
                               className={`flex items-start space-x-4 rounded-lg p-3 transition-all duration-200 hover:bg-accent/50 ${
                                 isActive
                                   ? 'bg-primary/10 text-primary'
@@ -156,7 +169,13 @@ export default function Header() {
                 </Sheet>
               )}
 
-              <Link href="/" className="flex items-center space-x-2">
+              <Link
+                href="/"
+                prefetch
+                onMouseEnter={() => handlePrefetch('/')}
+                onFocus={() => handlePrefetch('/')}
+                className="flex items-center space-x-2"
+              >
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-100 via-blue-300 to-indigo-400">
                   <Snowflake className="h-6 w-6 text-white" weight="bold" />
                 </div>
