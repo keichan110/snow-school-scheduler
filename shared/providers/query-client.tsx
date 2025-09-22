@@ -1,12 +1,22 @@
 'use client';
 
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClient, QueryClientProvider, type QueryKey } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { useState } from 'react';
 
 // 設計書に基づいたキャッシュ戦略設定
+const LIST_QUERY_KEYS = [
+  ['public-shifts'],
+  ['public-shifts', 'departments'],
+] as const satisfies ReadonlyArray<QueryKey>;
+
+const LIST_QUERY_CACHE_OPTIONS = {
+  staleTime: 60 * 1000,
+  gcTime: 30 * 60 * 1000,
+} as const;
+
 function makeQueryClient() {
-  return new QueryClient({
+  const client = new QueryClient({
     defaultOptions: {
       queries: {
         // 5分のstaleTime（データが新鮮と見なされる時間）
@@ -22,7 +32,7 @@ function makeQueryClient() {
           // その他のエラーは1回のみリトライ
           return failureCount < 1;
         },
-        // バックグラウンドでの再取得を無効化（パフォーマンス向上）
+        // フォーカス復帰時の不要な再取得はプリフェッチと手動リフレッシュで吸収する
         refetchOnWindowFocus: false,
         // 再接続時の再取得を有効化
         refetchOnReconnect: true,
@@ -33,6 +43,13 @@ function makeQueryClient() {
       },
     },
   });
+
+  // リスト系クエリは一時的な遷移戻りでもキャッシュを生かすために staleness を延長
+  LIST_QUERY_KEYS.forEach((queryKey) => {
+    client.setQueryDefaults(queryKey, LIST_QUERY_CACHE_OPTIONS);
+  });
+
+  return client;
 }
 
 let browserQueryClient: QueryClient | undefined = undefined;
