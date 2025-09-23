@@ -35,6 +35,22 @@ jobs:
         env:
           DATABASE_URL: ${{ env.PRISMA_DUMMY_DATABASE_URL }}
 
+      - name: Load NEXTAUTH_URL from wrangler.toml
+        run: |
+          python - <<'PY' >> "$GITHUB_ENV"
+          import tomllib
+          from pathlib import Path
+
+          with Path('wrangler.toml').open('rb') as f:
+            config = tomllib.load(f)
+
+          value = config.get('vars', {}).get('NEXTAUTH_URL')
+          if not value:
+            raise SystemExit('NEXTAUTH_URL not found in wrangler.toml')
+
+          print(f"NEXTAUTH_URL={value}")
+          PY
+
       - name: Build application with OpenNext Cloudflare
         run: npx @opennextjs/cloudflare build
         env:
@@ -43,7 +59,7 @@ jobs:
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
           LINE_CHANNEL_ID: ${{ vars.LINE_CHANNEL_ID }}
           LINE_CHANNEL_SECRET: ${{ secrets.LINE_CHANNEL_SECRET }}
-          NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL }}
+          NEXTAUTH_URL: ${{ env.NEXTAUTH_URL }}
 
       - name: Configure Cloudflare Workers runtime environment
         run: |
@@ -143,7 +159,7 @@ jobs:
     steps:
       - name: Health check
         env:
-          NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL }}
+          NEXTAUTH_URL: ${{ env.NEXTAUTH_URL }}
         run: |
           echo "Waiting for deployment to be available..."
           sleep 30
