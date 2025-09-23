@@ -84,7 +84,6 @@ GitHubリポジトリの **Settings > Secrets and variables > Actions** で以�
 | ----------------------- | ---------------------------------------------------------- | ------------------------------ |
 | `CLOUDFLARE_API_TOKEN`  | 手順1で取得したAPIトークン                                 | Cloudflare API認証             |
 | `CLOUDFLARE_ACCOUNT_ID` | 手順2で取得したAccount ID                                  | Cloudflareアカウント識別       |
-| `DATABASE_URL`          | `file:./prod.db`                                           | D1データベース接続URL          |
 | `JWT_SECRET`            | 64文字以上のランダム文字列                                 | JWT署名用秘密鍵                |
 | `LINE_CHANNEL_ID`       | LINE Developersから取得                                    | LINE認証チャンネルID           |
 | `LINE_CHANNEL_SECRET`   | LINE Developersから取得                                    | LINE認証チャンネルシークレット |
@@ -96,6 +95,8 @@ GitHubリポジトリの **Settings > Secrets and variables > Actions** で以�
 # Node.jsで64文字のランダム文字列を生成
 node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
 ```
+
+> ℹ️ Prisma CLI は GitHub Actions 内で `PRISMA_DUMMY_DATABASE_URL`（ダミーSQLiteパス）を使用します。本番の D1 接続は Cloudflare バインディングによって解決されるため、Secrets に実データベースURLを登録する必要はありません。
 
 ### 6. LINE認証設定
 
