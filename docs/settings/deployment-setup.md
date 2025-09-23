@@ -74,21 +74,20 @@ database_name = "snow-school-scheduler"
 database_id = "ここに実際のdatabase_idを入力"
 ```
 
+`[vars]` セクションの `NEXTAUTH_URL` も本番ドメインに合わせて更新してください（Wrangler から Workers へ自動反映されます）。
+
 ### 5. GitHub Secrets 設定
 
 GitHubリポジトリの **Settings > Secrets and variables > Actions** で以下のSecretsを設定：
 
 #### 必須設定（Repository secrets）
 
-| Secret名                | 値                                                         | 説明                           |
-| ----------------------- | ---------------------------------------------------------- | ------------------------------ |
-| `CLOUDFLARE_API_TOKEN`  | 手順1で取得したAPIトークン                                 | Cloudflare API認証             |
-| `CLOUDFLARE_ACCOUNT_ID` | 手順2で取得したAccount ID                                  | Cloudflareアカウント識別       |
-| `DATABASE_URL`          | `file:./prod.db`                                           | D1データベース接続URL          |
-| `JWT_SECRET`            | 64文字以上のランダム文字列                                 | JWT署名用秘密鍵                |
-| `LINE_CHANNEL_ID`       | LINE Developersから取得                                    | LINE認証チャンネルID           |
-| `LINE_CHANNEL_SECRET`   | LINE Developersから取得                                    | LINE認証チャンネルシークレット |
-| `NEXTAUTH_URL`          | `https://snow-school-scheduler.YOUR_SUBDOMAIN.workers.dev` | 本番環境URL                    |
+| Secret名                | 値                         | 説明                           |
+| ----------------------- | -------------------------- | ------------------------------ |
+| `CLOUDFLARE_API_TOKEN`  | 手順1で取得したAPIトークン | Cloudflare API認証             |
+| `CLOUDFLARE_ACCOUNT_ID` | 手順2で取得したAccount ID  | Cloudflareアカウント識別       |
+| `JWT_SECRET`            | 64文字以上のランダム文字列 | JWT署名用秘密鍵                |
+| `LINE_CHANNEL_SECRET`   | LINE Developersから取得    | LINE認証チャンネルシークレット |
 
 #### JWT_SECRET の生成方法
 
@@ -97,7 +96,17 @@ GitHubリポジトリの **Settings > Secrets and variables > Actions** で以�
 node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
 ```
 
-### 6. LINE認証設定
+> ℹ️ Prisma CLI は GitHub Actions 内で `PRISMA_DUMMY_DATABASE_URL`（ダミーSQLiteパス）を使用します。本番の D1 接続は Cloudflare バインディングによって解決されるため、Secrets に実データベースURLを登録する必要はありません。
+
+### 6. GitHub Repository Variables 設定
+
+GitHubリポジトリの **Settings > Secrets and variables > Actions > Variables** で以下の変数を設定：
+
+| Variable名        | 値                      | 説明                 |
+| ----------------- | ----------------------- | -------------------- |
+| `LINE_CHANNEL_ID` | LINE Developersから取得 | LINE認証チャンネルID |
+
+### 7. LINE認証設定
 
 [LINE Developers Console](https://developers.line.biz/console/) で：
 
@@ -109,7 +118,7 @@ node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
 
 **注意**: デプロイ後に実際のWorkers URLが確定するため、初回デプロイ後にCallbackURLを更新してください。
 
-### 7. Prismaマイグレーション準備
+### 8. Prismaマイグレーション準備
 
 D1用のマイグレーションファイルが必要です。以下のコマンドでローカルでマイグレーションを生成：
 

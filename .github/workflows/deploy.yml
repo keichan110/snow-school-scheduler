@@ -9,6 +9,8 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     if: github.repository == 'keichan110/snow-school-scheduler' # 意図しないforkでの実行防止
+    env:
+      PRISMA_DUMMY_DATABASE_URL: file:./tmp/prisma-deploy.db # D1本番とは無関係なCI専用ダミー
 
     steps:
       - name: Checkout repository
@@ -26,18 +28,18 @@ jobs:
       - name: Generate Prisma client
         run: npm run db:generate
         env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DATABASE_URL: ${{ env.PRISMA_DUMMY_DATABASE_URL }}
 
       - name: Validate Prisma schema
         run: npx prisma validate
         env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DATABASE_URL: ${{ env.PRISMA_DUMMY_DATABASE_URL }}
 
       - name: Build application with OpenNext Cloudflare
         run: npx @opennextjs/cloudflare build
         env:
           NODE_ENV: production
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DATABASE_URL: ${{ env.PRISMA_DUMMY_DATABASE_URL }}
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
           LINE_CHANNEL_ID: ${{ vars.LINE_CHANNEL_ID }}
           LINE_CHANNEL_SECRET: ${{ secrets.LINE_CHANNEL_SECRET }}

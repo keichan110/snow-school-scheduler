@@ -64,7 +64,7 @@ function createEnv(): Environment {
     // Cloudflare Workers環境でDATABASE_URLが未設定の場合はダミー値を設定
     const processEnv = { ...process.env };
     if (!processEnv.DATABASE_URL && processEnv.NODE_ENV === 'production') {
-      processEnv.DATABASE_URL = 'file:./db.sqlite'; // D1バインディング用ダミー
+      processEnv.DATABASE_URL = 'file:./db.sqlite'; // D1バインディング用ダミー（CIではPRISMA_DUMMY_DATABASE_URLを使用）
     }
 
     const parsed = envSchema.parse(processEnv);
