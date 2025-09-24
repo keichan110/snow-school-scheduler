@@ -4,7 +4,6 @@ import { useCallback } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import {
-  Snowflake,
   CalendarDots,
   Certificate,
   UsersThree,
@@ -179,8 +178,8 @@ export default function Header() {
                 onFocus={() => handlePrefetch('/')}
                 className="flex items-center space-x-2"
               >
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-100 via-blue-300 to-indigo-400">
-                  <Snowflake className="h-6 w-6 text-white" weight="bold" />
+                <div className="flex items-center justify-center">
+                  <img src="/icon.svg" alt="logo" className="h-8 w-8" />
                 </div>
                 <div className="flex items-center">
                   <h1 className="text-xl font-bold text-foreground">Fuyugyō</h1>
