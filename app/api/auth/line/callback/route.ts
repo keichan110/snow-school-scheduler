@@ -30,6 +30,18 @@ interface AuthSession {
   redirectUrl?: string; // 認証完了後のリダイレクト先
 }
 
+function resolveErrorMessage(error: unknown, fallback: string = 'Unknown error'): string {
+  if (error instanceof Error && error.message) {
+    return error.message;
+  }
+
+  if (typeof error === 'string' && error.trim().length > 0) {
+    return error.trim();
+  }
+
+  return fallback;
+}
+
 /**
  * GET /api/auth/line/callback
  * LINE認証コールバック処理
@@ -182,15 +194,15 @@ export async function GET(request: NextRequest) {
         } catch (incrementError) {
           // 使用回数増加に失敗してもユーザー作成は成功しているので警告レベル
           secureLog('warn', 'Failed to increment invitation token usage', {
-            error:
-              incrementError instanceof Error
-                ? incrementError.message
-                : 'Unknown error while incrementing token usage',
+            error: resolveErrorMessage(
+              incrementError,
+              'Unknown error while incrementing invitation token usage'
+            ),
           });
         }
       } catch (userCreationError) {
         secureLog('error', 'Failed to create user', {
-          error: userCreationError instanceof Error ? userCreationError.message : undefined,
+          error: resolveErrorMessage(userCreationError, 'Unknown error during user creation'),
         });
         return NextResponse.redirect(new URL('/error?reason=user_creation_failed', request.url), {
           status: 302,
@@ -263,7 +275,7 @@ export async function GET(request: NextRequest) {
     return response;
   } catch (error) {
     secureLog('error', 'Authentication callback failed', {
-      error: error instanceof Error ? error.message : undefined,
+      error: resolveErrorMessage(error, 'Unknown error during authentication callback'),
     });
 
     // システムエラー時のリダイレクト
@@ -307,7 +319,7 @@ export async function POST(request: NextRequest) {
     return await GET(modifiedRequest);
   } catch (error) {
     secureLog('error', 'POST callback processing failed', {
-      error: error instanceof Error ? error.message : undefined,
+      error: resolveErrorMessage(error, 'Unknown error during POST callback'),
     });
     return NextResponse.redirect(new URL('/error?reason=system_error', request.url), {
       status: 302,
