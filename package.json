@@ -32,7 +32,6 @@
     "db:push": "prisma db push",
     "db:studio": "prisma studio",
     "db:seed": "tsx prisma/seed.ts",
-    "db:seed:prod": "tsx",
     "wrangler:login": "wrangler login",
     "cf:d1:create": "wrangler d1 create snow-school-scheduler",
     "cf:d1:migrations:apply:local": "wrangler d1 migrations apply snow-school-scheduler --local"
