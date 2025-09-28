@@ -49,6 +49,34 @@ async function main() {
   // ============================================
   console.log('資格データを作成中...');
 
+  type CertificationSeed = {
+    name: string;
+    shortName: string;
+    organization: string;
+    description: string;
+  };
+
+  const ensureCertificationsForDepartment = async (
+    departmentId: typeof skiDepartment.id,
+    certifications: CertificationSeed[]
+  ) =>
+    Promise.all(
+      certifications.map(async (cert) => {
+        const existing = await prisma.certification.findFirst({
+          where: {
+            departmentId,
+            name: cert.name,
+          },
+        });
+
+        if (existing) return existing;
+
+        return prisma.certification.create({
+          data: { ...cert, departmentId },
+        });
+      })
+    );
+
   // スキー資格
   const skiCertificationsData = [
     { name: '公認スキー指導員', shortName: '指導員', organization: 'SAJ', description: '' },
@@ -59,21 +87,9 @@ async function main() {
     { name: '公認スキーC級検定員', shortName: 'C級検定員', organization: 'SAJ', description: '' },
   ];
 
-  const skiCertifications = await Promise.all(
-    skiCertificationsData.map(async (cert) => {
-      const existing = await prisma.certification.findFirst({
-        where: {
-          departmentId: skiDepartment.id,
-          name: cert.name,
-        },
-      });
-
-      if (existing) return existing;
-
-      return prisma.certification.create({
-        data: { ...cert, departmentId: skiDepartment.id },
-      });
-    })
+  const skiCertifications = await ensureCertificationsForDepartment(
+    skiDepartment.id,
+    skiCertificationsData
   );
 
   // スノーボード資格
@@ -111,21 +127,9 @@ async function main() {
     },
   ];
 
-  const snowboardCertifications = await Promise.all(
-    snowboardCertificationsData.map(async (cert) => {
-      const existing = await prisma.certification.findFirst({
-        where: {
-          departmentId: snowboardDepartment.id,
-          name: cert.name,
-        },
-      });
-
-      if (existing) return existing;
-
-      return prisma.certification.create({
-        data: { ...cert, departmentId: snowboardDepartment.id },
-      });
-    })
+  const snowboardCertifications = await ensureCertificationsForDepartment(
+    snowboardDepartment.id,
+    snowboardCertificationsData
   );
 
   console.log(
