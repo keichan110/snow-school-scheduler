@@ -1,6 +1,34 @@
 import { PrismaClient } from '@prisma/client';
+import { PrismaD1 } from '@prisma/adapter-d1';
 
-const prisma = new PrismaClient();
+function createPrismaClient() {
+  const token = process.env.CLOUDFLARE_D1_TOKEN;
+  const accountId = process.env.CLOUDFLARE_ACCOUNT_ID;
+  const databaseId = process.env.CLOUDFLARE_DATABASE_ID;
+
+  if (!token) {
+    throw new Error('CLOUDFLARE_D1_TOKEN が未設定です。');
+  }
+
+  if (!accountId) {
+    throw new Error('CLOUDFLARE_ACCOUNT_ID が未設定です。');
+  }
+
+  if (!databaseId) {
+    throw new Error('CLOUDFLARE_DATABASE_ID が未設定です。');
+  }
+
+  const adapter = new PrismaD1({
+    CLOUDFLARE_D1_TOKEN: token,
+    CLOUDFLARE_ACCOUNT_ID: accountId,
+    CLOUDFLARE_DATABASE_ID: databaseId,
+  });
+
+  console.log('Cloudflare D1 adapterを使用してPrismaに接続します...');
+  return new PrismaClient({ adapter });
+}
+
+const prisma = createPrismaClient();
 
 async function main() {
   console.log('スキー・スノーボードスクール プロダクションマスタデータ投入開始...\n');
