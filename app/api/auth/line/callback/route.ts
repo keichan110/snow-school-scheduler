@@ -4,6 +4,7 @@ import { executeLineAuthFlow } from '@/lib/auth/line';
 import { generateJwt } from '@/lib/auth/jwt';
 import { validateInvitationToken, incrementTokenUsage } from '@/lib/auth/invitations';
 import { prisma } from '@/lib/db';
+import { secureAuthLog, secureLog } from '@/lib/utils/logging';
 
 /**
  * LINE認証コールバックAPI
@@ -29,6 +30,18 @@ interface AuthSession {
   redirectUrl?: string; // 認証完了後のリダイレクト先
 }
 
+function resolveErrorMessage(error: unknown, fallback: string = 'Unknown error'): string {
+  if (error instanceof Error && error.message) {
+    return error.message;
+  }
+
+  if (typeof error === 'string' && error.trim().length > 0) {
+    return error.trim();
+  }
+
+  return fallback;
+}
+
 /**
  * GET /api/auth/line/callback
  * LINE認証コールバック処理
@@ -41,7 +54,7 @@ export async function GET(request: NextRequest) {
     const error = searchParams.get('error');
     if (error) {
       const errorDescription = searchParams.get('error_description');
-      console.log('🚫 LINE authentication cancelled or failed:', {
+      secureLog('info', 'LINE authentication cancelled or failed', {
         error,
         description: errorDescription,
       });
@@ -57,7 +70,7 @@ export async function GET(request: NextRequest) {
     const receivedState = searchParams.get('state');
 
     if (!code || !receivedState) {
-      console.error('❌ Missing required callback parameters');
+      secureLog('error', 'Missing required LINE callback parameters');
       return NextResponse.redirect(new URL('/error?reason=invalid_callback', request.url), {
         status: 302,
       });
@@ -66,7 +79,7 @@ export async function GET(request: NextRequest) {
     // セッション情報の取得と検証
     const sessionCookie = request.cookies.get('auth-session')?.value;
     if (!sessionCookie) {
-      console.error('❌ Authentication session error');
+      secureLog('error', 'Authentication session cookie missing');
       return NextResponse.redirect(new URL('/error?reason=session_expired', request.url), {
         status: 302,
       });
@@ -76,7 +89,7 @@ export async function GET(request: NextRequest) {
     try {
       sessionData = JSON.parse(sessionCookie);
     } catch {
-      console.error('❌ Invalid session data format');
+      secureLog('error', 'Invalid authentication session data format');
       return NextResponse.redirect(new URL('/error?reason=invalid_session', request.url), {
         status: 302,
       });
@@ -85,13 +98,13 @@ export async function GET(request: NextRequest) {
     // セッション有効期限チェック（10分）
     const sessionAge = Date.now() - sessionData.createdAt;
     if (sessionAge > 10 * 60 * 1000) {
-      console.error('❌ Authentication session expired');
+      secureLog('error', 'Authentication session expired');
       return NextResponse.redirect(new URL('/error?reason=session_expired', request.url), {
         status: 302,
       });
     }
 
-    console.log('🔐 Processing LINE authentication callback:', {
+    secureAuthLog('Processing LINE authentication callback', {
       hasCode: true,
       hasState: true,
       hasInviteToken: !!sessionData.inviteToken,
@@ -102,13 +115,13 @@ export async function GET(request: NextRequest) {
     const authResult = await executeLineAuthFlow(code, receivedState, sessionData.state);
 
     if (!authResult.success || !authResult.profile) {
-      console.error('❌ LINE authentication flow failed');
+      secureLog('error', 'LINE authentication flow failed');
       return NextResponse.redirect(new URL('/error?reason=auth_failed', request.url), {
         status: 302,
       });
     }
 
-    console.log('✅ LINE authentication successful:', {
+    secureAuthLog('LINE authentication successful', {
       userId: authResult.profile.userId,
       displayName: authResult.profile.displayName,
       hasInviteToken: !!authResult.inviteToken,
@@ -123,7 +136,7 @@ export async function GET(request: NextRequest) {
 
     if (!user) {
       // 新規ユーザーの場合 - 招待トークン検証が必要
-      console.log('👤 Creating new user with invitation validation:', {
+      secureAuthLog('Creating new user with invitation validation', {
         lineUserId: authResult.profile.userId,
         displayName: authResult.profile.displayName,
         hasInviteToken: !!sessionData.inviteToken,
@@ -131,7 +144,7 @@ export async function GET(request: NextRequest) {
 
       // 招待トークンの検証
       if (!sessionData.inviteToken) {
-        console.error('❌ New user registration requires invitation token');
+        secureLog('error', 'New user registration requires invitation token');
         return NextResponse.redirect(new URL('/error?reason=invitation_required', request.url), {
           status: 302,
         });
@@ -140,7 +153,7 @@ export async function GET(request: NextRequest) {
       // 招待トークンの有効性チェック
       const tokenValidation = await validateInvitationToken(sessionData.inviteToken);
       if (!tokenValidation.isValid) {
-        console.error('❌ Invalid invitation token');
+        secureLog('error', 'Invalid invitation token');
 
         const errorReason =
           tokenValidation.errorCode === 'EXPIRED'
@@ -168,7 +181,7 @@ export async function GET(request: NextRequest) {
           },
         });
 
-        console.log('✅ New user created via invitation:', {
+        secureAuthLog('New user created via invitation', {
           id: user.id,
           role: user.role,
           inviteToken: sessionData.inviteToken.substring(0, 16) + '...',
@@ -177,20 +190,27 @@ export async function GET(request: NextRequest) {
         // 招待トークンの使用回数を増加
         try {
           await incrementTokenUsage(sessionData.inviteToken);
-          console.log('📊 Invitation token usage incremented successfully');
+          secureLog('info', 'Invitation token usage incremented successfully');
         } catch (incrementError) {
           // 使用回数増加に失敗してもユーザー作成は成功しているので警告レベル
-          console.warn('⚠️ Failed to increment invitation token usage:', incrementError);
+          secureLog('warn', 'Failed to increment invitation token usage', {
+            error: resolveErrorMessage(
+              incrementError,
+              'Unknown error while incrementing invitation token usage'
+            ),
+          });
         }
-      } catch {
-        console.error('❌ Failed to create user');
+      } catch (userCreationError) {
+        secureLog('error', 'Failed to create user', {
+          error: resolveErrorMessage(userCreationError, 'Unknown error during user creation'),
+        });
         return NextResponse.redirect(new URL('/error?reason=user_creation_failed', request.url), {
           status: 302,
         });
       }
     } else {
       // 既存ユーザーの場合
-      console.log('👤 Existing user login:', {
+      secureAuthLog('Existing user login', {
         id: user.id,
         displayName: user.displayName,
         role: user.role,
@@ -210,13 +230,13 @@ export async function GET(request: NextRequest) {
             profileImageUrl: authResult.profile.pictureUrl || null,
           },
         });
-        console.log('📝 Updated user profile (display name and/or image)');
+        secureLog('info', 'Updated user profile (display name and/or image)');
       }
     }
 
     // 非アクティブユーザーのチェック
     if (!user.isActive) {
-      console.warn('⚠️ Inactive user attempted login:', { userId: user.id });
+      secureLog('warn', 'Inactive user attempted login', { userId: user.id });
       return NextResponse.redirect(new URL('/error?reason=inactive_user', request.url), {
         status: 302,
       });
@@ -232,9 +252,7 @@ export async function GET(request: NextRequest) {
     };
 
     const token = generateJwt(jwtPayload);
-    if (process.env.NODE_ENV === 'development') {
-      console.log('🎫 JWT generated for user:', user.displayName);
-    }
+    secureLog('info', 'JWT generated for user', { displayName: user.displayName });
 
     // 認証成功レスポンスの作成（保存されたリダイレクト先を使用）
     const redirectPath = sessionData.redirectUrl || '/'; // デフォルトはホームページ
@@ -247,7 +265,7 @@ export async function GET(request: NextRequest) {
     // 認証セッションCookieの削除
     deleteCookie(response, 'auth-session');
 
-    console.log('🎉 Authentication completed successfully:', {
+    secureAuthLog('Authentication completed successfully', {
       userId: user.id,
       displayName: user.displayName,
       role: user.role,
@@ -255,8 +273,10 @@ export async function GET(request: NextRequest) {
     });
 
     return response;
-  } catch {
-    console.error('❌ Authentication callback failed');
+  } catch (error) {
+    secureLog('error', 'Authentication callback failed', {
+      error: resolveErrorMessage(error, 'Unknown error during authentication callback'),
+    });
 
     // システムエラー時のリダイレクト
     return NextResponse.redirect(new URL('/error?reason=system_error', request.url), {
@@ -278,7 +298,7 @@ export async function POST(request: NextRequest) {
     const error = formData.get('error')?.toString();
 
     if (error) {
-      console.log('🚫 LINE authentication cancelled (POST):', error);
+      secureLog('info', 'LINE authentication cancelled via POST callback', { error });
       return NextResponse.redirect(new URL('/error?reason=cancelled', request.url), {
         status: 302,
       });
@@ -297,8 +317,10 @@ export async function POST(request: NextRequest) {
 
     const modifiedRequest = new NextRequest(urlWithParams);
     return await GET(modifiedRequest);
-  } catch {
-    console.error('❌ POST callback processing failed');
+  } catch (error) {
+    secureLog('error', 'POST callback processing failed', {
+      error: resolveErrorMessage(error, 'Unknown error during POST callback'),
+    });
     return NextResponse.redirect(new URL('/error?reason=system_error', request.url), {
       status: 302,
     });

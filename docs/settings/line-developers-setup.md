@@ -201,72 +201,75 @@ node -e "console.log(process.env.LINE_CHANNEL_ID)"
 
 ### 概要
 
-システム初回導入時に必要なファーストアドミンユーザーの設定手順。LINE認証後にシステム管理者権限を付与する。
+システム初回導入時に必要なファーストアドミンユーザーの設定手順。現在の仕様では招待トークンが無いとユーザー作成が行われないため、LINE認証で取得した `lineUserId` を元に管理者ユーザーを手動で登録する必要があります。
 
 ### 開発環境でのファーストアドミン設定
 
-#### 1. LINE認証の完了確認
+#### 1. LINEユーザーIDの取得
 
-1. `npm run dev` でローカルサーバー起動
-2. `http://localhost:3000/login` にアクセス
-3. LINE認証を完了してユーザー情報を確認
+1. `npm run dev` でローカルサーバーを起動
+2. `http://localhost:3000/login` からLINEログインを試行
+   - 招待トークンが無いため `/error?reason=invitation_required` にリダイレクトされます（想定動作）
+3. サーバーログに出力される `authResult.profile.userId` を控える
 
-#### 2. データベースでのロール設定
+```bash
+# ログから userId を抽出する例（出力方法は環境に合わせて調整）
+tail -f .next/server/app.log | grep "authResult.profile.userId"
+```
+
+#### 2. ユーザーレコードの手動作成
 
 ```bash
 # Prisma Studioを起動
 npm run db:studio
 
-# ブラウザでPrisma Studio（http://localhost:5555）にアクセス
-# 1. "User" テーブルを選択
-# 2. LINE認証で作成されたユーザーレコードを確認
-# 3. 該当ユーザーの "role" フィールドを "ADMIN" に変更
-# 4. "Save changes" で保存
+# ブラウザで Prisma Studio (http://localhost:5555) にアクセスし、以下を実施
+# 1. "User" テーブルで新規レコードを追加
+# 2. lineUserId に控えた値を入力 (例: Uxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx)
+# 3. displayName / profileImageUrl を任意で設定
+# 4. role を "ADMIN" に変更
+# 5. isActive を true のまま保存
 ```
 
 #### 3. 設定確認
 
-1. ブラウザでアプリケーションにアクセス
-2. LINE認証でログイン
-3. 管理者メニュー（`/admin`）にアクセス可能であることを確認
+1. 再度 `http://localhost:3000/login` でLINE認証
+2. トップページに遷移し、管理者メニューが表示されることを確認
+3. `/admin` や各管理機能にアクセスできるか検証
 
 ### 本番環境でのファーストアドミン設定
 
-#### 1. デプロイ後の認証確認
+#### 1. lineUserId の準備
 
-1. 本番環境URL（`https://your-app.pages.dev/login`）にアクセス
-2. LINE認証を完了してユーザー情報を確認
+- 開発環境で前述の「LINEユーザーIDの取得」手順を完了し、対象アカウントの `lineUserId` を控えておく。
+- 本番環境のログにはユーザーIDが出力されない（セキュアログが抑制）ため、必ず開発環境で取得した値を利用する。
 
-#### 2. データベースアクセス設定
+#### 2. 管理者ユーザーの投入
 
-**Cloudflare Pages + D1の場合**:
-
-```bash
-# Cloudflare CLI でデータベースアクセス
-npx wrangler d1 execute YOUR_DB_NAME --command="SELECT * FROM User;"
-
-# 管理者権限付与
-npx wrangler d1 execute YOUR_DB_NAME --command="UPDATE User SET role = 'ADMIN' WHERE id = 'USER_ID_HERE';"
-```
-
-**外部データベース（PostgreSQL等）の場合**:
+**Cloudflare D1 を利用する場合**:
 
 ```bash
-# データベース接続
-psql -h your-db-host -U your-username -d your-database
-
-# ユーザー確認
-SELECT id, name, email, role FROM "User";
-
-# 管理者権限付与
-UPDATE "User" SET role = 'ADMIN' WHERE id = 'USER_ID_HERE';
+# 取得した lineUserId を使用してユーザーを新規追加
+npx wrangler d1 execute YOUR_DB_NAME --command='
+INSERT INTO users (id, line_user_id, display_name, profile_image_url, role, is_active)
+VALUES (lower(hex(randomblob(16))), "Uxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", "First Admin", NULL, "ADMIN", 1);
+'
 ```
+
+**外部データベース（PostgreSQL 等）の場合**:
+
+```sql
+INSERT INTO "users" (id, line_user_id, display_name, profile_image_url, role, is_active)
+VALUES (gen_random_uuid()::text, 'Uxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', 'First Admin', NULL, 'ADMIN', true);
+```
+
+必要に応じて `created_at` や `updated_at` を合わせて指定してください。
 
 #### 3. 本番環境での確認
 
-1. 本番環境でLINE認証ログイン
-2. 管理者メニュー（`/admin`）にアクセス可能であることを確認
-3. 各管理機能が正常に動作することをテスト
+1. 本番環境でLINE認証を実行し、トップページに遷移することを確認（エラー画面に戻されないこと）
+2. 管理者メニュー（`/admin`）や各管理機能が利用できるか確認
+3. 不要なログ出力やテストユーザーが残っていないかをチェック
 
 ### セキュリティ考慮事項
 
