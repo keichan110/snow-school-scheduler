@@ -24,7 +24,7 @@ const PUBLIC_API_PREFIXES = [
 ];
 
 // 認証不要なページパス（完全一致）
-const PUBLIC_PAGE_PATHS = new Set(['/login', '/terms', '/privacy']);
+const PUBLIC_PAGE_PATHS = new Set(['/login', '/terms', '/privacy', '/error']);
 
 // 認証不要なページパス（プレフィックス一致）
 const PUBLIC_PAGE_PREFIXES = [
