@@ -10,7 +10,6 @@ import type {
   ShiftAssignmentBulkInput,
   ShiftAssignmentInput,
   ShiftCreateInput,
-  ShiftFilter,
   ShiftType,
   ShiftUpdateInput,
   ShiftWithDetails,
@@ -33,20 +32,20 @@ export interface ShiftQueryParams extends BaseQueryParams {
 /**
  * Calendar API クエリパラメータ
  */
-export interface CalendarQueryParams {
+export type CalendarQueryParams = {
   readonly year: number;
   readonly month: number;
   readonly departmentId?: number;
   readonly view?: "month" | "week" | "day";
-}
+};
 
 /**
  * Weekly API クエリパラメータ
  */
-export interface WeeklyQueryParams {
+export type WeeklyQueryParams = {
   readonly startDate: string; // ISO date string (Monday of the week)
   readonly departmentId?: number;
-}
+};
 
 /**
  * API レスポンス型
@@ -76,64 +75,64 @@ export type ShiftAssignmentResponse = ApiResponse<{ success: boolean }>;
  */
 
 // Shift作成リクエスト
-export interface CreateShiftRequest {
+export type CreateShiftRequest = {
   readonly body: ShiftCreateInput;
-}
+};
 
 // Shift更新リクエスト
-export interface UpdateShiftRequest {
+export type UpdateShiftRequest = {
   readonly params: { readonly id: string };
   readonly body: ShiftUpdateInput;
-}
+};
 
 // Shift削除リクエスト
-export interface DeleteShiftRequest {
+export type DeleteShiftRequest = {
   readonly params: { readonly id: string };
-}
+};
 
 // Shift割り当てリクエスト
-export interface AssignShiftRequest {
+export type AssignShiftRequest = {
   readonly params: { readonly id: string };
   readonly body: ShiftAssignmentInput;
-}
+};
 
 // 一括Shift割り当てリクエスト
-export interface BulkAssignShiftRequest {
+export type BulkAssignShiftRequest = {
   readonly params: { readonly id: string };
   readonly body: ShiftAssignmentBulkInput;
-}
+};
 
 // Shift割り当て解除リクエスト
-export interface UnassignShiftRequest {
+export type UnassignShiftRequest = {
   readonly params: {
     readonly id: string;
     readonly instructorId: string;
   };
-}
+};
 
 /**
  * エラーレスポンス
  */
-export interface ShiftErrorResponse {
+export type ShiftErrorResponse = {
   readonly code: string;
   readonly message: string;
-  readonly details?: {
+  readonly errors?: {
     readonly field?: string;
-    readonly value?: unknown;
+    readonly message?: string;
     readonly constraint?: string;
   };
-}
+};
 
 /**
  * バリデーションエラー
  */
-export interface ShiftValidationError {
+export type ShiftValidationError = {
   readonly field: string;
   readonly message: string;
   readonly code:
-    | "REQUIRED"
-    | "INVALID_FORMAT"
-    | "INVALID_DATE"
-    | "CONFLICT"
-    | "NOT_FOUND";
-}
+    | "INVALID_INPUT"
+    | "UNAUTHORIZED"
+    | "FORBIDDEN"
+    | "NOT_FOUND"
+    | "CONFLICT";
+};

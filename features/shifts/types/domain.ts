@@ -38,14 +38,13 @@ export interface Shift extends BaseEntity {
 /**
  * シフト割り当て
  */
-export interface ShiftAssignment {
+export type ShiftAssignment = {
   readonly id: ShiftAssignmentId;
   readonly shiftId: ShiftId;
   readonly instructorId: InstructorId;
-  readonly assignedAt: Date;
   readonly shift?: Shift; // relation
   readonly instructor?: Instructor; // relation
-}
+};
 
 /**
  * 部門（shifts機能で使用）
@@ -88,24 +87,23 @@ export interface ShiftWithDetails extends Shift {
 /**
  * シフト検索・フィルタ条件
  */
-export interface ShiftFilter {
+export type ShiftFilter = {
   readonly dateRange?: DateRange;
   readonly departmentIds?: readonly DepartmentId[];
-  readonly shiftTypeIds?: readonly ShiftTypeId[];
   readonly instructorIds?: readonly InstructorId[];
   readonly hasAssignments?: boolean;
   readonly isActive?: boolean;
-}
+};
 
 /**
  * シフト作成・更新用のInput型
  */
-export interface ShiftCreateInput {
+export type ShiftCreateInput = {
   readonly date: Date;
   readonly departmentId: DepartmentId;
   readonly shiftTypeId: ShiftTypeId;
   readonly description?: string;
-}
+};
 
 export interface ShiftUpdateInput extends Partial<ShiftCreateInput> {
   readonly id: ShiftId;
@@ -114,43 +112,42 @@ export interface ShiftUpdateInput extends Partial<ShiftCreateInput> {
 /**
  * シフト割り当て操作用の型
  */
-export interface ShiftAssignmentInput {
+export type ShiftAssignmentInput = {
   readonly shiftId: ShiftId;
   readonly instructorId: InstructorId;
-}
+};
 
-export interface ShiftAssignmentBulkInput {
+export type ShiftAssignmentBulkInput = {
   readonly shiftId: ShiftId;
   readonly instructorIds: readonly InstructorId[];
-}
+};
 
 /**
  * シフトカレンダー表示用の型
  */
-export interface CalendarShift {
+export type CalendarShift = {
   readonly id: ShiftId;
   readonly date: Date;
-  readonly title: string;
-  readonly department: Pick<Department, "id" | "name" | "code">;
-  readonly shiftType: Pick<ShiftType, "id" | "name">;
+  readonly departmentId: DepartmentId;
+  readonly shiftTypeId: ShiftTypeId;
   readonly instructorCount: number;
   readonly description?: string;
-}
+};
 
 /**
  * 週表示用の型
  */
-export interface WeeklyShiftData {
+export type WeeklyShiftData = {
   readonly weekStart: Date;
   readonly weekEnd: Date;
   readonly shifts: readonly CalendarShift[];
-}
+};
 
 /**
  * 月表示用の型
  */
-export interface MonthlyShiftData {
+export type MonthlyShiftData = {
   readonly year: number;
   readonly month: number;
   readonly weeks: readonly WeeklyShiftData[];
-}
+};
