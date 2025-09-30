@@ -6,17 +6,32 @@
  * shields.io用のバッジ情報を生成
  */
 
-const fs = require("fs");
-const path = require("path");
+const fs = require("node:fs");
+const path = require("node:path");
 
 const COVERAGE_FILE = path.join(__dirname, "../coverage/coverage-summary.json");
 const BADGE_FILE = path.join(__dirname, "../coverage/badge-info.json");
 
+// Coverage percentage thresholds
+const THRESHOLD_BRIGHTGREEN = 90;
+const THRESHOLD_GREEN = 80;
+const THRESHOLD_YELLOW = 70;
+const THRESHOLD_ORANGE = 60;
+const METRICS_COUNT = 4;
+
 function getColorForPercentage(average) {
-  if (average >= 90) return "brightgreen";
-  if (average >= 80) return "green";
-  if (average >= 70) return "yellow";
-  if (average >= 60) return "orange";
+  if (average >= THRESHOLD_BRIGHTGREEN) {
+    return "brightgreen";
+  }
+  if (average >= THRESHOLD_GREEN) {
+    return "green";
+  }
+  if (average >= THRESHOLD_YELLOW) {
+    return "yellow";
+  }
+  if (average >= THRESHOLD_ORANGE) {
+    return "orange";
+  }
   return "red";
 }
 
@@ -44,7 +59,7 @@ function generateBadgeInfo() {
         metrics.functions +
         metrics.branches +
         metrics.statements) /
-        4
+        METRICS_COUNT
     );
 
     const color = getColorForPercentage(average);
@@ -83,7 +98,7 @@ function generateBadgeInfo() {
 if (require.main === module) {
   try {
     generateBadgeInfo();
-  } catch (error) {
+  } catch (_error) {
     process.exit(1);
   }
 }

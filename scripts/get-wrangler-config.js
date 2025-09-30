@@ -1,20 +1,27 @@
 #!/usr/bin/env node
-const fs = require("fs");
-const path = require("path");
+const fs = require("node:fs");
+const path = require("node:path");
 // 'toml' パッケージのインストールが必要です: npm install toml
 const toml = require("toml");
 
-function getNestedValue(obj, keyPath) {
-  return keyPath.split(".").reduce((acc, key) => {
-    if (acc === undefined || acc === null) return;
-    if (Array.isArray(acc) && !isNaN(Number.parseInt(key, 10))) {
-      return acc[Number.parseInt(key, 10)];
+const EXPECTED_ARGS_LENGTH = 3;
+
+function getNestedValue(obj, configKeyPath) {
+  let result = obj;
+  for (const key of configKeyPath.split(".")) {
+    if (result === undefined || result === null) {
+      return;
     }
-    return acc[key];
-  }, obj);
+    if (Array.isArray(result) && !Number.isNaN(Number.parseInt(key, 10))) {
+      result = result[Number.parseInt(key, 10)];
+    } else {
+      result = result[key];
+    }
+  }
+  return result;
 }
 
-if (process.argv.length !== 3) {
+if (process.argv.length !== EXPECTED_ARGS_LENGTH) {
   console.error("Usage: node get-wrangler-config.js <key_path>");
   process.exit(1);
 }
