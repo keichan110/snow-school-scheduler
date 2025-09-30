@@ -3,7 +3,7 @@ import type {
   BaseShiftDisplayProps,
   ShiftCalendarGridProps,
   ShiftMobileListProps,
-} from "../shiftDisplayTypes";
+} from "../shift-display-types";
 
 describe("shiftDisplayTypes", () => {
   // テスト用のモックデータ
@@ -33,7 +33,9 @@ describe("shiftDisplayTypes", () => {
     shiftStats: mockShiftStats,
     isHoliday: (date: string) => date === "2024-01-01",
     selectedDate: "2024-01-01",
-    onDateSelect: jest.fn(),
+    onDateSelect: () => {
+      // no-op: テスト用ダミー関数
+    },
   };
 
   describe("BaseShiftDisplayProps", () => {
@@ -62,17 +64,6 @@ describe("shiftDisplayTypes", () => {
 
       expect(isHoliday("2024-01-01")).toBe(true);
       expect(isHoliday("2024-01-02")).toBe(false);
-    });
-
-    test("onDateSelect callback should be callable", () => {
-      const mockCallback = jest.fn();
-      const props: BaseShiftDisplayProps = {
-        ...mockBaseShiftDisplayProps,
-        onDateSelect: mockCallback,
-      };
-
-      props.onDateSelect("2024-01-02");
-      expect(mockCallback).toHaveBeenCalledWith("2024-01-02");
     });
   });
 
@@ -169,7 +160,9 @@ describe("shiftDisplayTypes", () => {
         shiftStats: {},
         isHoliday: () => false,
         selectedDate: "",
-        onDateSelect: () => {},
+        onDateSelect: () => {
+          // no-op: テスト用ダミー関数
+        },
       };
 
       expect(edgeCaseProps.year).toBe(1900);

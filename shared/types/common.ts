@@ -32,59 +32,59 @@ export const createShiftAssignmentId = (id: number): ShiftAssignmentId =>
 /**
  * 基本エンティティ型
  */
-export interface BaseEntity {
+export type BaseEntity = {
   readonly id: number;
   readonly createdAt: Date;
   readonly updatedAt: Date;
-}
+};
 
 /**
  * ページネーション情報
  */
-export interface PaginationInfo {
+export type PaginationInfo = {
   readonly page: number;
   readonly perPage: number;
   readonly total: number;
   readonly totalPages: number;
   readonly hasNext: boolean;
   readonly hasPrev: boolean;
-}
+};
 
 /**
  * ソート情報
  */
-export interface SortInfo {
+export type SortInfo = {
   readonly field: string;
   readonly direction: "asc" | "desc";
-}
+};
 
 /**
  * フィルター基底型
  */
-export interface BaseFilter {
+export type BaseFilter = {
   readonly isActive?: boolean;
   readonly createdAfter?: Date;
   readonly createdBefore?: Date;
-}
+};
 
 /**
  * 検索パラメータ
  */
-export interface SearchParams {
+export type SearchParams = {
   readonly query?: string;
   readonly filters?: Record<string, unknown>;
   readonly sort?: SortInfo;
   readonly pagination?: Pick<PaginationInfo, "page" | "perPage">;
-}
+};
 
 /**
  * バリデーションエラー詳細
  */
-export interface ValidationError {
+export type ValidationError = {
   readonly field: string;
   readonly message: string;
   readonly code?: string;
-}
+};
 
 /**
  * インストラクターステータス
@@ -101,36 +101,36 @@ export type InstructorStatus =
 /**
  * レスポンス状態
  */
-export interface LoadingState {
+export type LoadingState = {
   readonly isLoading: boolean;
   readonly error: Error | null;
-}
+};
 
 /**
  * フォーム状態
  */
-export interface FormState<T> extends LoadingState {
+export type FormState<T> = LoadingState & {
   readonly data: T;
   readonly isDirty: boolean;
   readonly isValid: boolean;
   readonly errors: Record<string, string>;
-}
+};
 
 /**
  * 選択状態
  */
-export interface SelectionState<T> {
+export type SelectionState<T> = {
   readonly selectedItems: readonly T[];
   readonly isAllSelected: boolean;
-}
+};
 
 /**
  * 日付範囲
  */
-export interface DateRange {
+export type DateRange = {
   readonly start: Date;
   readonly end: Date;
-}
+};
 
 /**
  * カラー定義（テーマ対応）

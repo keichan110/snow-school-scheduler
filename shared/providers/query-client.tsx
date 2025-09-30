@@ -12,10 +12,12 @@ import { useState } from "react";
 const LIST_QUERY_KEYS = [
   ["public-shifts"],
   ["public-shifts", "departments"],
-] as const satisfies ReadonlyArray<QueryKey>;
+] as const satisfies readonly QueryKey[];
 
 const LIST_QUERY_CACHE_OPTIONS = {
+  // biome-ignore lint/style/noMagicNumbers: キャッシュ時間設定のため
   staleTime: 60 * 1000,
+  // biome-ignore lint/style/noMagicNumbers: キャッシュ時間設定のため
   gcTime: 30 * 60 * 1000,
 } as const;
 
@@ -24,14 +26,17 @@ function makeQueryClient() {
     defaultOptions: {
       queries: {
         // 5分のstaleTime（データが新鮮と見なされる時間）
+        // biome-ignore lint/style/noMagicNumbers: キャッシュ時間設定のため
         staleTime: 5 * 60 * 1000,
         // 30分のgcTime（キャッシュ保持時間）
+        // biome-ignore lint/style/noMagicNumbers: キャッシュ時間設定のため
         gcTime: 30 * 60 * 1000,
         // リトライ戦略（エラー時の再試行）
         retry: (failureCount, error) => {
           // ネットワークエラーの場合は最大2回リトライ
+          const MAX_NETWORK_RETRIES = 2;
           if (error instanceof TypeError && error.message.includes("fetch")) {
-            return failureCount < 2;
+            return failureCount < MAX_NETWORK_RETRIES;
           }
           // その他のエラーは1回のみリトライ
           return failureCount < 1;
@@ -49,9 +54,9 @@ function makeQueryClient() {
   });
 
   // リスト系クエリは一時的な遷移戻りでもキャッシュを生かすために staleness を延長
-  LIST_QUERY_KEYS.forEach((queryKey) => {
+  for (const queryKey of LIST_QUERY_KEYS) {
     client.setQueryDefaults(queryKey, LIST_QUERY_CACHE_OPTIONS);
-  });
+  }
 
   return client;
 }
@@ -64,13 +69,15 @@ function getQueryClient() {
     return makeQueryClient();
   }
   // Browser: シングルトンパターンでクライアントを再利用
-  if (!browserQueryClient) browserQueryClient = makeQueryClient();
+  if (!browserQueryClient) {
+    browserQueryClient = makeQueryClient();
+  }
   return browserQueryClient;
 }
 
-interface QueryProviderProps {
+type QueryProviderProps = {
   children: React.ReactNode;
-}
+};
 
 export function QueryProvider({ children }: QueryProviderProps) {
   // useState を使用してクライアントを初期化

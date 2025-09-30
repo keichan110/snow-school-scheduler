@@ -3,10 +3,10 @@
  * スキー・スノーボードスクールシフト管理システム用
  */
 
-export interface DateFormatOptions {
+export type DateFormatOptions = {
   includeWeekday?: boolean;
   format?: "long" | "short" | "numeric";
-}
+};
 
 /**
  * 日付を日本語形式でフォーマットする共通関数
@@ -29,7 +29,7 @@ export function formatDateForDisplay(
     const date = new Date(dateString);
 
     // Invalid Dateのチェック
-    if (isNaN(date.getTime())) {
+    if (Number.isNaN(date.getTime())) {
       return dateString;
     }
 

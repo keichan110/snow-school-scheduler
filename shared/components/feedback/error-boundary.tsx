@@ -18,24 +18,16 @@ import {
 } from "@/components/ui/card";
 
 /**
- * エラー情報の型定義
- */
-interface ErrorInfo {
-  componentStack: string;
-  errorBoundary?: string;
-}
-
-/**
  * エラーログ送信用の型
  */
-interface ErrorReport {
+type ErrorReport = {
   message: string;
   stack?: string | undefined;
   componentStack: string;
   timestamp: string;
   userAgent: string;
   url: string;
-}
+};
 
 /**
  * エラーログ送信関数
@@ -50,8 +42,11 @@ const logError = (error: Error, errorInfo: React.ErrorInfo): void => {
     url: window.location.href,
   };
 
-  // エラー監視サービス（例: Sentry、LogRocket）に送信
-  console.error("Application Error:", errorReport);
+  // 開発環境ではコンソールにエラーを出力
+  if (process.env.NODE_ENV === "development") {
+    // biome-ignore lint/suspicious/noConsole: エラーログ出力のため
+    console.error("Application Error:", errorReport);
+  }
 
   // 本番環境では実際の監視サービスに送信
   if (process.env.NODE_ENV === "production") {
@@ -63,10 +58,10 @@ const logError = (error: Error, errorInfo: React.ErrorInfo): void => {
 /**
  * エラー表示コンポーネントのProps
  */
-interface ErrorFallbackProps {
+type ErrorFallbackProps = {
   error: Error;
   resetErrorBoundary: () => void;
-}
+};
 
 /**
  * 一般的なエラー表示コンポーネント
@@ -102,7 +97,9 @@ const ErrorFallback: React.FC<ErrorFallbackProps> = ({
         </Button>
         <Button
           className="w-full"
-          onClick={() => (window.location.href = "/")}
+          onClick={() => {
+            window.location.href = "/";
+          }}
           variant="outline"
         >
           <Home className="mr-2 h-4 w-4" />
@@ -152,12 +149,12 @@ const FormErrorFallback: React.FC<ErrorFallbackProps> = ({
 /**
  * エラーバウンダリのProps
  */
-interface AppErrorBoundaryProps {
+type AppErrorBoundaryProps = {
   children: React.ReactNode;
   fallback?: React.ComponentType<ErrorFallbackProps>;
   onError?: ((error: Error, errorInfo: React.ErrorInfo) => void) | undefined;
   isolate?: boolean; // 局所的なエラーハンドリング用
-}
+};
 
 /**
  * アプリケーション用エラーバウンダリ
@@ -205,7 +202,7 @@ export const FormErrorBoundary: React.FC<{
  * エラーバウンダリ用フック
  */
 export const useErrorHandler = () => {
-  return (error: Error, errorInfo?: { componentStack?: string }) => {
+  return (error: Error, _errorInfo?: { componentStack?: string }) => {
     // エラーを上位のエラーバウンダリに伝播
     throw error;
   };

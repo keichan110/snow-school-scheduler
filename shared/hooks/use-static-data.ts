@@ -2,37 +2,37 @@ import { useQuery } from "@tanstack/react-query";
 import type { ApiResponse } from "@/lib/api/types";
 
 // 部門データの型定義
-interface Department {
+type Department = {
   id: number;
   code: string;
   name: string;
   description?: string;
   isActive: boolean;
-}
+};
 
 // シフト種別データの型定義
-interface ShiftType {
+type ShiftType = {
   id: number;
   name: string;
   isActive: boolean;
-}
+};
 
 // インストラクターデータの型定義
-interface Instructor {
+type Instructor = {
   id: number;
   lastName: string;
   firstName: string;
   status: string;
-}
+};
 
 // 資格データの型定義
-interface Certification {
+type Certification = {
   id: number;
   name: string;
   shortName: string;
   organization: string;
   isActive: boolean;
-}
+};
 
 // 静的データ用のクエリキー
 export const staticDataQueryKeys = {
@@ -60,7 +60,9 @@ export function useDepartments() {
       return data.data;
     },
     // 設計書に基づく静的データの長期キャッシュ戦略
+    // biome-ignore lint/style/noMagicNumbers: キャッシュ時間設定のため
     staleTime: 30 * 60 * 1000, // 30分
+    // biome-ignore lint/style/noMagicNumbers: キャッシュ時間設定のため
     gcTime: 60 * 60 * 1000, // 1時間
     refetchOnWindowFocus: false,
     refetchOnMount: false,
@@ -85,7 +87,9 @@ export function useShiftTypes() {
       return data.data;
     },
     // 静的データの長期キャッシュ
+    // biome-ignore lint/style/noMagicNumbers: キャッシュ時間設定のため
     staleTime: 30 * 60 * 1000, // 30分
+    // biome-ignore lint/style/noMagicNumbers: キャッシュ時間設定のため
     gcTime: 60 * 60 * 1000, // 1時間
     refetchOnWindowFocus: false,
     refetchOnMount: false,
@@ -110,7 +114,9 @@ export function useInstructors() {
       return data.data;
     },
     // インストラクターデータは中期キャッシュ（変更頻度が中程度）
+    // biome-ignore lint/style/noMagicNumbers: キャッシュ時間設定のため
     staleTime: 10 * 60 * 1000, // 10分
+    // biome-ignore lint/style/noMagicNumbers: キャッシュ時間設定のため
     gcTime: 30 * 60 * 1000, // 30分
     refetchOnWindowFocus: false,
   });
@@ -134,7 +140,9 @@ export function useCertifications() {
       return data.data;
     },
     // 資格データは長期キャッシュ（変更頻度が低い）
+    // biome-ignore lint/style/noMagicNumbers: キャッシュ時間設定のため
     staleTime: 30 * 60 * 1000, // 30分
+    // biome-ignore lint/style/noMagicNumbers: キャッシュ時間設定のため
     gcTime: 60 * 60 * 1000, // 1時間
     refetchOnWindowFocus: false,
     refetchOnMount: false,

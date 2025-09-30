@@ -2,7 +2,7 @@
  * 日付フォーマット関連のユーティリティ関数のテスト
  */
 
-import { DateFormatOptions, formatDateForDisplay } from "../dateFormatter";
+import { formatDateForDisplay } from "../date-formatter";
 
 describe("formatDateForDisplay", () => {
   // 基本的な日付フォーマットのテスト
@@ -95,11 +95,11 @@ describe("formatDateForDisplay", () => {
       ["2024-03-16", "土"], // 土曜日
     ];
 
-    testCases.forEach(([date, expectedWeekday]) => {
+    for (const [date, expectedWeekday] of testCases) {
       it(`${date}の曜日が${expectedWeekday}曜日として表示される`, () => {
         const result = formatDateForDisplay(date as string);
         expect(result).toContain(`（${expectedWeekday}）`);
       });
-    });
+    }
   });
 });

@@ -24,6 +24,7 @@ export const nonEmptyStringSchema = z
 export const japaneseNameSchema = z
   .string()
   .min(1, { message: "名前を入力してください" })
+  // biome-ignore lint/style/noMagicNumbers: バリデーション制約のため
   .max(50, { message: "名前は50文字以下で入力してください" })
   .regex(/^[ぁ-んァ-ヶ一-龯々〆〤\s]+$/, {
     message: "有効な日本語名を入力してください",
@@ -32,6 +33,7 @@ export const japaneseNameSchema = z
 // カナ名のバリデーション
 export const katakanaSchema = z
   .string()
+  // biome-ignore lint/style/noMagicNumbers: バリデーション制約のため
   .max(50, { message: "カナは50文字以下で入力してください" })
   .regex(/^[ァ-ヶー\s]*$/, { message: "カタカナで入力してください" })
   .optional();
@@ -95,15 +97,18 @@ export const departmentSchema = z.object({
   code: z
     .string()
     .min(1, { message: "部門コードは必須です" })
+    // biome-ignore lint/style/noMagicNumbers: バリデーション制約のため
     .max(20, { message: "部門コードは20文字以下で入力してください" })
     .regex(/^[A-Za-z0-9_-]+$/, {
       message: "部門コードは英数字、アンダースコア、ハイフンのみ使用できます",
     }),
+  // biome-ignore lint/style/noMagicNumbers: バリデーション制約のため
   name: nonEmptyStringSchema.max(100, {
     message: "部門名は100文字以下で入力してください",
   }),
   description: z
     .string()
+    // biome-ignore lint/style/noMagicNumbers: バリデーション制約のため
     .max(500, { message: "説明は500文字以下で入力してください" })
     .optional(),
   isActive: z.boolean().default(true),
@@ -118,6 +123,7 @@ export const instructorSchema = z.object({
   status: z.enum(["ACTIVE", "INACTIVE", "RETIRED"]).default("ACTIVE"),
   notes: z
     .string()
+    // biome-ignore lint/style/noMagicNumbers: バリデーション制約のため
     .max(1000, { message: "メモは1000文字以下で入力してください" })
     .optional(),
 });
@@ -125,17 +131,21 @@ export const instructorSchema = z.object({
 // 資格バリデーション
 export const certificationSchema = z.object({
   departmentId: positiveIntSchema,
+  // biome-ignore lint/style/noMagicNumbers: バリデーション制約のため
   name: nonEmptyStringSchema.max(100, {
     message: "資格名は100文字以下で入力してください",
   }),
+  // biome-ignore lint/style/noMagicNumbers: バリデーション制約のため
   shortName: nonEmptyStringSchema.max(20, {
     message: "略称は20文字以下で入力してください",
   }),
+  // biome-ignore lint/style/noMagicNumbers: バリデーション制約のため
   organization: nonEmptyStringSchema.max(100, {
     message: "認定団体は100文字以下で入力してください",
   }),
   description: z
     .string()
+    // biome-ignore lint/style/noMagicNumbers: バリデーション制約のため
     .max(500, { message: "説明は500文字以下で入力してください" })
     .optional(),
   isActive: z.boolean().default(true),
@@ -143,6 +153,7 @@ export const certificationSchema = z.object({
 
 // シフト種別バリデーション
 export const shiftTypeSchema = z.object({
+  // biome-ignore lint/style/noMagicNumbers: バリデーション制約のため
   name: nonEmptyStringSchema.max(50, {
     message: "シフト種別名は50文字以下で入力してください",
   }),
@@ -156,6 +167,7 @@ export const shiftSchema = z.object({
   shiftTypeId: positiveIntSchema,
   description: z
     .string()
+    // biome-ignore lint/style/noMagicNumbers: バリデーション制約のため
     .max(500, { message: "説明は500文字以下で入力してください" })
     .optional(),
 });

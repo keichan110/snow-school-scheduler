@@ -4,7 +4,7 @@ import type { ShiftStats } from "@/app/shifts/types";
  * シフト表示コンポーネントの基本Props型
  * カレンダーグリッドとモバイルリストで共通利用
  */
-export interface BaseShiftDisplayProps {
+export type BaseShiftDisplayProps = {
   /** 表示年 */
   year: number;
   /** 表示月 */
@@ -17,16 +17,16 @@ export interface BaseShiftDisplayProps {
   selectedDate: string | null;
   /** 日付選択時のコールバック */
   onDateSelect: (date: string) => void;
-}
+};
 
 /**
  * シフトカレンダーグリッドコンポーネントのProps型
  * BaseShiftDisplayPropsを継承
  */
-export interface ShiftCalendarGridProps extends BaseShiftDisplayProps {}
+export type ShiftCalendarGridProps = BaseShiftDisplayProps;
 
 /**
  * シフトモバイルリストコンポーネントのProps型
  * BaseShiftDisplayPropsを継承
  */
-export interface ShiftMobileListProps extends BaseShiftDisplayProps {}
+export type ShiftMobileListProps = BaseShiftDisplayProps;

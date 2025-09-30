@@ -3,7 +3,7 @@
  */
 
 // コンポーネント
-export * from "./components/feedback/ErrorBoundary";
+export * from "./components/feedback/error-boundary";
 // 型定義
 export * from "./types";
 

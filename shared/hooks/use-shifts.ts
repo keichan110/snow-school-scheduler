@@ -3,7 +3,7 @@ import { format } from "date-fns";
 import type { ApiResponse } from "@/lib/api/types";
 
 // 簡素化されたシフト型（実際のAPIレスポンスに合わせる）
-interface Shift {
+type Shift = {
   id: number;
   date: string;
   departmentId: number;
@@ -17,16 +17,16 @@ interface Shift {
     instructor: { id: number; firstName: string; lastName: string };
   }>;
   assignedCount: number;
-}
+};
 
 // シフト作成リクエスト型
-interface CreateShiftRequest {
+type CreateShiftRequest = {
   date: string;
   departmentId: number;
   shiftTypeId: number;
   description?: string;
   assignedInstructorIds?: number[];
-}
+};
 
 // シフト取得用のクエリキー生成関数
 export const shiftsQueryKeys = {
@@ -38,12 +38,12 @@ export const shiftsQueryKeys = {
   detail: (id: number) => [...shiftsQueryKeys.details(), id] as const,
 };
 
-interface ShiftFilters {
+type ShiftFilters = {
   departmentId?: number;
   shiftTypeId?: number;
   dateFrom?: string;
   dateTo?: string;
-}
+};
 
 // シフト一覧取得用のフック
 export function useShifts(filters: ShiftFilters = {}) {
@@ -78,8 +78,10 @@ export function useShifts(filters: ShiftFilters = {}) {
       return data.data;
     },
     // 設計書の通り、5分のstaleTime
+    // biome-ignore lint/style/noMagicNumbers: キャッシュ時間設定のため
     staleTime: 5 * 60 * 1000,
     // 30分のキャッシュ時間
+    // biome-ignore lint/style/noMagicNumbers: キャッシュ時間設定のため
     gcTime: 30 * 60 * 1000,
   });
 }
@@ -122,7 +124,9 @@ export function useShift(id: number) {
 
       return data.data;
     },
+    // biome-ignore lint/style/noMagicNumbers: キャッシュ時間設定のため
     staleTime: 5 * 60 * 1000,
+    // biome-ignore lint/style/noMagicNumbers: キャッシュ時間設定のため
     gcTime: 30 * 60 * 1000,
   });
 }
