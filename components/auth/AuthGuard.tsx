@@ -6,7 +6,7 @@ import { type ReactNode, useEffect } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { type User, useAuth } from "@/contexts/AuthContext";
+import { type User, useAuth } from "@/contexts/auth-context";
 
 /**
  * 認証ガードコンポーネントのProps

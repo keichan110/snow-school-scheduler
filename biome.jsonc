@@ -9,6 +9,9 @@
             "strictCase": false
           }
         }
+      },
+      "performance": {
+        "noBarrelFile": "off"
       }
     }
   },

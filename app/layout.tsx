@@ -5,7 +5,7 @@ import Footer from "@/components/Footer";
 import Header from "@/components/Header";
 import { NotificationProvider } from "@/components/notifications";
 import { ThemeProvider } from "@/components/theme-provider";
-import { AuthProvider } from "@/contexts/AuthContext";
+import { AuthProvider } from "@/contexts/auth-context";
 import { QueryProvider } from "@/shared/providers/query-client";
 
 export const metadata: Metadata = {

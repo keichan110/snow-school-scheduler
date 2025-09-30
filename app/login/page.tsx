@@ -4,7 +4,7 @@ import { Snowflake } from "@phosphor-icons/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import { LineLoginButton } from "@/components/ui/line-login-button";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/auth-context";
 
 /**
  * ログインページのメインコンテンツ

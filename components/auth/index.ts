@@ -10,7 +10,7 @@ export {
   useAuth,
   useRequireAuth,
   useRequireRole,
-} from "../../contexts/AuthContext";
+} from "../../contexts/auth-context";
 // 基本認証ガードコンポーネント
 export {
   AdminGuard,

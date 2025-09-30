@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { CertificationBadge } from "@/components/ui/certification-badge";
 import { DrawerFooter } from "@/components/ui/drawer";
 import { Label } from "@/components/ui/label";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/auth-context";
 import { hasManagePermission } from "@/lib/auth/permissions";
 import type { AuthenticatedUser } from "@/lib/auth/types";
 import { cn } from "@/lib/utils";

@@ -3,10 +3,12 @@
 import {
   createContext,
   type ReactNode,
+  useCallback,
   useContext,
   useEffect,
   useState,
 } from "react";
+import { HTTP_STATUS } from "@/shared/constants";
 
 /**
  * 認証状態管理Context
@@ -16,7 +18,7 @@ import {
 /**
  * ユーザー情報の型定義
  */
-export interface User {
+export type User = {
   /** ユーザーID */
   id: string;
   /** LINEユーザーID */
@@ -33,7 +35,7 @@ export interface User {
   createdAt: Date;
   /** 更新日時 */
   updatedAt: Date;
-}
+};
 
 /**
  * 認証状態の型定義
@@ -47,7 +49,7 @@ export type AuthStatus =
 /**
  * 認証Contextの値の型定義
  */
-interface AuthContextValue {
+type AuthContextValue = {
   /** 現在のユーザー情報 */
   user: User | null;
   /** 認証状態 */
@@ -62,7 +64,7 @@ interface AuthContextValue {
   updateDisplayName: (newDisplayName: string) => Promise<boolean>;
   /** 認証チェック（手動実行用） */
   checkAuth: () => Promise<void>;
-}
+};
 
 /**
  * AuthContext作成
@@ -72,57 +74,55 @@ const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 /**
  * AuthProviderのProps
  */
-interface AuthProviderProps {
+type AuthProviderProps = {
   children: ReactNode;
-}
+};
 
 /**
  * API Response型定義
  */
-interface ApiResponse<T> {
+type ApiResponse<T> = {
   success: boolean;
   data?: T;
   user?: T;
   error?: string;
-}
+};
 
 /**
  * ユーザー情報取得
  */
 async function fetchUserInfo(): Promise<User | null> {
-  try {
-    const response = await fetch("/api/auth/me", {
-      method: "GET",
-      credentials: "include", // Cookieを含める
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
+  const response = await fetch("/api/auth/me", {
+    method: "GET",
+    credentials: "include", // Cookieを含める
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
 
-    if (!response.ok) {
-      if (response.status === 401 || response.status === 403) {
-        // 未認証または無効なユーザー
-        return null;
-      }
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-    }
-
-    const data: ApiResponse<User> = await response.json();
-
-    if (!(data.success && data.user)) {
+  if (!response.ok) {
+    if (
+      response.status === HTTP_STATUS.UNAUTHORIZED ||
+      response.status === HTTP_STATUS.FORBIDDEN
+    ) {
+      // 未認証または無効なユーザー
       return null;
     }
-
-    // Date型に変換
-    return {
-      ...data.user,
-      createdAt: new Date(data.user.createdAt),
-      updatedAt: new Date(data.user.updatedAt),
-    };
-  } catch (error) {
-    console.error("❌ User authentication failed");
-    throw error;
+    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
   }
+
+  const data: ApiResponse<User> = await response.json();
+
+  if (!(data.success && data.user)) {
+    return null;
+  }
+
+  // Date型に変換
+  return {
+    ...data.user,
+    createdAt: new Date(data.user.createdAt),
+    updatedAt: new Date(data.user.updatedAt),
+  };
 }
 
 /**
@@ -139,14 +139,11 @@ async function performLogout(): Promise<void> {
     });
 
     if (!response.ok) {
-      console.warn("⚠️ Logout request failed, but continuing:", response.status);
       // ログアウトは失敗してもクライアント側では成功として扱う
     }
 
-    const data: ApiResponse<never> = await response.json();
-    console.log("🚪 Logout response:", data);
-  } catch (error) {
-    console.warn("⚠️ Logout request error, but continuing:", error);
+    await response.json();
+  } catch {
     // ネットワークエラー等でもクライアント側では成功として扱う
   }
 }
@@ -197,7 +194,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   /**
    * ユーザー情報取得・更新
    */
-  const fetchAndSetUser = async () => {
+  const fetchAndSetUser = useCallback(async () => {
     try {
       setStatus("loading");
       setError(null);
@@ -207,15 +204,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
       if (userData) {
         setUser(userData);
         setStatus("authenticated");
-        console.log("✅ User authenticated:", {
-          id: userData.id,
-          displayName: userData.displayName,
-          role: userData.role,
-        });
       } else {
         setUser(null);
         setStatus("unauthenticated");
-        console.log("🔓 User not authenticated");
       }
     } catch (err) {
       const errorMessage =
@@ -223,10 +214,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setError(errorMessage);
       setStatus("error");
       setUser(null);
-      // 機密情報を含まない安全なログ出力
-      console.error("❌ Authentication failed");
     }
-  };
+  }, []);
 
   /**
    * ログアウト処理
@@ -235,15 +224,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
     try {
       // API呼び出しでサーバー側のログアウト処理
       await performLogout();
-      console.log("🚪 Server logout completed");
-    } catch (error) {
-      console.warn("⚠️ Logout API failed, but clearing local state:", error);
     } finally {
       // ローカル状態をクリア
       setUser(null);
       setStatus("unauthenticated");
       setError(null);
-      console.log("🚪 User logged out (local state cleared)");
 
       // 注意：リダイレクト処理は呼び出し側（専用ログアウトページ）で実行
     }
@@ -262,17 +247,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
       const updatedUser = await updateUserDisplayName(newDisplayName);
       setUser(updatedUser);
-      console.log("📝 Display name updated:", {
-        old: user.displayName,
-        new: updatedUser.displayName,
-      });
       return true;
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "Failed to update display name";
       setError(errorMessage);
-      // 機密情報を含まない安全なログ出力
-      console.error("❌ Display name update failed");
       return false;
     }
   };
@@ -282,7 +261,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
    */
   useEffect(() => {
     fetchAndSetUser();
-  }, []);
+  }, [fetchAndSetUser]);
 
   /**
    * Context値
