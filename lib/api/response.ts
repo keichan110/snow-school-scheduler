@@ -1,11 +1,11 @@
-import { NextResponse } from 'next/server';
+import { NextResponse } from "next/server";
 import {
-  ApiSuccessResponse,
-  ApiErrorResponse,
-  HttpStatus,
+  type ApiErrorResponse,
   ApiErrorType,
-  ValidationError,
-} from './types';
+  type ApiSuccessResponse,
+  HttpStatus,
+  type ValidationError,
+} from "./types";
 
 /**
  * 成功レスポンスを作成
@@ -60,7 +60,7 @@ export function createErrorResponse(
 export function createValidationErrorResponse(
   errors: ValidationError[]
 ): NextResponse<ApiErrorResponse> {
-  const errorMessage = `Validation failed: ${errors.map((e) => e.message).join(', ')}`;
+  const errorMessage = `Validation failed: ${errors.map((e) => e.message).join(", ")}`;
 
   return createErrorResponse(errorMessage, {
     type: ApiErrorType.VALIDATION_ERROR,
@@ -73,7 +73,7 @@ export function createValidationErrorResponse(
  * 404 Not Found レスポンスを作成
  */
 export function createNotFoundResponse(
-  resource: string = 'Resource'
+  resource = "Resource"
 ): NextResponse<ApiErrorResponse> {
   return createErrorResponse(`${resource} not found`, {
     type: ApiErrorType.NOT_FOUND,
@@ -84,7 +84,9 @@ export function createNotFoundResponse(
 /**
  * 409 Conflict レスポンスを作成
  */
-export function createConflictResponse(message: string): NextResponse<ApiErrorResponse> {
+export function createConflictResponse(
+  message: string
+): NextResponse<ApiErrorResponse> {
   return createErrorResponse(message, {
     type: ApiErrorType.CONFLICT,
     status: HttpStatus.CONFLICT,
@@ -98,18 +100,18 @@ export function createInternalErrorResponse(
   error: unknown,
   context?: string
 ): NextResponse<ApiErrorResponse> {
-  const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+  const errorMessage = error instanceof Error ? error.message : "Unknown error";
   const logMessage = context ? `${context}: ${errorMessage}` : errorMessage;
 
   // エラーログ出力
-  console.error('API Internal Error:', {
+  console.error("API Internal Error:", {
     message: logMessage,
     stack: error instanceof Error ? error.stack : undefined,
     context,
     timestamp: new Date().toISOString(),
   });
 
-  return createErrorResponse('Internal server error', {
+  return createErrorResponse("Internal server error", {
     type: ApiErrorType.INTERNAL_ERROR,
     status: HttpStatus.INTERNAL_SERVER_ERROR,
   });
@@ -124,7 +126,7 @@ export function createMissingFieldsResponse(
   const errors: ValidationError[] = missingFields.map((field) => ({
     field,
     message: `${field} is required`,
-    code: 'REQUIRED_FIELD',
+    code: "REQUIRED_FIELD",
   }));
 
   return createValidationErrorResponse(errors);

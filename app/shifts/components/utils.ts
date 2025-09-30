@@ -1,24 +1,24 @@
-import { DepartmentType } from './types';
+import type { DepartmentType } from "./types";
 
 // シフト種別の短縮名マッピング (type-safe Record)
 const SHIFT_TYPE_SHORT_MAP: Record<string, string> = {
-  スキーレッスン: 'レッスン',
-  スノーボードレッスン: 'レッスン',
-  スキー検定: '検定',
-  スノーボード検定: '検定',
-  県連事業: '県連',
-  月末イベント: 'イベント',
+  スキーレッスン: "レッスン",
+  スノーボードレッスン: "レッスン",
+  スキー検定: "検定",
+  スノーボード検定: "検定",
+  県連事業: "県連",
+  月末イベント: "イベント",
 } as const;
 
 // 部門背景クラスのマッピング (immutable)
 const DEPARTMENT_BG_CLASS_MAP = new Map<DepartmentType, string>([
-  ['ski', 'bg-ski-200 dark:bg-ski-800'],
-  ['snowboard', 'bg-snowboard-200 dark:bg-snowboard-800'],
-  ['mixed', 'bg-gray-200 dark:bg-gray-800'],
+  ["ski", "bg-ski-200 dark:bg-ski-800"],
+  ["snowboard", "bg-snowboard-200 dark:bg-snowboard-800"],
+  ["mixed", "bg-gray-200 dark:bg-gray-800"],
 ] as const);
 
 // Weekday cache for performance
-export const WEEKDAYS = ['日', '月', '火', '水', '木', '金', '土'] as const;
+export const WEEKDAYS = ["日", "月", "火", "水", "木", "金", "土"] as const;
 
 /**
  * シフト種別名を短縮形に変換 (type-safe with Record)
@@ -31,7 +31,9 @@ export function getShiftTypeShort(type: string): string {
  * 部門タイプに応じた背景クラスを取得 (optimized with Map)
  */
 export function getDepartmentBgClass(department: DepartmentType): string {
-  return DEPARTMENT_BG_CLASS_MAP.get(department) ?? 'bg-gray-200 dark:bg-gray-800';
+  return (
+    DEPARTMENT_BG_CLASS_MAP.get(department) ?? "bg-gray-200 dark:bg-gray-800"
+  );
 }
 
 /**

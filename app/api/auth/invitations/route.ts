@@ -1,13 +1,17 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/db';
+import { type NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import {
+  type CreateInvitationTokenParams,
   createInvitationToken,
-  CreateInvitationTokenParams,
   getInvitationTokensByCreator,
-} from '@/lib/auth/invitations';
-import { ApiResponse, InvitationUrlData, InvitationListItem } from '@/lib/auth/types';
-import { z } from 'zod';
-import { authenticateFromRequest, checkUserRole } from '@/lib/auth/middleware';
+} from "@/lib/auth/invitations";
+import { authenticateFromRequest, checkUserRole } from "@/lib/auth/middleware";
+import type {
+  ApiResponse,
+  InvitationListItem,
+  InvitationUrlData,
+} from "@/lib/auth/types";
+import { prisma } from "@/lib/db";
 
 /**
  * 招待URL作成API
@@ -38,19 +42,24 @@ export async function POST(
 ): Promise<NextResponse<ApiResponse<InvitationUrlData>>> {
   try {
     const authResult = await authenticateFromRequest(request);
-    if (!authResult.success || !authResult.user) {
+    if (!(authResult.success && authResult.user)) {
       return NextResponse.json(
-        { success: false, error: authResult.error ?? 'Authentication required' },
+        {
+          success: false,
+          error: authResult.error ?? "Authentication required",
+        },
         { status: authResult.statusCode ?? 401 }
       );
     }
 
-    const roleResult = checkUserRole(authResult.user, 'MANAGER');
-    if (!roleResult.success || !roleResult.user) {
+    const roleResult = checkUserRole(authResult.user, "MANAGER");
+    if (!(roleResult.success && roleResult.user)) {
       return NextResponse.json(
         {
           success: false,
-          error: roleResult.error ?? 'Insufficient permissions. Admin or Manager role required.',
+          error:
+            roleResult.error ??
+            "Insufficient permissions. Admin or Manager role required.",
         },
         { status: roleResult.statusCode ?? 403 }
       );
@@ -67,7 +76,8 @@ export async function POST(
       return NextResponse.json(
         {
           success: false,
-          error: 'Invalid request body. Expected: { description?: string, expiresAt: string }',
+          error:
+            "Invalid request body. Expected: { description?: string, expiresAt: string }",
         },
         { status: 400 }
       );
@@ -80,14 +90,14 @@ export async function POST(
 
     if (expiresAt > maxExpiryDate) {
       return NextResponse.json(
-        { success: false, error: '有効期限は最大1ヶ月までです' },
+        { success: false, error: "有効期限は最大1ヶ月までです" },
         { status: 400 }
       );
     }
 
     if (expiresAt <= new Date()) {
       return NextResponse.json(
-        { success: false, error: '有効期限は現在時刻より後に設定してください' },
+        { success: false, error: "有効期限は現在時刻より後に設定してください" },
         { status: 400 }
       );
     }
@@ -96,7 +106,7 @@ export async function POST(
     const createParams: CreateInvitationTokenParams = {
       createdBy: user.id,
       ...(requestBody.description && { description: requestBody.description }),
-      expiresAt: expiresAt,
+      expiresAt,
     };
 
     // 招待トークン生成（内部で既存の有効招待を自動無効化）
@@ -104,7 +114,8 @@ export async function POST(
 
     // ベースURLの取得（環境変数または リクエストヘッダーから）
     const baseUrl =
-      process.env.NEXT_PUBLIC_APP_URL || `${request.nextUrl.protocol}//${request.nextUrl.host}`;
+      process.env.NEXT_PUBLIC_APP_URL ||
+      `${request.nextUrl.protocol}//${request.nextUrl.host}`;
 
     // 招待URLの生成
     const invitationUrl = `${baseUrl}/login?invite=${encodeURIComponent(invitationToken.token)}`;
@@ -114,14 +125,14 @@ export async function POST(
       success: true,
       data: {
         token: invitationToken.token,
-        invitationUrl: invitationUrl,
+        invitationUrl,
         expiresAt: invitationToken.expiresAt.toISOString(),
         maxUses: invitationToken.maxUses,
         createdBy: invitationToken.creator.displayName,
       },
     };
 
-    console.log('✅ Invitation URL created successfully:', {
+    console.log("✅ Invitation URL created successfully:", {
       createdBy: user.displayName,
       role: user.role,
       expiresAt: invitationToken.expiresAt.toISOString(),
@@ -131,24 +142,28 @@ export async function POST(
 
     return NextResponse.json(responseData, { status: 201 });
   } catch (error) {
-    console.error('❌ Invitation URL creation failed:', error);
+    console.error("❌ Invitation URL creation failed:", error);
 
     // 具体的なエラーメッセージの処理
-    let errorMessage = 'Failed to create invitation URL';
+    let errorMessage = "Failed to create invitation URL";
     if (error instanceof Error) {
       // 既知のエラーパターンを識別
-      if (error.message.includes('Invalid user ID')) {
-        errorMessage = 'User not found or inactive';
-      } else if (error.message.includes('Insufficient permissions')) {
-        errorMessage = 'Insufficient permissions to create invitations';
-      } else if (error.message.includes('Failed to generate unique')) {
-        errorMessage = 'System error: Unable to generate unique invitation token';
+      if (error.message.includes("Invalid user ID")) {
+        errorMessage = "User not found or inactive";
+      } else if (error.message.includes("Insufficient permissions")) {
+        errorMessage = "Insufficient permissions to create invitations";
+      } else if (error.message.includes("Failed to generate unique")) {
+        errorMessage =
+          "System error: Unable to generate unique invitation token";
       } else {
         errorMessage = error.message;
       }
     }
 
-    return NextResponse.json({ success: false, error: errorMessage }, { status: 500 });
+    return NextResponse.json(
+      { success: false, error: errorMessage },
+      { status: 500 }
+    );
   }
 }
 
@@ -170,19 +185,24 @@ export async function GET(
 ): Promise<NextResponse<ApiResponse<InvitationListItem[]>>> {
   try {
     const authResult = await authenticateFromRequest(request);
-    if (!authResult.success || !authResult.user) {
+    if (!(authResult.success && authResult.user)) {
       return NextResponse.json(
-        { success: false, error: authResult.error ?? 'Authentication required' },
+        {
+          success: false,
+          error: authResult.error ?? "Authentication required",
+        },
         { status: authResult.statusCode ?? 401 }
       );
     }
 
-    const roleResult = checkUserRole(authResult.user, 'MANAGER');
-    if (!roleResult.success || !roleResult.user) {
+    const roleResult = checkUserRole(authResult.user, "MANAGER");
+    if (!(roleResult.success && roleResult.user)) {
       return NextResponse.json(
         {
           success: false,
-          error: roleResult.error ?? 'Insufficient permissions. Admin or Manager role required.',
+          error:
+            roleResult.error ??
+            "Insufficient permissions. Admin or Manager role required.",
         },
         { status: roleResult.statusCode ?? 403 }
       );
@@ -192,15 +212,16 @@ export async function GET(
 
     // クエリパラメータの解析
     const { searchParams } = new URL(request.url);
-    const includeInactive = searchParams.get('includeInactive') === 'true';
-    const showAll = user.role === 'ADMIN' && searchParams.get('showAll') === 'true';
+    const includeInactive = searchParams.get("includeInactive") === "true";
+    const showAll =
+      user.role === "ADMIN" && searchParams.get("showAll") === "true";
 
     // 招待トークン一覧取得
     // ADMIN: showAll=trueの場合は全トークン、そうでなければ自分作成のみ
     // MANAGER: 自分が作成したトークンのみ
 
     let tokens;
-    if (showAll && user.role === 'ADMIN') {
+    if (showAll && user.role === "ADMIN") {
       // 全ユーザーの招待トークンを取得（管理者のみ）
       tokens = await prisma.invitationToken.findMany({
         where: {
@@ -216,7 +237,7 @@ export async function GET(
           },
         },
         orderBy: {
-          createdAt: 'desc',
+          createdAt: "desc",
         },
       });
     } else {
@@ -230,11 +251,13 @@ export async function GET(
     // レスポンスデータの構築
     const invitationList: InvitationListItem[] = tokens.map((token) => {
       const isExpired = token.expiresAt <= now;
-      const remainingUses = token.maxUses ? token.maxUses - token.usedCount : null;
+      const remainingUses = token.maxUses
+        ? token.maxUses - token.usedCount
+        : null;
 
       return {
         token: token.token,
-        description: token.description || '', // 修正: descriptionフィールドを追加
+        description: token.description || "", // 修正: descriptionフィールドを追加
         expiresAt: token.expiresAt.toISOString(),
         isActive: token.isActive,
         maxUses: token.maxUses,
@@ -248,13 +271,14 @@ export async function GET(
       };
     });
 
-    console.log('✅ Invitation tokens retrieved successfully:', {
+    console.log("✅ Invitation tokens retrieved successfully:", {
       requestedBy: user.displayName,
       role: user.role,
-      showAll: showAll && user.role === 'ADMIN',
+      showAll: showAll && user.role === "ADMIN",
       includeInactive,
       tokenCount: invitationList.length,
-      activeTokens: invitationList.filter((t) => t.isActive && !t.isExpired).length,
+      activeTokens: invitationList.filter((t) => t.isActive && !t.isExpired)
+        .length,
     });
 
     const responseData: ApiResponse<InvitationListItem[]> = {
@@ -264,13 +288,16 @@ export async function GET(
 
     return NextResponse.json(responseData, { status: 200 });
   } catch (error) {
-    console.error('❌ Invitation tokens retrieval failed:', error);
+    console.error("❌ Invitation tokens retrieval failed:", error);
 
-    let errorMessage = 'Failed to retrieve invitation tokens';
+    let errorMessage = "Failed to retrieve invitation tokens";
     if (error instanceof Error) {
       errorMessage = error.message;
     }
 
-    return NextResponse.json({ success: false, error: errorMessage }, { status: 500 });
+    return NextResponse.json(
+      { success: false, error: errorMessage },
+      { status: 500 }
+    );
   }
 }

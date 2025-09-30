@@ -1,5 +1,5 @@
-import { randomBytes, createHash } from 'crypto';
-import { prisma } from '@/lib/db';
+import { createHash, randomBytes } from "crypto";
+import { prisma } from "@/lib/db";
 
 /**
  * 招待トークン関連のユーティリティ関数
@@ -17,7 +17,7 @@ export const invitationConfig = {
   /** デフォルトの最大使用回数 */
   defaultMaxUses: 10,
   /** トークンプレフィックス（識別用） */
-  tokenPrefix: 'inv_',
+  tokenPrefix: "inv_",
 } as const;
 
 /**
@@ -60,7 +60,7 @@ export interface TokenValidationResult {
   isValid: boolean;
   token?: InvitationTokenDetails;
   error?: string;
-  errorCode?: 'NOT_FOUND' | 'EXPIRED' | 'INACTIVE' | 'MAX_USES_EXCEEDED';
+  errorCode?: "NOT_FOUND" | "EXPIRED" | "INACTIVE" | "MAX_USES_EXCEEDED";
 }
 
 /**
@@ -73,7 +73,7 @@ function generateSecureToken(): string {
   const randomData = randomBytes(invitationConfig.tokenLength);
 
   // SHA-256ハッシュを生成して16進数文字列に変換
-  const hash = createHash('sha256').update(randomData).digest('hex');
+  const hash = createHash("sha256").update(randomData).digest("hex");
 
   // プレフィックスを付けて返す
   return invitationConfig.tokenPrefix + hash;
@@ -113,15 +113,17 @@ export async function createInvitationToken(
   });
 
   if (!creator) {
-    throw new Error('Invalid user ID: Creator not found');
+    throw new Error("Invalid user ID: Creator not found");
   }
 
   if (!creator.isActive) {
-    throw new Error('Inactive user cannot create invitation tokens');
+    throw new Error("Inactive user cannot create invitation tokens");
   }
 
-  if (creator.role !== 'ADMIN' && creator.role !== 'MANAGER') {
-    throw new Error('Insufficient permissions: Only ADMIN or MANAGER can create invitations');
+  if (creator.role !== "ADMIN" && creator.role !== "MANAGER") {
+    throw new Error(
+      "Insufficient permissions: Only ADMIN or MANAGER can create invitations"
+    );
   }
 
   // 一意なトークンを生成（衝突を避けるために最大5回試行）
@@ -143,7 +145,7 @@ export async function createInvitationToken(
     }
 
     if (attempts >= maxAttempts) {
-      throw new Error('Failed to generate unique invitation token');
+      throw new Error("Failed to generate unique invitation token");
     }
   } while (attempts < maxAttempts);
 
@@ -195,12 +197,15 @@ export async function createInvitationToken(
     });
   });
 
-  console.log('✅ Invitation token created (previous active tokens deactivated):', {
-    token: token.substring(0, 16) + '...',
-    createdBy: creator.displayName,
-    expiresAt: finalExpiresAt.toISOString(),
-    description: description || 'No description',
-  });
+  console.log(
+    "✅ Invitation token created (previous active tokens deactivated):",
+    {
+      token: token.substring(0, 16) + "...",
+      createdBy: creator.displayName,
+      expiresAt: finalExpiresAt.toISOString(),
+      description: description || "No description",
+    }
+  );
 
   return {
     ...invitationToken,
@@ -231,14 +236,16 @@ export async function createInvitationToken(
  * }
  * ```
  */
-export async function validateInvitationToken(token: string): Promise<TokenValidationResult> {
+export async function validateInvitationToken(
+  token: string
+): Promise<TokenValidationResult> {
   try {
     // トークン形式の基本チェック
-    if (!token || typeof token !== 'string') {
+    if (!token || typeof token !== "string") {
       return {
         isValid: false,
-        error: 'Invalid token format',
-        errorCode: 'NOT_FOUND',
+        error: "Invalid token format",
+        errorCode: "NOT_FOUND",
       };
     }
 
@@ -246,8 +253,8 @@ export async function validateInvitationToken(token: string): Promise<TokenValid
     if (!token.startsWith(invitationConfig.tokenPrefix)) {
       return {
         isValid: false,
-        error: 'Invalid token prefix',
-        errorCode: 'NOT_FOUND',
+        error: "Invalid token prefix",
+        errorCode: "NOT_FOUND",
       };
     }
 
@@ -268,8 +275,8 @@ export async function validateInvitationToken(token: string): Promise<TokenValid
     if (!invitationToken) {
       return {
         isValid: false,
-        error: 'Invitation token not found',
-        errorCode: 'NOT_FOUND',
+        error: "Invitation token not found",
+        errorCode: "NOT_FOUND",
       };
     }
 
@@ -277,8 +284,8 @@ export async function validateInvitationToken(token: string): Promise<TokenValid
     if (!invitationToken.isActive) {
       return {
         isValid: false,
-        error: 'Invitation token is disabled',
-        errorCode: 'INACTIVE',
+        error: "Invitation token is disabled",
+        errorCode: "INACTIVE",
         token: invitationToken,
       };
     }
@@ -288,8 +295,8 @@ export async function validateInvitationToken(token: string): Promise<TokenValid
     if (invitationToken.expiresAt <= now) {
       return {
         isValid: false,
-        error: 'Invitation token has expired',
-        errorCode: 'EXPIRED',
+        error: "Invitation token has expired",
+        errorCode: "EXPIRED",
         token: invitationToken,
       };
     }
@@ -300,10 +307,11 @@ export async function validateInvitationToken(token: string): Promise<TokenValid
       token: invitationToken,
     };
   } catch (error) {
-    console.error('❌ Invitation token validation error:', error);
+    console.error("❌ Invitation token validation error:", error);
     return {
       isValid: false,
-      error: error instanceof Error ? error.message : 'Unknown validation error',
+      error:
+        error instanceof Error ? error.message : "Unknown validation error",
     };
   }
 }
@@ -322,7 +330,9 @@ export async function validateInvitationToken(token: string): Promise<TokenValid
  * console.log(`使用回数: ${updatedToken.usedCount}/${updatedToken.maxUses}`);
  * ```
  */
-export async function incrementTokenUsage(token: string): Promise<InvitationTokenDetails> {
+export async function incrementTokenUsage(
+  token: string
+): Promise<InvitationTokenDetails> {
   // まず有効性を確認
   const validation = await validateInvitationToken(token);
 
@@ -350,11 +360,13 @@ export async function incrementTokenUsage(token: string): Promise<InvitationToke
     },
   });
 
-  console.log('📊 Invitation token usage incremented:', {
-    token: token.substring(0, 16) + '...',
+  console.log("📊 Invitation token usage incremented:", {
+    token: token.substring(0, 16) + "...",
     usedCount: updatedToken.usedCount,
     maxUses: updatedToken.maxUses,
-    remaining: updatedToken.maxUses ? updatedToken.maxUses - updatedToken.usedCount : '無制限',
+    remaining: updatedToken.maxUses
+      ? updatedToken.maxUses - updatedToken.usedCount
+      : "無制限",
   });
 
   return updatedToken;
@@ -384,12 +396,14 @@ export async function deactivateInvitationToken(
     select: { role: true, isActive: true },
   });
 
-  if (!user || !user.isActive) {
-    throw new Error('Invalid user: Cannot deactivate invitation token');
+  if (!(user && user.isActive)) {
+    throw new Error("Invalid user: Cannot deactivate invitation token");
   }
 
-  if (user.role !== 'ADMIN' && user.role !== 'MANAGER') {
-    throw new Error('Insufficient permissions: Only ADMIN or MANAGER can deactivate invitations');
+  if (user.role !== "ADMIN" && user.role !== "MANAGER") {
+    throw new Error(
+      "Insufficient permissions: Only ADMIN or MANAGER can deactivate invitations"
+    );
   }
 
   // トークンを無効化
@@ -410,8 +424,8 @@ export async function deactivateInvitationToken(
     },
   });
 
-  console.log('🚫 Invitation token deactivated:', {
-    token: token.substring(0, 16) + '...',
+  console.log("🚫 Invitation token deactivated:", {
+    token: token.substring(0, 16) + "...",
     deactivatedBy,
   });
 
@@ -427,7 +441,7 @@ export async function deactivateInvitationToken(
  */
 export async function getInvitationTokensByCreator(
   createdBy: string,
-  includeInactive: boolean = false
+  includeInactive = false
 ): Promise<InvitationTokenDetails[]> {
   const tokens = await prisma.invitationToken.findMany({
     where: {
@@ -444,7 +458,7 @@ export async function getInvitationTokensByCreator(
       },
     },
     orderBy: {
-      createdAt: 'desc',
+      createdAt: "desc",
     },
   });
 

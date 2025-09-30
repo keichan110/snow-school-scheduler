@@ -1,23 +1,23 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { UserGear, Trash } from '@phosphor-icons/react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
+import { Trash, UserGear } from "@phosphor-icons/react";
+import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
 import {
   Drawer,
   DrawerClose,
   DrawerContent,
+  DrawerFooter,
   DrawerHeader,
   DrawerTitle,
-  DrawerFooter,
-} from '@/components/ui/drawer';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { getRoleDisplayName } from './api';
-import type { UserWithDetails, UserFormData, UserRole } from './types';
+} from "@/components/ui/drawer";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Switch } from "@/components/ui/switch";
+import { getRoleDisplayName } from "./api";
+import type { UserFormData, UserRole, UserWithDetails } from "./types";
 
 interface UserModalProps {
   isOpen: boolean;
@@ -27,10 +27,16 @@ interface UserModalProps {
   onDeactivate?: (user: UserWithDetails) => Promise<void>;
 }
 
-export default function UserModal({ isOpen, onClose, user, onSave, onDeactivate }: UserModalProps) {
+export default function UserModal({
+  isOpen,
+  onClose,
+  user,
+  onSave,
+  onDeactivate,
+}: UserModalProps) {
   const [formData, setFormData] = useState<UserFormData>({
-    displayName: '',
-    role: 'MEMBER',
+    displayName: "",
+    role: "MEMBER",
     isActive: true,
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -46,8 +52,8 @@ export default function UserModal({ isOpen, onClose, user, onSave, onDeactivate 
       });
     } else {
       setFormData({
-        displayName: '',
-        role: 'MEMBER',
+        displayName: "",
+        role: "MEMBER",
         isActive: true,
       });
     }
@@ -58,7 +64,7 @@ export default function UserModal({ isOpen, onClose, user, onSave, onDeactivate 
     e.preventDefault();
 
     if (!formData.displayName.trim()) {
-      setError('表示名を入力してください');
+      setError("表示名を入力してください");
       return;
     }
 
@@ -69,7 +75,11 @@ export default function UserModal({ isOpen, onClose, user, onSave, onDeactivate 
       await onSave(formData);
       onClose();
     } catch (error) {
-      setError(error instanceof Error ? error.message : 'ユーザー情報の更新に失敗しました');
+      setError(
+        error instanceof Error
+          ? error.message
+          : "ユーザー情報の更新に失敗しました"
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -85,16 +95,24 @@ export default function UserModal({ isOpen, onClose, user, onSave, onDeactivate 
   };
 
   const handleDeactivate = async () => {
-    if (!user || !onDeactivate) return;
+    if (!(user && onDeactivate)) return;
 
-    if (window.confirm(`${user.displayName}を無効化しますか？\nこの操作は取り消せません。`)) {
+    if (
+      window.confirm(
+        `${user.displayName}を無効化しますか？\nこの操作は取り消せません。`
+      )
+    ) {
       try {
         setIsSubmitting(true);
         setError(null);
         await onDeactivate(user);
         onClose();
       } catch (error) {
-        setError(error instanceof Error ? error.message : 'ユーザーの無効化に失敗しました');
+        setError(
+          error instanceof Error
+            ? error.message
+            : "ユーザーの無効化に失敗しました"
+        );
       } finally {
         setIsSubmitting(false);
       }
@@ -102,7 +120,7 @@ export default function UserModal({ isOpen, onClose, user, onSave, onDeactivate 
   };
 
   return (
-    <Drawer open={isOpen} onOpenChange={handleClose}>
+    <Drawer onOpenChange={handleClose} open={isOpen}>
       <DrawerContent>
         <div className="mx-auto w-full max-w-7xl">
           <DrawerHeader>
@@ -113,49 +131,54 @@ export default function UserModal({ isOpen, onClose, user, onSave, onDeactivate 
           </DrawerHeader>
 
           <ScrollArea className="h-auto max-h-[60vh] overflow-auto overflow-y-auto p-4">
-            <form id="user-form" onSubmit={handleSubmit} className="space-y-6">
+            <form className="space-y-6" id="user-form" onSubmit={handleSubmit}>
               {error && (
                 <div className="rounded-md bg-destructive/15 p-3">
-                  <p className="text-sm text-destructive">{error}</p>
+                  <p className="text-destructive text-sm">{error}</p>
                 </div>
               )}
 
               {/* 表示名 */}
               <div className="space-y-2">
-                <Label htmlFor="displayName" className="text-sm font-medium">
+                <Label className="font-medium text-sm" htmlFor="displayName">
                   表示名 <span className="text-destructive">*</span>
                 </Label>
                 <Input
                   id="displayName"
-                  value={formData.displayName}
-                  onChange={(e) => setFormData({ ...formData, displayName: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, displayName: e.target.value })
+                  }
                   placeholder="ユーザーの表示名を入力"
                   required
+                  value={formData.displayName}
                 />
               </div>
 
               {/* 権限ロール */}
               <div className="space-y-3">
-                <Label className="text-sm font-medium">
+                <Label className="font-medium text-sm">
                   権限ロール <span className="text-destructive">*</span>
                 </Label>
-                <RadioGroup value={formData.role} onValueChange={handleRoleChange}>
+                <RadioGroup
+                  onValueChange={handleRoleChange}
+                  value={formData.role}
+                >
                   <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="MEMBER" id="member" />
-                    <Label htmlFor="member" className="cursor-pointer">
-                      {getRoleDisplayName('MEMBER')} - 基本権限
+                    <RadioGroupItem id="member" value="MEMBER" />
+                    <Label className="cursor-pointer" htmlFor="member">
+                      {getRoleDisplayName("MEMBER")} - 基本権限
                     </Label>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="MANAGER" id="manager" />
-                    <Label htmlFor="manager" className="cursor-pointer">
-                      {getRoleDisplayName('MANAGER')} - シフト管理権限
+                    <RadioGroupItem id="manager" value="MANAGER" />
+                    <Label className="cursor-pointer" htmlFor="manager">
+                      {getRoleDisplayName("MANAGER")} - シフト管理権限
                     </Label>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="ADMIN" id="admin" />
-                    <Label htmlFor="admin" className="cursor-pointer">
-                      {getRoleDisplayName('ADMIN')} - 全権限
+                    <RadioGroupItem id="admin" value="ADMIN" />
+                    <Label className="cursor-pointer" htmlFor="admin">
+                      {getRoleDisplayName("ADMIN")} - 全権限
                     </Label>
                   </div>
                 </RadioGroup>
@@ -164,17 +187,19 @@ export default function UserModal({ isOpen, onClose, user, onSave, onDeactivate 
               {/* アクティブ状態 */}
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
-                  <Label htmlFor="isActive" className="text-sm font-medium">
+                  <Label className="font-medium text-sm" htmlFor="isActive">
                     アクティブ状態
                   </Label>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-muted-foreground text-xs">
                     無効化されたユーザーはログインできません
                   </p>
                 </div>
                 <Switch
-                  id="isActive"
                   checked={formData.isActive}
-                  onCheckedChange={(checked) => setFormData({ ...formData, isActive: checked })}
+                  id="isActive"
+                  onCheckedChange={(checked) =>
+                    setFormData({ ...formData, isActive: checked })
+                  }
                 />
               </div>
             </form>
@@ -183,42 +208,50 @@ export default function UserModal({ isOpen, onClose, user, onSave, onDeactivate 
           <DrawerFooter>
             <div className="flex w-full gap-2">
               <DrawerClose asChild>
-                <Button type="button" variant="outline" disabled={isSubmitting} className="flex-1">
+                <Button
+                  className="flex-1"
+                  disabled={isSubmitting}
+                  type="button"
+                  variant="outline"
+                >
                   キャンセル
                 </Button>
               </DrawerClose>
 
               <Button
-                type="submit"
-                form="user-form"
-                disabled={isSubmitting || !formData.displayName.trim()}
                 className="flex-1"
+                disabled={isSubmitting || !formData.displayName.trim()}
+                form="user-form"
+                type="submit"
               >
-                {isSubmitting ? '保存中...' : '保存'}
+                {isSubmitting ? "保存中..." : "保存"}
               </Button>
 
               {/* 無効化ボタン（管理者以外のアクティブユーザーのみ） */}
-              {user && user.isActive && user.role !== 'ADMIN' && onDeactivate && (
-                <Button
-                  type="button"
-                  variant="destructive"
-                  onClick={handleDeactivate}
-                  disabled={isSubmitting}
-                  className="flex-1"
-                >
-                  {isSubmitting ? (
-                    <>
-                      <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
-                      無効化中...
-                    </>
-                  ) : (
-                    <>
-                      <Trash className="mr-2 h-4 w-4" weight="regular" />
-                      無効化
-                    </>
-                  )}
-                </Button>
-              )}
+              {user &&
+                user.isActive &&
+                user.role !== "ADMIN" &&
+                onDeactivate && (
+                  <Button
+                    className="flex-1"
+                    disabled={isSubmitting}
+                    onClick={handleDeactivate}
+                    type="button"
+                    variant="destructive"
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                        無効化中...
+                      </>
+                    ) : (
+                      <>
+                        <Trash className="mr-2 h-4 w-4" weight="regular" />
+                        無効化
+                      </>
+                    )}
+                  </Button>
+                )}
             </div>
           </DrawerFooter>
         </div>

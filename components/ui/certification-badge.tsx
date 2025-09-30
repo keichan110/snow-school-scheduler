@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { cn } from '@/lib/utils';
-import { getDepartmentType } from '@/app/certifications/utils';
+import { getDepartmentType } from "@/app/certifications/utils";
+import { cn } from "@/lib/utils";
 
 export interface CertificationBadgeProps {
   /**
@@ -42,12 +42,12 @@ export function CertificationBadge({
   className,
 }: CertificationBadgeProps) {
   const deptType = getDepartmentType(departmentName);
-  const badgeClass = deptType === 'ski' ? 'badge-ski' : 'badge-snowboard';
+  const badgeClass = deptType === "ski" ? "badge-ski" : "badge-snowboard";
 
   return (
     <span
       className={cn(
-        'inline-flex items-center rounded px-2 py-1 text-xs font-medium',
+        "inline-flex items-center rounded px-2 py-1 font-medium text-xs",
         badgeClass,
         className
       )}

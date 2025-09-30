@@ -1,11 +1,10 @@
-import { Suspense } from 'react';
+import { Suspense } from "react";
 
-import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
+import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
+import Loading from "./loading";
+import ShiftTypesPageClient from "./ShiftTypesPageClient";
 
-import ShiftTypesPageClient from './ShiftTypesPageClient';
-import Loading from './loading';
-
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 export default function ShiftTypesPage() {
   return (
     <ProtectedRoute requiredRole="MANAGER">

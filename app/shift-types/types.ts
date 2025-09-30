@@ -1,4 +1,4 @@
-import type { ShiftType } from '@prisma/client';
+import type { ShiftType } from "@prisma/client";
 
 export interface ShiftTypeStats {
   total: number;

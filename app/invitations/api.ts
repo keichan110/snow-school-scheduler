@@ -3,19 +3,19 @@
  */
 
 import type {
-  InvitationTokenWithStats,
   CreateInvitationRequest,
   InvitationApiResponse,
-} from './types';
+  InvitationTokenWithStats,
+} from "./types";
 
-const API_BASE_URL = '/api/auth/invitations';
+const API_BASE_URL = "/api/auth/invitations";
 
 export async function checkActiveInvitation(): Promise<InvitationTokenWithStats | null> {
   const response = await fetch(`${API_BASE_URL}/active`, {
-    method: 'GET',
-    credentials: 'include',
+    method: "GET",
+    credentials: "include",
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     },
   });
 
@@ -26,10 +26,11 @@ export async function checkActiveInvitation(): Promise<InvitationTokenWithStats 
     throw new Error(`有効な招待のチェックに失敗しました: ${response.status}`);
   }
 
-  const result: InvitationApiResponse<InvitationTokenWithStats> = await response.json();
+  const result: InvitationApiResponse<InvitationTokenWithStats> =
+    await response.json();
 
   if (!result.success) {
-    throw new Error(result.error || '有効な招待のチェックに失敗しました');
+    throw new Error(result.error || "有効な招待のチェックに失敗しました");
   }
 
   return result.data || null;
@@ -37,10 +38,10 @@ export async function checkActiveInvitation(): Promise<InvitationTokenWithStats 
 
 export async function fetchInvitations(): Promise<InvitationTokenWithStats[]> {
   const response = await fetch(API_BASE_URL, {
-    method: 'GET',
-    credentials: 'include', // Cookieベースの認証
+    method: "GET",
+    credentials: "include", // Cookieベースの認証
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     },
   });
 
@@ -65,8 +66,8 @@ export async function fetchInvitations(): Promise<InvitationTokenWithStats[]> {
     }[]
   > = await response.json();
 
-  if (!result.success || !result.data) {
-    throw new Error(result.error || '招待一覧の取得に失敗しました');
+  if (!(result.success && result.data)) {
+    throw new Error(result.error || "招待一覧の取得に失敗しました");
   }
 
   // APIレスポンスをフロントエンド用の型に変換
@@ -89,10 +90,10 @@ export async function createInvitation(
   data: CreateInvitationRequest
 ): Promise<InvitationTokenWithStats> {
   const response = await fetch(API_BASE_URL, {
-    method: 'POST',
-    credentials: 'include', // Cookieベースの認証
+    method: "POST",
+    credentials: "include", // Cookieベースの認証
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     },
     body: JSON.stringify(data),
   });
@@ -110,15 +111,15 @@ export async function createInvitation(
     createdBy: string;
   }> = await response.json();
 
-  if (!result.success || !result.data) {
-    throw new Error(result.error || '招待の作成に失敗しました');
+  if (!(result.success && result.data)) {
+    throw new Error(result.error || "招待の作成に失敗しました");
   }
 
   // APIレスポンスをフロントエンド用の型に変換
   const apiData = result.data;
   const convertedData: InvitationTokenWithStats = {
     token: apiData.token,
-    description: data.description || '',
+    description: data.description || "",
     expiresAt: new Date(apiData.expiresAt),
     isActive: true,
     maxUses: apiData.maxUses,
@@ -134,10 +135,10 @@ export async function createInvitation(
 
 export async function deactivateInvitation(token: string): Promise<void> {
   const response = await fetch(`${API_BASE_URL}/${token}`, {
-    method: 'DELETE',
-    credentials: 'include', // Cookieベースの認証
+    method: "DELETE",
+    credentials: "include", // Cookieベースの認証
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     },
   });
 
@@ -148,6 +149,6 @@ export async function deactivateInvitation(token: string): Promise<void> {
   const result: InvitationApiResponse<void> = await response.json();
 
   if (!result.success) {
-    throw new Error(result.error || '招待の無効化に失敗しました');
+    throw new Error(result.error || "招待の無効化に失敗しました");
   }
 }

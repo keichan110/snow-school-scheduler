@@ -1,8 +1,7 @@
-import { GET, POST } from './route';
-import { prisma } from '@/lib/db';
-import { NextResponse } from 'next/server';
-import { NextRequest } from 'next/server';
-import { authenticateFromRequest } from '@/lib/auth/middleware';
+import { NextRequest, NextResponse } from "next/server";
+import { authenticateFromRequest } from "@/lib/auth/middleware";
+import { prisma } from "@/lib/db";
+import { GET, POST } from "./route";
 
 // Mock types
 type Department = {
@@ -29,7 +28,7 @@ type Instructor = {
   firstName: string;
   lastNameKana: string | null;
   firstNameKana: string | null;
-  status: 'ACTIVE' | 'INACTIVE' | 'RETIRED';
+  status: "ACTIVE" | "INACTIVE" | "RETIRED";
   notes: string | null;
   createdAt: Date;
   updatedAt: Date;
@@ -57,7 +56,7 @@ type Shift = {
 };
 
 // Prismaクライアントをモック化
-jest.mock('@/lib/db', () => ({
+jest.mock("@/lib/db", () => ({
   prisma: {
     shift: {
       findMany: jest.fn(),
@@ -72,7 +71,7 @@ jest.mock('@/lib/db', () => ({
 }));
 
 // NextResponseとNextRequestをモック化
-jest.mock('next/server', () => ({
+jest.mock("next/server", () => ({
   NextResponse: {
     json: jest.fn(),
   },
@@ -81,7 +80,7 @@ jest.mock('next/server', () => ({
     ...init,
     headers: new Headers(init?.headers),
     cookies: {
-      get: jest.fn().mockReturnValue({ value: 'test-token' }),
+      get: jest.fn().mockReturnValue({ value: "test-token" }),
     },
     json: init?.body
       ? () => Promise.resolve(JSON.parse(init.body as string))
@@ -93,7 +92,7 @@ jest.mock('next/server', () => ({
 }));
 
 // 認証ミドルウェアをモック化
-jest.mock('@/lib/auth/middleware', () => ({
+jest.mock("@/lib/auth/middleware", () => ({
   authenticateFromRequest: jest.fn(),
 }));
 
@@ -104,107 +103,111 @@ const mockShiftFindMany = mockPrisma.shift.findMany as jest.MockedFunction<
 const mockShiftFindUnique = mockPrisma.shift.findUnique as jest.MockedFunction<
   typeof prisma.shift.findUnique
 >;
-const mockTransaction = mockPrisma.$transaction as jest.MockedFunction<typeof prisma.$transaction>;
-const mockNextResponse = NextResponse as jest.Mocked<typeof NextResponse>;
-const mockAuthenticateFromRequest = authenticateFromRequest as jest.MockedFunction<
-  typeof authenticateFromRequest
+const mockTransaction = mockPrisma.$transaction as jest.MockedFunction<
+  typeof prisma.$transaction
 >;
+const mockNextResponse = NextResponse as jest.Mocked<typeof NextResponse>;
+const mockAuthenticateFromRequest =
+  authenticateFromRequest as jest.MockedFunction<
+    typeof authenticateFromRequest
+  >;
 
 // テスト用のモックデータ
 const mockDepartment: Department = {
   id: 1,
-  code: 'SKI',
-  name: 'スキー',
-  description: 'スキー部門',
+  code: "SKI",
+  name: "スキー",
+  description: "スキー部門",
   isActive: true,
-  createdAt: new Date('2024-01-01'),
-  updatedAt: new Date('2024-01-01'),
+  createdAt: new Date("2024-01-01"),
+  updatedAt: new Date("2024-01-01"),
 };
 
 const mockShiftType: ShiftType = {
   id: 1,
-  name: 'レッスン',
+  name: "レッスン",
   isActive: true,
-  createdAt: new Date('2024-01-01'),
-  updatedAt: new Date('2024-01-01'),
+  createdAt: new Date("2024-01-01"),
+  updatedAt: new Date("2024-01-01"),
 };
 
 const mockInstructor: Instructor = {
   id: 1,
-  lastName: '山田',
-  firstName: '太郎',
-  lastNameKana: 'ヤマダ',
-  firstNameKana: 'タロウ',
-  status: 'ACTIVE',
+  lastName: "山田",
+  firstName: "太郎",
+  lastNameKana: "ヤマダ",
+  firstNameKana: "タロウ",
+  status: "ACTIVE",
   notes: null,
-  createdAt: new Date('2024-01-01'),
-  updatedAt: new Date('2024-01-01'),
+  createdAt: new Date("2024-01-01"),
+  updatedAt: new Date("2024-01-01"),
 };
 
 const mockShiftAssignment: ShiftAssignment = {
   id: 1,
   shiftId: 1,
   instructorId: 1,
-  assignedAt: new Date('2024-01-01T10:00:00Z'),
+  assignedAt: new Date("2024-01-01T10:00:00Z"),
   instructor: mockInstructor,
 };
 
 const mockShift: Shift = {
   id: 1,
-  date: new Date('2024-01-15'),
+  date: new Date("2024-01-15"),
   departmentId: 1,
   shiftTypeId: 1,
-  description: 'テストシフト',
-  createdAt: new Date('2024-01-01T10:00:00Z'),
-  updatedAt: new Date('2024-01-01T10:00:00Z'),
+  description: "テストシフト",
+  createdAt: new Date("2024-01-01T10:00:00Z"),
+  updatedAt: new Date("2024-01-01T10:00:00Z"),
   department: mockDepartment,
   shiftType: mockShiftType,
   shiftAssignments: [mockShiftAssignment],
 };
 
-describe('Shifts API', () => {
+describe("Shifts API", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     // 認証成功をデフォルトでモック
     mockAuthenticateFromRequest.mockResolvedValue({
       success: true,
       user: {
-        id: '1',
-        lineUserId: 'test-user',
-        displayName: 'Test User',
-        role: 'ADMIN',
+        id: "1",
+        lineUserId: "test-user",
+        displayName: "Test User",
+        role: "ADMIN",
         isActive: true,
         createdAt: new Date(),
         updatedAt: new Date(),
       },
     });
     // NextResponse.jsonのデフォルトモック実装
-    mockNextResponse.json.mockImplementation((data, init) => {
-      return {
-        status: init?.status || 200,
-        json: async () => data,
-        cookies: {},
-        headers: new Headers(),
-        ok: true,
-        redirected: false,
-        statusText: 'OK',
-        type: 'basic' as ResponseType,
-        url: '',
-        body: null,
-        bodyUsed: false,
-        clone: jest.fn(),
-        arrayBuffer: jest.fn(),
-        blob: jest.fn(),
-        formData: jest.fn(),
-        text: jest.fn(),
-        [Symbol.for('NextResponse')]: true,
-      } as unknown as NextResponse;
-    });
+    mockNextResponse.json.mockImplementation(
+      (data, init) =>
+        ({
+          status: init?.status || 200,
+          json: async () => data,
+          cookies: {},
+          headers: new Headers(),
+          ok: true,
+          redirected: false,
+          statusText: "OK",
+          type: "basic" as ResponseType,
+          url: "",
+          body: null,
+          bodyUsed: false,
+          clone: jest.fn(),
+          arrayBuffer: jest.fn(),
+          blob: jest.fn(),
+          formData: jest.fn(),
+          text: jest.fn(),
+          [Symbol.for("NextResponse")]: true,
+        }) as unknown as NextResponse
+    );
   });
 
-  describe('GET /api/shifts', () => {
+  describe("GET /api/shifts", () => {
     const createMockRequest = (searchParams: Record<string, string> = {}) => {
-      const url = new URL('http://localhost/api/shifts');
+      const url = new URL("http://localhost/api/shifts");
       Object.entries(searchParams).forEach(([key, value]) => {
         url.searchParams.set(key, value);
       });
@@ -212,8 +215,8 @@ describe('Shifts API', () => {
       return new NextRequest(url.toString());
     };
 
-    describe('正常系', () => {
-      it('フィルターなしでシフト一覧が正しく返されること', async () => {
+    describe("正常系", () => {
+      it("フィルターなしでシフト一覧が正しく返されること", async () => {
         // Arrange
         const mockShifts = [mockShift];
         mockShiftFindMany.mockResolvedValue(mockShifts);
@@ -234,7 +237,11 @@ describe('Shifts API', () => {
               },
             },
           },
-          orderBy: [{ date: 'asc' }, { departmentId: 'asc' }, { shiftTypeId: 'asc' }],
+          orderBy: [
+            { date: "asc" },
+            { departmentId: "asc" },
+            { shiftTypeId: "asc" },
+          ],
         });
 
         expect(mockNextResponse.json).toHaveBeenCalledWith({
@@ -242,10 +249,10 @@ describe('Shifts API', () => {
           data: [
             {
               id: 1,
-              date: '2024-01-15',
+              date: "2024-01-15",
               departmentId: 1,
               shiftTypeId: 1,
-              description: 'テストシフト',
+              description: "テストシフト",
               createdAt: mockShift.createdAt.toISOString(),
               updatedAt: mockShift.updatedAt.toISOString(),
               department: mockDepartment,
@@ -258,9 +265,9 @@ describe('Shifts API', () => {
                   assignedAt: mockShiftAssignment.assignedAt.toISOString(),
                   instructor: {
                     id: 1,
-                    lastName: '山田',
-                    firstName: '太郎',
-                    status: 'ACTIVE',
+                    lastName: "山田",
+                    firstName: "太郎",
+                    status: "ACTIVE",
                   },
                 },
               ],
@@ -273,10 +280,10 @@ describe('Shifts API', () => {
         });
       });
 
-      it('部門IDフィルターが正しく適用されること', async () => {
+      it("部門IDフィルターが正しく適用されること", async () => {
         // Arrange
         mockShiftFindMany.mockResolvedValue([]);
-        const request = createMockRequest({ departmentId: '1' });
+        const request = createMockRequest({ departmentId: "1" });
 
         // Act
         await GET(request);
@@ -289,12 +296,12 @@ describe('Shifts API', () => {
         });
       });
 
-      it('日付範囲フィルターが正しく適用されること', async () => {
+      it("日付範囲フィルターが正しく適用されること", async () => {
         // Arrange
         mockShiftFindMany.mockResolvedValue([]);
         const request = createMockRequest({
-          dateFrom: '2024-01-01',
-          dateTo: '2024-01-31',
+          dateFrom: "2024-01-01",
+          dateTo: "2024-01-31",
         });
 
         // Act
@@ -304,8 +311,8 @@ describe('Shifts API', () => {
         expect(mockShiftFindMany).toHaveBeenCalledWith({
           where: {
             date: {
-              gte: new Date('2024-01-01'),
-              lte: new Date('2024-01-31'),
+              gte: new Date("2024-01-01"),
+              lte: new Date("2024-01-31"),
             },
           },
           include: expect.any(Object),
@@ -313,13 +320,13 @@ describe('Shifts API', () => {
         });
       });
 
-      it('複数フィルターが正しく組み合わされること', async () => {
+      it("複数フィルターが正しく組み合わされること", async () => {
         // Arrange
         mockShiftFindMany.mockResolvedValue([]);
         const request = createMockRequest({
-          departmentId: '1',
-          shiftTypeId: '1',
-          dateFrom: '2024-01-01',
+          departmentId: "1",
+          shiftTypeId: "1",
+          dateFrom: "2024-01-01",
         });
 
         // Act
@@ -330,7 +337,7 @@ describe('Shifts API', () => {
           where: {
             departmentId: 1,
             shiftTypeId: 1,
-            date: { gte: new Date('2024-01-01') },
+            date: { gte: new Date("2024-01-01") },
           },
           include: expect.any(Object),
           orderBy: expect.any(Array),
@@ -338,25 +345,25 @@ describe('Shifts API', () => {
       });
     });
 
-    describe('異常系', () => {
-      it('データベースエラーが発生した場合に500エラーが返されること', async () => {
+    describe("異常系", () => {
+      it("データベースエラーが発生した場合に500エラーが返されること", async () => {
         // Arrange
-        const mockError = new Error('Database connection failed');
+        const mockError = new Error("Database connection failed");
         mockShiftFindMany.mockRejectedValue(mockError);
-        const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
+        const consoleSpy = jest.spyOn(console, "error").mockImplementation();
         const request = createMockRequest();
 
         // Act
         await GET(request);
 
         // Assert
-        expect(consoleSpy).toHaveBeenCalledWith('Shifts API error:', mockError);
+        expect(consoleSpy).toHaveBeenCalledWith("Shifts API error:", mockError);
         expect(mockNextResponse.json).toHaveBeenCalledWith(
           {
             success: false,
             data: null,
             message: null,
-            error: 'Internal server error',
+            error: "Internal server error",
           },
           { status: 500 }
         );
@@ -366,33 +373,32 @@ describe('Shifts API', () => {
     });
   });
 
-  describe('POST /api/shifts', () => {
-    const createMockPostRequest = (body: Record<string, unknown>) => {
-      return new NextRequest('http://localhost/api/shifts', {
-        method: 'POST',
+  describe("POST /api/shifts", () => {
+    const createMockPostRequest = (body: Record<string, unknown>) =>
+      new NextRequest("http://localhost/api/shifts", {
+        method: "POST",
         body: JSON.stringify(body),
       });
-    };
 
-    describe('正常系', () => {
-      it('シフトが正しく作成されること', async () => {
+    describe("正常系", () => {
+      it("シフトが正しく作成されること", async () => {
         // Arrange
         const requestBody = {
-          date: '2024-01-15',
+          date: "2024-01-15",
           departmentId: 1,
           shiftTypeId: 1,
-          description: 'テストシフト',
+          description: "テストシフト",
           assignedInstructorIds: [1],
         };
 
         const createdShift = {
           id: 1,
-          date: new Date('2024-01-15'),
+          date: new Date("2024-01-15"),
           departmentId: 1,
           shiftTypeId: 1,
-          description: 'テストシフト',
-          createdAt: new Date('2024-01-01T10:00:00Z'),
-          updatedAt: new Date('2024-01-01T10:00:00Z'),
+          description: "テストシフト",
+          createdAt: new Date("2024-01-01T10:00:00Z"),
+          updatedAt: new Date("2024-01-01T10:00:00Z"),
           department: mockDepartment,
           shiftType: mockShiftType,
         };
@@ -401,23 +407,24 @@ describe('Shifts API', () => {
           id: 1,
           shiftId: 1,
           instructorId: 1,
-          assignedAt: new Date('2024-01-01T10:00:00Z'),
+          assignedAt: new Date("2024-01-01T10:00:00Z"),
           instructor: mockInstructor,
         };
 
         // 重複チェックでシフトが存在しないことをモック
         mockShiftFindUnique.mockResolvedValue(null);
 
-        mockTransaction.mockImplementation(async (callback) => {
-          return await callback({
-            shift: {
-              create: jest.fn().mockResolvedValue(createdShift),
-            },
-            shiftAssignment: {
-              create: jest.fn().mockResolvedValue(createdAssignment),
-            },
-          } as unknown as Parameters<typeof callback>[0]);
-        });
+        mockTransaction.mockImplementation(
+          async (callback) =>
+            await callback({
+              shift: {
+                create: jest.fn().mockResolvedValue(createdShift),
+              },
+              shiftAssignment: {
+                create: jest.fn().mockResolvedValue(createdAssignment),
+              },
+            } as unknown as Parameters<typeof callback>[0])
+        );
 
         const request = createMockPostRequest(requestBody);
 
@@ -431,10 +438,10 @@ describe('Shifts API', () => {
             success: true,
             data: {
               id: 1,
-              date: '2024-01-15',
+              date: "2024-01-15",
               departmentId: 1,
               shiftTypeId: 1,
-              description: 'テストシフト',
+              description: "テストシフト",
               createdAt: createdShift.createdAt.toISOString(),
               updatedAt: createdShift.updatedAt.toISOString(),
               department: mockDepartment,
@@ -447,38 +454,38 @@ describe('Shifts API', () => {
                   assignedAt: createdAssignment.assignedAt.toISOString(),
                   instructor: {
                     id: 1,
-                    lastName: '山田',
-                    firstName: '太郎',
-                    status: 'ACTIVE',
+                    lastName: "山田",
+                    firstName: "太郎",
+                    status: "ACTIVE",
                   },
                 },
               ],
               assignedCount: 1,
             },
-            message: 'シフトが正常に作成されました',
+            message: "シフトが正常に作成されました",
             error: null,
           },
           { status: 201 }
         );
       });
 
-      it('割り当てインストラクターなしでシフトが作成されること', async () => {
+      it("割り当てインストラクターなしでシフトが作成されること", async () => {
         // Arrange
         const requestBody = {
-          date: '2024-01-15',
+          date: "2024-01-15",
           departmentId: 1,
           shiftTypeId: 1,
-          description: 'テストシフト',
+          description: "テストシフト",
         };
 
         const createdShift = {
           id: 1,
-          date: new Date('2024-01-15'),
+          date: new Date("2024-01-15"),
           departmentId: 1,
           shiftTypeId: 1,
-          description: 'テストシフト',
-          createdAt: new Date('2024-01-01T10:00:00Z'),
-          updatedAt: new Date('2024-01-01T10:00:00Z'),
+          description: "テストシフト",
+          createdAt: new Date("2024-01-01T10:00:00Z"),
+          updatedAt: new Date("2024-01-01T10:00:00Z"),
           department: mockDepartment,
           shiftType: mockShiftType,
         };
@@ -486,16 +493,17 @@ describe('Shifts API', () => {
         // 重複チェックでシフトが存在しないことをモック
         mockShiftFindUnique.mockResolvedValue(null);
 
-        mockTransaction.mockImplementation(async (callback) => {
-          return await callback({
-            shift: {
-              create: jest.fn().mockResolvedValue(createdShift),
-            },
-            shiftAssignment: {
-              create: jest.fn(),
-            },
-          } as unknown as Parameters<typeof callback>[0]);
-        });
+        mockTransaction.mockImplementation(
+          async (callback) =>
+            await callback({
+              shift: {
+                create: jest.fn().mockResolvedValue(createdShift),
+              },
+              shiftAssignment: {
+                create: jest.fn(),
+              },
+            } as unknown as Parameters<typeof callback>[0])
+        );
 
         const request = createMockPostRequest(requestBody);
 
@@ -516,11 +524,11 @@ describe('Shifts API', () => {
       });
     });
 
-    describe('異常系', () => {
-      it('必須フィールドが不足している場合に400エラーが返されること', async () => {
+    describe("異常系", () => {
+      it("必須フィールドが不足している場合に400エラーが返されること", async () => {
         // Arrange
         const requestBody = {
-          date: '2024-01-15',
+          date: "2024-01-15",
           // departmentId が不足
           shiftTypeId: 1,
         };
@@ -535,36 +543,39 @@ describe('Shifts API', () => {
             success: false,
             data: null,
             message: null,
-            error: 'Required fields: date, departmentId, shiftTypeId',
+            error: "Required fields: date, departmentId, shiftTypeId",
           },
           { status: 400 }
         );
       });
 
-      it('データベースエラーが発生した場合に500エラーが返されること', async () => {
+      it("データベースエラーが発生した場合に500エラーが返されること", async () => {
         // Arrange
         const requestBody = {
-          date: '2024-01-15',
+          date: "2024-01-15",
           departmentId: 1,
           shiftTypeId: 1,
         };
-        const mockError = new Error('Database error');
+        const mockError = new Error("Database error");
         // findUniqueでエラーが発生することをモック
         mockShiftFindUnique.mockRejectedValue(mockError);
-        const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
+        const consoleSpy = jest.spyOn(console, "error").mockImplementation();
         const request = createMockPostRequest(requestBody);
 
         // Act
         await POST(request);
 
         // Assert
-        expect(consoleSpy).toHaveBeenCalledWith('Shift creation error:', mockError);
+        expect(consoleSpy).toHaveBeenCalledWith(
+          "Shift creation error:",
+          mockError
+        );
         expect(mockNextResponse.json).toHaveBeenCalledWith(
           {
             success: false,
             data: null,
             message: null,
-            error: 'Internal server error',
+            error: "Internal server error",
           },
           { status: 500 }
         );

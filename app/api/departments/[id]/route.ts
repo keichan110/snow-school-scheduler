@@ -1,8 +1,11 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/db';
-import { authenticateFromRequest } from '@/lib/auth/middleware';
+import { type NextRequest, NextResponse } from "next/server";
+import { authenticateFromRequest } from "@/lib/auth/middleware";
+import { prisma } from "@/lib/db";
 
-export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   const authResult = await authenticateFromRequest(request);
   if (!authResult.success) {
     return NextResponse.json(
@@ -10,7 +13,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
         success: false,
         data: null,
         message: null,
-        error: 'Authentication required',
+        error: "Authentication required",
       },
       { status: 401 }
     );
@@ -21,14 +24,14 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     const resolvedParams = await params;
 
     // IDパラメータの検証
-    const id = parseInt(resolvedParams.id, 10);
+    const id = Number.parseInt(resolvedParams.id, 10);
     if (isNaN(id)) {
       return NextResponse.json(
         {
           success: false,
           data: null,
           message: null,
-          error: 'Resource not found',
+          error: "Resource not found",
         },
         { status: 404 }
       );
@@ -46,7 +49,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
           success: false,
           data: null,
           message: null,
-          error: 'Resource not found',
+          error: "Resource not found",
         },
         { status: 404 }
       );
@@ -60,13 +63,13 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       error: null,
     });
   } catch (error) {
-    console.error('Department detail API error:', error);
+    console.error("Department detail API error:", error);
     return NextResponse.json(
       {
         success: false,
         data: null,
         message: null,
-        error: 'Internal server error',
+        error: "Internal server error",
       },
       { status: 500 }
     );

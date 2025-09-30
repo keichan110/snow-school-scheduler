@@ -4,7 +4,7 @@
  * Jest・Testing Library・プロジェクト固有のテストで使用される型定義を提供します。
  */
 
-import '@testing-library/jest-dom';
+import "@testing-library/jest-dom";
 
 // Global test utilities
 declare global {
@@ -15,7 +15,7 @@ declare global {
 }
 
 // Jest custom matchers の拡張
-declare module '@jest/expect' {
+declare module "@jest/expect" {
   interface Matchers<R> {
     /**
      * APIレスポンスが成功形式かをチェック
@@ -35,7 +35,7 @@ declare module '@jest/expect' {
     /**
      * 配列が指定されたプロパティでソートされているかをチェック
      */
-    toBeSortedBy(property: string, order?: 'asc' | 'desc'): R;
+    toBeSortedBy(property: string, order?: "asc" | "desc"): R;
 
     /**
      * 日本の祝日かをチェック
@@ -60,12 +60,12 @@ declare module '@jest/expect' {
 }
 
 // Testing Library の拡張
-declare module '@testing-library/react' {
+declare module "@testing-library/react" {
   interface RenderOptions {
     /**
      * テスト用QueryClient
      */
-    queryClient?: import('@tanstack/react-query').QueryClient;
+    queryClient?: import("@tanstack/react-query").QueryClient;
 
     /**
      * 初期プロパティ
@@ -110,23 +110,23 @@ export interface TestUtils {
   // ファクトリー関数
   factories: {
     createDepartment: (
-      overrides?: Partial<import('@prisma/client').Department>
-    ) => import('@prisma/client').Department;
+      overrides?: Partial<import("@prisma/client").Department>
+    ) => import("@prisma/client").Department;
     createInstructor: (
-      overrides?: Partial<import('@prisma/client').Instructor>
-    ) => import('@prisma/client').Instructor;
+      overrides?: Partial<import("@prisma/client").Instructor>
+    ) => import("@prisma/client").Instructor;
     createCertification: (
-      overrides?: Partial<import('@prisma/client').Certification>
-    ) => import('@prisma/client').Certification;
+      overrides?: Partial<import("@prisma/client").Certification>
+    ) => import("@prisma/client").Certification;
     createShift: (
-      overrides?: Partial<import('@prisma/client').Shift>
-    ) => import('@prisma/client').Shift;
+      overrides?: Partial<import("@prisma/client").Shift>
+    ) => import("@prisma/client").Shift;
     createShiftType: (
-      overrides?: Partial<import('@prisma/client').ShiftType>
-    ) => import('@prisma/client').ShiftType;
+      overrides?: Partial<import("@prisma/client").ShiftType>
+    ) => import("@prisma/client").ShiftType;
     createShiftAssignment: (
-      overrides?: Partial<import('@prisma/client').ShiftAssignment>
-    ) => import('@prisma/client').ShiftAssignment;
+      overrides?: Partial<import("@prisma/client").ShiftAssignment>
+    ) => import("@prisma/client").ShiftAssignment;
   };
 
   // モック関数
@@ -174,8 +174,8 @@ export interface MockNavigationHooks {
 
 // テスト環境変数の型定義
 export interface TestEnvironmentConfig {
-  NODE_ENV: 'test';
-  TZ: 'Asia/Tokyo';
+  NODE_ENV: "test";
+  TZ: "Asia/Tokyo";
   DATABASE_URL: string;
   NEXT_PUBLIC_APP_URL?: string;
 }

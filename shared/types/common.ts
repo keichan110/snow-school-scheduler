@@ -6,22 +6,28 @@
 /**
  * Branded Types - 型安全性を向上させるための型エイリアス
  */
-export type DepartmentId = number & { readonly __brand: 'DepartmentId' };
-export type CertificationId = number & { readonly __brand: 'CertificationId' };
-export type InstructorId = number & { readonly __brand: 'InstructorId' };
-export type ShiftId = number & { readonly __brand: 'ShiftId' };
-export type ShiftTypeId = number & { readonly __brand: 'ShiftTypeId' };
-export type ShiftAssignmentId = number & { readonly __brand: 'ShiftAssignmentId' };
+export type DepartmentId = number & { readonly __brand: "DepartmentId" };
+export type CertificationId = number & { readonly __brand: "CertificationId" };
+export type InstructorId = number & { readonly __brand: "InstructorId" };
+export type ShiftId = number & { readonly __brand: "ShiftId" };
+export type ShiftTypeId = number & { readonly __brand: "ShiftTypeId" };
+export type ShiftAssignmentId = number & {
+  readonly __brand: "ShiftAssignmentId";
+};
 
 /**
  * Branded Type を作成するヘルパー関数
  */
-export const createDepartmentId = (id: number): DepartmentId => id as DepartmentId;
-export const createCertificationId = (id: number): CertificationId => id as CertificationId;
-export const createInstructorId = (id: number): InstructorId => id as InstructorId;
+export const createDepartmentId = (id: number): DepartmentId =>
+  id as DepartmentId;
+export const createCertificationId = (id: number): CertificationId =>
+  id as CertificationId;
+export const createInstructorId = (id: number): InstructorId =>
+  id as InstructorId;
 export const createShiftId = (id: number): ShiftId => id as ShiftId;
 export const createShiftTypeId = (id: number): ShiftTypeId => id as ShiftTypeId;
-export const createShiftAssignmentId = (id: number): ShiftAssignmentId => id as ShiftAssignmentId;
+export const createShiftAssignmentId = (id: number): ShiftAssignmentId =>
+  id as ShiftAssignmentId;
 
 /**
  * 基本エンティティ型
@@ -49,7 +55,7 @@ export interface PaginationInfo {
  */
 export interface SortInfo {
   readonly field: string;
-  readonly direction: 'asc' | 'desc';
+  readonly direction: "asc" | "desc";
 }
 
 /**
@@ -68,7 +74,7 @@ export interface SearchParams {
   readonly query?: string;
   readonly filters?: Record<string, unknown>;
   readonly sort?: SortInfo;
-  readonly pagination?: Pick<PaginationInfo, 'page' | 'perPage'>;
+  readonly pagination?: Pick<PaginationInfo, "page" | "perPage">;
 }
 
 /**
@@ -84,12 +90,13 @@ export interface ValidationError {
  * インストラクターステータス
  */
 export const INSTRUCTOR_STATUS = {
-  ACTIVE: 'ACTIVE',
-  INACTIVE: 'INACTIVE',
-  RETIRED: 'RETIRED',
+  ACTIVE: "ACTIVE",
+  INACTIVE: "INACTIVE",
+  RETIRED: "RETIRED",
 } as const;
 
-export type InstructorStatus = (typeof INSTRUCTOR_STATUS)[keyof typeof INSTRUCTOR_STATUS];
+export type InstructorStatus =
+  (typeof INSTRUCTOR_STATUS)[keyof typeof INSTRUCTOR_STATUS];
 
 /**
  * レスポンス状態
@@ -129,22 +136,24 @@ export interface DateRange {
  * カラー定義（テーマ対応）
  */
 export const DEPARTMENT_COLORS = {
-  ski: 'blue',
-  snowboard: 'green',
-  telemark: 'purple',
-  cross_country: 'orange',
+  ski: "blue",
+  snowboard: "green",
+  telemark: "purple",
+  cross_country: "orange",
 } as const;
 
-export type DepartmentColor = (typeof DEPARTMENT_COLORS)[keyof typeof DEPARTMENT_COLORS];
+export type DepartmentColor =
+  (typeof DEPARTMENT_COLORS)[keyof typeof DEPARTMENT_COLORS];
 
 /**
  * アイコン名定義
  */
 export const DEPARTMENT_ICONS = {
-  ski: 'ski',
-  snowboard: 'snowboard',
-  telemark: 'telemark',
-  cross_country: 'cross-country',
+  ski: "ski",
+  snowboard: "snowboard",
+  telemark: "telemark",
+  cross_country: "cross-country",
 } as const;
 
-export type DepartmentIcon = (typeof DEPARTMENT_ICONS)[keyof typeof DEPARTMENT_ICONS];
+export type DepartmentIcon =
+  (typeof DEPARTMENT_ICONS)[keyof typeof DEPARTMENT_ICONS];

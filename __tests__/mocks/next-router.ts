@@ -5,7 +5,7 @@
  * テスト環境でモック化するための設定です。
  */
 
-import { jest } from '@jest/globals';
+import { jest } from "@jest/globals";
 
 // Router モック状態の管理
 interface RouterMockState {
@@ -24,7 +24,7 @@ interface RouterMockState {
 
 // デフォルトのルーター状態
 const defaultRouterState: RouterMockState = {
-  pathname: '/',
+  pathname: "/",
   searchParams: new URLSearchParams(),
   params: {},
   routerMethods: {
@@ -43,19 +43,22 @@ let currentRouterState = { ...defaultRouterState };
 /**
  * useRouter モックの作成
  */
-export const createMockUseRouter = (overrides: Partial<RouterMockState['routerMethods']> = {}) => {
-  return jest.fn(() => ({
+export const createMockUseRouter = (
+  overrides: Partial<RouterMockState["routerMethods"]> = {}
+) =>
+  jest.fn(() => ({
     ...currentRouterState.routerMethods,
     ...overrides,
   }));
-};
 
 /**
  * useSearchParams モックの作成
  */
-export const createMockUseSearchParams = (searchParams?: URLSearchParams | string) => {
+export const createMockUseSearchParams = (
+  searchParams?: URLSearchParams | string
+) => {
   const params = searchParams
-    ? typeof searchParams === 'string'
+    ? typeof searchParams === "string"
       ? new URLSearchParams(searchParams)
       : searchParams
     : currentRouterState.searchParams;
@@ -67,7 +70,9 @@ export const createMockUseSearchParams = (searchParams?: URLSearchParams | strin
     keys: jest.fn(() => params.keys()),
     values: jest.fn(() => params.values()),
     entries: jest.fn(() => params.entries()),
-    forEach: jest.fn((callback: (value: string, key: string) => void) => params.forEach(callback)),
+    forEach: jest.fn((callback: (value: string, key: string) => void) =>
+      params.forEach(callback)
+    ),
     toString: jest.fn(() => params.toString()),
   };
 
@@ -77,16 +82,14 @@ export const createMockUseSearchParams = (searchParams?: URLSearchParams | strin
 /**
  * usePathname モックの作成
  */
-export const createMockUsePathname = (pathname?: string) => {
-  return jest.fn(() => pathname || currentRouterState.pathname);
-};
+export const createMockUsePathname = (pathname?: string) =>
+  jest.fn(() => pathname || currentRouterState.pathname);
 
 /**
  * useParams モックの作成
  */
-export const createMockUseParams = (params?: Record<string, string>) => {
-  return jest.fn(() => params || currentRouterState.params);
-};
+export const createMockUseParams = (params?: Record<string, string>) =>
+  jest.fn(() => params || currentRouterState.params);
 
 /**
  * ルーター状態をセットアップする関数
@@ -96,11 +99,11 @@ export const setupRouterMock = (
     pathname?: string;
     searchParams?: string | URLSearchParams;
     params?: Record<string, string>;
-    routerOverrides?: Partial<RouterMockState['routerMethods']>;
+    routerOverrides?: Partial<RouterMockState["routerMethods"]>;
   } = {}
 ) => {
   const {
-    pathname = '/',
+    pathname = "/",
     searchParams = new URLSearchParams(),
     params = {},
     routerOverrides = {},
@@ -110,7 +113,9 @@ export const setupRouterMock = (
   currentRouterState = {
     pathname,
     searchParams:
-      typeof searchParams === 'string' ? new URLSearchParams(searchParams) : searchParams,
+      typeof searchParams === "string"
+        ? new URLSearchParams(searchParams)
+        : searchParams,
     params,
     routerMethods: {
       push: jest.fn(),
@@ -124,7 +129,7 @@ export const setupRouterMock = (
   };
 
   // Next.js navigation hooks をモック
-  jest.doMock('next/navigation', () => ({
+  jest.doMock("next/navigation", () => ({
     useRouter: createMockUseRouter(routerOverrides),
     useSearchParams: createMockUseSearchParams(currentRouterState.searchParams),
     usePathname: createMockUsePathname(currentRouterState.pathname),
@@ -146,7 +151,9 @@ export const simulateNavigation = (
 
   if (searchParams) {
     currentRouterState.searchParams =
-      typeof searchParams === 'string' ? new URLSearchParams(searchParams) : searchParams;
+      typeof searchParams === "string"
+        ? new URLSearchParams(searchParams)
+        : searchParams;
   }
 
   if (params) {
@@ -155,7 +162,9 @@ export const simulateNavigation = (
 
   // pushメソッドが呼ばれたことをシミュレート
   currentRouterState.routerMethods.push.mockClear();
-  currentRouterState.routerMethods.push(pathname + (searchParams ? `?${searchParams}` : ''));
+  currentRouterState.routerMethods.push(
+    pathname + (searchParams ? `?${searchParams}` : "")
+  );
 };
 
 /**
@@ -176,7 +185,7 @@ export const updateSearchParams = (params: Record<string, string | null>) => {
  */
 export const resetRouterMock = () => {
   currentRouterState = {
-    pathname: '/',
+    pathname: "/",
     searchParams: new URLSearchParams(),
     params: {},
     routerMethods: {
@@ -199,7 +208,7 @@ export const getCurrentRouterState = () => ({ ...currentRouterState });
  * ルーターメソッドのアサーションヘルパー
  */
 export const expectRouterMethodCall = (
-  method: keyof RouterMockState['routerMethods'],
+  method: keyof RouterMockState["routerMethods"],
   expectedArgs?: any[]
 ) => {
   const mockMethod = currentRouterState.routerMethods[method];
@@ -216,22 +225,22 @@ export const expectRouterMethodCall = (
  */
 export const setupPageMock = {
   // ホームページ
-  home: () => setupRouterMock({ pathname: '/' }),
+  home: () => setupRouterMock({ pathname: "/" }),
 
   // 管理者ページ
-  admin: () => setupRouterMock({ pathname: '/admin' }),
+  admin: () => setupRouterMock({ pathname: "/admin" }),
 
   // シフト管理ページ
-  shifts: () => setupRouterMock({ pathname: '/admin/shifts' }),
+  shifts: () => setupRouterMock({ pathname: "/admin/shifts" }),
 
   // インストラクター管理ページ
-  instructors: () => setupRouterMock({ pathname: '/admin/instructors' }),
+  instructors: () => setupRouterMock({ pathname: "/admin/instructors" }),
 
   // 公開シフトページ
   publicShifts: (searchParams?: string) =>
     setupRouterMock({
-      pathname: '/shifts',
-      searchParams: searchParams || 'view=week',
+      pathname: "/shifts",
+      searchParams: searchParams || "view=week",
     }),
 
   // 動的ルート（IDを含む）

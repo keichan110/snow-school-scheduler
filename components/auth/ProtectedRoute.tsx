@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { ReactNode, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAuth } from '@/contexts/AuthContext';
-import { AuthGuard } from './AuthGuard';
+import { useRouter } from "next/navigation";
+import { type ReactNode, useEffect } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { AuthGuard } from "./AuthGuard";
 
 /**
  * 保護されたルートのProps
@@ -11,7 +11,7 @@ import { AuthGuard } from './AuthGuard';
 interface ProtectedRouteProps {
   children: ReactNode;
   /** 必要な権限レベル */
-  requiredRole?: 'ADMIN' | 'MANAGER' | 'MEMBER';
+  requiredRole?: "ADMIN" | "MANAGER" | "MEMBER";
   /** 認証失敗時のリダイレクト先 */
   redirectTo?: string;
   /** 権限不足時のリダイレクト先 */
@@ -49,8 +49,8 @@ interface ProtectedRouteProps {
 export function ProtectedRoute({
   children,
   requiredRole,
-  redirectTo = '/login', // シンプルなログインページパスに戻す
-  accessDeniedRedirectTo = '/',
+  redirectTo = "/login", // シンプルなログインページパスに戻す
+  accessDeniedRedirectTo = "/",
   showMessage = false,
 }: ProtectedRouteProps) {
   const { user, status } = useAuth();
@@ -76,17 +76,17 @@ export function ProtectedRoute({
    * 認証・権限状態に基づくリダイレクト処理
    */
   useEffect(() => {
-    if (status === 'loading') {
+    if (status === "loading") {
       return; // ローディング中は何もしない
     }
 
     // 未認証の場合
-    if (status === 'unauthenticated' || !user) {
+    if (status === "unauthenticated" || !user) {
       const currentUrl = window.location.pathname + window.location.search;
       const redirectUrl = `${redirectTo}?redirect=${encodeURIComponent(currentUrl)}`;
 
       if (showMessage) {
-        console.log('🔐 Authentication required, redirecting to login...');
+        console.log("🔐 Authentication required, redirecting to login...");
       }
 
       router.push(redirectUrl);
@@ -96,7 +96,9 @@ export function ProtectedRoute({
     // 認証済みだが権限不足の場合
     if (requiredRole && user && !hasPermission(user.role, requiredRole)) {
       if (showMessage) {
-        console.log(`🚫 Access denied. Required: ${requiredRole}, Current: ${user.role}`);
+        console.log(
+          `🚫 Access denied. Required: ${requiredRole}, Current: ${user.role}`
+        );
       }
 
       router.push(accessDeniedRedirectTo);
@@ -104,17 +106,28 @@ export function ProtectedRoute({
     }
 
     // 認証エラーの場合
-    if (status === 'error') {
-      router.push(`/error?error=auth_failed`);
+    if (status === "error") {
+      router.push("/error?error=auth_failed");
       return;
     }
-  }, [status, user, requiredRole, redirectTo, accessDeniedRedirectTo, router, showMessage]);
+  }, [
+    status,
+    user,
+    requiredRole,
+    redirectTo,
+    accessDeniedRedirectTo,
+    router,
+    showMessage,
+  ]);
 
   /**
    * AuthGuardでUIレンダリングを制御
    */
   return (
-    <AuthGuard {...(requiredRole !== undefined && { requiredRole })} fallbackUrl={redirectTo}>
+    <AuthGuard
+      {...(requiredRole !== undefined && { requiredRole })}
+      fallbackUrl={redirectTo}
+    >
       {children}
     </AuthGuard>
   );
@@ -152,32 +165,32 @@ export interface AuthCheckResult {
  * ```
  */
 export async function getServerAuthCheck(
-  requiredRole?: 'ADMIN' | 'MANAGER' | 'MEMBER'
+  requiredRole?: "ADMIN" | "MANAGER" | "MEMBER"
 ): Promise<AuthCheckResult> {
   try {
     // Next.js の cookies() を使用してJWTトークンを取得
-    const { cookies } = await import('next/headers');
-    const token = (await cookies()).get('auth-token')?.value;
+    const { cookies } = await import("next/headers");
+    const token = (await cookies()).get("auth-token")?.value;
 
     if (!token) {
       return {
         isAuthenticated: false,
         hasPermission: false,
         user: null,
-        redirectUrl: '/login', // シンプルなログインページにリダイレクト
+        redirectUrl: "/login", // シンプルなログインページにリダイレクト
       };
     }
 
     // JWTトークンの検証
-    const { verifyJwt } = await import('@/lib/auth/jwt');
+    const { verifyJwt } = await import("@/lib/auth/jwt");
     const verificationResult = verifyJwt(token);
 
-    if (!verificationResult.success || !verificationResult.payload) {
+    if (!(verificationResult.success && verificationResult.payload)) {
       return {
         isAuthenticated: false,
         hasPermission: false,
         user: null,
-        redirectUrl: '/login', // シンプルなログインページにリダイレクト
+        redirectUrl: "/login", // シンプルなログインページにリダイレクト
       };
     }
 
@@ -193,7 +206,8 @@ export async function getServerAuthCheck(
       };
 
       const userLevel = roleHierarchy[user.role as keyof typeof roleHierarchy];
-      const requiredLevel = roleHierarchy[requiredRole as keyof typeof roleHierarchy];
+      const requiredLevel =
+        roleHierarchy[requiredRole as keyof typeof roleHierarchy];
       hasPermission = userLevel >= requiredLevel;
     }
 
@@ -201,15 +215,15 @@ export async function getServerAuthCheck(
       isAuthenticated: true,
       hasPermission,
       user,
-      redirectUrl: hasPermission ? null : '/',
+      redirectUrl: hasPermission ? null : "/",
     };
   } catch (error) {
-    console.error('Server auth check failed:', error);
+    console.error("Server auth check failed:", error);
     return {
       isAuthenticated: false,
       hasPermission: false,
       user: null,
-      redirectUrl: '/api/auth/line/login', // LINEログインに直接リダイレクト
+      redirectUrl: "/api/auth/line/login", // LINEログインに直接リダイレクト
     };
   }
 }
@@ -222,7 +236,7 @@ interface ProtectedLayoutProps {
   /** レイアウト名（ログ出力用） */
   layoutName?: string;
   /** 必要な権限レベル */
-  requiredRole?: 'ADMIN' | 'MANAGER' | 'MEMBER';
+  requiredRole?: "ADMIN" | "MANAGER" | "MEMBER";
   /** 未認証時の代替レンダリング */
   fallback?: ReactNode;
 }
@@ -250,7 +264,7 @@ interface ProtectedLayoutProps {
  */
 export function ProtectedLayout({
   children,
-  layoutName = 'Protected',
+  layoutName = "Protected",
   requiredRole,
   fallback,
 }: ProtectedLayoutProps) {
@@ -258,6 +272,7 @@ export function ProtectedLayout({
   return (
     <AuthGuard
       {...(requiredRole !== undefined && { requiredRole })}
+      accessDeniedComponent={fallback}
       loadingComponent={
         <div className="flex min-h-screen items-center justify-center">
           <div className="text-center">
@@ -267,7 +282,6 @@ export function ProtectedLayout({
           </div>
         </div>
       }
-      accessDeniedComponent={fallback}
     >
       {children}
     </AuthGuard>
@@ -283,7 +297,7 @@ interface ConditionalProtectionProps {
   /** 保護を有効にするか */
   enabled: boolean;
   /** 必要な権限レベル */
-  requiredRole?: 'ADMIN' | 'MANAGER' | 'MEMBER';
+  requiredRole?: "ADMIN" | "MANAGER" | "MEMBER";
   /** 保護が無効時のメッセージ */
   debugMessage?: string;
 }
@@ -310,11 +324,15 @@ export function ConditionalProtection({
   debugMessage,
 }: ConditionalProtectionProps) {
   if (!enabled) {
-    if (debugMessage && process.env.NODE_ENV === 'development') {
+    if (debugMessage && process.env.NODE_ENV === "development") {
       console.log(`🔓 Protection disabled: ${debugMessage}`);
     }
     return <>{children}</>;
   }
 
-  return <AuthGuard {...(requiredRole !== undefined && { requiredRole })}>{children}</AuthGuard>;
+  return (
+    <AuthGuard {...(requiredRole !== undefined && { requiredRole })}>
+      {children}
+    </AuthGuard>
+  );
 }

@@ -45,7 +45,7 @@ export interface Instructor {
 }
 
 // Department types
-export type DepartmentType = 'ski' | 'snowboard' | 'mixed';
+export type DepartmentType = "ski" | "snowboard" | "mixed";
 
 // Shift summary and statistics
 export interface ShiftSummary {

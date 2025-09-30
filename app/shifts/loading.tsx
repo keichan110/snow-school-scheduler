@@ -1,5 +1,5 @@
-import Header from '@/components/Header';
-import { SkeletonCalendar, SkeletonSection } from '@/components/skeletons';
+import Header from "@/components/Header";
+import { SkeletonCalendar, SkeletonSection } from "@/components/skeletons";
 
 export default function ShiftsLoading() {
   return (
@@ -7,12 +7,12 @@ export default function ShiftsLoading() {
       <Header />
 
       <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 md:py-8 lg:px-8">
-        <div className="mb-6 text-center md:mb-8" aria-hidden="true">
+        <div aria-hidden="true" className="mb-6 text-center md:mb-8">
           <div className="mx-auto h-8 w-48 rounded-md bg-muted" />
           <div className="mx-auto mt-3 h-4 w-64 rounded-md bg-muted/70" />
         </div>
 
-        <div className="mb-6 flex justify-center" aria-hidden="true">
+        <div aria-hidden="true" className="mb-6 flex justify-center">
           <div className="flex items-center gap-3">
             <div className="h-10 w-28 rounded-full bg-muted/60" />
             <div className="h-10 w-28 rounded-full bg-muted/40" />
@@ -21,8 +21,8 @@ export default function ShiftsLoading() {
 
         <div className="mb-8 space-y-6">
           <div
-            className="sticky top-20 z-40 -mx-4 border-b border-border/30 bg-background/80 px-4 py-4 backdrop-blur-sm"
             aria-hidden="true"
+            className="-mx-4 sticky top-20 z-40 border-border/30 border-b bg-background/80 px-4 py-4 backdrop-blur-sm"
           >
             <div className="flex items-center justify-between gap-4">
               <div className="h-9 w-9 rounded-full bg-muted/50" />
@@ -38,7 +38,11 @@ export default function ShiftsLoading() {
             <SkeletonSection bodyLines={4} />
           </div>
 
-          <SkeletonSection className="hidden sm:block" bodyLines={6} showSubtitle />
+          <SkeletonSection
+            bodyLines={6}
+            className="hidden sm:block"
+            showSubtitle
+          />
         </div>
       </div>
     </div>

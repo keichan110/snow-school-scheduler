@@ -1,20 +1,26 @@
-import { HTMLAttributes } from 'react';
+import type { HTMLAttributes } from "react";
 
-import { cn } from '@/lib/utils';
+import { cn } from "@/lib/utils";
 
-import { SkeletonCardGrid } from './SkeletonCardGrid';
-import { SkeletonSection } from './SkeletonSection';
+import { SkeletonCardGrid } from "./SkeletonCardGrid";
+import { SkeletonSection } from "./SkeletonSection";
 
 export type SkeletonAppShellProps = HTMLAttributes<HTMLDivElement>;
 
 /**
  * SkeletonAppShell surfaces a lightweight, shared placeholder so users know a route change is in progress.
  */
-export function SkeletonAppShell({ className, ...rest }: SkeletonAppShellProps) {
+export function SkeletonAppShell({
+  className,
+  ...rest
+}: SkeletonAppShellProps) {
   return (
     <div
       aria-hidden="true"
-      className={cn('mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 md:py-8 lg:px-8', className)}
+      className={cn(
+        "mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 md:py-8 lg:px-8",
+        className
+      )}
       {...rest}
     >
       <div className="space-y-8">

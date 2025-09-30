@@ -5,10 +5,10 @@
  * Testing Library の拡張機能やカスタムレンダリング関数を含みます。
  */
 
-import React from 'react';
-import { render, RenderOptions } from '@testing-library/react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ThemeProvider } from 'next-themes';
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { type RenderOptions, render } from "@testing-library/react";
+import { ThemeProvider } from "next-themes";
+import React from "react";
 
 // TanStack Query クライアントのテスト用設定
 const createTestQueryClient = () =>
@@ -42,7 +42,7 @@ const TestProviders: React.FC<ProvidersProps> = ({
 );
 
 // カスタムレンダリング関数の型定義
-interface CustomRenderOptions extends Omit<RenderOptions, 'wrapper'> {
+interface CustomRenderOptions extends Omit<RenderOptions, "wrapper"> {
   queryClient?: QueryClient;
   initialProps?: Record<string, unknown>;
 }
@@ -53,14 +53,21 @@ interface CustomRenderOptions extends Omit<RenderOptions, 'wrapper'> {
  * React Testing Library の render 関数を拡張し、
  * アプリケーションで使用する各種プロバイダーを自動で含めます。
  */
-export const renderWithProviders = (ui: React.ReactElement, options: CustomRenderOptions = {}) => {
+export const renderWithProviders = (
+  ui: React.ReactElement,
+  options: CustomRenderOptions = {}
+) => {
   const { queryClient, initialProps, ...renderOptions } = options;
 
   // プロパティが指定されている場合はコンポーネントを cloneElement で拡張
-  const elementWithProps = initialProps ? React.cloneElement(ui, initialProps) : ui;
+  const elementWithProps = initialProps
+    ? React.cloneElement(ui, initialProps)
+    : ui;
 
   const Wrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-    <TestProviders queryClient={queryClient || createTestQueryClient()}>{children}</TestProviders>
+    <TestProviders queryClient={queryClient || createTestQueryClient()}>
+      {children}
+    </TestProviders>
   );
 
   return {
@@ -74,8 +81,8 @@ export const renderWithProviders = (ui: React.ReactElement, options: CustomRende
  */
 export const waitForElementToBeRemoved = async (
   callback: () => HTMLElement | null
-): Promise<void> => {
-  return new Promise((resolve) => {
+): Promise<void> =>
+  new Promise((resolve) => {
     const element = callback();
     if (!element) {
       resolve();
@@ -94,13 +101,12 @@ export const waitForElementToBeRemoved = async (
       subtree: true,
     });
   });
-};
 
 /**
  * フォーム送信のシミュレーション
  */
 export const submitForm = async (form: HTMLFormElement): Promise<void> => {
-  const submitEvent = new Event('submit', { bubbles: true, cancelable: true });
+  const submitEvent = new Event("submit", { bubbles: true, cancelable: true });
   form.dispatchEvent(submitEvent);
 };
 
@@ -108,8 +114,8 @@ export const submitForm = async (form: HTMLFormElement): Promise<void> => {
  * 日付関連のテストユーティリティ
  */
 export const setSystemDate = (date: string | Date): jest.SpyInstance => {
-  const mockDate = typeof date === 'string' ? new Date(date) : date;
-  return jest.spyOn(Date, 'now').mockReturnValue(mockDate.getTime());
+  const mockDate = typeof date === "string" ? new Date(date) : date;
+  return jest.spyOn(Date, "now").mockReturnValue(mockDate.getTime());
 };
 
 export const restoreSystemDate = (spy: jest.SpyInstance): void => {
@@ -147,19 +153,19 @@ export const mockLocalStorage = () => {
  * ファイルアップロードのシミュレーション
  */
 export const createMockFile = (
-  name: string = 'test-file.txt',
-  size: number = 1024,
-  type: string = 'text/plain'
+  name = "test-file.txt",
+  size = 1024,
+  type = "text/plain"
 ): File => {
-  const content = 'a'.repeat(size);
+  const content = "a".repeat(size);
   return new File([content], name, { type });
 };
 
 /**
  * レスポンシブブレークポイントのテスト用ユーティリティ
  */
-export const mockMatchMedia = (matches: boolean = false) => {
-  Object.defineProperty(window, 'matchMedia', {
+export const mockMatchMedia = (matches = false) => {
+  Object.defineProperty(window, "matchMedia", {
     writable: true,
     value: jest.fn().mockImplementation((query) => ({
       matches,
@@ -177,13 +183,11 @@ export const mockMatchMedia = (matches: boolean = false) => {
 /**
  * エラーハンドリングのテスト用ユーティリティ
  */
-export const suppressConsoleError = (): jest.SpyInstance => {
-  return jest.spyOn(console, 'error').mockImplementation(() => {});
-};
+export const suppressConsoleError = (): jest.SpyInstance =>
+  jest.spyOn(console, "error").mockImplementation(() => {});
 
-export const suppressConsoleWarn = (): jest.SpyInstance => {
-  return jest.spyOn(console, 'warn').mockImplementation(() => {});
-};
+export const suppressConsoleWarn = (): jest.SpyInstance =>
+  jest.spyOn(console, "warn").mockImplementation(() => {});
 
 /**
  * テスト用のカスタムフック
@@ -196,13 +200,13 @@ export const createMockIntersectionObserver = () => {
     disconnect: jest.fn(),
   });
 
-  Object.defineProperty(window, 'IntersectionObserver', {
+  Object.defineProperty(window, "IntersectionObserver", {
     writable: true,
     configurable: true,
     value: mockIntersectionObserver,
   });
 
-  Object.defineProperty(global, 'IntersectionObserver', {
+  Object.defineProperty(global, "IntersectionObserver", {
     writable: true,
     configurable: true,
     value: mockIntersectionObserver,
@@ -227,12 +231,11 @@ export const createMockEventHandlers = () => ({
 /**
  * API レスポンスのモック作成ヘルパー
  */
-export const createMockApiResponse = <T,>(data: T, success: boolean = true) => {
-  return success
+export const createMockApiResponse = <T,>(data: T, success = true) =>
+  success
     ? { success: true as const, data }
-    : { success: false as const, error: 'Mock API Error' };
-};
+    : { success: false as const, error: "Mock API Error" };
 
 // 共通のexportとしてTesting Libraryのutilitiesも再エクスポート
-export * from '@testing-library/react';
-export { userEvent } from '@testing-library/user-event';
+export * from "@testing-library/react";
+export { userEvent } from "@testing-library/user-event";

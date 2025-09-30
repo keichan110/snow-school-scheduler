@@ -1,4 +1,4 @@
-import { SkeletonTable } from '@/components/skeletons';
+import { SkeletonTable } from "@/components/skeletons";
 
 export default function Loading() {
   return (
@@ -43,9 +43,9 @@ export default function Loading() {
         </div>
         <div className="p-4">
           <SkeletonTable
-            rows={6}
-            columns={4}
             className="border-none bg-transparent p-0 shadow-none"
+            columns={4}
+            rows={6}
           />
         </div>
       </div>

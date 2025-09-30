@@ -1,6 +1,10 @@
-import { useCallback } from 'react';
-import { useNotificationContext } from './NotificationProvider';
-import { Notification, NotificationType, NotificationPriority } from './types';
+import { useCallback } from "react";
+import { useNotificationContext } from "./NotificationProvider";
+import type {
+  Notification,
+  NotificationPriority,
+  NotificationType,
+} from "./types";
 
 const DEFAULT_DURATIONS: Record<NotificationType, number> = {
   success: 3000,
@@ -25,13 +29,25 @@ export function useNotification() {
         action?: {
           label: string;
           onClick: () => void;
-          variant?: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link';
+          variant?:
+            | "default"
+            | "destructive"
+            | "outline"
+            | "secondary"
+            | "ghost"
+            | "link";
           loading?: boolean;
         };
         actions?: Array<{
           label: string;
           onClick: () => void;
-          variant?: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link';
+          variant?:
+            | "default"
+            | "destructive"
+            | "outline"
+            | "secondary"
+            | "ghost"
+            | "link";
           loading?: boolean;
           primary?: boolean;
         }>;
@@ -46,14 +62,14 @@ export function useNotification() {
         message,
         duration,
         dismissible: options?.dismissible ?? true,
-        priority: options?.priority || 'normal',
-        persistent: options?.persistent || false,
+        priority: options?.priority || "normal",
+        persistent: options?.persistent,
         ...(options?.title && { title: options.title }),
         ...(options?.action && { action: options.action }),
         ...(options?.actions && { actions: options.actions }),
       };
 
-      dispatch({ type: 'ADD_NOTIFICATION', payload: notification });
+      dispatch({ type: "ADD_NOTIFICATION", payload: notification });
 
       return id;
     },
@@ -62,45 +78,53 @@ export function useNotification() {
 
   const hideNotification = useCallback(
     (id: string) => {
-      dispatch({ type: 'REMOVE_NOTIFICATION', payload: id });
+      dispatch({ type: "REMOVE_NOTIFICATION", payload: id });
     },
     [dispatch]
   );
 
   const clearAll = useCallback(() => {
-    dispatch({ type: 'CLEAR_ALL' });
+    dispatch({ type: "CLEAR_ALL" });
   }, [dispatch]);
 
   const pauseQueue = useCallback(() => {
-    dispatch({ type: 'PAUSE_QUEUE' });
+    dispatch({ type: "PAUSE_QUEUE" });
   }, [dispatch]);
 
   const resumeQueue = useCallback(() => {
-    dispatch({ type: 'RESUME_QUEUE' });
+    dispatch({ type: "RESUME_QUEUE" });
   }, [dispatch]);
 
   // 便利なヘルパー関数
   const showSuccess = useCallback(
-    (message: string, options?: Omit<Parameters<typeof showNotification>[2], 'type'>) =>
-      showNotification(message, 'success', options),
+    (
+      message: string,
+      options?: Omit<Parameters<typeof showNotification>[2], "type">
+    ) => showNotification(message, "success", options),
     [showNotification]
   );
 
   const showError = useCallback(
-    (message: string, options?: Omit<Parameters<typeof showNotification>[2], 'type'>) =>
-      showNotification(message, 'error', options),
+    (
+      message: string,
+      options?: Omit<Parameters<typeof showNotification>[2], "type">
+    ) => showNotification(message, "error", options),
     [showNotification]
   );
 
   const showWarning = useCallback(
-    (message: string, options?: Omit<Parameters<typeof showNotification>[2], 'type'>) =>
-      showNotification(message, 'warning', options),
+    (
+      message: string,
+      options?: Omit<Parameters<typeof showNotification>[2], "type">
+    ) => showNotification(message, "warning", options),
     [showNotification]
   );
 
   const showInfo = useCallback(
-    (message: string, options?: Omit<Parameters<typeof showNotification>[2], 'type'>) =>
-      showNotification(message, 'info', options),
+    (
+      message: string,
+      options?: Omit<Parameters<typeof showNotification>[2], "type">
+    ) => showNotification(message, "info", options),
     [showNotification]
   );
 

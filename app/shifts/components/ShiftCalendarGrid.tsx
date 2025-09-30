@@ -1,22 +1,22 @@
-'use client';
+"use client";
 
-import dynamic from 'next/dynamic';
-import { ShiftCalendarSkeleton } from '@/shared/components/skeletons/ShiftCalendarSkeleton';
-import { BaseShiftDisplayProps } from '@/shared/types/shiftDisplayTypes';
+import dynamic from "next/dynamic";
+import { ShiftCalendarSkeleton } from "@/shared/components/skeletons/ShiftCalendarSkeleton";
+import type { BaseShiftDisplayProps } from "@/shared/types/shiftDisplayTypes";
 
 /**
  * 統合シフトカレンダーグリッドコンポーネントのProps型
  */
 interface UnifiedShiftCalendarGridProps extends BaseShiftDisplayProps {
   /** 表示バリアント（将来の拡張用） */
-  variant?: 'admin' | 'public';
+  variant?: "admin" | "public";
 }
 
 // BaseShiftCalendarの動的インポート
 // 管理者用・公開用で共通の実装を使用
 const BaseShiftCalendar = dynamic(
   () =>
-    import('./BaseShiftCalendar').then((mod) => ({
+    import("./BaseShiftCalendar").then((mod) => ({
       default: mod.BaseShiftCalendar,
     })),
   {

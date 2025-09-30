@@ -1,16 +1,16 @@
-'use client';
+"use client";
 
-import { cn } from '@/lib/utils';
-import { BaseShiftDisplayProps, DepartmentType } from './types';
-import { DepartmentIcon } from '@/components/shared/ui/DepartmentIcon';
-import { ShiftBadge } from '@/components/shared/ui/ShiftBadge';
+import { DepartmentIcon } from "@/components/shared/ui/DepartmentIcon";
+import { ShiftBadge } from "@/components/shared/ui/ShiftBadge";
+import { cn } from "@/lib/utils";
+import type { BaseShiftDisplayProps, DepartmentType } from "./types";
 import {
-  getShiftTypeShort,
-  getDepartmentBgClass,
   formatDate,
   getDaysInMonth,
+  getDepartmentBgClass,
+  getShiftTypeShort,
   WEEKDAYS,
-} from './utils';
+} from "./utils";
 
 export function BaseShiftMobileList({
   year,
@@ -38,38 +38,49 @@ export function BaseShiftMobileList({
 
         return (
           <div
-            key={day}
-            onClick={() => onDateSelect(date)}
             className={cn(
-              'mobile-day-item cursor-pointer rounded-xl border p-4 transition-all duration-300',
-              'hover:-translate-y-0.5 hover:transform hover:shadow-md',
+              "mobile-day-item cursor-pointer rounded-xl border p-4 transition-all duration-300",
+              "hover:-translate-y-0.5 hover:transform hover:shadow-md",
               {
-                'border-border bg-background hover:border-blue-400':
-                  !isSelected && !isHolidayDay && !isSaturday && !isSunday,
-                'border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/30':
+                "border-border bg-background hover:border-blue-400": !(
+                  isSelected ||
+                  isHolidayDay ||
+                  isSaturday ||
+                  isSunday
+                ),
+                "border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/30":
                   isSaturday && !isSelected,
-                'border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950/30':
+                "border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950/30":
                   (isHolidayDay || isSunday) && !isSelected,
-                '-translate-y-0.5 transform border-blue-400 bg-blue-50 shadow-md dark:border-blue-600 dark:bg-blue-950/30':
+                "-translate-y-0.5 transform border-blue-400 bg-blue-50 shadow-md dark:border-blue-600 dark:bg-blue-950/30":
                   isSelected,
-                'opacity-60': !hasShifts && !isHolidayDay && !isSaturday && !isSunday,
+                "opacity-60": !(
+                  hasShifts ||
+                  isHolidayDay ||
+                  isSaturday ||
+                  isSunday
+                ),
               }
             )}
+            key={day}
+            onClick={() => onDateSelect(date)}
           >
             {/* 日付ヘッダー */}
             <div className="mb-3 flex items-center gap-3">
               <div
-                className={cn('text-2xl font-bold', {
-                  'text-red-600 dark:text-red-400': isHolidayDay || isSunday,
-                  'text-blue-600 dark:text-blue-400': isSaturday,
-                  'text-foreground': !isHolidayDay && !isSaturday && !isSunday,
+                className={cn("font-bold text-2xl", {
+                  "text-red-600 dark:text-red-400": isHolidayDay || isSunday,
+                  "text-blue-600 dark:text-blue-400": isSaturday,
+                  "text-foreground": !(isHolidayDay || isSaturday || isSunday),
                 })}
               >
                 {day}
               </div>
-              <div className="text-sm text-muted-foreground">{dayOfWeek}</div>
+              <div className="text-muted-foreground text-sm">{dayOfWeek}</div>
               {isHolidayDay && (
-                <div className="text-sm font-medium text-red-600 dark:text-red-400">祝日</div>
+                <div className="font-medium text-red-600 text-sm dark:text-red-400">
+                  祝日
+                </div>
               )}
             </div>
 
@@ -78,15 +89,15 @@ export function BaseShiftMobileList({
               <div className="space-y-2">
                 {dayData.shifts.map((shift, idx) => (
                   <div
-                    key={idx}
                     className={cn(
-                      'flex items-center justify-between gap-2 rounded-lg px-3 py-2',
+                      "flex items-center justify-between gap-2 rounded-lg px-3 py-2",
                       getDepartmentBgClass(shift.department as DepartmentType)
                     )}
+                    key={idx}
                   >
                     <div className="flex items-center gap-2">
                       <DepartmentIcon department={shift.department} size="md" />
-                      <span className="text-sm font-medium text-foreground">
+                      <span className="font-medium text-foreground text-sm">
                         {getShiftTypeShort(shift.type)}
                       </span>
                     </div>
@@ -95,7 +106,9 @@ export function BaseShiftMobileList({
                 ))}
               </div>
             ) : (
-              <div className="py-2 text-center text-sm text-muted-foreground">シフトなし</div>
+              <div className="py-2 text-center text-muted-foreground text-sm">
+                シフトなし
+              </div>
             )}
           </div>
         );

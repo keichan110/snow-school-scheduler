@@ -3,7 +3,9 @@
  */
 
 // API共通レスポンス型
-export type ApiResponse<T> = { success: true; data: T } | { success: false; error: string };
+export type ApiResponse<T> =
+  | { success: true; data: T }
+  | { success: false; error: string };
 
 // 招待URL作成APIのレスポンス型
 export interface InvitationUrlData {
@@ -34,7 +36,7 @@ export interface InvitationListItem {
 export interface InvitationValidationData {
   isValid: boolean;
   error?: string;
-  errorCode?: 'NOT_FOUND' | 'EXPIRED' | 'INACTIVE' | 'MAX_USES_EXCEEDED';
+  errorCode?: "NOT_FOUND" | "EXPIRED" | "INACTIVE" | "MAX_USES_EXCEEDED";
 }
 
 // 招待URL作成リクエスト型
@@ -48,6 +50,6 @@ export interface AuthenticatedUser {
   userId: string;
   lineUserId: string;
   displayName: string;
-  role: 'ADMIN' | 'MANAGER' | 'MEMBER';
+  role: "ADMIN" | "MANAGER" | "MEMBER";
   isActive: boolean;
 }

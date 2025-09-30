@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/db';
-import { ApiResponse } from '@/lib/auth/types';
-import { authenticateFromRequest, checkUserRole } from '@/lib/auth/middleware';
+import { type NextRequest, NextResponse } from "next/server";
+import { authenticateFromRequest, checkUserRole } from "@/lib/auth/middleware";
+import type { ApiResponse } from "@/lib/auth/types";
+import { prisma } from "@/lib/db";
 
 /**
  * 招待URL無効化API
@@ -33,19 +33,24 @@ export async function DELETE(
     const { token } = await context.params;
 
     const authResult = await authenticateFromRequest(request);
-    if (!authResult.success || !authResult.user) {
+    if (!(authResult.success && authResult.user)) {
       return NextResponse.json(
-        { success: false, error: authResult.error ?? 'Authentication required' },
+        {
+          success: false,
+          error: authResult.error ?? "Authentication required",
+        },
         { status: authResult.statusCode ?? 401 }
       );
     }
 
-    const roleResult = checkUserRole(authResult.user, 'MANAGER');
-    if (!roleResult.success || !roleResult.user) {
+    const roleResult = checkUserRole(authResult.user, "MANAGER");
+    if (!(roleResult.success && roleResult.user)) {
       return NextResponse.json(
         {
           success: false,
-          error: roleResult.error ?? 'Insufficient permissions. Admin or Manager role required.',
+          error:
+            roleResult.error ??
+            "Insufficient permissions. Admin or Manager role required.",
         },
         { status: roleResult.statusCode ?? 403 }
       );
@@ -54,9 +59,9 @@ export async function DELETE(
     const user = roleResult.user;
 
     // トークンパラメータの基本チェック
-    if (!token || typeof token !== 'string' || token.trim().length === 0) {
+    if (!token || typeof token !== "string" || token.trim().length === 0) {
       return NextResponse.json(
-        { success: false, error: 'Token parameter is required' },
+        { success: false, error: "Token parameter is required" },
         { status: 400 }
       );
     }
@@ -64,7 +69,7 @@ export async function DELETE(
     // URL デコード（必要に応じて）
     const decodedToken = decodeURIComponent(token.trim());
 
-    console.log('🗑️ Attempting to deactivate invitation token:', {
+    console.log("🗑️ Attempting to deactivate invitation token:", {
       token: decodedToken,
       requestedBy: user.displayName,
       role: user.role,
@@ -86,21 +91,22 @@ export async function DELETE(
 
     if (!invitationToken) {
       return NextResponse.json(
-        { success: false, error: 'Invitation token not found' },
+        { success: false, error: "Invitation token not found" },
         { status: 404 }
       );
     }
 
     // 権限チェック - 作成者または管理者のみ無効化可能
     const canDeactivate =
-      user.role === 'ADMIN' || // 管理者は全ての招待URLを無効化可能
+      user.role === "ADMIN" || // 管理者は全ての招待URLを無効化可能
       invitationToken.createdBy === user.id; // 作成者は自分の招待URLを無効化可能
 
     if (!canDeactivate) {
       return NextResponse.json(
         {
           success: false,
-          error: 'You can only deactivate invitation tokens you created, or you must be an admin',
+          error:
+            "You can only deactivate invitation tokens you created, or you must be an admin",
         },
         { status: 403 }
       );
@@ -109,7 +115,7 @@ export async function DELETE(
     // 既に無効化済みの場合
     if (!invitationToken.isActive) {
       return NextResponse.json(
-        { success: false, error: 'Invitation token is already inactive' },
+        { success: false, error: "Invitation token is already inactive" },
         { status: 409 } // Conflict
       );
     }
@@ -133,13 +139,13 @@ export async function DELETE(
     });
 
     const responseData: DeactivationResponse = {
-      message: 'Invitation token deactivated successfully',
+      message: "Invitation token deactivated successfully",
       token: deactivatedToken.token,
       deactivatedAt: deactivatedToken.updatedAt.toISOString(),
       deactivatedBy: user.displayName,
     };
 
-    console.log('✅ Invitation token deactivated successfully:', {
+    console.log("✅ Invitation token deactivated successfully:", {
       token: decodedToken,
       originalCreator: invitationToken.creator.displayName,
       deactivatedBy: user.displayName,
@@ -147,22 +153,28 @@ export async function DELETE(
       deactivatedAt: deactivatedToken.updatedAt,
     });
 
-    return NextResponse.json({ success: true, data: responseData }, { status: 200 });
+    return NextResponse.json(
+      { success: true, data: responseData },
+      { status: 200 }
+    );
   } catch (error) {
-    console.error('❌ Invitation token deactivation failed:', error);
+    console.error("❌ Invitation token deactivation failed:", error);
 
-    let errorMessage = 'Failed to deactivate invitation token';
+    let errorMessage = "Failed to deactivate invitation token";
     if (error instanceof Error) {
       // 既知のエラーパターンを識別
-      if (error.message.includes('Record to update not found')) {
-        errorMessage = 'Invitation token not found or already deleted';
-      } else if (error.message.includes('Unique constraint')) {
-        errorMessage = 'Database constraint violation';
+      if (error.message.includes("Record to update not found")) {
+        errorMessage = "Invitation token not found or already deleted";
+      } else if (error.message.includes("Unique constraint")) {
+        errorMessage = "Database constraint violation";
       } else {
         errorMessage = error.message;
       }
     }
 
-    return NextResponse.json({ success: false, error: errorMessage }, { status: 500 });
+    return NextResponse.json(
+      { success: false, error: errorMessage },
+      { status: 500 }
+    );
   }
 }

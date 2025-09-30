@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { useMemo } from 'react';
-import { ShiftStats, DayData } from '../types';
-import { ShiftDayCard } from './ShiftDayCard';
-import { getWeekDates, formatDateToString } from '../utils/weekCalculations';
+import { useMemo } from "react";
+import type { DayData, ShiftStats } from "../types";
+import { formatDateToString, getWeekDates } from "../utils/weekCalculations";
+import { ShiftDayCard } from "./ShiftDayCard";
 
 interface WeeklyShiftListProps {
   baseDate: Date;
@@ -11,7 +11,11 @@ interface WeeklyShiftListProps {
   isHoliday: (date: string) => boolean;
   selectedDate?: string | null;
   onDateSelect?: (date: string) => void;
-  onShiftDetailSelect?: (date: string, shiftType: string, departmentType: string) => void;
+  onShiftDetailSelect?: (
+    date: string,
+    shiftType: string,
+    departmentType: string
+  ) => void;
 }
 
 export function WeeklyShiftList({
@@ -52,11 +56,11 @@ export function WeeklyShiftList({
       <div className="space-y-4">
         {weekDays.map(({ date, dateString, dayData }) => (
           <ShiftDayCard
-            key={dateString}
             date={date}
             dateString={dateString}
             dayData={dayData}
             isSelected={selectedDate === dateString}
+            key={dateString}
             onDateSelect={() => onDateSelect?.(dateString)}
             onShiftDetailSelect={(shiftType, departmentType) =>
               onShiftDetailSelect?.(dateString, shiftType, departmentType)

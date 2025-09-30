@@ -1,6 +1,6 @@
-import { HTMLAttributes } from 'react';
+import type { HTMLAttributes } from "react";
 
-import { cn } from '@/lib/utils';
+import { cn } from "@/lib/utils";
 
 export interface SkeletonTableProps extends HTMLAttributes<HTMLDivElement> {
   columns?: number;
@@ -27,18 +27,18 @@ export function SkeletonTable({
     <div
       aria-hidden="true"
       className={cn(
-        'animate-pulse overflow-hidden rounded-xl border border-border/40 bg-card/60 shadow-sm',
+        "animate-pulse overflow-hidden rounded-xl border border-border/40 bg-card/60 shadow-sm",
         className
       )}
       {...rest}
     >
       {showHeader ? (
-        <div className="hidden border-b border-border/40 bg-muted/20 px-6 py-3 sm:block">
+        <div className="hidden border-border/40 border-b bg-muted/20 px-6 py-3 sm:block">
           <div className="flex items-center gap-4">
             {columnArray.map((_, index) => (
               <div
-                key={`skeleton-table-header-${index}`}
                 className="h-4 flex-1 rounded-md bg-muted/60"
+                key={`skeleton-table-header-${index}`}
               />
             ))}
           </div>
@@ -47,17 +47,19 @@ export function SkeletonTable({
       <div className="divide-y divide-border/40">
         {rowArray.map((_, rowIndex) => (
           <div
-            key={`skeleton-table-row-${rowIndex}`}
             className="flex flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center sm:gap-4 sm:px-6"
+            key={`skeleton-table-row-${rowIndex}`}
           >
             {columnArray.map((_, columnIndex) => (
               <div
-                key={`skeleton-table-row-${rowIndex}-col-${columnIndex}`}
                 className={cn(
-                  'h-4 rounded-md bg-muted/50',
-                  columnIndex === columnArray.length - 1 ? 'w-1/3 sm:w-1/4' : 'w-full',
-                  'sm:flex-1'
+                  "h-4 rounded-md bg-muted/50",
+                  columnIndex === columnArray.length - 1
+                    ? "w-1/3 sm:w-1/4"
+                    : "w-full",
+                  "sm:flex-1"
                 )}
+                key={`skeleton-table-row-${rowIndex}-col-${columnIndex}`}
               />
             ))}
           </div>

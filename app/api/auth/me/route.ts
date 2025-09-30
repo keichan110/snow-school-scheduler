@@ -1,5 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { authenticateFromRequest, AuthenticatedUser } from '@/lib/auth/middleware';
+import { type NextRequest, NextResponse } from "next/server";
+import {
+  type AuthenticatedUser,
+  authenticateFromRequest,
+} from "@/lib/auth/middleware";
 
 /**
  * ユーザー情報取得API
@@ -45,15 +48,15 @@ export async function GET(request: NextRequest) {
     // 認証トークンの検証とユーザー情報取得
     const authResult = await authenticateFromRequest(request);
 
-    if (!authResult.success || !authResult.user) {
-      console.log('❌ Authentication failed:', {
+    if (!(authResult.success && authResult.user)) {
+      console.log("❌ Authentication failed:", {
         error: authResult.error,
         statusCode: authResult.statusCode,
       });
 
       const response: ErrorResponse = {
         success: false,
-        error: authResult.error || 'Authentication failed',
+        error: authResult.error || "Authentication failed",
         ...(authResult.statusCode && { statusCode: authResult.statusCode }),
       };
 
@@ -65,8 +68,8 @@ export async function GET(request: NextRequest) {
     const user = authResult.user;
 
     // デバッグモードでのみログ出力
-    if (process.env.NODE_ENV === 'development') {
-      console.log('✅ User authenticated:', user.displayName);
+    if (process.env.NODE_ENV === "development") {
+      console.log("✅ User authenticated:", user.displayName);
     }
 
     // ユーザー情報レスポンス
@@ -86,11 +89,11 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(response, { status: 200 });
   } catch {
-    console.error('❌ User info retrieval failed');
+    console.error("❌ User info retrieval failed");
 
     const response: ErrorResponse = {
       success: false,
-      error: 'Failed to retrieve user information',
+      error: "Failed to retrieve user information",
       statusCode: 500,
     };
 
@@ -104,20 +107,20 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   try {
-    console.log('📝 User info update request initiated');
+    console.log("📝 User info update request initiated");
 
     // 認証チェック
     const authResult = await authenticateFromRequest(request);
 
-    if (!authResult.success || !authResult.user) {
-      console.log('❌ Authentication failed for update:', {
+    if (!(authResult.success && authResult.user)) {
+      console.log("❌ Authentication failed for update:", {
         error: authResult.error,
         statusCode: authResult.statusCode,
       });
 
       const response: ErrorResponse = {
         success: false,
-        error: authResult.error || 'Authentication failed',
+        error: authResult.error || "Authentication failed",
         ...(authResult.statusCode && { statusCode: authResult.statusCode }),
       };
 
@@ -134,30 +137,36 @@ export async function POST(request: NextRequest) {
         requestData = JSON.parse(body);
       }
     } catch (parseError) {
-      console.error('❌ Invalid request body format:', parseError);
+      console.error("❌ Invalid request body format:", parseError);
       const response: ErrorResponse = {
         success: false,
-        error: 'Invalid request body format',
+        error: "Invalid request body format",
         statusCode: 400,
       };
       return NextResponse.json(response, { status: 400 });
     }
 
     // 表示名の更新のみ許可
-    if (!requestData.displayName || typeof requestData.displayName !== 'string') {
+    if (
+      !requestData.displayName ||
+      typeof requestData.displayName !== "string"
+    ) {
       const response: ErrorResponse = {
         success: false,
-        error: 'Display name is required and must be a string',
+        error: "Display name is required and must be a string",
         statusCode: 400,
       };
       return NextResponse.json(response, { status: 400 });
     }
 
     // 表示名の長さ制限
-    if (requestData.displayName.trim().length === 0 || requestData.displayName.length > 50) {
+    if (
+      requestData.displayName.trim().length === 0 ||
+      requestData.displayName.length > 50
+    ) {
       const response: ErrorResponse = {
         success: false,
-        error: 'Display name must be between 1 and 50 characters',
+        error: "Display name must be between 1 and 50 characters",
         statusCode: 400,
       };
       return NextResponse.json(response, { status: 400 });
@@ -168,7 +177,7 @@ export async function POST(request: NextRequest) {
 
     // 同じ表示名の場合は更新をスキップ
     if (user.displayName === newDisplayName) {
-      console.log('📝 Display name unchanged, skipping update:', {
+      console.log("📝 Display name unchanged, skipping update:", {
         userId: user.id,
         displayName: newDisplayName,
       });
@@ -181,7 +190,7 @@ export async function POST(request: NextRequest) {
     }
 
     // データベースの動的インポート（Prismaクライアント）
-    const { prisma } = await import('@/lib/db');
+    const { prisma } = await import("@/lib/db");
 
     // 表示名を更新
     const updatedUser = await prisma.user.update({
@@ -189,7 +198,7 @@ export async function POST(request: NextRequest) {
       data: { displayName: newDisplayName },
     });
 
-    console.log('✅ User display name updated successfully:', {
+    console.log("✅ User display name updated successfully:", {
       userId: updatedUser.id,
       oldDisplayName: user.displayName,
       newDisplayName: updatedUser.displayName,
@@ -201,7 +210,7 @@ export async function POST(request: NextRequest) {
       lineUserId: updatedUser.lineUserId,
       displayName: updatedUser.displayName,
       profileImageUrl: updatedUser.profileImageUrl,
-      role: updatedUser.role as 'ADMIN' | 'MANAGER' | 'MEMBER',
+      role: updatedUser.role as "ADMIN" | "MANAGER" | "MEMBER",
       isActive: updatedUser.isActive,
       createdAt: updatedUser.createdAt,
       updatedAt: updatedUser.updatedAt,
@@ -214,11 +223,11 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(response, { status: 200 });
   } catch {
-    console.error('❌ User info update failed');
+    console.error("❌ User info update failed");
 
     const response: ErrorResponse = {
       success: false,
-      error: 'Failed to update user information',
+      error: "Failed to update user information",
       statusCode: 500,
     };
 
@@ -227,24 +236,24 @@ export async function POST(request: NextRequest) {
 }
 
 export async function OPTIONS(request: NextRequest) {
-  const origin = request.headers.get('origin');
+  const origin = request.headers.get("origin");
   const allowedOrigins = [
     process.env.NEXT_PUBLIC_APP_URL,
-    'http://localhost:3000',
-    'https://localhost:3000',
+    "http://localhost:3000",
+    "https://localhost:3000",
   ].filter(Boolean); // undefined環境変数を除去
 
-  if (!origin || !allowedOrigins.includes(origin)) {
+  if (!(origin && allowedOrigins.includes(origin))) {
     return new NextResponse(null, { status: 403 });
   }
 
   return new NextResponse(null, {
     status: 200,
     headers: {
-      'Access-Control-Allow-Origin': origin,
-      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-      'Access-Control-Allow-Credentials': 'true',
+      "Access-Control-Allow-Origin": origin,
+      "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type, Authorization",
+      "Access-Control-Allow-Credentials": "true",
     },
   });
 }

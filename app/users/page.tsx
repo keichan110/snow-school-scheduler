@@ -1,11 +1,10 @@
-import { Suspense } from 'react';
+import { Suspense } from "react";
 
-import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
+import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
+import Loading from "./loading";
+import UsersPageClient from "./UsersPageClient";
 
-import UsersPageClient from './UsersPageClient';
-import Loading from './loading';
-
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 export default function UsersPage() {
   return (
     <ProtectedRoute requiredRole="ADMIN">

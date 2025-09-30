@@ -1,17 +1,21 @@
-'use client';
+"use client";
 
-import { useCallback, useMemo, useState } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Crown, Eye, EyeSlash, Star, User, UserCheck } from '@phosphor-icons/react';
-import { format } from 'date-fns';
-import { ja } from 'date-fns/locale';
-
-import { usersQueryKeys, useUsersQuery } from '@/features/users';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  Crown,
+  Eye,
+  EyeSlash,
+  Star,
+  User,
+  UserCheck,
+} from "@phosphor-icons/react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { format } from "date-fns";
+import { ja } from "date-fns/locale";
+import { useCallback, useMemo, useState } from "react";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import {
   Table,
   TableBody,
@@ -19,11 +23,23 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
-
-import UserModal from './UserModal';
-import { deactivateUser, getRoleColor, getRoleDisplayName, updateUser } from './api';
-import type { UserFilters, UserFormData, UserRole, UserStats, UserWithDetails } from './types';
+} from "@/components/ui/table";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { usersQueryKeys, useUsersQuery } from "@/features/users";
+import {
+  deactivateUser,
+  getRoleColor,
+  getRoleDisplayName,
+  updateUser,
+} from "./api";
+import type {
+  UserFilters,
+  UserFormData,
+  UserRole,
+  UserStats,
+  UserWithDetails,
+} from "./types";
+import UserModal from "./UserModal";
 
 const ROLE_ORDER: Record<UserRole, number> = {
   ADMIN: 0,
@@ -50,35 +66,43 @@ function calculateStats(users: UserWithDetails[]): UserStats {
   return {
     total: users.length,
     active: users.filter((user) => user.isActive).length,
-    admins: users.filter((user) => user.role === 'ADMIN').length,
-    managers: users.filter((user) => user.role === 'MANAGER').length,
-    members: users.filter((user) => user.role === 'MEMBER').length,
+    admins: users.filter((user) => user.role === "ADMIN").length,
+    managers: users.filter((user) => user.role === "MANAGER").length,
+    members: users.filter((user) => user.role === "MEMBER").length,
   };
 }
 
 function matchesFilters(user: UserWithDetails, filters: UserFilters): boolean {
-  const matchesRole = filters.role === 'all' ? true : user.role === filters.role;
+  const matchesRole =
+    filters.role === "all" ? true : user.role === filters.role;
 
   const matchesStatus =
-    filters.status === 'all' ? true : filters.status === 'active' ? user.isActive : !user.isActive;
+    filters.status === "all"
+      ? true
+      : filters.status === "active"
+        ? user.isActive
+        : !user.isActive;
 
   return matchesRole && matchesStatus;
 }
 
 function getEmptyStateMessage(filters: UserFilters): string {
-  if (filters.status === 'active') {
-    return 'アクティブなユーザーがいません';
+  if (filters.status === "active") {
+    return "アクティブなユーザーがいません";
   }
 
-  if (filters.status === 'inactive') {
-    return '無効化されたユーザーがいません';
+  if (filters.status === "inactive") {
+    return "無効化されたユーザーがいません";
   }
 
-  return 'ユーザーが登録されていません';
+  return "ユーザーが登録されていません";
 }
 
 export default function UsersPageClient() {
-  const [filters, setFilters] = useState<UserFilters>({ role: 'all', status: 'active' });
+  const [filters, setFilters] = useState<UserFilters>({
+    role: "all",
+    status: "active",
+  });
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<UserWithDetails | null>(null);
 
@@ -89,10 +113,14 @@ export default function UsersPageClient() {
   });
 
   const stats = useMemo<UserStats>(() => calculateStats(users), [users]);
-  const emptyStateMessage = useMemo(() => getEmptyStateMessage(filters), [filters]);
+  const emptyStateMessage = useMemo(
+    () => getEmptyStateMessage(filters),
+    [filters]
+  );
 
   const { mutateAsync: updateUserMutateAsync } = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: UserFormData }) => updateUser(id, data),
+    mutationFn: ({ id, data }: { id: string; data: UserFormData }) =>
+      updateUser(id, data),
   });
 
   const { mutateAsync: deactivateUserMutateAsync } = useMutation({
@@ -105,13 +133,13 @@ export default function UsersPageClient() {
         return prev;
       }
 
-      return { ...prev, role: role as 'all' | UserRole };
+      return { ...prev, role: role as "all" | UserRole };
     });
   }, []);
 
   const handleStatusFilterChange = useCallback((checked: boolean) => {
     setFilters((prev) => {
-      const nextStatus: UserFilters['status'] = checked ? 'active' : 'all';
+      const nextStatus: UserFilters["status"] = checked ? "active" : "all";
 
       if (prev.status === nextStatus) {
         return prev;
@@ -134,7 +162,7 @@ export default function UsersPageClient() {
   const handleSave = useCallback(
     async (formData: UserFormData) => {
       if (!editingUser) {
-        throw new Error('編集対象のユーザーが設定されていません');
+        throw new Error("編集対象のユーザーが設定されていません");
       }
 
       const updated = await updateUserMutateAsync({
@@ -142,16 +170,21 @@ export default function UsersPageClient() {
         data: formData,
       });
 
-      queryClient.setQueryData<UserWithDetails[]>(usersQueryKeys.list(filters), (previous) => {
-        const snapshot = previous ? [...previous] : [];
-        const withoutUpdated = snapshot.filter((user) => user.id !== updated.id);
+      queryClient.setQueryData<UserWithDetails[]>(
+        usersQueryKeys.list(filters),
+        (previous) => {
+          const snapshot = previous ? [...previous] : [];
+          const withoutUpdated = snapshot.filter(
+            (user) => user.id !== updated.id
+          );
 
-        if (matchesFilters(updated, filters)) {
-          withoutUpdated.push(updated);
+          if (matchesFilters(updated, filters)) {
+            withoutUpdated.push(updated);
+          }
+
+          return sortUsers(withoutUpdated);
         }
-
-        return sortUsers(withoutUpdated);
-      });
+      );
 
       await queryClient.invalidateQueries({ queryKey: usersQueryKeys.all });
       handleCloseModal();
@@ -165,16 +198,19 @@ export default function UsersPageClient() {
 
       const deactivatedUser: UserWithDetails = { ...user, isActive: false };
 
-      queryClient.setQueryData<UserWithDetails[]>(usersQueryKeys.list(filters), (previous) => {
-        const snapshot = previous ? [...previous] : [];
-        const withoutTarget = snapshot.filter((item) => item.id !== user.id);
+      queryClient.setQueryData<UserWithDetails[]>(
+        usersQueryKeys.list(filters),
+        (previous) => {
+          const snapshot = previous ? [...previous] : [];
+          const withoutTarget = snapshot.filter((item) => item.id !== user.id);
 
-        if (matchesFilters(deactivatedUser, filters)) {
-          withoutTarget.push(deactivatedUser);
+          if (matchesFilters(deactivatedUser, filters)) {
+            withoutTarget.push(deactivatedUser);
+          }
+
+          return sortUsers(withoutTarget);
         }
-
-        return sortUsers(withoutTarget);
-      });
+      );
 
       await queryClient.invalidateQueries({ queryKey: usersQueryKeys.all });
     },
@@ -186,8 +222,10 @@ export default function UsersPageClient() {
       <div className="mb-6 md:mb-8">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between">
           <div>
-            <h1 className="mb-2 text-2xl font-bold text-foreground md:text-3xl">ユーザー管理</h1>
-            <p className="text-sm text-muted-foreground md:text-base">
+            <h1 className="mb-2 font-bold text-2xl text-foreground md:text-3xl">
+              ユーザー管理
+            </h1>
+            <p className="text-muted-foreground text-sm md:text-base">
               システムユーザーの権限・状態管理を行います
             </p>
           </div>
@@ -203,21 +241,27 @@ export default function UsersPageClient() {
                   className="h-4 w-4 text-green-600 dark:text-green-400"
                   weight="regular"
                 />
-                <div className="text-base font-bold text-green-600 dark:text-green-400">
+                <div className="font-bold text-base text-green-600 dark:text-green-400">
                   {stats.active}
                 </div>
               </div>
 
               <div className="flex items-center gap-2 px-4 py-1">
-                <Crown className="h-4 w-4 text-red-600 dark:text-red-400" weight="regular" />
-                <div className="text-base font-bold text-red-600 dark:text-red-400">
+                <Crown
+                  className="h-4 w-4 text-red-600 dark:text-red-400"
+                  weight="regular"
+                />
+                <div className="font-bold text-base text-red-600 dark:text-red-400">
                   {stats.admins}
                 </div>
               </div>
 
               <div className="flex items-center gap-2 px-4 py-1">
-                <Star className="h-4 w-4 text-blue-600 dark:text-blue-400" weight="regular" />
-                <div className="text-base font-bold text-blue-600 dark:text-blue-400">
+                <Star
+                  className="h-4 w-4 text-blue-600 dark:text-blue-400"
+                  weight="regular"
+                />
+                <div className="font-bold text-base text-blue-600 dark:text-blue-400">
                   {stats.managers}
                 </div>
               </div>
@@ -229,26 +273,29 @@ export default function UsersPageClient() {
       <div className="overflow-x-auto rounded-lg border bg-white shadow-lg dark:bg-gray-900">
         <div className="space-y-4 border-b p-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold">ユーザー一覧</h2>
+            <h2 className="font-semibold text-lg">ユーザー一覧</h2>
           </div>
 
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <Tabs
-              value={filters.role}
-              onValueChange={handleRoleFilterChange}
               className="w-full sm:w-auto"
+              onValueChange={handleRoleFilterChange}
+              value={filters.role}
             >
               <TabsList className="grid w-full grid-cols-4 sm:w-auto">
                 <TabsTrigger value="all">すべて</TabsTrigger>
-                <TabsTrigger value="ADMIN" className="flex items-center gap-1">
+                <TabsTrigger className="flex items-center gap-1" value="ADMIN">
                   <Crown className="h-3 w-3" />
                   管理者
                 </TabsTrigger>
-                <TabsTrigger value="MANAGER" className="flex items-center gap-1">
+                <TabsTrigger
+                  className="flex items-center gap-1"
+                  value="MANAGER"
+                >
                   <Star className="h-3 w-3" />
                   マネージャー
                 </TabsTrigger>
-                <TabsTrigger value="MEMBER" className="flex items-center gap-1">
+                <TabsTrigger className="flex items-center gap-1" value="MEMBER">
                   <User className="h-3 w-3" />
                   メンバー
                 </TabsTrigger>
@@ -257,12 +304,15 @@ export default function UsersPageClient() {
 
             <div className="flex items-center space-x-2">
               <Switch
+                checked={filters.status === "active"}
                 id="active-only"
-                checked={filters.status === 'active'}
                 onCheckedChange={handleStatusFilterChange}
               />
-              <Label htmlFor="active-only" className="flex cursor-pointer items-center gap-1">
-                {filters.status === 'active' ? (
+              <Label
+                className="flex cursor-pointer items-center gap-1"
+                htmlFor="active-only"
+              >
+                {filters.status === "active" ? (
                   <Eye className="h-4 w-4 text-green-600 dark:text-green-400" />
                 ) : (
                   <EyeSlash className="h-4 w-4 text-gray-500" />
@@ -276,7 +326,7 @@ export default function UsersPageClient() {
         <Table>
           <TableHeader>
             <TableRow className="bg-white dark:bg-gray-900">
-              <TableHead className="w-12"></TableHead>
+              <TableHead className="w-12" />
               <TableHead className="min-w-[120px]">ユーザー名</TableHead>
               <TableHead className="min-w-[100px]">権限</TableHead>
               <TableHead className="min-w-[120px]">最終ログイン</TableHead>
@@ -286,7 +336,10 @@ export default function UsersPageClient() {
           <TableBody>
             {users.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="py-8 text-center text-muted-foreground">
+                <TableCell
+                  className="py-8 text-center text-muted-foreground"
+                  colSpan={5}
+                >
                   {emptyStateMessage}
                 </TableCell>
               </TableRow>
@@ -299,70 +352,76 @@ export default function UsersPageClient() {
                 };
                 let StatusIcon: typeof User;
 
-                if (!user.isActive) {
-                  statusStyles = {
-                    row: 'bg-gray-50/30 hover:bg-gray-50/50 dark:bg-gray-900/5 dark:hover:bg-gray-900/10',
-                    icon: 'text-gray-600 dark:text-gray-400',
-                    text: 'text-foreground',
-                  };
-                  StatusIcon = EyeSlash;
-                } else {
+                if (user.isActive) {
                   switch (user.role) {
-                    case 'ADMIN':
+                    case "ADMIN":
                       statusStyles = {
-                        row: 'bg-red-50/30 hover:bg-red-50/50 dark:bg-red-900/5 dark:hover:bg-red-900/10',
-                        icon: 'text-red-600 dark:text-red-400',
-                        text: 'text-foreground',
+                        row: "bg-red-50/30 hover:bg-red-50/50 dark:bg-red-900/5 dark:hover:bg-red-900/10",
+                        icon: "text-red-600 dark:text-red-400",
+                        text: "text-foreground",
                       };
                       StatusIcon = Crown;
                       break;
-                    case 'MANAGER':
+                    case "MANAGER":
                       statusStyles = {
-                        row: 'bg-blue-50/30 hover:bg-blue-50/50 dark:bg-blue-900/5 dark:hover:bg-blue-900/10',
-                        icon: 'text-blue-600 dark:text-blue-400',
-                        text: 'text-foreground',
+                        row: "bg-blue-50/30 hover:bg-blue-50/50 dark:bg-blue-900/5 dark:hover:bg-blue-900/10",
+                        icon: "text-blue-600 dark:text-blue-400",
+                        text: "text-foreground",
                       };
                       StatusIcon = Star;
                       break;
-                    case 'MEMBER':
+                    case "MEMBER":
                     default:
                       statusStyles = {
-                        row: 'bg-green-50/30 hover:bg-green-50/50 dark:bg-green-900/5 dark:hover:bg-green-900/10',
-                        icon: 'text-green-600 dark:text-green-400',
-                        text: 'text-foreground',
+                        row: "bg-green-50/30 hover:bg-green-50/50 dark:bg-green-900/5 dark:hover:bg-green-900/10",
+                        icon: "text-green-600 dark:text-green-400",
+                        text: "text-foreground",
                       };
                       StatusIcon = User;
                       break;
                   }
+                } else {
+                  statusStyles = {
+                    row: "bg-gray-50/30 hover:bg-gray-50/50 dark:bg-gray-900/5 dark:hover:bg-gray-900/10",
+                    icon: "text-gray-600 dark:text-gray-400",
+                    text: "text-foreground",
+                  };
+                  StatusIcon = EyeSlash;
                 }
 
                 return (
                   <TableRow
-                    key={user.id}
                     className={`cursor-pointer transition-colors ${statusStyles.row} ${
-                      !user.isActive ? 'opacity-60' : ''
+                      user.isActive ? "" : "opacity-60"
                     }`}
+                    key={user.id}
                     onClick={() => handleOpenModal(user)}
                   >
                     <TableCell>
-                      <StatusIcon className={`h-5 w-5 ${statusStyles.icon}`} weight="regular" />
+                      <StatusIcon
+                        className={`h-5 w-5 ${statusStyles.icon}`}
+                        weight="regular"
+                      />
                     </TableCell>
                     <TableCell>
                       <div>
                         <p
                           className={`font-medium ${statusStyles.text} ${
-                            !user.isActive ? 'line-through' : ''
+                            user.isActive ? "" : "line-through"
                           }`}
                         >
                           {user.displayName}
                         </p>
-                        <p className="text-xs text-muted-foreground">
+                        <p className="text-muted-foreground text-xs">
                           ID: {user.id.substring(0, 8)}...
                         </p>
                       </div>
                     </TableCell>
                     <TableCell>
-                      <Badge variant="outline" className={`${getRoleColor(user.role)} font-medium`}>
+                      <Badge
+                        className={`${getRoleColor(user.role)} font-medium`}
+                        variant="outline"
+                      >
                         {getRoleDisplayName(user.role)}
                       </Badge>
                     </TableCell>
@@ -370,22 +429,28 @@ export default function UsersPageClient() {
                       {user.lastLoginAt ? (
                         <span
                           className={`text-sm ${statusStyles.text} ${
-                            !user.isActive ? 'line-through' : ''
+                            user.isActive ? "" : "line-through"
                           }`}
                         >
-                          {format(new Date(user.lastLoginAt), 'MM/dd HH:mm', { locale: ja })}
+                          {format(new Date(user.lastLoginAt), "MM/dd HH:mm", {
+                            locale: ja,
+                          })}
                         </span>
                       ) : (
-                        <span className="text-sm text-muted-foreground">未ログイン</span>
+                        <span className="text-muted-foreground text-sm">
+                          未ログイン
+                        </span>
                       )}
                     </TableCell>
                     <TableCell>
                       <span
-                        className={`text-sm text-muted-foreground ${
-                          !user.isActive ? 'line-through' : ''
+                        className={`text-muted-foreground text-sm ${
+                          user.isActive ? "" : "line-through"
                         }`}
                       >
-                        {format(new Date(user.createdAt), 'MM/dd', { locale: ja })}
+                        {format(new Date(user.createdAt), "MM/dd", {
+                          locale: ja,
+                        })}
                       </span>
                     </TableCell>
                   </TableRow>
@@ -399,9 +464,9 @@ export default function UsersPageClient() {
       <UserModal
         isOpen={isModalOpen}
         onClose={handleCloseModal}
-        user={editingUser}
-        onSave={handleSave}
         onDeactivate={handleDeactivate}
+        onSave={handleSave}
+        user={editingUser}
       />
     </div>
   );

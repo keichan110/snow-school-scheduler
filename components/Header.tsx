@@ -1,32 +1,37 @@
-'use client';
+"use client";
 
-import { useCallback } from 'react';
-import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
 import {
   CalendarDots,
   Certificate,
-  UsersThree,
-  Tag,
-  LinkSimple,
-  UserGear,
-  List,
   type Icon,
-} from '@phosphor-icons/react';
-import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet';
+  LinkSimple,
+  List,
+  Tag,
+  User,
+  UserGear,
+  UsersThree,
+} from "@phosphor-icons/react";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import { useCallback } from "react";
+import { HeaderProgressIndicator } from "@/components/HeaderProgressIndicator";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
-import { useAuth } from '@/contexts/AuthContext';
-import { User } from '@phosphor-icons/react';
-import { HeaderProgressIndicator } from '@/components/HeaderProgressIndicator';
+} from "@/components/ui/dropdown-menu";
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import { useAuth } from "@/contexts/AuthContext";
 
-type UserRole = 'ADMIN' | 'MANAGER' | 'MEMBER';
+type UserRole = "ADMIN" | "MANAGER" | "MEMBER";
 
 interface MenuItem {
   href: string;
@@ -51,46 +56,46 @@ export default function Header() {
 
   const allMenuItems: MenuItem[] = [
     {
-      href: '/shifts',
+      href: "/shifts",
       icon: CalendarDots,
-      label: 'シフト管理',
-      description: 'シフト表の作成・編集・割り当て管理',
-      requiredRole: 'MANAGER',
+      label: "シフト管理",
+      description: "シフト表の作成・編集・割り当て管理",
+      requiredRole: "MANAGER",
     },
     {
-      href: '/instructors',
+      href: "/instructors",
       icon: UsersThree,
-      label: 'インストラクター管理',
-      description: 'スタッフ情報の登録・編集・確認',
-      requiredRole: 'MANAGER',
+      label: "インストラクター管理",
+      description: "スタッフ情報の登録・編集・確認",
+      requiredRole: "MANAGER",
     },
     {
-      href: '/shift-types',
+      href: "/shift-types",
       icon: Tag,
-      label: 'シフト種別管理',
-      description: 'シフトタイプの作成・編集・削除',
-      requiredRole: 'MANAGER',
+      label: "シフト種別管理",
+      description: "シフトタイプの作成・編集・削除",
+      requiredRole: "MANAGER",
     },
     {
-      href: '/certifications',
+      href: "/certifications",
       icon: Certificate,
-      label: '資格管理',
-      description: '各種資格・スキルの管理システム',
-      requiredRole: 'MANAGER',
+      label: "資格管理",
+      description: "各種資格・スキルの管理システム",
+      requiredRole: "MANAGER",
     },
     {
-      href: '/invitations',
+      href: "/invitations",
       icon: LinkSimple,
-      label: '招待管理',
-      description: 'ユーザー招待リンクの発行・管理',
-      requiredRole: 'ADMIN',
+      label: "招待管理",
+      description: "ユーザー招待リンクの発行・管理",
+      requiredRole: "ADMIN",
     },
     {
-      href: '/users',
+      href: "/users",
       icon: UserGear,
-      label: 'ユーザー管理',
-      description: 'システム利用者の管理・権限設定',
-      requiredRole: 'ADMIN',
+      label: "ユーザー管理",
+      description: "システム利用者の管理・権限設定",
+      requiredRole: "ADMIN",
     },
   ];
 
@@ -111,13 +116,15 @@ export default function Header() {
   };
 
   // ユーザーの権限に基づいてメニューアイテムをフィルタリング
-  const visibleMenuItems = allMenuItems.filter((item) => hasPermission(item.requiredRole));
+  const visibleMenuItems = allMenuItems.filter((item) =>
+    hasPermission(item.requiredRole)
+  );
 
   // 管理機能へのアクセス権限チェック（MANAGERレベル以上）
-  const hasManagementAccess = hasPermission('MANAGER'); // MANAGERレベル以上
+  const hasManagementAccess = hasPermission("MANAGER"); // MANAGERレベル以上
 
   return (
-    <header className="fixed left-1/2 top-4 z-50 mx-auto w-full max-w-7xl -translate-x-1/2 px-4 sm:px-6 lg:px-8">
+    <header className="-translate-x-1/2 fixed top-4 left-1/2 z-50 mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
       <div className="relative overflow-hidden rounded-2xl border border-border/20 bg-background/80 shadow-lg backdrop-blur-md">
         <HeaderProgressIndicator />
         <div className="relative z-10 px-6 py-3">
@@ -127,11 +134,14 @@ export default function Header() {
               {hasManagementAccess && visibleMenuItems.length > 0 && (
                 <Sheet>
                   <SheetTrigger asChild>
-                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                    <Button className="h-8 w-8 p-0" size="sm" variant="ghost">
                       <List className="h-5 w-5" weight="regular" />
                     </Button>
                   </SheetTrigger>
-                  <SheetContent side="left" className="w-[400px] max-w-[calc(100vw-2rem)] p-0">
+                  <SheetContent
+                    className="w-[400px] max-w-[calc(100vw-2rem)] p-0"
+                    side="left"
+                  >
                     <div className="p-6">
                       <div className="grid gap-3">
                         {visibleMenuItems.map((item) => {
@@ -139,25 +149,27 @@ export default function Header() {
                           const isActive = pathname === item.href;
 
                           return (
-                            <SheetClose key={item.href} asChild>
+                            <SheetClose asChild key={item.href}>
                               <Link
-                                href={item.href}
-                                prefetch
-                                onMouseEnter={() => handlePrefetch(item.href)}
-                                onFocus={() => handlePrefetch(item.href)}
                                 className={`flex items-start space-x-4 rounded-lg p-3 transition-all duration-200 hover:bg-accent/50 ${
                                   isActive
-                                    ? 'bg-primary/10 text-primary'
-                                    : 'text-muted-foreground hover:text-foreground'
+                                    ? "bg-primary/10 text-primary"
+                                    : "text-muted-foreground hover:text-foreground"
                                 }`}
+                                href={item.href}
+                                onFocus={() => handlePrefetch(item.href)}
+                                onMouseEnter={() => handlePrefetch(item.href)}
+                                prefetch
                               >
                                 <IconComponent
                                   className="h-6 w-6 shrink-0"
-                                  weight={isActive ? 'fill' : 'regular'}
+                                  weight={isActive ? "fill" : "regular"}
                                 />
                                 <div className="space-y-1">
-                                  <h3 className="text-sm font-medium leading-none">{item.label}</h3>
-                                  <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
+                                  <h3 className="font-medium text-sm leading-none">
+                                    {item.label}
+                                  </h3>
+                                  <p className="line-clamp-2 text-muted-foreground text-sm leading-snug">
                                     {item.description}
                                   </p>
                                 </div>
@@ -172,17 +184,17 @@ export default function Header() {
               )}
 
               <Link
-                href="/"
-                prefetch
-                onMouseEnter={() => handlePrefetch('/')}
-                onFocus={() => handlePrefetch('/')}
                 className="flex items-center space-x-2"
+                href="/"
+                onFocus={() => handlePrefetch("/")}
+                onMouseEnter={() => handlePrefetch("/")}
+                prefetch
               >
                 <div className="flex items-center justify-center">
-                  <img src="/icon.svg" alt="logo" className="h-8 w-8" />
+                  <img alt="logo" className="h-8 w-8" src="/icon.svg" />
                 </div>
                 <div className="flex items-center">
-                  <h1 className="text-xl font-bold text-foreground">Fuyugyō</h1>
+                  <h1 className="font-bold text-foreground text-xl">Fuyugyō</h1>
                 </div>
               </Link>
             </div>
@@ -192,10 +204,13 @@ export default function Header() {
               {user && (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                    <Button className="h-8 w-8 p-0" size="sm" variant="ghost">
                       <Avatar className="h-8 w-8 cursor-pointer transition-all hover:ring-2 hover:ring-primary/20">
-                        <AvatarImage src={user.profileImageUrl || ''} alt={user.displayName} />
-                        <AvatarFallback className="bg-gradient-to-br from-blue-100 via-blue-300 to-indigo-400 text-sm font-semibold text-white">
+                        <AvatarImage
+                          alt={user.displayName}
+                          src={user.profileImageUrl || ""}
+                        />
+                        <AvatarFallback className="bg-gradient-to-br from-blue-100 via-blue-300 to-indigo-400 font-semibold text-sm text-white">
                           {user.displayName.charAt(0).toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
@@ -206,19 +221,24 @@ export default function Header() {
                       {/* ユーザー情報 */}
                       <div className="flex items-center space-x-3">
                         <Avatar className="h-12 w-12">
-                          <AvatarImage src={user.profileImageUrl || ''} alt={user.displayName} />
+                          <AvatarImage
+                            alt={user.displayName}
+                            src={user.profileImageUrl || ""}
+                          />
                           <AvatarFallback className="bg-gradient-to-br from-blue-100 via-blue-300 to-indigo-400 font-semibold text-white">
                             {user.displayName.charAt(0).toUpperCase()}
                           </AvatarFallback>
                         </Avatar>
                         <div className="flex-1">
-                          <p className="text-sm font-medium">{user.displayName}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {user.role === 'ADMIN'
-                              ? '管理者'
-                              : user.role === 'MANAGER'
-                                ? 'マネージャー'
-                                : 'メンバー'}
+                          <p className="font-medium text-sm">
+                            {user.displayName}
+                          </p>
+                          <p className="text-muted-foreground text-xs">
+                            {user.role === "ADMIN"
+                              ? "管理者"
+                              : user.role === "MANAGER"
+                                ? "マネージャー"
+                                : "メンバー"}
                           </p>
                         </div>
                       </div>
@@ -227,13 +247,13 @@ export default function Header() {
                       <div className="border-t pt-2">
                         <DropdownMenuItem asChild>
                           <Button
-                            variant="ghost"
-                            className="h-8 w-full justify-start text-sm text-muted-foreground hover:text-foreground"
+                            className="h-8 w-full justify-start text-muted-foreground text-sm hover:text-foreground"
                             onClick={() => {
                               // 専用ログアウトページにリダイレクト
                               // これにより保護されたページでの状態競合を回避
-                              window.location.href = '/logout';
+                              window.location.href = "/logout";
                             }}
+                            variant="ghost"
                           >
                             <User className="mr-2 h-4 w-4" />
                             ログアウト

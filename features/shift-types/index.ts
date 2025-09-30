@@ -1,2 +1,2 @@
 // クエリフック
-export * from './api/queries';
+export * from "./api/queries";

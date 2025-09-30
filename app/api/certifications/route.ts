@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/db';
-import { authenticateFromRequest } from '@/lib/auth/middleware';
+import { type NextRequest, NextResponse } from "next/server";
+import { authenticateFromRequest } from "@/lib/auth/middleware";
+import { prisma } from "@/lib/db";
 
 export async function GET(request: NextRequest) {
   const authResult = await authenticateFromRequest(request);
@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(
       {
         success: false,
-        error: 'Authentication required',
+        error: "Authentication required",
         data: null,
         message: null,
       },
@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
           },
         },
       },
-      orderBy: [{ department: { name: 'asc' } }, { name: 'asc' }],
+      orderBy: [{ department: { name: "asc" } }, { name: "asc" }],
     });
 
     return NextResponse.json({
@@ -36,13 +36,13 @@ export async function GET(request: NextRequest) {
       error: null,
     });
   } catch (error) {
-    console.error('Certifications API error:', error);
+    console.error("Certifications API error:", error);
     return NextResponse.json(
       {
         success: false,
         data: null,
         message: null,
-        error: 'Internal server error',
+        error: "Internal server error",
       },
       { status: 500 }
     );
@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         success: false,
-        error: 'Authentication required',
+        error: "Authentication required",
         data: null,
         message: null,
       },
@@ -67,7 +67,12 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
 
     // 必須フィールドのバリデーション
-    const requiredFields = ['departmentId', 'name', 'shortName', 'organization'];
+    const requiredFields = [
+      "departmentId",
+      "name",
+      "shortName",
+      "organization",
+    ];
     const missingFields = requiredFields.filter((field) => !(field in body));
 
     if (missingFields.length > 0) {
@@ -76,7 +81,7 @@ export async function POST(request: NextRequest) {
           success: false,
           data: null,
           message: null,
-          error: `Missing required fields: ${missingFields.join(', ')}`,
+          error: `Missing required fields: ${missingFields.join(", ")}`,
         },
         { status: 400 }
       );
@@ -106,19 +111,19 @@ export async function POST(request: NextRequest) {
       {
         success: true,
         data: certification,
-        message: 'Certification created successfully',
+        message: "Certification created successfully",
         error: null,
       },
       { status: 201 }
     );
   } catch (error) {
-    console.error('Certifications API error:', error);
+    console.error("Certifications API error:", error);
     return NextResponse.json(
       {
         success: false,
         data: null,
         message: null,
-        error: 'Internal server error',
+        error: "Internal server error",
       },
       { status: 500 }
     );

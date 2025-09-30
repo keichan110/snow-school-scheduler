@@ -1,14 +1,12 @@
-'use client';
+"use client";
 
-import { useCallback, useMemo, useState } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Plus, SealCheck, Tag } from '@phosphor-icons/react';
-
-import { shiftTypesQueryKeys, useShiftTypesQuery } from '@/features/shift-types';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
+import { Plus, SealCheck, Tag } from "@phosphor-icons/react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useCallback, useMemo, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import {
   Table,
   TableBody,
@@ -16,11 +14,14 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
-
-import ShiftTypeModal from './ShiftTypeModal';
-import { createShiftType, updateShiftType } from './api';
-import type { ShiftType, ShiftTypeFormData, ShiftTypeStats } from './types';
+} from "@/components/ui/table";
+import {
+  shiftTypesQueryKeys,
+  useShiftTypesQuery,
+} from "@/features/shift-types";
+import { createShiftType, updateShiftType } from "./api";
+import ShiftTypeModal from "./ShiftTypeModal";
+import type { ShiftType, ShiftTypeFormData, ShiftTypeStats } from "./types";
 
 function sortShiftTypes(shiftTypes: ShiftType[]): ShiftType[] {
   return [...shiftTypes].sort((a, b) => {
@@ -32,11 +33,14 @@ function sortShiftTypes(shiftTypes: ShiftType[]): ShiftType[] {
       return 1;
     }
 
-    return a.name.localeCompare(b.name, 'ja');
+    return a.name.localeCompare(b.name, "ja");
   });
 }
 
-function filterShiftTypes(shiftTypes: ShiftType[], showActiveOnly: boolean): ShiftType[] {
+function filterShiftTypes(
+  shiftTypes: ShiftType[],
+  showActiveOnly: boolean
+): ShiftType[] {
   if (showActiveOnly) {
     return shiftTypes.filter((shiftType) => shiftType.isActive);
   }
@@ -54,7 +58,9 @@ function calculateStats(shiftTypes: ShiftType[]): ShiftTypeStats {
 export default function ShiftTypesPageClient() {
   const [showActiveOnly, setShowActiveOnly] = useState<boolean>(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingShiftType, setEditingShiftType] = useState<ShiftType | null>(null);
+  const [editingShiftType, setEditingShiftType] = useState<ShiftType | null>(
+    null
+  );
 
   const queryClient = useQueryClient();
   const { data: shiftTypes } = useShiftTypesQuery({
@@ -66,18 +72,28 @@ export default function ShiftTypesPageClient() {
     [shiftTypes, showActiveOnly]
   );
 
-  const stats = useMemo<ShiftTypeStats>(() => calculateStats(shiftTypes ?? []), [shiftTypes]);
+  const stats = useMemo<ShiftTypeStats>(
+    () => calculateStats(shiftTypes ?? []),
+    [shiftTypes]
+  );
 
-  const createShiftTypeMutation = useMutation<ShiftType, Error, ShiftTypeFormData>({
+  const createShiftTypeMutation = useMutation<
+    ShiftType,
+    Error,
+    ShiftTypeFormData
+  >({
     mutationFn: (formData) => createShiftType(formData),
     onSuccess: (created) => {
-      queryClient.setQueryData<ShiftType[]>(shiftTypesQueryKeys.list(), (previous) => {
-        if (!previous) {
-          return [created];
-        }
+      queryClient.setQueryData<ShiftType[]>(
+        shiftTypesQueryKeys.list(),
+        (previous) => {
+          if (!previous) {
+            return [created];
+          }
 
-        return sortShiftTypes([...previous, created]);
-      });
+          return sortShiftTypes([...previous, created]);
+        }
+      );
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: shiftTypesQueryKeys.list() });
@@ -91,17 +107,20 @@ export default function ShiftTypesPageClient() {
   >({
     mutationFn: ({ id, data }) => updateShiftType(id, data),
     onSuccess: (updated) => {
-      queryClient.setQueryData<ShiftType[]>(shiftTypesQueryKeys.list(), (previous) => {
-        if (!previous) {
-          return [updated];
+      queryClient.setQueryData<ShiftType[]>(
+        shiftTypesQueryKeys.list(),
+        (previous) => {
+          if (!previous) {
+            return [updated];
+          }
+
+          const next = previous.map((shiftType) =>
+            shiftType.id === updated.id ? updated : shiftType
+          );
+
+          return sortShiftTypes(next);
         }
-
-        const next = previous.map((shiftType) =>
-          shiftType.id === updated.id ? updated : shiftType
-        );
-
-        return sortShiftTypes(next);
-      });
+      );
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: shiftTypesQueryKeys.list() });
@@ -135,7 +154,12 @@ export default function ShiftTypesPageClient() {
 
       handleCloseModal();
     },
-    [createShiftTypeMutation, editingShiftType, handleCloseModal, updateShiftTypeMutation]
+    [
+      createShiftTypeMutation,
+      editingShiftType,
+      handleCloseModal,
+      updateShiftTypeMutation,
+    ]
   );
 
   return (
@@ -143,8 +167,10 @@ export default function ShiftTypesPageClient() {
       <div className="mb-6 md:mb-8">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between">
           <div>
-            <h1 className="mb-2 text-2xl font-bold text-foreground md:text-3xl">シフト種類管理</h1>
-            <p className="text-sm text-muted-foreground md:text-base">
+            <h1 className="mb-2 font-bold text-2xl text-foreground md:text-3xl">
+              シフト種類管理
+            </h1>
+            <p className="text-muted-foreground text-sm md:text-base">
               シフト種類の登録・管理を行います
             </p>
           </div>
@@ -157,8 +183,10 @@ export default function ShiftTypesPageClient() {
             <div className="flex items-center justify-center divide-x divide-border">
               <div className="flex items-center gap-2 px-4 py-1">
                 <Tag className="h-4 w-4 text-primary" weight="regular" />
-                <div className="text-base font-bold text-primary">{stats.total}</div>
-                <span className="text-sm text-muted-foreground">合計</span>
+                <div className="font-bold text-base text-primary">
+                  {stats.total}
+                </div>
+                <span className="text-muted-foreground text-sm">合計</span>
               </div>
 
               <div className="flex items-center gap-2 px-4 py-1">
@@ -166,10 +194,10 @@ export default function ShiftTypesPageClient() {
                   className="h-4 w-4 text-green-600 dark:text-green-400"
                   weight="regular"
                 />
-                <div className="text-base font-bold text-green-600 dark:text-green-400">
+                <div className="font-bold text-base text-green-600 dark:text-green-400">
                   {stats.active}
                 </div>
-                <span className="text-sm text-muted-foreground">有効</span>
+                <span className="text-muted-foreground text-sm">有効</span>
               </div>
             </div>
           </CardContent>
@@ -179,8 +207,11 @@ export default function ShiftTypesPageClient() {
       <div className="overflow-x-auto rounded-lg border bg-white shadow-lg dark:bg-gray-900">
         <div className="space-y-4 border-b p-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold">シフト種類一覧</h2>
-            <Button onClick={() => handleOpenModal()} className="flex items-center gap-2">
+            <h2 className="font-semibold text-lg">シフト種類一覧</h2>
+            <Button
+              className="flex items-center gap-2"
+              onClick={() => handleOpenModal()}
+            >
               <Plus className="h-4 w-4" weight="regular" />
               追加
             </Button>
@@ -189,11 +220,14 @@ export default function ShiftTypesPageClient() {
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center space-x-2">
               <Switch
-                id="active-only"
                 checked={showActiveOnly}
+                id="active-only"
                 onCheckedChange={handleActiveFilterChange}
               />
-              <Label htmlFor="active-only" className="flex cursor-pointer items-center gap-1">
+              <Label
+                className="flex cursor-pointer items-center gap-1"
+                htmlFor="active-only"
+              >
                 <SealCheck
                   className="h-4 w-4 text-green-600 dark:text-green-400"
                   weight="regular"
@@ -206,51 +240,58 @@ export default function ShiftTypesPageClient() {
         <Table>
           <TableHeader>
             <TableRow className="bg-white dark:bg-gray-900">
-              <TableHead className="w-12"></TableHead>
+              <TableHead className="w-12" />
               <TableHead className="min-w-[200px]">シフト種類名</TableHead>
               <TableHead className="w-24 text-center">状態</TableHead>
-              <TableHead className="hidden min-w-[150px] md:table-cell">作成日</TableHead>
+              <TableHead className="hidden min-w-[150px] md:table-cell">
+                作成日
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {filteredShiftTypes.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={4} className="py-8 text-center text-muted-foreground">
+                <TableCell
+                  className="py-8 text-center text-muted-foreground"
+                  colSpan={4}
+                >
                   {showActiveOnly
-                    ? '有効なシフト種類がありません'
-                    : 'シフト種類が登録されていません'}
+                    ? "有効なシフト種類がありません"
+                    : "シフト種類が登録されていません"}
                 </TableCell>
               </TableRow>
             ) : (
               filteredShiftTypes.map((shiftType) => (
                 <TableRow
-                  key={shiftType.id}
                   className={`cursor-pointer transition-colors hover:bg-accent/50 ${
-                    !shiftType.isActive ? 'opacity-60' : ''
+                    shiftType.isActive ? "" : "opacity-60"
                   }`}
+                  key={shiftType.id}
                   onClick={() => handleOpenModal(shiftType)}
                 >
                   <TableCell>
                     <Tag className="h-5 w-5 text-primary" weight="regular" />
                   </TableCell>
                   <TableCell>
-                    <span className={`font-medium ${!shiftType.isActive ? 'line-through' : ''}`}>
+                    <span
+                      className={`font-medium ${shiftType.isActive ? "" : "line-through"}`}
+                    >
                       {shiftType.name}
                     </span>
                   </TableCell>
                   <TableCell className="text-center">
                     <span
-                      className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${
+                      className={`inline-flex items-center rounded-full px-2 py-1 font-medium text-xs ${
                         shiftType.isActive
-                          ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300'
-                          : 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400'
+                          ? "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300"
+                          : "bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400"
                       }`}
                     >
-                      {shiftType.isActive ? '有効' : '無効'}
+                      {shiftType.isActive ? "有効" : "無効"}
                     </span>
                   </TableCell>
-                  <TableCell className="hidden text-sm text-muted-foreground md:table-cell">
-                    {new Date(shiftType.createdAt).toLocaleDateString('ja-JP')}
+                  <TableCell className="hidden text-muted-foreground text-sm md:table-cell">
+                    {new Date(shiftType.createdAt).toLocaleDateString("ja-JP")}
                   </TableCell>
                 </TableRow>
               ))
@@ -262,8 +303,8 @@ export default function ShiftTypesPageClient() {
       <ShiftTypeModal
         isOpen={isModalOpen}
         onClose={handleCloseModal}
-        shiftType={editingShiftType}
         onSave={handleSave}
+        shiftType={editingShiftType}
       />
     </div>
   );

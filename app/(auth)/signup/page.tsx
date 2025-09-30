@@ -1,13 +1,19 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAuth } from '@/contexts/AuthContext';
-import { Button } from '@/components/ui/button';
-import { LineLoginButton } from '@/components/ui/line-login-button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Loader2, Shield, Users } from 'lucide-react';
+import { Loader2, Shield, Users } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { LineLoginButton } from "@/components/ui/line-login-button";
+import { useAuth } from "@/contexts/AuthContext";
 
 /**
  * サインアップページ
@@ -26,9 +32,9 @@ export default function SignupPage() {
    * 既に認証済みの場合はホームページにリダイレクト
    */
   useEffect(() => {
-    if (status === 'authenticated' && user) {
-      console.log('✅ User already authenticated, redirecting to home');
-      router.push('/');
+    if (status === "authenticated" && user) {
+      console.log("✅ User already authenticated, redirecting to home");
+      router.push("/");
     }
   }, [status, user, router]);
 
@@ -36,12 +42,15 @@ export default function SignupPage() {
    * URLパラメータから招待トークンを取得
    */
   useEffect(() => {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       const urlParams = new URLSearchParams(window.location.search);
-      const inviteParam = urlParams.get('invite');
+      const inviteParam = urlParams.get("invite");
 
       if (inviteParam) {
-        console.log('🎫 Invitation token detected:', inviteParam.substring(0, 16) + '...');
+        console.log(
+          "🎫 Invitation token detected:",
+          inviteParam.substring(0, 16) + "..."
+        );
         setInviteToken(inviteParam);
         setHasInvite(true);
       }
@@ -56,21 +65,22 @@ export default function SignupPage() {
       setIsSigningUp(true);
       setError(null);
 
-      console.log('🆕 Starting LINE signup flow...', {
+      console.log("🆕 Starting LINE signup flow...", {
         hasInvite,
-        inviteToken: inviteToken?.substring(0, 16) + '...' || 'none',
+        inviteToken: inviteToken?.substring(0, 16) + "..." || "none",
       });
 
       // 招待トークンがある場合はURLパラメータとして追加
       const loginUrl = inviteToken
         ? `/api/auth/line/login?invite=${encodeURIComponent(inviteToken)}`
-        : '/api/auth/line/login';
+        : "/api/auth/line/login";
 
       // 直接APIエンドポイントにナビゲート（302リダイレクトを受け入れる）
       window.location.href = loginUrl;
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : '新規登録に失敗しました';
-      console.error('❌ LINE signup error:', errorMessage);
+      const errorMessage =
+        err instanceof Error ? err.message : "新規登録に失敗しました";
+      console.error("❌ LINE signup error:", errorMessage);
       setError(errorMessage);
       setIsSigningUp(false);
     }
@@ -79,7 +89,7 @@ export default function SignupPage() {
   /**
    * 認証中の場合は読み込み画面を表示
    */
-  if (status === 'loading') {
+  if (status === "loading") {
     return (
       <div className="flex min-h-[calc(100vh-200px)] items-center justify-center">
         <div className="flex flex-col items-center space-y-4">
@@ -93,12 +103,14 @@ export default function SignupPage() {
   /**
    * 認証済みの場合は何も表示しない（リダイレクト処理中）
    */
-  if (status === 'authenticated') {
+  if (status === "authenticated") {
     return (
       <div className="flex min-h-[calc(100vh-200px)] items-center justify-center">
         <div className="flex flex-col items-center space-y-4">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          <p className="text-muted-foreground">ホームページにリダイレクトしています...</p>
+          <p className="text-muted-foreground">
+            ホームページにリダイレクトしています...
+          </p>
         </div>
       </div>
     );
@@ -114,11 +126,13 @@ export default function SignupPage() {
               <Shield className="h-6 w-6 text-primary" />
             </div>
             <div className="space-y-2">
-              <CardTitle className="text-2xl font-bold">新規登録</CardTitle>
+              <CardTitle className="font-bold text-2xl">新規登録</CardTitle>
               <CardDescription className="text-center">
                 {hasInvite ? (
                   <>
-                    <span className="text-lg font-medium text-primary">ようこそ！</span>
+                    <span className="font-medium text-lg text-primary">
+                      ようこそ！
+                    </span>
                     <br />
                     スキー・スノーボードスクール
                     <br />
@@ -157,8 +171,8 @@ export default function SignupPage() {
             {/* LINE新規登録ボタン */}
             {isSigningUp ? (
               <Button
-                disabled
                 className="w-full bg-[#06C755] text-white disabled:opacity-50"
+                disabled
                 size="lg"
               >
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -166,43 +180,43 @@ export default function SignupPage() {
               </Button>
             ) : (
               <LineLoginButton
+                className="w-full"
+                onClick={handleLineSignup}
                 size="lg"
                 text="Sign up"
-                onClick={handleLineSignup}
-                className="w-full"
               />
             )}
 
             {/* 説明テキスト */}
-            <div className="space-y-2 text-center text-sm text-muted-foreground">
+            <div className="space-y-2 text-center text-muted-foreground text-sm">
               <p>
                 {hasInvite
-                  ? '招待コードの入力は不要です。LINEアカウントで新規登録してご利用いただけます。'
-                  : 'LINEアカウントで新規登録することで、シフト管理機能をご利用いただけます。'}
+                  ? "招待コードの入力は不要です。LINEアカウントで新規登録してご利用いただけます。"
+                  : "LINEアカウントで新規登録することで、シフト管理機能をご利用いただけます。"}
               </p>
             </div>
           </CardContent>
         </Card>
 
         {/* 注意事項 */}
-        <div className="text-center text-xs text-muted-foreground">
+        <div className="text-center text-muted-foreground text-xs">
           <p>
             新規登録することで、
             <br />
             <a
-              href="/terms"
-              target="_blank"
-              rel="noopener noreferrer"
               className="text-primary hover:underline"
+              href="/terms"
+              rel="noopener noreferrer"
+              target="_blank"
             >
               利用規約
             </a>
             と
             <a
-              href="/privacy"
-              target="_blank"
-              rel="noopener noreferrer"
               className="text-primary hover:underline"
+              href="/privacy"
+              rel="noopener noreferrer"
+              target="_blank"
             >
               プライバシーポリシー
             </a>

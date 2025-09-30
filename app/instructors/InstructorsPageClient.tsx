@@ -1,15 +1,18 @@
-'use client';
+"use client";
 
-import { useCallback, useMemo, useState } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Plus, SealCheck, PersonSimpleSki, PersonSimpleSnowboard } from '@phosphor-icons/react';
-
-import { instructorsQueryKeys, useInstructorsQuery } from '@/features/instructors';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
+import {
+  PersonSimpleSki,
+  PersonSimpleSnowboard,
+  Plus,
+  SealCheck,
+} from "@phosphor-icons/react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useCallback, useMemo, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { CertificationBadge } from "@/components/ui/certification-badge";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import {
   Table,
   TableBody,
@@ -17,18 +20,24 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
-import InstructorModal from './InstructorModal';
-import { CertificationBadge } from '@/components/ui/certification-badge';
-import { createInstructor, updateInstructor } from './api';
+} from "@/components/ui/table";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  instructorsQueryKeys,
+  useInstructorsQuery,
+} from "@/features/instructors";
+import { createInstructor, updateInstructor } from "./api";
+import InstructorModal from "./InstructorModal";
 import type {
-  InstructorWithCertifications,
+  CategoryFilterType,
   InstructorFormData,
   InstructorStats,
-  CategoryFilterType,
-} from './types';
+  InstructorWithCertifications,
+} from "./types";
 
-const STATUS_ORDER: Partial<Record<InstructorWithCertifications['status'], number>> = {
+const STATUS_ORDER: Partial<
+  Record<InstructorWithCertifications["status"], number>
+> = {
   ACTIVE: 0,
   INACTIVE: 1,
   RETIRED: 2,
@@ -47,24 +56,28 @@ function sortInstructorsByStatusAndName(
 
     const nameA = `${a.lastName} ${a.firstName}`;
     const nameB = `${b.lastName} ${b.firstName}`;
-    return nameA.localeCompare(nameB, 'ja');
+    return nameA.localeCompare(nameB, "ja");
   });
 }
 
-function hasSkiCertification(instructor: InstructorWithCertifications): boolean {
+function hasSkiCertification(
+  instructor: InstructorWithCertifications
+): boolean {
   return instructor.certifications.some((cert) => {
     const deptName = cert.department.name.toLowerCase();
-    return deptName.includes('スキー') || deptName.includes('ski');
+    return deptName.includes("スキー") || deptName.includes("ski");
   });
 }
 
-function hasSnowboardCertification(instructor: InstructorWithCertifications): boolean {
+function hasSnowboardCertification(
+  instructor: InstructorWithCertifications
+): boolean {
   return instructor.certifications.some((cert) => {
     const deptName = cert.department.name.toLowerCase();
     return (
-      deptName.includes('スノーボード') ||
-      deptName.includes('snowboard') ||
-      deptName.includes('ボード')
+      deptName.includes("スノーボード") ||
+      deptName.includes("snowboard") ||
+      deptName.includes("ボード")
     );
   });
 }
@@ -77,29 +90,35 @@ function filterInstructors(
   let filtered = [...instructors];
 
   switch (category) {
-    case 'ski':
+    case "ski":
       filtered = filtered.filter(hasSkiCertification);
       break;
-    case 'snowboard':
+    case "snowboard":
       filtered = filtered.filter(hasSnowboardCertification);
       break;
-    case 'all':
+    case "all":
     default:
       break;
   }
 
   if (showActiveOnly) {
-    filtered = filtered.filter((instructor) => instructor.status === 'ACTIVE');
+    filtered = filtered.filter((instructor) => instructor.status === "ACTIVE");
   }
 
   return sortInstructorsByStatusAndName(filtered);
 }
 
-function calculateInstructorStats(instructors: InstructorWithCertifications[]): InstructorStats {
-  const activeInstructors = instructors.filter((instructor) => instructor.status === 'ACTIVE');
+function calculateInstructorStats(
+  instructors: InstructorWithCertifications[]
+): InstructorStats {
+  const activeInstructors = instructors.filter(
+    (instructor) => instructor.status === "ACTIVE"
+  );
 
   const skiInstructors = activeInstructors.filter(hasSkiCertification).length;
-  const snowboardInstructors = activeInstructors.filter(hasSnowboardCertification).length;
+  const snowboardInstructors = activeInstructors.filter(
+    hasSnowboardCertification
+  ).length;
 
   const active = activeInstructors.length;
 
@@ -112,12 +131,12 @@ function calculateInstructorStats(instructors: InstructorWithCertifications[]): 
 }
 
 export default function InstructorsPageClient() {
-  const [currentCategory, setCurrentCategory] = useState<CategoryFilterType>('all');
+  const [currentCategory, setCurrentCategory] =
+    useState<CategoryFilterType>("all");
   const [showActiveOnly, setShowActiveOnly] = useState<boolean>(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingInstructor, setEditingInstructor] = useState<InstructorWithCertifications | null>(
-    null
-  );
+  const [editingInstructor, setEditingInstructor] =
+    useState<InstructorWithCertifications | null>(null);
 
   const queryClient = useQueryClient();
   const { data: instructors } = useInstructorsQuery();
@@ -183,10 +202,13 @@ export default function InstructorsPageClient() {
     setShowActiveOnly(checked);
   }, []);
 
-  const handleOpenModal = useCallback((instructor?: InstructorWithCertifications) => {
-    setEditingInstructor(instructor ?? null);
-    setIsModalOpen(true);
-  }, []);
+  const handleOpenModal = useCallback(
+    (instructor?: InstructorWithCertifications) => {
+      setEditingInstructor(instructor ?? null);
+      setIsModalOpen(true);
+    },
+    []
+  );
 
   const handleCloseModal = useCallback(() => {
     setIsModalOpen(false);
@@ -196,14 +218,22 @@ export default function InstructorsPageClient() {
   const handleSave = useCallback(
     async (formData: InstructorFormData) => {
       if (editingInstructor) {
-        await updateInstructorMutation.mutateAsync({ id: editingInstructor.id, data: formData });
+        await updateInstructorMutation.mutateAsync({
+          id: editingInstructor.id,
+          data: formData,
+        });
       } else {
         await createInstructorMutation.mutateAsync(formData);
       }
 
       handleCloseModal();
     },
-    [createInstructorMutation, editingInstructor, handleCloseModal, updateInstructorMutation]
+    [
+      createInstructorMutation,
+      editingInstructor,
+      handleCloseModal,
+      updateInstructorMutation,
+    ]
   );
 
   return (
@@ -211,10 +241,10 @@ export default function InstructorsPageClient() {
       <div className="mb-6 md:mb-8">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between">
           <div>
-            <h1 className="mb-2 text-2xl font-bold text-foreground md:text-3xl">
+            <h1 className="mb-2 font-bold text-2xl text-foreground md:text-3xl">
               インストラクター管理
             </h1>
-            <p className="text-sm text-muted-foreground md:text-base">
+            <p className="text-muted-foreground text-sm md:text-base">
               インストラクターの登録・管理を行います
             </p>
           </div>
@@ -230,7 +260,7 @@ export default function InstructorsPageClient() {
                   className="h-4 w-4 text-green-600 dark:text-green-400"
                   weight="regular"
                 />
-                <div className="text-base font-bold text-green-600 dark:text-green-400">
+                <div className="font-bold text-base text-green-600 dark:text-green-400">
                   {stats.active}
                 </div>
               </div>
@@ -240,7 +270,7 @@ export default function InstructorsPageClient() {
                   className="h-4 w-4 text-ski-600 dark:text-ski-400"
                   weight="regular"
                 />
-                <div className="text-base font-bold text-ski-600 dark:text-ski-400">
+                <div className="font-bold text-base text-ski-600 dark:text-ski-400">
                   {stats.skiInstructors}
                 </div>
               </div>
@@ -250,7 +280,7 @@ export default function InstructorsPageClient() {
                   className="h-4 w-4 text-snowboard-600 dark:text-snowboard-400"
                   weight="regular"
                 />
-                <div className="text-base font-bold text-snowboard-600 dark:text-snowboard-400">
+                <div className="font-bold text-base text-snowboard-600 dark:text-snowboard-400">
                   {stats.snowboardInstructors}
                 </div>
               </div>
@@ -262,8 +292,11 @@ export default function InstructorsPageClient() {
       <div className="overflow-x-auto rounded-lg border bg-white shadow-lg dark:bg-gray-900">
         <div className="space-y-4 border-b p-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold">インストラクター一覧</h2>
-            <Button onClick={() => handleOpenModal()} className="flex items-center gap-2">
+            <h2 className="font-semibold text-lg">インストラクター一覧</h2>
+            <Button
+              className="flex items-center gap-2"
+              onClick={() => handleOpenModal()}
+            >
               <Plus className="h-4 w-4" weight="regular" />
               追加
             </Button>
@@ -271,18 +304,21 @@ export default function InstructorsPageClient() {
 
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <Tabs
-              value={currentCategory}
-              onValueChange={handleCategoryChange}
               className="w-full sm:w-auto"
+              onValueChange={handleCategoryChange}
+              value={currentCategory}
             >
               <TabsList className="grid w-full grid-cols-3 sm:w-auto">
-                <TabsTrigger value="all" className="flex items-center gap-2">
+                <TabsTrigger className="flex items-center gap-2" value="all">
                   すべて
                 </TabsTrigger>
-                <TabsTrigger value="ski" className="flex items-center gap-2">
+                <TabsTrigger className="flex items-center gap-2" value="ski">
                   スキー
                 </TabsTrigger>
-                <TabsTrigger value="snowboard" className="flex items-center gap-2">
+                <TabsTrigger
+                  className="flex items-center gap-2"
+                  value="snowboard"
+                >
                   スノーボード
                 </TabsTrigger>
               </TabsList>
@@ -290,11 +326,14 @@ export default function InstructorsPageClient() {
 
             <div className="hidden items-center space-x-2 sm:flex">
               <Switch
-                id="active-only"
                 checked={showActiveOnly}
+                id="active-only"
                 onCheckedChange={handleActiveFilterChange}
               />
-              <Label htmlFor="active-only" className="flex cursor-pointer items-center gap-1">
+              <Label
+                className="flex cursor-pointer items-center gap-1"
+                htmlFor="active-only"
+              >
                 <SealCheck
                   className="h-4 w-4 text-green-600 dark:text-green-400"
                   weight="regular"
@@ -311,46 +350,52 @@ export default function InstructorsPageClient() {
               <TableHead className="min-w-[120px]">氏名</TableHead>
               <TableHead className="min-w-[120px]">フリガナ</TableHead>
               <TableHead className="min-w-[200px]">保有資格</TableHead>
-              <TableHead className="hidden min-w-[200px] md:table-cell">備考</TableHead>
+              <TableHead className="hidden min-w-[200px] md:table-cell">
+                備考
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {filteredInstructors.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="py-8 text-center text-muted-foreground">
-                  {currentCategory === 'all' && !showActiveOnly
-                    ? 'インストラクターが登録されていません'
+                <TableCell
+                  className="py-8 text-center text-muted-foreground"
+                  colSpan={5}
+                >
+                  {currentCategory === "all" && !showActiveOnly
+                    ? "インストラクターが登録されていません"
                     : showActiveOnly
-                      ? '有効なインストラクターがいません'
-                      : 'フィルター条件に一致するインストラクターがいません'}
+                      ? "有効なインストラクターがいません"
+                      : "フィルター条件に一致するインストラクターがいません"}
                 </TableCell>
               </TableRow>
             ) : (
               filteredInstructors.map((instructor) => {
                 const statusStyles = {
                   ACTIVE: {
-                    row: 'bg-green-50/30 hover:bg-green-50/50 dark:bg-green-900/5 dark:hover:bg-green-900/10',
-                    text: 'text-foreground',
+                    row: "bg-green-50/30 hover:bg-green-50/50 dark:bg-green-900/5 dark:hover:bg-green-900/10",
+                    text: "text-foreground",
                   },
                   INACTIVE: {
-                    row: 'bg-yellow-50/30 hover:bg-yellow-50/50 dark:bg-yellow-900/5 dark:hover:bg-yellow-900/10',
-                    text: 'text-foreground',
+                    row: "bg-yellow-50/30 hover:bg-yellow-50/50 dark:bg-yellow-900/5 dark:hover:bg-yellow-900/10",
+                    text: "text-foreground",
                   },
                   RETIRED: {
-                    row: 'bg-gray-50/30 hover:bg-gray-50/50 dark:bg-gray-900/5 dark:hover:bg-gray-900/10',
-                    text: 'text-foreground',
+                    row: "bg-gray-50/30 hover:bg-gray-50/50 dark:bg-gray-900/5 dark:hover:bg-gray-900/10",
+                    text: "text-foreground",
                   },
                 }[instructor.status];
 
                 const skiCertified = hasSkiCertification(instructor);
-                const snowboardCertified = hasSnowboardCertification(instructor);
+                const snowboardCertified =
+                  hasSnowboardCertification(instructor);
 
                 return (
                   <TableRow
-                    key={instructor.id}
                     className={`cursor-pointer transition-colors ${statusStyles?.row} ${
-                      instructor.status !== 'ACTIVE' ? 'opacity-60' : ''
+                      instructor.status !== "ACTIVE" ? "opacity-60" : ""
                     }`}
+                    key={instructor.id}
                     onClick={() => handleOpenModal(instructor)}
                   >
                     <TableCell>
@@ -367,49 +412,55 @@ export default function InstructorsPageClient() {
                             weight="regular"
                           />
                         ) : null}
-                        {!skiCertified && !snowboardCertified ? <div className="h-4 w-4" /> : null}
+                        {skiCertified || snowboardCertified ? null : (
+                          <div className="h-4 w-4" />
+                        )}
                       </div>
                     </TableCell>
                     <TableCell>
                       <span
                         className={`whitespace-nowrap font-medium md:whitespace-normal ${
                           statusStyles?.text
-                        } ${instructor.status !== 'ACTIVE' ? 'line-through' : ''}`}
+                        } ${instructor.status !== "ACTIVE" ? "line-through" : ""}`}
                       >
                         {instructor.lastName} {instructor.firstName}
                       </span>
                     </TableCell>
                     <TableCell
                       className={`whitespace-nowrap md:whitespace-normal ${statusStyles?.text} ${
-                        instructor.status !== 'ACTIVE' ? 'line-through' : ''
+                        instructor.status !== "ACTIVE" ? "line-through" : ""
                       }`}
                     >
                       {instructor.lastNameKana && instructor.firstNameKana
                         ? `${instructor.lastNameKana} ${instructor.firstNameKana}`
-                        : '-'}
+                        : "-"}
                     </TableCell>
                     <TableCell>
                       <div className="flex flex-wrap gap-1">
                         {instructor.certifications.length > 0 ? (
                           instructor.certifications.map((cert) => (
                             <CertificationBadge
+                              departmentName={cert.department.name || ""}
                               key={cert.id}
                               shortName={cert.shortName || cert.name}
-                              departmentName={cert.department.name || ''}
                             />
                           ))
                         ) : (
-                          <span className="text-sm text-muted-foreground">なし</span>
+                          <span className="text-muted-foreground text-sm">
+                            なし
+                          </span>
                         )}
                       </div>
                     </TableCell>
                     <TableCell
                       className={`hidden max-w-xs md:table-cell ${
-                        instructor.status !== 'ACTIVE' ? 'line-through' : ''
+                        instructor.status !== "ACTIVE" ? "line-through" : ""
                       }`}
                     >
-                      <p className={`line-clamp-2 text-sm ${statusStyles?.text} opacity-70`}>
-                        {instructor.notes || '備考なし'}
+                      <p
+                        className={`line-clamp-2 text-sm ${statusStyles?.text} opacity-70`}
+                      >
+                        {instructor.notes || "備考なし"}
                       </p>
                     </TableCell>
                   </TableRow>
@@ -421,9 +472,9 @@ export default function InstructorsPageClient() {
       </div>
 
       <InstructorModal
+        instructor={editingInstructor}
         isOpen={isModalOpen}
         onClose={handleCloseModal}
-        instructor={editingInstructor}
         onSave={handleSave}
       />
     </div>

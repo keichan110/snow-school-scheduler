@@ -1,21 +1,25 @@
-'use client';
+"use client";
 
-import { Button, ButtonProps } from './button';
-import { cn } from '@/lib/utils';
-import Image from 'next/image';
-import { forwardRef } from 'react';
+import Image from "next/image";
+import { forwardRef } from "react";
+import { cn } from "@/lib/utils";
+import { Button, type ButtonProps } from "./button";
 
-export interface LineLoginButtonProps extends Omit<ButtonProps, 'variant' | 'size'> {
-  size?: 'sm' | 'md' | 'lg';
+export interface LineLoginButtonProps
+  extends Omit<ButtonProps, "variant" | "size"> {
+  size?: "sm" | "md" | "lg";
   text?: string;
 }
 
 const LineLoginButton = forwardRef<HTMLButtonElement, LineLoginButtonProps>(
-  ({ className, size = 'md', text = 'LINEでログイン', disabled, ...props }, ref) => {
+  (
+    { className, size = "md", text = "LINEでログイン", disabled, ...props },
+    ref
+  ) => {
     const sizeClasses = {
-      sm: 'h-10 px-4 text-sm gap-2',
-      md: 'h-12 px-6 text-base gap-3',
-      lg: 'h-14 px-8 text-lg gap-4',
+      sm: "h-10 px-4 text-sm gap-2",
+      md: "h-12 px-6 text-base gap-3",
+      lg: "h-14 px-8 text-lg gap-4",
     };
 
     const iconSizes = {
@@ -26,24 +30,24 @@ const LineLoginButton = forwardRef<HTMLButtonElement, LineLoginButtonProps>(
 
     return (
       <Button
-        ref={ref}
         className={cn(
-          'relative font-medium transition-colors duration-200',
-          'bg-[#06C755] text-white hover:bg-[#06C755]',
-          'hover:bg-opacity-90 active:bg-opacity-70',
-          'disabled:border disabled:border-gray-300 disabled:bg-white disabled:text-black/20',
+          "relative font-medium transition-colors duration-200",
+          "bg-[#06C755] text-white hover:bg-[#06C755]",
+          "hover:bg-opacity-90 active:bg-opacity-70",
+          "disabled:border disabled:border-gray-300 disabled:bg-white disabled:text-black/20",
           sizeClasses[size],
           className
         )}
         disabled={disabled}
+        ref={ref}
         {...props}
       >
         <Image
-          src="/line_icon.png"
           alt="LINE"
-          width={iconSizes[size].width}
+          className={cn("shrink-0", disabled && "opacity-20")}
           height={iconSizes[size].height}
-          className={cn('shrink-0', disabled && 'opacity-20')}
+          src="/line_icon.png"
+          width={iconSizes[size].width}
         />
         <span>{text}</span>
       </Button>
@@ -51,6 +55,6 @@ const LineLoginButton = forwardRef<HTMLButtonElement, LineLoginButtonProps>(
   }
 );
 
-LineLoginButton.displayName = 'LineLoginButton';
+LineLoginButton.displayName = "LineLoginButton";
 
 export { LineLoginButton };

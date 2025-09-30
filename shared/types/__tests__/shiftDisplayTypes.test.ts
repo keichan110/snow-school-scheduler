@@ -1,21 +1,26 @@
-import {
+import type { ShiftStats } from "@/app/shifts/types";
+import type {
   BaseShiftDisplayProps,
   ShiftCalendarGridProps,
   ShiftMobileListProps,
-} from '../shiftDisplayTypes';
-import { ShiftStats } from '@/app/shifts/types';
+} from "../shiftDisplayTypes";
 
-describe('shiftDisplayTypes', () => {
+describe("shiftDisplayTypes", () => {
   // テスト用のモックデータ
   const mockShiftStats: ShiftStats = {
-    '2024-01-01': {
+    "2024-01-01": {
       shifts: [
         {
-          type: 'morning',
-          department: 'ski',
+          type: "morning",
+          department: "ski",
           count: 2,
           assignedInstructors: [
-            { id: 1, lastName: '山田', firstName: '太郎', displayName: '山田 太郎' },
+            {
+              id: 1,
+              lastName: "山田",
+              firstName: "太郎",
+              displayName: "山田 太郎",
+            },
           ],
         },
       ],
@@ -26,24 +31,24 @@ describe('shiftDisplayTypes', () => {
     year: 2024,
     month: 1,
     shiftStats: mockShiftStats,
-    isHoliday: (date: string) => date === '2024-01-01',
-    selectedDate: '2024-01-01',
+    isHoliday: (date: string) => date === "2024-01-01",
+    selectedDate: "2024-01-01",
     onDateSelect: jest.fn(),
   };
 
-  describe('BaseShiftDisplayProps', () => {
-    test('should accept valid props', () => {
+  describe("BaseShiftDisplayProps", () => {
+    test("should accept valid props", () => {
       const props: BaseShiftDisplayProps = mockBaseShiftDisplayProps;
 
       expect(props.year).toBe(2024);
       expect(props.month).toBe(1);
       expect(props.shiftStats).toBeDefined();
       expect(props.isHoliday).toBeDefined();
-      expect(props.selectedDate).toBe('2024-01-01');
+      expect(props.selectedDate).toBe("2024-01-01");
       expect(props.onDateSelect).toBeDefined();
     });
 
-    test('should allow null selectedDate', () => {
+    test("should allow null selectedDate", () => {
       const props: BaseShiftDisplayProps = {
         ...mockBaseShiftDisplayProps,
         selectedDate: null,
@@ -52,27 +57,27 @@ describe('shiftDisplayTypes', () => {
       expect(props.selectedDate).toBeNull();
     });
 
-    test('isHoliday function should work correctly', () => {
+    test("isHoliday function should work correctly", () => {
       const { isHoliday } = mockBaseShiftDisplayProps;
 
-      expect(isHoliday('2024-01-01')).toBe(true);
-      expect(isHoliday('2024-01-02')).toBe(false);
+      expect(isHoliday("2024-01-01")).toBe(true);
+      expect(isHoliday("2024-01-02")).toBe(false);
     });
 
-    test('onDateSelect callback should be callable', () => {
+    test("onDateSelect callback should be callable", () => {
       const mockCallback = jest.fn();
       const props: BaseShiftDisplayProps = {
         ...mockBaseShiftDisplayProps,
         onDateSelect: mockCallback,
       };
 
-      props.onDateSelect('2024-01-02');
-      expect(mockCallback).toHaveBeenCalledWith('2024-01-02');
+      props.onDateSelect("2024-01-02");
+      expect(mockCallback).toHaveBeenCalledWith("2024-01-02");
     });
   });
 
-  describe('ShiftCalendarGridProps', () => {
-    test('should extend BaseShiftDisplayProps', () => {
+  describe("ShiftCalendarGridProps", () => {
+    test("should extend BaseShiftDisplayProps", () => {
       const props: ShiftCalendarGridProps = mockBaseShiftDisplayProps;
 
       // BaseShiftDisplayPropsのすべてのプロパティが利用可能であることを確認
@@ -80,11 +85,11 @@ describe('shiftDisplayTypes', () => {
       expect(props.month).toBe(1);
       expect(props.shiftStats).toBeDefined();
       expect(props.isHoliday).toBeDefined();
-      expect(props.selectedDate).toBe('2024-01-01');
+      expect(props.selectedDate).toBe("2024-01-01");
       expect(props.onDateSelect).toBeDefined();
     });
 
-    test('should be assignable to BaseShiftDisplayProps', () => {
+    test("should be assignable to BaseShiftDisplayProps", () => {
       const calendarProps: ShiftCalendarGridProps = mockBaseShiftDisplayProps;
       const baseProps: BaseShiftDisplayProps = calendarProps;
 
@@ -92,8 +97,8 @@ describe('shiftDisplayTypes', () => {
     });
   });
 
-  describe('ShiftMobileListProps', () => {
-    test('should extend BaseShiftDisplayProps', () => {
+  describe("ShiftMobileListProps", () => {
+    test("should extend BaseShiftDisplayProps", () => {
       const props: ShiftMobileListProps = mockBaseShiftDisplayProps;
 
       // BaseShiftDisplayPropsのすべてのプロパティが利用可能であることを確認
@@ -101,11 +106,11 @@ describe('shiftDisplayTypes', () => {
       expect(props.month).toBe(1);
       expect(props.shiftStats).toBeDefined();
       expect(props.isHoliday).toBeDefined();
-      expect(props.selectedDate).toBe('2024-01-01');
+      expect(props.selectedDate).toBe("2024-01-01");
       expect(props.onDateSelect).toBeDefined();
     });
 
-    test('should be assignable to BaseShiftDisplayProps', () => {
+    test("should be assignable to BaseShiftDisplayProps", () => {
       const mobileProps: ShiftMobileListProps = mockBaseShiftDisplayProps;
       const baseProps: BaseShiftDisplayProps = mobileProps;
 
@@ -113,22 +118,29 @@ describe('shiftDisplayTypes', () => {
     });
   });
 
-  describe('Type compatibility', () => {
-    test('ShiftCalendarGridProps and ShiftMobileListProps should have same structure', () => {
+  describe("Type compatibility", () => {
+    test("ShiftCalendarGridProps and ShiftMobileListProps should have same structure", () => {
       const calendarProps: ShiftCalendarGridProps = mockBaseShiftDisplayProps;
       const mobileProps: ShiftMobileListProps = mockBaseShiftDisplayProps;
 
       // 両方とも同じ基底型なので、構造的に同じであることを確認
-      expect(Object.keys(calendarProps).sort()).toEqual(Object.keys(mobileProps).sort());
+      expect(Object.keys(calendarProps).sort()).toEqual(
+        Object.keys(mobileProps).sort()
+      );
     });
 
-    test('should work with different ShiftStats structures', () => {
+    test("should work with different ShiftStats structures", () => {
       const emptyStats: ShiftStats = {};
       const multiDayStats: ShiftStats = {
-        '2024-01-01': { shifts: [] },
-        '2024-01-02': {
+        "2024-01-01": { shifts: [] },
+        "2024-01-02": {
           shifts: [
-            { type: 'afternoon', department: 'snowboard', count: 1, assignedInstructors: [] },
+            {
+              type: "afternoon",
+              department: "snowboard",
+              count: 1,
+              assignedInstructors: [],
+            },
           ],
         },
       };
@@ -148,22 +160,22 @@ describe('shiftDisplayTypes', () => {
     });
   });
 
-  describe('Error cases', () => {
-    test('should handle edge cases in props', () => {
+  describe("Error cases", () => {
+    test("should handle edge cases in props", () => {
       // 境界値のテスト
       const edgeCaseProps: BaseShiftDisplayProps = {
         year: 1900, // 最小年
         month: 0, // 最小月（通常は1-12だが、型的には制限なし）
         shiftStats: {},
         isHoliday: () => false,
-        selectedDate: '',
+        selectedDate: "",
         onDateSelect: () => {},
       };
 
       expect(edgeCaseProps.year).toBe(1900);
       expect(edgeCaseProps.month).toBe(0);
       expect(edgeCaseProps.shiftStats).toEqual({});
-      expect(edgeCaseProps.selectedDate).toBe('');
+      expect(edgeCaseProps.selectedDate).toBe("");
     });
   });
 });

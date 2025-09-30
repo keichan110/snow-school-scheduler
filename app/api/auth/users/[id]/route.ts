@@ -1,9 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { z } from 'zod';
-import { prisma } from '@/lib/db';
-import { authenticateFromRequest } from '@/lib/auth/middleware';
-import type { ApiResponse } from '@/lib/auth/types';
-import type { User } from '@prisma/client';
+import type { User } from "@prisma/client";
+import { type NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
+import { authenticateFromRequest } from "@/lib/auth/middleware";
+import type { ApiResponse } from "@/lib/auth/types";
+import { prisma } from "@/lib/db";
 
 /**
  * 個別ユーザー管理API
@@ -17,7 +17,7 @@ import type { User } from '@prisma/client';
 // ユーザー詳細レスポンス型
 type UserDetailResponse = Pick<
   User,
-  'id' | 'displayName' | 'role' | 'isActive' | 'createdAt' | 'updatedAt'
+  "id" | "displayName" | "role" | "isActive" | "createdAt" | "updatedAt"
 > & {
   invitationCount: number; // 作成した招待数
 };
@@ -25,11 +25,11 @@ type UserDetailResponse = Pick<
 // ユーザー更新リクエストスキーマ
 const updateUserSchema = z
   .object({
-    role: z.enum(['ADMIN', 'MANAGER', 'MEMBER']).optional(),
+    role: z.enum(["ADMIN", "MANAGER", "MEMBER"]).optional(),
     isActive: z.boolean().optional(),
   })
   .refine((data) => data.role !== undefined || data.isActive !== undefined, {
-    message: 'At least one field (role or isActive) must be provided',
+    message: "At least one field (role or isActive) must be provided",
   });
 
 /**
@@ -48,11 +48,11 @@ export async function GET(
 
     // 認証チェック
     const authResult = await authenticateFromRequest(request);
-    if (!authResult.success || !authResult.user) {
+    if (!(authResult.success && authResult.user)) {
       return NextResponse.json(
         {
           success: false,
-          error: '$1',
+          error: "$1",
         },
         { status: 401 }
       );
@@ -60,13 +60,15 @@ export async function GET(
 
     // 権限チェック（管理者・マネージャーのみ、または自分自身）
     const isOwnProfile = authResult.user.id === id;
-    const hasManagementPermission = ['ADMIN', 'MANAGER'].includes(authResult.user.role);
+    const hasManagementPermission = ["ADMIN", "MANAGER"].includes(
+      authResult.user.role
+    );
 
-    if (!isOwnProfile && !hasManagementPermission) {
+    if (!(isOwnProfile || hasManagementPermission)) {
       return NextResponse.json(
         {
           success: false,
-          error: '$1',
+          error: "$1",
         },
         { status: 403 }
       );
@@ -92,7 +94,7 @@ export async function GET(
       return NextResponse.json(
         {
           success: false,
-          error: '$1',
+          error: "$1",
         },
         { status: 404 }
       );
@@ -113,13 +115,13 @@ export async function GET(
       data: response,
     });
   } catch (error) {
-    console.error('User detail API error:', error);
+    console.error("User detail API error:", error);
     return NextResponse.json(
       {
         success: false,
         data: null,
         message: null,
-        error: 'Internal server error',
+        error: "Internal server error",
       },
       { status: 500 }
     );
@@ -147,22 +149,22 @@ export async function PUT(
 
     // 認証チェック
     const authResult = await authenticateFromRequest(request);
-    if (!authResult.success || !authResult.user) {
+    if (!(authResult.success && authResult.user)) {
       return NextResponse.json(
         {
           success: false,
-          error: '$1',
+          error: "$1",
         },
         { status: 401 }
       );
     }
 
     // 権限チェック（管理者のみ）
-    if (authResult.user.role !== 'ADMIN') {
+    if (authResult.user.role !== "ADMIN") {
       return NextResponse.json(
         {
           success: false,
-          error: '$1',
+          error: "$1",
         },
         { status: 403 }
       );
@@ -173,7 +175,7 @@ export async function PUT(
       return NextResponse.json(
         {
           success: false,
-          error: '$1',
+          error: "$1",
         },
         { status: 400 }
       );
@@ -187,7 +189,7 @@ export async function PUT(
       return NextResponse.json(
         {
           success: false,
-          error: '$1',
+          error: "$1",
         },
         { status: 400 }
       );
@@ -199,7 +201,7 @@ export async function PUT(
       return NextResponse.json(
         {
           success: false,
-          error: '$1',
+          error: "$1",
         },
         { status: 400 }
       );
@@ -217,7 +219,7 @@ export async function PUT(
       return NextResponse.json(
         {
           success: false,
-          error: '$1',
+          error: "$1",
         },
         { status: 404 }
       );
@@ -258,13 +260,13 @@ export async function PUT(
       data: response,
     });
   } catch (error) {
-    console.error('User update API error:', error);
+    console.error("User update API error:", error);
     return NextResponse.json(
       {
         success: false,
         data: null,
         message: null,
-        error: 'Internal server error',
+        error: "Internal server error",
       },
       { status: 500 }
     );
@@ -290,22 +292,22 @@ export async function DELETE(
 
     // 認証チェック
     const authResult = await authenticateFromRequest(request);
-    if (!authResult.success || !authResult.user) {
+    if (!(authResult.success && authResult.user)) {
       return NextResponse.json(
         {
           success: false,
-          error: '$1',
+          error: "$1",
         },
         { status: 401 }
       );
     }
 
     // 権限チェック（管理者のみ）
-    if (authResult.user.role !== 'ADMIN') {
+    if (authResult.user.role !== "ADMIN") {
       return NextResponse.json(
         {
           success: false,
-          error: '$1',
+          error: "$1",
         },
         { status: 403 }
       );
@@ -316,7 +318,7 @@ export async function DELETE(
       return NextResponse.json(
         {
           success: false,
-          error: '$1',
+          error: "$1",
         },
         { status: 400 }
       );
@@ -332,7 +334,7 @@ export async function DELETE(
       return NextResponse.json(
         {
           success: false,
-          error: '$1',
+          error: "$1",
         },
         { status: 404 }
       );
@@ -343,7 +345,7 @@ export async function DELETE(
       return NextResponse.json(
         {
           success: false,
-          error: '$1',
+          error: "$1",
         },
         { status: 400 }
       );
@@ -360,13 +362,13 @@ export async function DELETE(
       data: { deleted: true },
     });
   } catch (error) {
-    console.error('User deletion API error:', error);
+    console.error("User deletion API error:", error);
     return NextResponse.json(
       {
         success: false,
         data: null,
         message: null,
-        error: 'Internal server error',
+        error: "Internal server error",
       },
       { status: 500 }
     );

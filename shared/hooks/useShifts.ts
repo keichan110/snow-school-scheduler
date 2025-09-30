@@ -1,6 +1,6 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { format } from 'date-fns';
-import type { ApiResponse } from '@/lib/api/types';
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { format } from "date-fns";
+import type { ApiResponse } from "@/lib/api/types";
 
 // 簡素化されたシフト型（実際のAPIレスポンスに合わせる）
 interface Shift {
@@ -30,10 +30,11 @@ interface CreateShiftRequest {
 
 // シフト取得用のクエリキー生成関数
 export const shiftsQueryKeys = {
-  all: ['shifts'] as const,
-  lists: () => [...shiftsQueryKeys.all, 'list'] as const,
-  list: (filters: ShiftFilters) => [...shiftsQueryKeys.lists(), filters] as const,
-  details: () => [...shiftsQueryKeys.all, 'detail'] as const,
+  all: ["shifts"] as const,
+  lists: () => [...shiftsQueryKeys.all, "list"] as const,
+  list: (filters: ShiftFilters) =>
+    [...shiftsQueryKeys.lists(), filters] as const,
+  details: () => [...shiftsQueryKeys.all, "detail"] as const,
   detail: (id: number) => [...shiftsQueryKeys.details(), id] as const,
 };
 
@@ -52,26 +53,26 @@ export function useShifts(filters: ShiftFilters = {}) {
       const params = new URLSearchParams();
 
       if (filters.departmentId) {
-        params.append('departmentId', filters.departmentId.toString());
+        params.append("departmentId", filters.departmentId.toString());
       }
       if (filters.shiftTypeId) {
-        params.append('shiftTypeId', filters.shiftTypeId.toString());
+        params.append("shiftTypeId", filters.shiftTypeId.toString());
       }
       if (filters.dateFrom) {
-        params.append('dateFrom', filters.dateFrom);
+        params.append("dateFrom", filters.dateFrom);
       }
       if (filters.dateTo) {
-        params.append('dateTo', filters.dateTo);
+        params.append("dateTo", filters.dateTo);
       }
 
       const response = await fetch(`/api/shifts?${params.toString()}`);
       if (!response.ok) {
-        throw new Error('Failed to fetch shifts');
+        throw new Error("Failed to fetch shifts");
       }
 
       const data: ApiResponse<Shift[]> = await response.json();
-      if (!data.success || !data.data) {
-        throw new Error(data.error || 'Failed to fetch shifts');
+      if (!(data.success && data.data)) {
+        throw new Error(data.error || "Failed to fetch shifts");
       }
 
       return data.data;
@@ -85,7 +86,7 @@ export function useShifts(filters: ShiftFilters = {}) {
 
 // 日付別シフト取得用のフック（カレンダー表示用）
 export function useShiftsByDate(date: Date) {
-  const dateString = format(date, 'yyyy-MM-dd');
+  const dateString = format(date, "yyyy-MM-dd");
 
   return useShifts({
     dateFrom: dateString,
@@ -95,8 +96,8 @@ export function useShiftsByDate(date: Date) {
 
 // 週間シフト取得用のフック
 export function useShiftsByWeek(startDate: Date, endDate: Date) {
-  const startDateString = format(startDate, 'yyyy-MM-dd');
-  const endDateString = format(endDate, 'yyyy-MM-dd');
+  const startDateString = format(startDate, "yyyy-MM-dd");
+  const endDateString = format(endDate, "yyyy-MM-dd");
 
   return useShifts({
     dateFrom: startDateString,
@@ -111,12 +112,12 @@ export function useShift(id: number) {
     queryFn: async (): Promise<Shift> => {
       const response = await fetch(`/api/shifts/${id}`);
       if (!response.ok) {
-        throw new Error('Failed to fetch shift');
+        throw new Error("Failed to fetch shift");
       }
 
       const data: ApiResponse<Shift> = await response.json();
-      if (!data.success || !data.data) {
-        throw new Error(data.error || 'Failed to fetch shift');
+      if (!(data.success && data.data)) {
+        throw new Error(data.error || "Failed to fetch shift");
       }
 
       return data.data;
@@ -132,21 +133,21 @@ export function useCreateShift() {
 
   return useMutation({
     mutationFn: async (shiftData: CreateShiftRequest): Promise<Shift> => {
-      const response = await fetch('/api/shifts', {
-        method: 'POST',
+      const response = await fetch("/api/shifts", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(shiftData),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to create shift');
+        throw new Error("Failed to create shift");
       }
 
       const data: ApiResponse<Shift> = await response.json();
-      if (!data.success || !data.data) {
-        throw new Error(data.error || 'Failed to create shift');
+      if (!(data.success && data.data)) {
+        throw new Error(data.error || "Failed to create shift");
       }
 
       return data.data;
@@ -174,20 +175,20 @@ export function useUpdateShift() {
       data: Partial<CreateShiftRequest>;
     }): Promise<Shift> => {
       const response = await fetch(`/api/shifts/${id}`, {
-        method: 'PUT',
+        method: "PUT",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(data),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to update shift');
+        throw new Error("Failed to update shift");
       }
 
       const responseData: ApiResponse<Shift> = await response.json();
-      if (!responseData.success || !responseData.data) {
-        throw new Error(responseData.error || 'Failed to update shift');
+      if (!(responseData.success && responseData.data)) {
+        throw new Error(responseData.error || "Failed to update shift");
       }
 
       return responseData.data;
@@ -197,7 +198,10 @@ export function useUpdateShift() {
       queryClient.invalidateQueries({ queryKey: shiftsQueryKeys.all });
 
       // 更新されたシフトをキャッシュに設定
-      queryClient.setQueryData(shiftsQueryKeys.detail(updatedShift.id), updatedShift);
+      queryClient.setQueryData(
+        shiftsQueryKeys.detail(updatedShift.id),
+        updatedShift
+      );
     },
   });
 }
@@ -209,16 +213,16 @@ export function useDeleteShift() {
   return useMutation({
     mutationFn: async (id: number): Promise<void> => {
       const response = await fetch(`/api/shifts/${id}`, {
-        method: 'DELETE',
+        method: "DELETE",
       });
 
       if (!response.ok) {
-        throw new Error('Failed to delete shift');
+        throw new Error("Failed to delete shift");
       }
 
       const data: ApiResponse<null> = await response.json();
       if (!data.success) {
-        throw new Error(data.error || 'Failed to delete shift');
+        throw new Error(data.error || "Failed to delete shift");
       }
     },
     onSuccess: (_, deletedId) => {
@@ -226,7 +230,9 @@ export function useDeleteShift() {
       queryClient.invalidateQueries({ queryKey: shiftsQueryKeys.all });
 
       // 削除されたシフトをキャッシュから除去
-      queryClient.removeQueries({ queryKey: shiftsQueryKeys.detail(deletedId) });
+      queryClient.removeQueries({
+        queryKey: shiftsQueryKeys.detail(deletedId),
+      });
     },
   });
 }

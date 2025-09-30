@@ -1,9 +1,9 @@
-import { NextRequest } from 'next/server';
+import type { NextRequest } from "next/server";
 
 const TRUSTED_HEADER_CANDIDATES = [
-  'cf-connecting-ip',
-  'true-client-ip',
-  'cf-connecting-ipv6',
+  "cf-connecting-ip",
+  "true-client-ip",
+  "cf-connecting-ipv6",
 ] as const;
 
 function isValidPort(value: string | undefined | null): boolean {
@@ -14,7 +14,7 @@ function isValidPort(value: string | undefined | null): boolean {
     return false;
   }
   const port = Number(value);
-  return port <= 65535;
+  return port <= 65_535;
 }
 
 function isValidIPv4(address: string): boolean {
@@ -22,7 +22,7 @@ function isValidIPv4(address: string): boolean {
     return false;
   }
 
-  const segments = address.split('.');
+  const segments = address.split(".");
   return segments.every((segment) => {
     const numeric = Number(segment);
     return numeric >= 0 && numeric <= 255;
@@ -39,10 +39,10 @@ function isValidIPv6(address: string): boolean {
   }
 
   let normalized = address;
-  const hasEmbeddedIPv4 = address.includes('.');
+  const hasEmbeddedIPv4 = address.includes(".");
 
   if (hasEmbeddedIPv4) {
-    const lastColon = address.lastIndexOf(':');
+    const lastColon = address.lastIndexOf(":");
     if (lastColon === -1) {
       return false;
     }
@@ -52,27 +52,30 @@ function isValidIPv6(address: string): boolean {
       return false;
     }
 
-    const octets = ipv4Part.split('.').map(Number);
+    const octets = ipv4Part.split(".").map(Number);
     if (octets.length !== 4) {
       return false;
     }
-    const toHextet = (value: number) => value.toString(16).padStart(4, '0');
+    const toHextet = (value: number) => value.toString(16).padStart(4, "0");
     const high = ((octets[0] ?? 0) << 8) | (octets[1] ?? 0);
     const low = ((octets[2] ?? 0) << 8) | (octets[3] ?? 0);
 
     normalized = `${address.slice(0, lastColon)}:${toHextet(high)}:${toHextet(low)}`;
   }
 
-  const sections = normalized.split('::');
+  const sections = normalized.split("::");
   if (sections.length > 2) {
     return false;
   }
 
   const splitHextets = (part: string) =>
-    (part.length > 0 ? part.split(':') : []).filter((segment) => segment.length > 0);
+    (part.length > 0 ? part.split(":") : []).filter(
+      (segment) => segment.length > 0
+    );
 
-  const leftSections = splitHextets(sections[0] ?? '');
-  const rightSections = sections.length === 2 ? splitHextets(sections[1] ?? '') : [];
+  const leftSections = splitHextets(sections[0] ?? "");
+  const rightSections =
+    sections.length === 2 ? splitHextets(sections[1] ?? "") : [];
 
   const isValidHextet = (value: string) => /^[0-9A-Fa-f]{1,4}$/.test(value);
 
@@ -85,7 +88,7 @@ function isValidIPv6(address: string): boolean {
   }
 
   const hextetCount = leftSections.length + rightSections.length;
-  const hasCompression = normalized.includes('::');
+  const hasCompression = normalized.includes("::");
 
   if (hasCompression) {
     if (hextetCount >= 8) {
@@ -99,7 +102,7 @@ function isValidIPv6(address: string): boolean {
 }
 
 function normalizeIpCandidate(value: string | null | undefined): string | null {
-  if (typeof value !== 'string') {
+  if (typeof value !== "string") {
     return null;
   }
 
@@ -147,7 +150,7 @@ function extractIpFromHeader(
     return null;
   }
 
-  const values = options?.allowMultiple ? rawValue.split(',') : [rawValue];
+  const values = options?.allowMultiple ? rawValue.split(",") : [rawValue];
   for (const candidate of values) {
     const sanitized = normalizeIpCandidate(candidate);
     if (sanitized) {
@@ -177,8 +180,10 @@ export function getClientIp(request: NextRequest): string {
   }
 
   candidateIps.push(normalizeIpCandidate(requestWithMeta.ip));
-  candidateIps.push(extractIpFromHeader(request, 'x-real-ip'));
-  candidateIps.push(extractIpFromHeader(request, 'x-forwarded-for', { allowMultiple: true }));
+  candidateIps.push(extractIpFromHeader(request, "x-real-ip"));
+  candidateIps.push(
+    extractIpFromHeader(request, "x-forwarded-for", { allowMultiple: true })
+  );
 
   for (const ip of candidateIps) {
     if (ip) {
@@ -186,18 +191,18 @@ export function getClientIp(request: NextRequest): string {
     }
   }
 
-  return '127.0.0.1';
+  return "127.0.0.1";
 }
 
 /**
  * リクエストヘッダーからUser-Agentを取得
  */
 export function getRequestUserAgent(request: NextRequest): string {
-  const userAgent = request.headers.get('user-agent');
+  const userAgent = request.headers.get("user-agent");
   if (userAgent && userAgent.trim().length > 0) {
     return userAgent;
   }
-  return 'unknown';
+  return "unknown";
 }
 
 function extractOrigin(value: string | null | undefined): string | null {
@@ -227,21 +232,21 @@ function buildAllowedReferrerOrigins(env: string | undefined): Set<string> {
 
   addOrigin(nextAuthOrigin);
 
-  if (env !== 'production') {
+  if (env !== "production") {
     addOrigin(nextPublicAppOrigin);
-    addOrigin('http://localhost:3000');
-    addOrigin('http://127.0.0.1:3000');
+    addOrigin("http://localhost:3000");
+    addOrigin("http://127.0.0.1:3000");
   }
 
   return allowedOrigins;
 }
 
 export function isAllowedReferrer(request: NextRequest): boolean {
-  const refererHeader = request.headers.get('referer');
+  const refererHeader = request.headers.get("referer");
   const env = process.env.NODE_ENV;
 
   if (!refererHeader) {
-    return env !== 'production';
+    return env !== "production";
   }
 
   const refererOrigin = extractOrigin(refererHeader);
@@ -251,7 +256,7 @@ export function isAllowedReferrer(request: NextRequest): boolean {
 
   const allowedOrigins = buildAllowedReferrerOrigins(env);
   if (allowedOrigins.size === 0) {
-    return env !== 'production';
+    return env !== "production";
   }
 
   return allowedOrigins.has(refererOrigin);

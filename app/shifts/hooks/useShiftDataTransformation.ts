@@ -1,6 +1,11 @@
-import { useCallback } from 'react';
-import { Shift, Department, ShiftStats, AssignedInstructor } from '../types';
-import { getDepartmentTypeById } from '../utils/shiftUtils';
+import { useCallback } from "react";
+import type {
+  AssignedInstructor,
+  Department,
+  Shift,
+  ShiftStats,
+} from "../types";
+import { getDepartmentTypeById } from "../utils/shiftUtils";
 
 /**
  * シフトデータ変換のカスタムフック
@@ -17,19 +22,25 @@ export function useShiftDataTransformation() {
           stats[date] = { shifts: [] };
         }
 
-        const departmentType = getDepartmentTypeById(shift.departmentId, departments);
+        const departmentType = getDepartmentTypeById(
+          shift.departmentId,
+          departments
+        );
 
         // アサイン済みインストラクター情報を抽出
-        const assignedInstructors: AssignedInstructor[] = shift.assignments.map((assignment) => ({
-          id: assignment.instructor.id,
-          lastName: assignment.instructor.lastName,
-          firstName: assignment.instructor.firstName,
-          displayName: `${assignment.instructor.lastName} ${assignment.instructor.firstName}`,
-        }));
+        const assignedInstructors: AssignedInstructor[] = shift.assignments.map(
+          (assignment) => ({
+            id: assignment.instructor.id,
+            lastName: assignment.instructor.lastName,
+            firstName: assignment.instructor.firstName,
+            displayName: `${assignment.instructor.lastName} ${assignment.instructor.firstName}`,
+          })
+        );
 
         // 同じ部門・シフト種別の組み合わせが既に存在するかチェック
         const existingShift = stats[date].shifts.find(
-          (s) => s.type === shift.shiftType.name && s.department === departmentType
+          (s) =>
+            s.type === shift.shiftType.name && s.department === departmentType
         );
 
         if (existingShift) {

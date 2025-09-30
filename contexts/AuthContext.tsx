@@ -1,6 +1,12 @@
-'use client';
+"use client";
 
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import {
+  createContext,
+  type ReactNode,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 
 /**
  * 認証状態管理Context
@@ -20,7 +26,7 @@ export interface User {
   /** LINEプロフィール画像URL */
   profileImageUrl?: string | null;
   /** ユーザー権限 */
-  role: 'ADMIN' | 'MANAGER' | 'MEMBER';
+  role: "ADMIN" | "MANAGER" | "MEMBER";
   /** アクティブフラグ */
   isActive: boolean;
   /** 作成日時 */
@@ -32,7 +38,11 @@ export interface User {
 /**
  * 認証状態の型定義
  */
-export type AuthStatus = 'loading' | 'authenticated' | 'unauthenticated' | 'error';
+export type AuthStatus =
+  | "loading"
+  | "authenticated"
+  | "unauthenticated"
+  | "error";
 
 /**
  * 認証Contextの値の型定義
@@ -81,11 +91,11 @@ interface ApiResponse<T> {
  */
 async function fetchUserInfo(): Promise<User | null> {
   try {
-    const response = await fetch('/api/auth/me', {
-      method: 'GET',
-      credentials: 'include', // Cookieを含める
+    const response = await fetch("/api/auth/me", {
+      method: "GET",
+      credentials: "include", // Cookieを含める
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
     });
 
@@ -99,7 +109,7 @@ async function fetchUserInfo(): Promise<User | null> {
 
     const data: ApiResponse<User> = await response.json();
 
-    if (!data.success || !data.user) {
+    if (!(data.success && data.user)) {
       return null;
     }
 
@@ -110,7 +120,7 @@ async function fetchUserInfo(): Promise<User | null> {
       updatedAt: new Date(data.user.updatedAt),
     };
   } catch (error) {
-    console.error('❌ User authentication failed');
+    console.error("❌ User authentication failed");
     throw error;
   }
 }
@@ -120,23 +130,23 @@ async function fetchUserInfo(): Promise<User | null> {
  */
 async function performLogout(): Promise<void> {
   try {
-    const response = await fetch('/api/auth/logout', {
-      method: 'POST',
-      credentials: 'include',
+    const response = await fetch("/api/auth/logout", {
+      method: "POST",
+      credentials: "include",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
     });
 
     if (!response.ok) {
-      console.warn('⚠️ Logout request failed, but continuing:', response.status);
+      console.warn("⚠️ Logout request failed, but continuing:", response.status);
       // ログアウトは失敗してもクライアント側では成功として扱う
     }
 
     const data: ApiResponse<never> = await response.json();
-    console.log('🚪 Logout response:', data);
+    console.log("🚪 Logout response:", data);
   } catch (error) {
-    console.warn('⚠️ Logout request error, but continuing:', error);
+    console.warn("⚠️ Logout request error, but continuing:", error);
     // ネットワークエラー等でもクライアント側では成功として扱う
   }
 }
@@ -145,24 +155,26 @@ async function performLogout(): Promise<void> {
  * 表示名更新
  */
 async function updateUserDisplayName(newDisplayName: string): Promise<User> {
-  const response = await fetch('/api/auth/me', {
-    method: 'POST',
-    credentials: 'include',
+  const response = await fetch("/api/auth/me", {
+    method: "POST",
+    credentials: "include",
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     },
     body: JSON.stringify({ displayName: newDisplayName }),
   });
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
+    throw new Error(
+      errorData.error || `HTTP ${response.status}: ${response.statusText}`
+    );
   }
 
   const data: ApiResponse<User> = await response.json();
 
-  if (!data.success || !data.user) {
-    throw new Error('Failed to update display name');
+  if (!(data.success && data.user)) {
+    throw new Error("Failed to update display name");
   }
 
   // Date型に変換
@@ -179,7 +191,7 @@ async function updateUserDisplayName(newDisplayName: string): Promise<User> {
  */
 export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null);
-  const [status, setStatus] = useState<AuthStatus>('loading');
+  const [status, setStatus] = useState<AuthStatus>("loading");
   const [error, setError] = useState<string | null>(null);
 
   /**
@@ -187,31 +199,32 @@ export function AuthProvider({ children }: AuthProviderProps) {
    */
   const fetchAndSetUser = async () => {
     try {
-      setStatus('loading');
+      setStatus("loading");
       setError(null);
 
       const userData = await fetchUserInfo();
 
       if (userData) {
         setUser(userData);
-        setStatus('authenticated');
-        console.log('✅ User authenticated:', {
+        setStatus("authenticated");
+        console.log("✅ User authenticated:", {
           id: userData.id,
           displayName: userData.displayName,
           role: userData.role,
         });
       } else {
         setUser(null);
-        setStatus('unauthenticated');
-        console.log('🔓 User not authenticated');
+        setStatus("unauthenticated");
+        console.log("🔓 User not authenticated");
       }
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Authentication check failed';
+      const errorMessage =
+        err instanceof Error ? err.message : "Authentication check failed";
       setError(errorMessage);
-      setStatus('error');
+      setStatus("error");
       setUser(null);
       // 機密情報を含まない安全なログ出力
-      console.error('❌ Authentication failed');
+      console.error("❌ Authentication failed");
     }
   };
 
@@ -222,15 +235,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
     try {
       // API呼び出しでサーバー側のログアウト処理
       await performLogout();
-      console.log('🚪 Server logout completed');
+      console.log("🚪 Server logout completed");
     } catch (error) {
-      console.warn('⚠️ Logout API failed, but clearing local state:', error);
+      console.warn("⚠️ Logout API failed, but clearing local state:", error);
     } finally {
       // ローカル状態をクリア
       setUser(null);
-      setStatus('unauthenticated');
+      setStatus("unauthenticated");
       setError(null);
-      console.log('🚪 User logged out (local state cleared)');
+      console.log("🚪 User logged out (local state cleared)");
 
       // 注意：リダイレクト処理は呼び出し側（専用ログアウトページ）で実行
     }
@@ -239,24 +252,27 @@ export function AuthProvider({ children }: AuthProviderProps) {
   /**
    * 表示名更新
    */
-  const updateDisplayName = async (newDisplayName: string): Promise<boolean> => {
+  const updateDisplayName = async (
+    newDisplayName: string
+  ): Promise<boolean> => {
     try {
       if (!user) {
-        throw new Error('User not authenticated');
+        throw new Error("User not authenticated");
       }
 
       const updatedUser = await updateUserDisplayName(newDisplayName);
       setUser(updatedUser);
-      console.log('📝 Display name updated:', {
+      console.log("📝 Display name updated:", {
         old: user.displayName,
         new: updatedUser.displayName,
       });
       return true;
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to update display name';
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to update display name";
       setError(errorMessage);
       // 機密情報を含まない安全なログ出力
-      console.error('❌ Display name update failed');
+      console.error("❌ Display name update failed");
       return false;
     }
   };
@@ -281,7 +297,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
     checkAuth: fetchAndSetUser, // checkAuthとrefetchは同じ処理
   };
 
-  return <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>
+  );
 }
 
 /**
@@ -317,7 +335,7 @@ export function useAuth(): AuthContextValue {
   const context = useContext(AuthContext);
 
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
 
   return context;
@@ -348,16 +366,16 @@ export function useAuth(): AuthContextValue {
 export function useRequireAuth(): User {
   const { user, status } = useAuth();
 
-  if (status === 'loading') {
-    throw new Error('Authentication is still loading');
+  if (status === "loading") {
+    throw new Error("Authentication is still loading");
   }
 
-  if (status === 'unauthenticated' || !user) {
-    throw new Error('Authentication required');
+  if (status === "unauthenticated" || !user) {
+    throw new Error("Authentication required");
   }
 
-  if (status === 'error') {
-    throw new Error('Authentication error occurred');
+  if (status === "error") {
+    throw new Error("Authentication error occurred");
   }
 
   return user;
@@ -380,7 +398,9 @@ export function useRequireAuth(): User {
  * }
  * ```
  */
-export function useRequireRole(requiredRole: 'ADMIN' | 'MANAGER' | 'MEMBER'): User {
+export function useRequireRole(
+  requiredRole: "ADMIN" | "MANAGER" | "MEMBER"
+): User {
   const user = useRequireAuth();
 
   const roleHierarchy = {
@@ -393,7 +413,9 @@ export function useRequireRole(requiredRole: 'ADMIN' | 'MANAGER' | 'MEMBER'): Us
   const requiredRoleLevel = roleHierarchy[requiredRole];
 
   if (userRoleLevel < requiredRoleLevel) {
-    throw new Error(`Insufficient permissions. Required: ${requiredRole}, Current: ${user.role}`);
+    throw new Error(
+      `Insufficient permissions. Required: ${requiredRole}, Current: ${user.role}`
+    );
   }
 
   return user;

@@ -1,20 +1,20 @@
-'use client';
+"use client";
 
-import React, { useMemo } from 'react';
-import { cn } from '@/lib/utils';
-import { BaseShiftDisplayProps, DepartmentType } from './types';
-import { DepartmentIcon } from '@/components/shared/ui/DepartmentIcon';
-import { ShiftBadge } from '@/components/shared/ui/ShiftBadge';
-import { ShiftDayCard } from './ShiftDayCard';
+import React, { useMemo } from "react";
+import { DepartmentIcon } from "@/components/shared/ui/DepartmentIcon";
+import { ShiftBadge } from "@/components/shared/ui/ShiftBadge";
+import { cn } from "@/lib/utils";
+import type { DayData } from "../types";
+import { ShiftDayCard } from "./ShiftDayCard";
+import type { BaseShiftDisplayProps, DepartmentType } from "./types";
 import {
-  getShiftTypeShort,
-  getDepartmentBgClass,
   formatDate,
   getDaysInMonth,
+  getDepartmentBgClass,
   getFirstDayOfWeek,
+  getShiftTypeShort,
   WEEKDAYS,
-} from './utils';
-import { DayData } from '../types';
+} from "./utils";
 
 interface MonthlyCalendarWithDetailsProps extends BaseShiftDisplayProps {
   /** 管理権限があるかどうか */
@@ -44,7 +44,7 @@ export function MonthlyCalendarWithDetails({
   const selectedDateInfo = useMemo(() => {
     if (!selectedDate) return null;
 
-    const selectedDay = parseInt(selectedDate.split('-')[2] || '1');
+    const selectedDay = Number.parseInt(selectedDate.split("-")[2] || "1");
     const selectedDayIndex = selectedDay - 1;
     const totalCellIndex = firstDayOfWeek + selectedDayIndex;
     const weekIndex = Math.floor(totalCellIndex / 7);
@@ -74,7 +74,10 @@ export function MonthlyCalendarWithDetails({
       for (let dayInWeek = 0; dayInWeek < 7; dayInWeek++) {
         const cellIndex = week * 7 + dayInWeek;
 
-        if (cellIndex < firstDayOfWeek || cellIndex >= firstDayOfWeek + daysInMonth) {
+        if (
+          cellIndex < firstDayOfWeek ||
+          cellIndex >= firstDayOfWeek + daysInMonth
+        ) {
           // 空のセル
           weekCells.push({ day: null, date: null });
         } else {
@@ -95,10 +98,13 @@ export function MonthlyCalendarWithDetails({
     cellData: { day: number | null; date: string | null },
     cellIndex: number
   ) => {
-    if (!cellData.day || !cellData.date) {
+    if (!(cellData.day && cellData.date)) {
       // 空のセル
       return (
-        <div key={`empty-${cellIndex}`} className="pointer-events-none opacity-30">
+        <div
+          className="pointer-events-none opacity-30"
+          key={`empty-${cellIndex}`}
+        >
           <div className="day-card min-h-[120px] rounded-xl border-2 border-border bg-background p-3 shadow-lg md:min-h-[140px]" />
         </div>
       );
@@ -116,38 +122,49 @@ export function MonthlyCalendarWithDetails({
 
     return (
       <div
-        key={day}
-        onClick={() => onDateSelect(date)}
         className={cn(
-          'day-card flex min-h-[120px] cursor-pointer flex-col rounded-xl border-2 p-3 shadow-lg transition-all duration-300 md:min-h-[140px]',
-          'hover:-translate-y-1 hover:transform hover:shadow-xl',
+          "day-card flex min-h-[120px] cursor-pointer flex-col rounded-xl border-2 p-3 shadow-lg transition-all duration-300 md:min-h-[140px]",
+          "hover:-translate-y-1 hover:transform hover:shadow-xl",
           {
-            'border-border bg-background hover:border-blue-400':
-              !isSelected && !isHolidayDay && !isSaturday && !isSunday,
-            'border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/30':
+            "border-border bg-background hover:border-blue-400": !(
+              isSelected ||
+              isHolidayDay ||
+              isSaturday ||
+              isSunday
+            ),
+            "border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/30":
               isSaturday && !isSelected,
-            'border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950/30':
+            "border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950/30":
               (isHolidayDay || isSunday) && !isSelected,
-            '-translate-y-1 transform border-blue-400 bg-blue-50 shadow-xl dark:border-blue-600 dark:bg-blue-950/30':
+            "-translate-y-1 transform border-blue-400 bg-blue-50 shadow-xl dark:border-blue-600 dark:bg-blue-950/30":
               isSelected,
-            'opacity-60': !hasShifts && !isHolidayDay && !isSaturday && !isSunday,
+            "opacity-60": !(
+              hasShifts ||
+              isHolidayDay ||
+              isSaturday ||
+              isSunday
+            ),
           }
         )}
+        key={day}
+        onClick={() => onDateSelect(date)}
       >
         {/* 日付表示 */}
         <div className="mb-2 flex items-center gap-2">
           <div
-            className={cn('text-lg font-bold', {
-              'text-red-600 dark:text-red-400': isHolidayDay || isSunday,
-              'text-blue-600 dark:text-blue-400': isSaturday,
-              'text-foreground': !isHolidayDay && !isSaturday && !isSunday,
+            className={cn("font-bold text-lg", {
+              "text-red-600 dark:text-red-400": isHolidayDay || isSunday,
+              "text-blue-600 dark:text-blue-400": isSaturday,
+              "text-foreground": !(isHolidayDay || isSaturday || isSunday),
             })}
           >
             {day}
           </div>
-          <div className="text-xs font-medium text-muted-foreground">{dayOfWeek}</div>
+          <div className="font-medium text-muted-foreground text-xs">
+            {dayOfWeek}
+          </div>
           {isHolidayDay && (
-            <div className="rounded-full bg-red-100 px-2 py-1 text-xs font-medium text-red-600 dark:bg-red-950/30 dark:text-red-400">
+            <div className="rounded-full bg-red-100 px-2 py-1 font-medium text-red-600 text-xs dark:bg-red-950/30 dark:text-red-400">
               祝日
             </div>
           )}
@@ -159,15 +176,15 @@ export function MonthlyCalendarWithDetails({
             <div className="w-full space-y-1">
               {dayData.shifts.map((shift, idx) => (
                 <div
-                  key={idx}
                   className={cn(
-                    'flex items-center justify-between gap-2 rounded-lg px-2 py-2',
+                    "flex items-center justify-between gap-2 rounded-lg px-2 py-2",
                     getDepartmentBgClass(shift.department as DepartmentType)
                   )}
+                  key={idx}
                 >
                   <div className="flex items-center gap-2">
                     <DepartmentIcon department={shift.department} size="sm" />
-                    <span className="text-xs font-medium text-foreground">
+                    <span className="font-medium text-foreground text-xs">
                       {getShiftTypeShort(shift.type)}
                     </span>
                   </div>
@@ -176,7 +193,9 @@ export function MonthlyCalendarWithDetails({
               ))}
             </div>
           ) : (
-            <div className="text-center text-xs text-muted-foreground">シフトなし</div>
+            <div className="text-center text-muted-foreground text-xs">
+              シフトなし
+            </div>
           )}
         </div>
       </div>
@@ -187,7 +206,7 @@ export function MonthlyCalendarWithDetails({
     <div className="hidden sm:block">
       <div className="space-y-4">
         {weeks.map((week, weekIndex) => (
-          <div key={weekIndex} className="space-y-4">
+          <div className="space-y-4" key={weekIndex}>
             {/* 週の行 */}
             <div className="grid grid-cols-7 gap-2 md:gap-2">
               {week.map((cellData, cellIndexInWeek) =>
@@ -197,7 +216,7 @@ export function MonthlyCalendarWithDetails({
 
             {/* 選択された日付の詳細表示（該当する週の下に表示） */}
             {selectedDateInfo && selectedDateInfo.weekIndex === weekIndex && (
-              <div className="duration-300 animate-in slide-in-from-top-2">
+              <div className="slide-in-from-top-2 animate-in duration-300">
                 <div className="mx-auto max-w-4xl">
                   <ShiftDayCard
                     date={new Date(selectedDate!)}

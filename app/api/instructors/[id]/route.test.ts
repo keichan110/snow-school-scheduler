@@ -1,8 +1,8 @@
-import { GET, PUT } from './route';
-import { prisma } from '@/lib/db';
-import { NextRequest, NextResponse } from 'next/server';
-import { InstructorStatus } from '@/shared/types/common';
-import { authenticateFromRequest } from '@/lib/auth/middleware';
+import { NextRequest, NextResponse } from "next/server";
+import { authenticateFromRequest } from "@/lib/auth/middleware";
+import { prisma } from "@/lib/db";
+import type { InstructorStatus } from "@/shared/types/common";
+import { GET, PUT } from "./route";
 
 type InstructorWithCertifications = {
   id: number;
@@ -29,7 +29,7 @@ type InstructorWithCertifications = {
 };
 
 // Prismaクライアントをモック化
-jest.mock('@/lib/db', () => ({
+jest.mock("@/lib/db", () => ({
   prisma: {
     instructor: {
       findUnique: jest.fn(),
@@ -47,7 +47,7 @@ jest.mock('@/lib/db', () => ({
 }));
 
 // NextResponseとNextRequestをモック化
-jest.mock('next/server', () => ({
+jest.mock("next/server", () => ({
   NextResponse: {
     json: jest.fn(),
   },
@@ -56,7 +56,7 @@ jest.mock('next/server', () => ({
     ...init,
     headers: new Headers(init?.headers),
     cookies: {
-      get: jest.fn().mockReturnValue({ value: 'test-token' }),
+      get: jest.fn().mockReturnValue({ value: "test-token" }),
     },
     json: init?.body
       ? () => Promise.resolve(JSON.parse(init.body as string))
@@ -68,92 +68,97 @@ jest.mock('next/server', () => ({
 }));
 
 // 認証ミドルウェアをモック化
-jest.mock('@/lib/auth/middleware', () => ({
+jest.mock("@/lib/auth/middleware", () => ({
   authenticateFromRequest: jest.fn(),
 }));
 
 const mockPrisma = prisma as jest.Mocked<typeof prisma>;
-const mockInstructorFindUnique = mockPrisma.instructor.findUnique as jest.MockedFunction<
-  typeof prisma.instructor.findUnique
->;
-const mockInstructorUpdate = mockPrisma.instructor.update as jest.MockedFunction<
-  typeof prisma.instructor.update
->;
-const mockCertificationFindMany = mockPrisma.certification.findMany as jest.MockedFunction<
-  typeof prisma.certification.findMany
->;
+const mockInstructorFindUnique = mockPrisma.instructor
+  .findUnique as jest.MockedFunction<typeof prisma.instructor.findUnique>;
+const mockInstructorUpdate = mockPrisma.instructor
+  .update as jest.MockedFunction<typeof prisma.instructor.update>;
+const mockCertificationFindMany = mockPrisma.certification
+  .findMany as jest.MockedFunction<typeof prisma.certification.findMany>;
 const mockInstructorCertificationDeleteMany = mockPrisma.instructorCertification
-  .deleteMany as jest.MockedFunction<typeof prisma.instructorCertification.deleteMany>;
-const mockInstructorCertificationCreateMany = mockPrisma.instructorCertification
-  .createMany as jest.MockedFunction<typeof prisma.instructorCertification.createMany>;
-const mockTransaction = mockPrisma.$transaction as jest.MockedFunction<typeof prisma.$transaction>;
-const mockNextResponse = NextResponse as jest.Mocked<typeof NextResponse>;
-const mockAuthenticateFromRequest = authenticateFromRequest as jest.MockedFunction<
-  typeof authenticateFromRequest
+  .deleteMany as jest.MockedFunction<
+  typeof prisma.instructorCertification.deleteMany
 >;
+const mockInstructorCertificationCreateMany = mockPrisma.instructorCertification
+  .createMany as jest.MockedFunction<
+  typeof prisma.instructorCertification.createMany
+>;
+const mockTransaction = mockPrisma.$transaction as jest.MockedFunction<
+  typeof prisma.$transaction
+>;
+const mockNextResponse = NextResponse as jest.Mocked<typeof NextResponse>;
+const mockAuthenticateFromRequest =
+  authenticateFromRequest as jest.MockedFunction<
+    typeof authenticateFromRequest
+  >;
 
-describe('GET /api/instructors/[id]', () => {
+describe("GET /api/instructors/[id]", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     // NextResponse.jsonのデフォルトモック実装
-    mockNextResponse.json.mockImplementation((data, init) => {
-      return {
-        status: init?.status || 200,
-        json: async () => data,
-        cookies: {},
-        headers: new Headers(),
-        ok: true,
-        redirected: false,
-        statusText: 'OK',
-        type: 'basic' as ResponseType,
-        url: '',
-        body: null,
-        bodyUsed: false,
-        clone: jest.fn(),
-        arrayBuffer: jest.fn(),
-        blob: jest.fn(),
-        formData: jest.fn(),
-        text: jest.fn(),
-        [Symbol.for('NextResponse')]: true,
-      } as unknown as NextResponse;
-    });
+    mockNextResponse.json.mockImplementation(
+      (data, init) =>
+        ({
+          status: init?.status || 200,
+          json: async () => data,
+          cookies: {},
+          headers: new Headers(),
+          ok: true,
+          redirected: false,
+          statusText: "OK",
+          type: "basic" as ResponseType,
+          url: "",
+          body: null,
+          bodyUsed: false,
+          clone: jest.fn(),
+          arrayBuffer: jest.fn(),
+          blob: jest.fn(),
+          formData: jest.fn(),
+          text: jest.fn(),
+          [Symbol.for("NextResponse")]: true,
+        }) as unknown as NextResponse
+    );
   });
 
-  describe('正常系', () => {
-    it('インストラクターの詳細情報が資格情報付きで正しく返されること', async () => {
+  describe("正常系", () => {
+    it("インストラクターの詳細情報が資格情報付きで正しく返されること", async () => {
       // Arrange
       const mockInstructor: InstructorWithCertifications = {
         id: 1,
-        lastName: '山田',
-        firstName: '太郎',
-        lastNameKana: 'ヤマダ',
-        firstNameKana: 'タロウ',
-        status: 'ACTIVE' as InstructorStatus,
-        notes: 'テストメモ',
-        createdAt: new Date('2024-01-01T00:00:00.000Z'),
-        updatedAt: new Date('2024-01-01T00:00:00.000Z'),
+        lastName: "山田",
+        firstName: "太郎",
+        lastNameKana: "ヤマダ",
+        firstNameKana: "タロウ",
+        status: "ACTIVE" as InstructorStatus,
+        notes: "テストメモ",
+        createdAt: new Date("2024-01-01T00:00:00.000Z"),
+        updatedAt: new Date("2024-01-01T00:00:00.000Z"),
         certifications: [
           {
             certification: {
               id: 1,
-              name: 'スキー指導員',
-              shortName: '指導員',
-              organization: 'SAJ',
+              name: "スキー指導員",
+              shortName: "指導員",
+              organization: "SAJ",
               department: {
                 id: 1,
-                name: 'スキー',
+                name: "スキー",
               },
             },
           },
           {
             certification: {
               id: 2,
-              name: 'スキー準指導員',
-              shortName: '準指導員',
-              organization: 'SAJ',
+              name: "スキー準指導員",
+              shortName: "準指導員",
+              organization: "SAJ",
               department: {
                 id: 1,
-                name: 'スキー',
+                name: "スキー",
               },
             },
           },
@@ -162,8 +167,10 @@ describe('GET /api/instructors/[id]', () => {
 
       mockInstructorFindUnique.mockResolvedValue(mockInstructor);
 
-      const mockRequest = new NextRequest('http://localhost:3000/api/instructors/1');
-      const context = { params: Promise.resolve({ id: '1' }) };
+      const mockRequest = new NextRequest(
+        "http://localhost:3000/api/instructors/1"
+      );
+      const context = { params: Promise.resolve({ id: "1" }) };
 
       // Act
       await GET(mockRequest, context);
@@ -193,61 +200,63 @@ describe('GET /api/instructors/[id]', () => {
         success: true,
         data: {
           id: 1,
-          lastName: '山田',
-          firstName: '太郎',
-          lastNameKana: 'ヤマダ',
-          firstNameKana: 'タロウ',
-          status: 'ACTIVE',
-          notes: 'テストメモ',
-          createdAt: new Date('2024-01-01T00:00:00.000Z'),
-          updatedAt: new Date('2024-01-01T00:00:00.000Z'),
+          lastName: "山田",
+          firstName: "太郎",
+          lastNameKana: "ヤマダ",
+          firstNameKana: "タロウ",
+          status: "ACTIVE",
+          notes: "テストメモ",
+          createdAt: new Date("2024-01-01T00:00:00.000Z"),
+          updatedAt: new Date("2024-01-01T00:00:00.000Z"),
           certifications: [
             {
               id: 1,
-              name: 'スキー指導員',
-              shortName: '指導員',
-              organization: 'SAJ',
+              name: "スキー指導員",
+              shortName: "指導員",
+              organization: "SAJ",
               department: {
                 id: 1,
-                name: 'スキー',
+                name: "スキー",
               },
             },
             {
               id: 2,
-              name: 'スキー準指導員',
-              shortName: '準指導員',
-              organization: 'SAJ',
+              name: "スキー準指導員",
+              shortName: "準指導員",
+              organization: "SAJ",
               department: {
                 id: 1,
-                name: 'スキー',
+                name: "スキー",
               },
             },
           ],
         },
-        message: 'Instructor operation completed successfully',
+        message: "Instructor operation completed successfully",
         error: null,
       });
     });
 
-    it('資格情報がないインストラクターでも正しく返されること', async () => {
+    it("資格情報がないインストラクターでも正しく返されること", async () => {
       // Arrange
       const mockInstructor: InstructorWithCertifications = {
         id: 2,
-        lastName: '佐藤',
-        firstName: '花子',
+        lastName: "佐藤",
+        firstName: "花子",
         lastNameKana: null,
         firstNameKana: null,
-        status: 'INACTIVE' as InstructorStatus,
+        status: "INACTIVE" as InstructorStatus,
         notes: null,
-        createdAt: new Date('2024-01-02T00:00:00.000Z'),
-        updatedAt: new Date('2024-01-02T00:00:00.000Z'),
+        createdAt: new Date("2024-01-02T00:00:00.000Z"),
+        updatedAt: new Date("2024-01-02T00:00:00.000Z"),
         certifications: [],
       };
 
       mockInstructorFindUnique.mockResolvedValue(mockInstructor);
 
-      const mockRequest = new NextRequest('http://localhost:3000/api/instructors/2');
-      const context = { params: Promise.resolve({ id: '2' }) };
+      const mockRequest = new NextRequest(
+        "http://localhost:3000/api/instructors/2"
+      );
+      const context = { params: Promise.resolve({ id: "2" }) };
 
       // Act
       await GET(mockRequest, context);
@@ -257,40 +266,42 @@ describe('GET /api/instructors/[id]', () => {
         success: true,
         data: {
           id: 2,
-          lastName: '佐藤',
-          firstName: '花子',
+          lastName: "佐藤",
+          firstName: "花子",
           lastNameKana: null,
           firstNameKana: null,
-          status: 'INACTIVE',
+          status: "INACTIVE",
           notes: null,
-          createdAt: new Date('2024-01-02T00:00:00.000Z'),
-          updatedAt: new Date('2024-01-02T00:00:00.000Z'),
+          createdAt: new Date("2024-01-02T00:00:00.000Z"),
+          updatedAt: new Date("2024-01-02T00:00:00.000Z"),
           certifications: [],
         },
-        message: 'Instructor operation completed successfully',
+        message: "Instructor operation completed successfully",
         error: null,
       });
     });
 
-    it('数値文字列のIDが正しく整数に変換されること', async () => {
+    it("数値文字列のIDが正しく整数に変換されること", async () => {
       // Arrange
       const mockInstructor: InstructorWithCertifications = {
         id: 123,
-        lastName: '田中',
-        firstName: '三郎',
-        lastNameKana: 'タナカ',
-        firstNameKana: 'サブロウ',
-        status: 'RETIRED' as InstructorStatus,
-        notes: '退職済み',
-        createdAt: new Date('2024-01-03T00:00:00.000Z'),
-        updatedAt: new Date('2024-01-03T00:00:00.000Z'),
+        lastName: "田中",
+        firstName: "三郎",
+        lastNameKana: "タナカ",
+        firstNameKana: "サブロウ",
+        status: "RETIRED" as InstructorStatus,
+        notes: "退職済み",
+        createdAt: new Date("2024-01-03T00:00:00.000Z"),
+        updatedAt: new Date("2024-01-03T00:00:00.000Z"),
         certifications: [],
       };
 
       mockInstructorFindUnique.mockResolvedValue(mockInstructor);
 
-      const mockRequest = new NextRequest('http://localhost:3000/api/instructors/123');
-      const context = { params: Promise.resolve({ id: '123' }) };
+      const mockRequest = new NextRequest(
+        "http://localhost:3000/api/instructors/123"
+      );
+      const context = { params: Promise.resolve({ id: "123" }) };
 
       // Act
       await GET(mockRequest, context);
@@ -318,13 +329,15 @@ describe('GET /api/instructors/[id]', () => {
     });
   });
 
-  describe('異常系', () => {
-    it('存在しないIDが指定された場合に404エラーが返されること', async () => {
+  describe("異常系", () => {
+    it("存在しないIDが指定された場合に404エラーが返されること", async () => {
       // Arrange
       mockInstructorFindUnique.mockResolvedValue(null);
 
-      const mockRequest = new NextRequest('http://localhost:3000/api/instructors/999');
-      const context = { params: Promise.resolve({ id: '999' }) };
+      const mockRequest = new NextRequest(
+        "http://localhost:3000/api/instructors/999"
+      );
+      const context = { params: Promise.resolve({ id: "999" }) };
 
       // Act
       await GET(mockRequest, context);
@@ -355,16 +368,18 @@ describe('GET /api/instructors/[id]', () => {
           success: false,
           data: null,
           message: null,
-          error: 'Resource not found',
+          error: "Resource not found",
         },
         { status: 404 }
       );
     });
 
-    it('無効なID（数値でない）が指定された場合に400エラーが返されること', async () => {
+    it("無効なID（数値でない）が指定された場合に400エラーが返されること", async () => {
       // Arrange
-      const mockRequest = new NextRequest('http://localhost:3000/api/instructors/invalid');
-      const context = { params: Promise.resolve({ id: 'invalid' }) };
+      const mockRequest = new NextRequest(
+        "http://localhost:3000/api/instructors/invalid"
+      );
+      const context = { params: Promise.resolve({ id: "invalid" }) };
 
       // Act
       await GET(mockRequest, context);
@@ -376,16 +391,18 @@ describe('GET /api/instructors/[id]', () => {
           success: false,
           data: null,
           message: null,
-          error: 'Invalid ID format',
+          error: "Invalid ID format",
         },
         { status: 400 }
       );
     });
 
-    it('負の数値IDが指定された場合に400エラーが返されること', async () => {
+    it("負の数値IDが指定された場合に400エラーが返されること", async () => {
       // Arrange
-      const mockRequest = new NextRequest('http://localhost:3000/api/instructors/-1');
-      const context = { params: Promise.resolve({ id: '-1' }) };
+      const mockRequest = new NextRequest(
+        "http://localhost:3000/api/instructors/-1"
+      );
+      const context = { params: Promise.resolve({ id: "-1" }) };
 
       // Act
       await GET(mockRequest, context);
@@ -397,16 +414,18 @@ describe('GET /api/instructors/[id]', () => {
           success: false,
           data: null,
           message: null,
-          error: 'Invalid ID format',
+          error: "Invalid ID format",
         },
         { status: 400 }
       );
     });
 
-    it('0のIDが指定された場合に400エラーが返されること', async () => {
+    it("0のIDが指定された場合に400エラーが返されること", async () => {
       // Arrange
-      const mockRequest = new NextRequest('http://localhost:3000/api/instructors/0');
-      const context = { params: Promise.resolve({ id: '0' }) };
+      const mockRequest = new NextRequest(
+        "http://localhost:3000/api/instructors/0"
+      );
+      const context = { params: Promise.resolve({ id: "0" }) };
 
       // Act
       await GET(mockRequest, context);
@@ -418,33 +437,38 @@ describe('GET /api/instructors/[id]', () => {
           success: false,
           data: null,
           message: null,
-          error: 'Invalid ID format',
+          error: "Invalid ID format",
         },
         { status: 400 }
       );
     });
 
-    it('データベースエラーが発生した場合に500エラーが返されること', async () => {
+    it("データベースエラーが発生した場合に500エラーが返されること", async () => {
       // Arrange
-      const mockError = new Error('Database connection failed');
+      const mockError = new Error("Database connection failed");
       mockInstructorFindUnique.mockRejectedValue(mockError);
 
-      const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
-      const mockRequest = new NextRequest('http://localhost:3000/api/instructors/1');
-      const context = { params: Promise.resolve({ id: '1' }) };
+      const consoleSpy = jest.spyOn(console, "error").mockImplementation();
+      const mockRequest = new NextRequest(
+        "http://localhost:3000/api/instructors/1"
+      );
+      const context = { params: Promise.resolve({ id: "1" }) };
 
       // Act
       await GET(mockRequest, context);
 
       // Assert
-      expect(consoleSpy).toHaveBeenCalledWith('Instructor API error:', mockError);
+      expect(consoleSpy).toHaveBeenCalledWith(
+        "Instructor API error:",
+        mockError
+      );
 
       expect(mockNextResponse.json).toHaveBeenCalledWith(
         {
           success: false,
           data: null,
           message: null,
-          error: 'Internal server error',
+          error: "Internal server error",
         },
         { status: 500 }
       );
@@ -453,26 +477,28 @@ describe('GET /api/instructors/[id]', () => {
     });
   });
 
-  describe('データベースクエリ', () => {
-    it('findUniqueが1回だけ呼ばれること', async () => {
+  describe("データベースクエリ", () => {
+    it("findUniqueが1回だけ呼ばれること", async () => {
       // Arrange
       const mockInstructor: InstructorWithCertifications = {
         id: 1,
-        lastName: '山田',
-        firstName: '太郎',
-        lastNameKana: 'ヤマダ',
-        firstNameKana: 'タロウ',
-        status: 'ACTIVE' as InstructorStatus,
+        lastName: "山田",
+        firstName: "太郎",
+        lastNameKana: "ヤマダ",
+        firstNameKana: "タロウ",
+        status: "ACTIVE" as InstructorStatus,
         notes: null,
-        createdAt: new Date('2024-01-01T00:00:00.000Z'),
-        updatedAt: new Date('2024-01-01T00:00:00.000Z'),
+        createdAt: new Date("2024-01-01T00:00:00.000Z"),
+        updatedAt: new Date("2024-01-01T00:00:00.000Z"),
         certifications: [],
       };
 
       mockInstructorFindUnique.mockResolvedValue(mockInstructor);
 
-      const mockRequest = new NextRequest('http://localhost:3000/api/instructors/1');
-      const context = { params: Promise.resolve({ id: '1' }) };
+      const mockRequest = new NextRequest(
+        "http://localhost:3000/api/instructors/1"
+      );
+      const context = { params: Promise.resolve({ id: "1" }) };
 
       // Act
       await GET(mockRequest, context);
@@ -481,12 +507,14 @@ describe('GET /api/instructors/[id]', () => {
       expect(mockInstructorFindUnique).toHaveBeenCalledTimes(1);
     });
 
-    it('資格情報が適切にincludeされていること', async () => {
+    it("資格情報が適切にincludeされていること", async () => {
       // Arrange
       mockInstructorFindUnique.mockResolvedValue(null);
 
-      const mockRequest = new NextRequest('http://localhost:3000/api/instructors/1');
-      const context = { params: Promise.resolve({ id: '1' }) };
+      const mockRequest = new NextRequest(
+        "http://localhost:3000/api/instructors/1"
+      );
+      const context = { params: Promise.resolve({ id: "1" }) };
 
       // Act
       await GET(mockRequest, context);
@@ -514,12 +542,14 @@ describe('GET /api/instructors/[id]', () => {
       );
     });
 
-    it('正しいwhere条件でクエリが実行されること', async () => {
+    it("正しいwhere条件でクエリが実行されること", async () => {
       // Arrange
       mockInstructorFindUnique.mockResolvedValue(null);
 
-      const mockRequest = new NextRequest('http://localhost:3000/api/instructors/42');
-      const context = { params: Promise.resolve({ id: '42' }) };
+      const mockRequest = new NextRequest(
+        "http://localhost:3000/api/instructors/42"
+      );
+      const context = { params: Promise.resolve({ id: "42" }) };
 
       // Act
       await GET(mockRequest, context);
@@ -533,29 +563,29 @@ describe('GET /api/instructors/[id]', () => {
     });
   });
 
-  describe('レスポンス形式', () => {
-    it('OpenAPI仕様に準拠したレスポンス形式で返されること', async () => {
+  describe("レスポンス形式", () => {
+    it("OpenAPI仕様に準拠したレスポンス形式で返されること", async () => {
       // Arrange
       const mockInstructor: InstructorWithCertifications = {
         id: 1,
-        lastName: '山田',
-        firstName: '太郎',
-        lastNameKana: 'ヤマダ',
-        firstNameKana: 'タロウ',
-        status: 'ACTIVE' as InstructorStatus,
+        lastName: "山田",
+        firstName: "太郎",
+        lastNameKana: "ヤマダ",
+        firstNameKana: "タロウ",
+        status: "ACTIVE" as InstructorStatus,
         notes: null,
-        createdAt: new Date('2024-01-01T00:00:00.000Z'),
-        updatedAt: new Date('2024-01-01T00:00:00.000Z'),
+        createdAt: new Date("2024-01-01T00:00:00.000Z"),
+        updatedAt: new Date("2024-01-01T00:00:00.000Z"),
         certifications: [
           {
             certification: {
               id: 1,
-              name: 'スキー指導員',
-              shortName: '指導員',
-              organization: 'SAJ',
+              name: "スキー指導員",
+              shortName: "指導員",
+              organization: "SAJ",
               department: {
                 id: 1,
-                name: 'スキー',
+                name: "スキー",
               },
             },
           },
@@ -564,8 +594,10 @@ describe('GET /api/instructors/[id]', () => {
 
       mockInstructorFindUnique.mockResolvedValue(mockInstructor);
 
-      const mockRequest = new NextRequest('http://localhost:3000/api/instructors/1');
-      const context = { params: Promise.resolve({ id: '1' }) };
+      const mockRequest = new NextRequest(
+        "http://localhost:3000/api/instructors/1"
+      );
+      const context = { params: Promise.resolve({ id: "1" }) };
 
       // Act
       await GET(mockRequest, context);
@@ -597,12 +629,14 @@ describe('GET /api/instructors/[id]', () => {
       );
     });
 
-    it('エラー時はOpenAPI仕様に準拠したエラーレスポンス形式で返されること', async () => {
+    it("エラー時はOpenAPI仕様に準拠したエラーレスポンス形式で返されること", async () => {
       // Arrange
       mockInstructorFindUnique.mockResolvedValue(null);
 
-      const mockRequest = new NextRequest('http://localhost:3000/api/instructors/999');
-      const context = { params: Promise.resolve({ id: '999' }) };
+      const mockRequest = new NextRequest(
+        "http://localhost:3000/api/instructors/999"
+      );
+      const context = { params: Promise.resolve({ id: "999" }) };
 
       // Act
       await GET(mockRequest, context);
@@ -623,102 +657,103 @@ describe('GET /api/instructors/[id]', () => {
   });
 });
 
-describe('PUT /api/instructors/[id]', () => {
+describe("PUT /api/instructors/[id]", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     // 認証成功をデフォルトでモック
     mockAuthenticateFromRequest.mockResolvedValue({
       success: true,
       user: {
-        id: '1',
-        lineUserId: 'test-user',
-        displayName: 'Test User',
-        role: 'ADMIN',
+        id: "1",
+        lineUserId: "test-user",
+        displayName: "Test User",
+        role: "ADMIN",
         isActive: true,
         createdAt: new Date(),
         updatedAt: new Date(),
       },
     });
     // NextResponse.jsonのデフォルトモック実装
-    mockNextResponse.json.mockImplementation((data, init) => {
-      return {
-        status: init?.status || 200,
-        json: async () => data,
-        cookies: {},
-        headers: new Headers(),
-        ok: true,
-        redirected: false,
-        statusText: 'OK',
-        type: 'basic' as ResponseType,
-        url: '',
-        body: null,
-        bodyUsed: false,
-        clone: jest.fn(),
-        arrayBuffer: jest.fn(),
-        blob: jest.fn(),
-        formData: jest.fn(),
-        text: jest.fn(),
-        [Symbol.for('NextResponse')]: true,
-      } as unknown as NextResponse;
-    });
+    mockNextResponse.json.mockImplementation(
+      (data, init) =>
+        ({
+          status: init?.status || 200,
+          json: async () => data,
+          cookies: {},
+          headers: new Headers(),
+          ok: true,
+          redirected: false,
+          statusText: "OK",
+          type: "basic" as ResponseType,
+          url: "",
+          body: null,
+          bodyUsed: false,
+          clone: jest.fn(),
+          arrayBuffer: jest.fn(),
+          blob: jest.fn(),
+          formData: jest.fn(),
+          text: jest.fn(),
+          [Symbol.for("NextResponse")]: true,
+        }) as unknown as NextResponse
+    );
   });
 
-  describe('正常系', () => {
-    it('インストラクター情報が正しく更新されること', async () => {
+  describe("正常系", () => {
+    it("インストラクター情報が正しく更新されること", async () => {
       // Arrange
       const requestBody = {
-        lastName: '田中',
-        firstName: '花子',
-        lastNameKana: 'タナカ',
-        firstNameKana: 'ハナコ',
-        status: 'ACTIVE',
-        notes: '更新テスト',
+        lastName: "田中",
+        firstName: "花子",
+        lastNameKana: "タナカ",
+        firstNameKana: "ハナコ",
+        status: "ACTIVE",
+        notes: "更新テスト",
         certificationIds: [1, 2],
       };
 
       const existingInstructor = {
         id: 1,
-        lastName: '山田',
-        firstName: '太郎',
+        lastName: "山田",
+        firstName: "太郎",
       };
 
       const existingCertifications = [
-        { id: 1, name: 'スキー指導員', isActive: true },
-        { id: 2, name: 'スキー準指導員', isActive: true },
+        { id: 1, name: "スキー指導員", isActive: true },
+        { id: 2, name: "スキー準指導員", isActive: true },
       ];
 
       const updatedInstructor: InstructorWithCertifications = {
         id: 1,
-        lastName: '田中',
-        firstName: '花子',
-        lastNameKana: 'タナカ',
-        firstNameKana: 'ハナコ',
-        status: 'ACTIVE' as InstructorStatus,
-        notes: '更新テスト',
-        createdAt: new Date('2024-01-01T00:00:00.000Z'),
-        updatedAt: new Date('2024-01-02T00:00:00.000Z'),
+        lastName: "田中",
+        firstName: "花子",
+        lastNameKana: "タナカ",
+        firstNameKana: "ハナコ",
+        status: "ACTIVE" as InstructorStatus,
+        notes: "更新テスト",
+        createdAt: new Date("2024-01-01T00:00:00.000Z"),
+        updatedAt: new Date("2024-01-02T00:00:00.000Z"),
         certifications: [
           {
             certification: {
               id: 1,
-              name: 'スキー指導員',
-              shortName: '指導員',
-              organization: 'SAJ',
+              name: "スキー指導員",
+              shortName: "指導員",
+              organization: "SAJ",
               department: {
                 id: 1,
-                name: 'スキー',
+                name: "スキー",
               },
             },
           },
           {
             certification: {
               id: 2,
-              name: 'スキー準指導員',
-              shortName: '準指導員',
-              organization: 'SAJ',
+              name: "スキー準指導員",
+              shortName: "準指導員",
+              organization: "SAJ",
               department: {
                 id: 1,
-                name: 'スキー',
+                name: "スキー",
               },
             },
           },
@@ -726,26 +761,32 @@ describe('PUT /api/instructors/[id]', () => {
       };
 
       mockInstructorFindUnique.mockResolvedValue(existingInstructor as never);
-      mockCertificationFindMany.mockResolvedValue(existingCertifications as never);
-      mockTransaction.mockImplementation(async (callback) => {
-        return await callback({
-          instructor: {
-            update: mockInstructorUpdate.mockResolvedValue(updatedInstructor),
-            findUnique: jest.fn().mockResolvedValue(updatedInstructor),
-          },
-          instructorCertification: {
-            deleteMany: mockInstructorCertificationDeleteMany,
-            createMany: mockInstructorCertificationCreateMany,
-          },
-        } as never);
-      });
+      mockCertificationFindMany.mockResolvedValue(
+        existingCertifications as never
+      );
+      mockTransaction.mockImplementation(
+        async (callback) =>
+          await callback({
+            instructor: {
+              update: mockInstructorUpdate.mockResolvedValue(updatedInstructor),
+              findUnique: jest.fn().mockResolvedValue(updatedInstructor),
+            },
+            instructorCertification: {
+              deleteMany: mockInstructorCertificationDeleteMany,
+              createMany: mockInstructorCertificationCreateMany,
+            },
+          } as never)
+      );
 
-      const mockRequest = new NextRequest('http://localhost:3000/api/instructors/1', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(requestBody),
-      });
-      const context = { params: Promise.resolve({ id: '1' }) };
+      const mockRequest = new NextRequest(
+        "http://localhost:3000/api/instructors/1",
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(requestBody),
+        }
+      );
+      const context = { params: Promise.resolve({ id: "1" }) };
 
       // Act
       await PUT(mockRequest, context);
@@ -755,89 +796,93 @@ describe('PUT /api/instructors/[id]', () => {
         success: true,
         data: {
           id: 1,
-          lastName: '田中',
-          firstName: '花子',
-          lastNameKana: 'タナカ',
-          firstNameKana: 'ハナコ',
-          status: 'ACTIVE',
-          notes: '更新テスト',
-          createdAt: new Date('2024-01-01T00:00:00.000Z'),
-          updatedAt: new Date('2024-01-02T00:00:00.000Z'),
+          lastName: "田中",
+          firstName: "花子",
+          lastNameKana: "タナカ",
+          firstNameKana: "ハナコ",
+          status: "ACTIVE",
+          notes: "更新テスト",
+          createdAt: new Date("2024-01-01T00:00:00.000Z"),
+          updatedAt: new Date("2024-01-02T00:00:00.000Z"),
           certifications: [
             {
               id: 1,
-              name: 'スキー指導員',
-              shortName: '指導員',
-              organization: 'SAJ',
+              name: "スキー指導員",
+              shortName: "指導員",
+              organization: "SAJ",
               department: {
                 id: 1,
-                name: 'スキー',
+                name: "スキー",
               },
             },
             {
               id: 2,
-              name: 'スキー準指導員',
-              shortName: '準指導員',
-              organization: 'SAJ',
+              name: "スキー準指導員",
+              shortName: "準指導員",
+              organization: "SAJ",
               department: {
                 id: 1,
-                name: 'スキー',
+                name: "スキー",
               },
             },
           ],
         },
-        message: 'Instructor operation completed successfully',
+        message: "Instructor operation completed successfully",
         error: null,
       });
     });
 
-    it('資格指定なしでインストラクター情報が更新されること', async () => {
+    it("資格指定なしでインストラクター情報が更新されること", async () => {
       // Arrange
       const requestBody = {
-        lastName: '佐藤',
-        firstName: '次郎',
-        status: 'INACTIVE',
+        lastName: "佐藤",
+        firstName: "次郎",
+        status: "INACTIVE",
       };
 
       const existingInstructor = {
         id: 2,
-        lastName: '山田',
-        firstName: '太郎',
+        lastName: "山田",
+        firstName: "太郎",
       };
 
       const updatedInstructor: InstructorWithCertifications = {
         id: 2,
-        lastName: '佐藤',
-        firstName: '次郎',
+        lastName: "佐藤",
+        firstName: "次郎",
         lastNameKana: null,
         firstNameKana: null,
-        status: 'INACTIVE' as InstructorStatus,
+        status: "INACTIVE" as InstructorStatus,
         notes: null,
-        createdAt: new Date('2024-01-01T00:00:00.000Z'),
-        updatedAt: new Date('2024-01-02T00:00:00.000Z'),
+        createdAt: new Date("2024-01-01T00:00:00.000Z"),
+        updatedAt: new Date("2024-01-02T00:00:00.000Z"),
         certifications: [],
       };
 
       mockInstructorFindUnique.mockResolvedValue(existingInstructor as never);
-      mockTransaction.mockImplementation(async (callback) => {
-        return await callback({
-          instructor: {
-            update: mockInstructorUpdate.mockResolvedValue(updatedInstructor),
-            findUnique: jest.fn().mockResolvedValue(updatedInstructor),
-          },
-          instructorCertification: {
-            deleteMany: mockInstructorCertificationDeleteMany,
-            createMany: mockInstructorCertificationCreateMany,
-          },
-        } as never);
-      });
+      mockTransaction.mockImplementation(
+        async (callback) =>
+          await callback({
+            instructor: {
+              update: mockInstructorUpdate.mockResolvedValue(updatedInstructor),
+              findUnique: jest.fn().mockResolvedValue(updatedInstructor),
+            },
+            instructorCertification: {
+              deleteMany: mockInstructorCertificationDeleteMany,
+              createMany: mockInstructorCertificationCreateMany,
+            },
+          } as never)
+      );
 
-      const mockRequest = new NextRequest('http://localhost:3000/api/instructors/2', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(requestBody),
-      });
-      const context = { params: Promise.resolve({ id: '2' }) };
+      const mockRequest = new NextRequest(
+        "http://localhost:3000/api/instructors/2",
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(requestBody),
+        }
+      );
+      const context = { params: Promise.resolve({ id: "2" }) };
 
       // Act
       await PUT(mockRequest, context);
@@ -848,38 +893,41 @@ describe('PUT /api/instructors/[id]', () => {
         success: true,
         data: {
           id: 2,
-          lastName: '佐藤',
-          firstName: '次郎',
+          lastName: "佐藤",
+          firstName: "次郎",
           lastNameKana: null,
           firstNameKana: null,
-          status: 'INACTIVE',
+          status: "INACTIVE",
           notes: null,
-          createdAt: new Date('2024-01-01T00:00:00.000Z'),
-          updatedAt: new Date('2024-01-02T00:00:00.000Z'),
+          createdAt: new Date("2024-01-01T00:00:00.000Z"),
+          updatedAt: new Date("2024-01-02T00:00:00.000Z"),
           certifications: [],
         },
-        message: 'Instructor operation completed successfully',
+        message: "Instructor operation completed successfully",
         error: null,
       });
     });
   });
 
-  describe('異常系', () => {
-    it('存在しないIDが指定された場合に404エラーが返されること', async () => {
+  describe("異常系", () => {
+    it("存在しないIDが指定された場合に404エラーが返されること", async () => {
       // Arrange
       const requestBody = {
-        lastName: '存在しない',
-        firstName: 'インストラクター',
+        lastName: "存在しない",
+        firstName: "インストラクター",
       };
 
       mockInstructorFindUnique.mockResolvedValue(null);
 
-      const mockRequest = new NextRequest('http://localhost:3000/api/instructors/999', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(requestBody),
-      });
-      const context = { params: Promise.resolve({ id: '999' }) };
+      const mockRequest = new NextRequest(
+        "http://localhost:3000/api/instructors/999",
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(requestBody),
+        }
+      );
+      const context = { params: Promise.resolve({ id: "999" }) };
 
       // Act
       await PUT(mockRequest, context);
@@ -891,25 +939,28 @@ describe('PUT /api/instructors/[id]', () => {
           success: false,
           data: null,
           message: null,
-          error: 'Resource not found',
+          error: "Resource not found",
         },
         { status: 404 }
       );
     });
 
-    it('必須フィールドが不足している場合に400エラーが返されること', async () => {
+    it("必須フィールドが不足している場合に400エラーが返されること", async () => {
       // Arrange
       const requestBody = {
-        lastName: '田中',
+        lastName: "田中",
         // firstName が不足
       };
 
-      const mockRequest = new NextRequest('http://localhost:3000/api/instructors/1', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(requestBody),
-      });
-      const context = { params: Promise.resolve({ id: '1' }) };
+      const mockRequest = new NextRequest(
+        "http://localhost:3000/api/instructors/1",
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(requestBody),
+        }
+      );
+      const context = { params: Promise.resolve({ id: "1" }) };
 
       // Act
       await PUT(mockRequest, context);
@@ -921,26 +972,29 @@ describe('PUT /api/instructors/[id]', () => {
           success: false,
           data: null,
           message: null,
-          error: 'Missing required fields: firstName',
+          error: "Missing required fields: firstName",
         },
         { status: 400 }
       );
     });
 
-    it('無効なステータスが指定された場合に400エラーが返されること', async () => {
+    it("無効なステータスが指定された場合に400エラーが返されること", async () => {
       // Arrange
       const requestBody = {
-        lastName: '田中',
-        firstName: '花子',
-        status: 'INVALID_STATUS',
+        lastName: "田中",
+        firstName: "花子",
+        status: "INVALID_STATUS",
       };
 
-      const mockRequest = new NextRequest('http://localhost:3000/api/instructors/1', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(requestBody),
-      });
-      const context = { params: Promise.resolve({ id: '1' }) };
+      const mockRequest = new NextRequest(
+        "http://localhost:3000/api/instructors/1",
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(requestBody),
+        }
+      );
+      const context = { params: Promise.resolve({ id: "1" }) };
 
       // Act
       await PUT(mockRequest, context);
@@ -952,40 +1006,45 @@ describe('PUT /api/instructors/[id]', () => {
           success: false,
           data: null,
           message: null,
-          error: 'Invalid status value',
+          error: "Invalid status value",
         },
         { status: 400 }
       );
     });
 
-    it('存在しない資格IDが指定された場合に400エラーが返されること', async () => {
+    it("存在しない資格IDが指定された場合に400エラーが返されること", async () => {
       // Arrange
       const requestBody = {
-        lastName: '田中',
-        firstName: '花子',
+        lastName: "田中",
+        firstName: "花子",
         certificationIds: [1, 999], // 999は存在しない
       };
 
       const existingInstructor = {
         id: 1,
-        lastName: '山田',
-        firstName: '太郎',
+        lastName: "山田",
+        firstName: "太郎",
       };
 
       const existingCertifications = [
-        { id: 1, name: 'スキー指導員', isActive: true },
+        { id: 1, name: "スキー指導員", isActive: true },
         // id: 999 は存在しない
       ];
 
       mockInstructorFindUnique.mockResolvedValue(existingInstructor as never);
-      mockCertificationFindMany.mockResolvedValue(existingCertifications as never);
+      mockCertificationFindMany.mockResolvedValue(
+        existingCertifications as never
+      );
 
-      const mockRequest = new NextRequest('http://localhost:3000/api/instructors/1', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(requestBody),
-      });
-      const context = { params: Promise.resolve({ id: '1' }) };
+      const mockRequest = new NextRequest(
+        "http://localhost:3000/api/instructors/1",
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(requestBody),
+        }
+      );
+      const context = { params: Promise.resolve({ id: "1" }) };
 
       // Act
       await PUT(mockRequest, context);
@@ -997,25 +1056,28 @@ describe('PUT /api/instructors/[id]', () => {
           success: false,
           data: null,
           message: null,
-          error: 'Some certification IDs are invalid or inactive',
+          error: "Some certification IDs are invalid or inactive",
         },
         { status: 400 }
       );
     });
 
-    it('無効なID形式が指定された場合に400エラーが返されること', async () => {
+    it("無効なID形式が指定された場合に400エラーが返されること", async () => {
       // Arrange
       const requestBody = {
-        lastName: '田中',
-        firstName: '花子',
+        lastName: "田中",
+        firstName: "花子",
       };
 
-      const mockRequest = new NextRequest('http://localhost:3000/api/instructors/invalid', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(requestBody),
-      });
-      const context = { params: Promise.resolve({ id: 'invalid' }) };
+      const mockRequest = new NextRequest(
+        "http://localhost:3000/api/instructors/invalid",
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(requestBody),
+        }
+      );
+      const context = { params: Promise.resolve({ id: "invalid" }) };
 
       // Act
       await PUT(mockRequest, context);
@@ -1027,41 +1089,47 @@ describe('PUT /api/instructors/[id]', () => {
           success: false,
           data: null,
           message: null,
-          error: 'Invalid ID format',
+          error: "Invalid ID format",
         },
         { status: 400 }
       );
     });
 
-    it('データベースエラーが発生した場合に500エラーが返されること', async () => {
+    it("データベースエラーが発生した場合に500エラーが返されること", async () => {
       // Arrange
       const requestBody = {
-        lastName: '田中',
-        firstName: '花子',
+        lastName: "田中",
+        firstName: "花子",
       };
 
-      const mockError = new Error('Database connection failed');
+      const mockError = new Error("Database connection failed");
       mockInstructorFindUnique.mockRejectedValue(mockError);
 
-      const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
-      const mockRequest = new NextRequest('http://localhost:3000/api/instructors/1', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(requestBody),
-      });
-      const context = { params: Promise.resolve({ id: '1' }) };
+      const consoleSpy = jest.spyOn(console, "error").mockImplementation();
+      const mockRequest = new NextRequest(
+        "http://localhost:3000/api/instructors/1",
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(requestBody),
+        }
+      );
+      const context = { params: Promise.resolve({ id: "1" }) };
 
       // Act
       await PUT(mockRequest, context);
 
       // Assert
-      expect(consoleSpy).toHaveBeenCalledWith('Instructor API error:', mockError);
+      expect(consoleSpy).toHaveBeenCalledWith(
+        "Instructor API error:",
+        mockError
+      );
       expect(mockNextResponse.json).toHaveBeenCalledWith(
         {
           success: false,
           data: null,
           message: null,
-          error: 'Internal server error',
+          error: "Internal server error",
         },
         { status: 500 }
       );
@@ -1070,41 +1138,43 @@ describe('PUT /api/instructors/[id]', () => {
     });
   });
 
-  describe('トランザクション処理', () => {
-    it('資格更新時にトランザクション内で既存資格削除と新規作成が行われること', async () => {
+  describe("トランザクション処理", () => {
+    it("資格更新時にトランザクション内で既存資格削除と新規作成が行われること", async () => {
       // Arrange
       const requestBody = {
-        lastName: '田中',
-        firstName: '花子',
+        lastName: "田中",
+        firstName: "花子",
         certificationIds: [1, 2],
       };
 
       const existingInstructor = {
         id: 1,
-        lastName: '山田',
-        firstName: '太郎',
+        lastName: "山田",
+        firstName: "太郎",
       };
 
       const existingCertifications = [
-        { id: 1, name: 'スキー指導員', isActive: true },
-        { id: 2, name: 'スキー準指導員', isActive: true },
+        { id: 1, name: "スキー指導員", isActive: true },
+        { id: 2, name: "スキー準指導員", isActive: true },
       ];
 
       const updatedInstructor: InstructorWithCertifications = {
         id: 1,
-        lastName: '田中',
-        firstName: '花子',
+        lastName: "田中",
+        firstName: "花子",
         lastNameKana: null,
         firstNameKana: null,
-        status: 'ACTIVE' as InstructorStatus,
+        status: "ACTIVE" as InstructorStatus,
         notes: null,
-        createdAt: new Date('2024-01-01T00:00:00.000Z'),
-        updatedAt: new Date('2024-01-02T00:00:00.000Z'),
+        createdAt: new Date("2024-01-01T00:00:00.000Z"),
+        updatedAt: new Date("2024-01-02T00:00:00.000Z"),
         certifications: [],
       };
 
       mockInstructorFindUnique.mockResolvedValue(existingInstructor as never);
-      mockCertificationFindMany.mockResolvedValue(existingCertifications as never);
+      mockCertificationFindMany.mockResolvedValue(
+        existingCertifications as never
+      );
 
       let transactionCallback: unknown;
       mockTransaction.mockImplementation(async (callback) => {
@@ -1121,19 +1191,22 @@ describe('PUT /api/instructors/[id]', () => {
         } as never);
       });
 
-      const mockRequest = new NextRequest('http://localhost:3000/api/instructors/1', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(requestBody),
-      });
-      const context = { params: Promise.resolve({ id: '1' }) };
+      const mockRequest = new NextRequest(
+        "http://localhost:3000/api/instructors/1",
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(requestBody),
+        }
+      );
+      const context = { params: Promise.resolve({ id: "1" }) };
 
       // Act
       await PUT(mockRequest, context);
 
       // Assert
       expect(mockTransaction).toHaveBeenCalledTimes(1);
-      expect(typeof transactionCallback).toBe('function');
+      expect(typeof transactionCallback).toBe("function");
     });
   });
 });

@@ -1,21 +1,24 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/db';
-import { authenticateFromRequest } from '@/lib/auth/middleware';
+import { type NextRequest, NextResponse } from "next/server";
+import { authenticateFromRequest } from "@/lib/auth/middleware";
+import { prisma } from "@/lib/db";
 
-export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
     const resolvedParams = await params;
     const id = resolvedParams.id;
 
     // IDのバリデーション
-    const numericId = parseInt(id, 10);
+    const numericId = Number.parseInt(id, 10);
     if (isNaN(numericId) || numericId <= 0) {
       return NextResponse.json(
         {
           success: false,
           data: null,
           message: null,
-          error: 'Invalid ID format',
+          error: "Invalid ID format",
         },
         { status: 400 }
       );
@@ -49,7 +52,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
           success: false,
           data: null,
           message: null,
-          error: 'Resource not found',
+          error: "Resource not found",
         },
         { status: 404 }
       );
@@ -78,30 +81,33 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     return NextResponse.json({
       success: true,
       data: formattedInstructor,
-      message: 'Instructor operation completed successfully',
+      message: "Instructor operation completed successfully",
       error: null,
     });
   } catch (error) {
-    console.error('Instructor API error:', error);
+    console.error("Instructor API error:", error);
     return NextResponse.json(
       {
         success: false,
         data: null,
         message: null,
-        error: 'Internal server error',
+        error: "Internal server error",
       },
       { status: 500 }
     );
   }
 }
 
-export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   const authResult = await authenticateFromRequest(request);
   if (!authResult.success) {
     return NextResponse.json(
       {
         success: false,
-        error: 'Authentication required',
+        error: "Authentication required",
         data: null,
         message: null,
       },
@@ -113,14 +119,14 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     const id = resolvedParams.id;
 
     // IDのバリデーション
-    const numericId = parseInt(id, 10);
+    const numericId = Number.parseInt(id, 10);
     if (isNaN(numericId) || numericId <= 0) {
       return NextResponse.json(
         {
           success: false,
           data: null,
           message: null,
-          error: 'Invalid ID format',
+          error: "Invalid ID format",
         },
         { status: 400 }
       );
@@ -129,7 +135,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     const body = await request.json();
 
     // 必須フィールドのバリデーション
-    const requiredFields = ['lastName', 'firstName'];
+    const requiredFields = ["lastName", "firstName"];
     const missingFields = requiredFields.filter((field) => !(field in body));
 
     if (missingFields.length > 0) {
@@ -138,20 +144,23 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
           success: false,
           data: null,
           message: null,
-          error: `Missing required fields: ${missingFields.join(', ')}`,
+          error: `Missing required fields: ${missingFields.join(", ")}`,
         },
         { status: 400 }
       );
     }
 
     // statusのバリデーション
-    if (body.status && !['ACTIVE', 'INACTIVE', 'RETIRED'].includes(body.status)) {
+    if (
+      body.status &&
+      !["ACTIVE", "INACTIVE", "RETIRED"].includes(body.status)
+    ) {
       return NextResponse.json(
         {
           success: false,
           data: null,
           message: null,
-          error: 'Invalid status value',
+          error: "Invalid status value",
         },
         { status: 400 }
       );
@@ -168,7 +177,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
           success: false,
           data: null,
           message: null,
-          error: 'Resource not found',
+          error: "Resource not found",
         },
         { status: 404 }
       );
@@ -189,7 +198,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
             success: false,
             data: null,
             message: null,
-            error: 'Some certification IDs are invalid or inactive',
+            error: "Some certification IDs are invalid or inactive",
           },
           { status: 400 }
         );
@@ -276,17 +285,17 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     return NextResponse.json({
       success: true,
       data: formattedInstructor,
-      message: 'Instructor operation completed successfully',
+      message: "Instructor operation completed successfully",
       error: null,
     });
   } catch (error) {
-    console.error('Instructor API error:', error);
+    console.error("Instructor API error:", error);
     return NextResponse.json(
       {
         success: false,
         data: null,
         message: null,
-        error: 'Internal server error',
+        error: "Internal server error",
       },
       { status: 500 }
     );

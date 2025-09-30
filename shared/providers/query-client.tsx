@@ -1,13 +1,17 @@
-'use client';
+"use client";
 
-import { QueryClient, QueryClientProvider, type QueryKey } from '@tanstack/react-query';
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
-import { useState } from 'react';
+import {
+  QueryClient,
+  QueryClientProvider,
+  type QueryKey,
+} from "@tanstack/react-query";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { useState } from "react";
 
 // 設計書に基づいたキャッシュ戦略設定
 const LIST_QUERY_KEYS = [
-  ['public-shifts'],
-  ['public-shifts', 'departments'],
+  ["public-shifts"],
+  ["public-shifts", "departments"],
 ] as const satisfies ReadonlyArray<QueryKey>;
 
 const LIST_QUERY_CACHE_OPTIONS = {
@@ -26,7 +30,7 @@ function makeQueryClient() {
         // リトライ戦略（エラー時の再試行）
         retry: (failureCount, error) => {
           // ネットワークエラーの場合は最大2回リトライ
-          if (error instanceof TypeError && error.message.includes('fetch')) {
+          if (error instanceof TypeError && error.message.includes("fetch")) {
             return failureCount < 2;
           }
           // その他のエラーは1回のみリトライ
@@ -52,17 +56,16 @@ function makeQueryClient() {
   return client;
 }
 
-let browserQueryClient: QueryClient | undefined = undefined;
+let browserQueryClient: QueryClient | undefined;
 
 function getQueryClient() {
-  if (typeof window === 'undefined') {
+  if (typeof window === "undefined") {
     // Server: 常に新しいクライアントを作成
     return makeQueryClient();
-  } else {
-    // Browser: シングルトンパターンでクライアントを再利用
-    if (!browserQueryClient) browserQueryClient = makeQueryClient();
-    return browserQueryClient;
   }
+  // Browser: シングルトンパターンでクライアントを再利用
+  if (!browserQueryClient) browserQueryClient = makeQueryClient();
+  return browserQueryClient;
 }
 
 interface QueryProviderProps {
@@ -78,7 +81,9 @@ export function QueryProvider({ children }: QueryProviderProps) {
     <QueryClientProvider client={queryClient}>
       {children}
       {/* 開発環境でのみReact Query Devtoolsを表示 */}
-      {process.env.NODE_ENV === 'development' && <ReactQueryDevtools initialIsOpen={false} />}
+      {process.env.NODE_ENV === "development" && (
+        <ReactQueryDevtools initialIsOpen={false} />
+      )}
     </QueryClientProvider>
   );
 }

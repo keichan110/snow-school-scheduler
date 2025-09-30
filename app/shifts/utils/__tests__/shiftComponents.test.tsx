@@ -1,47 +1,47 @@
-import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
-import '@testing-library/jest-dom';
+import { fireEvent, render, screen } from "@testing-library/react";
+import React from "react";
+import "@testing-library/jest-dom";
+import type { AssignedInstructor, ShiftSummary } from "../../types";
 import {
   createDepartmentSection,
-  renderDepartmentSections,
+  type DepartmentSectionOptions,
   generateInstructorChips,
   getDepartmentIcon,
-  DepartmentSectionOptions,
-} from '../shiftComponents';
-import { AssignedInstructor, ShiftSummary } from '../../types';
+  renderDepartmentSections,
+} from "../shiftComponents";
 
 // テスト用のモックデータ
 const mockAssignedInstructors: AssignedInstructor[] = [
   {
     id: 1,
-    displayName: '山田太郎',
-    firstName: '太郎',
-    lastName: '山田',
+    displayName: "山田太郎",
+    firstName: "太郎",
+    lastName: "山田",
   },
   {
     id: 2,
-    displayName: '鈴木花子',
-    firstName: '花子',
-    lastName: '鈴木',
+    displayName: "鈴木花子",
+    firstName: "花子",
+    lastName: "鈴木",
   },
 ];
 
 const mockShifts: ShiftSummary[] = [
   {
-    type: '初級レッスン',
-    department: 'ski',
+    type: "初級レッスン",
+    department: "ski",
     count: 2,
     assignedInstructors: mockAssignedInstructors,
   },
   {
-    type: '中級レッスン',
-    department: 'snowboard',
+    type: "中級レッスン",
+    department: "snowboard",
     count: 1,
     assignedInstructors: mockAssignedInstructors.slice(0, 1),
   },
   {
-    type: '共通受付',
-    department: 'mixed',
+    type: "共通受付",
+    department: "mixed",
     count: 1,
     assignedInstructors: [],
   },
@@ -49,76 +49,81 @@ const mockShifts: ShiftSummary[] = [
 
 const mockEmptyShifts: ShiftSummary[] = [];
 
-describe('shiftComponents', () => {
-  describe('generateInstructorChips', () => {
-    it('インストラクターチップを正しく生成する', () => {
-      const result = generateInstructorChips(mockAssignedInstructors, 'ski');
+describe("shiftComponents", () => {
+  describe("generateInstructorChips", () => {
+    it("インストラクターチップを正しく生成する", () => {
+      const result = generateInstructorChips(mockAssignedInstructors, "ski");
 
       render(<div data-testid="chips-container">{result}</div>);
 
-      expect(screen.getByText('山田太郎')).toBeInTheDocument();
-      expect(screen.getByText('鈴木花子')).toBeInTheDocument();
+      expect(screen.getByText("山田太郎")).toBeInTheDocument();
+      expect(screen.getByText("鈴木花子")).toBeInTheDocument();
     });
 
-    it('空の配列に対して空の結果を返す', () => {
-      const result = generateInstructorChips([], 'ski');
+    it("空の配列に対して空の結果を返す", () => {
+      const result = generateInstructorChips([], "ski");
       expect(result).toHaveLength(0);
     });
   });
 
-  describe('getDepartmentIcon', () => {
-    it('スキー部門のアイコンを返す', () => {
-      const icon = getDepartmentIcon('ski');
+  describe("getDepartmentIcon", () => {
+    it("スキー部門のアイコンを返す", () => {
+      const icon = getDepartmentIcon("ski");
       render(<div data-testid="icon-container">{icon}</div>);
 
       // アイコンが存在することを確認
-      const container = screen.getByTestId('icon-container');
+      const container = screen.getByTestId("icon-container");
       expect(container.firstChild).toBeTruthy();
     });
 
-    it('スノーボード部門のアイコンを返す', () => {
-      const icon = getDepartmentIcon('snowboard');
+    it("スノーボード部門のアイコンを返す", () => {
+      const icon = getDepartmentIcon("snowboard");
       render(<div data-testid="icon-container">{icon}</div>);
 
-      const container = screen.getByTestId('icon-container');
+      const container = screen.getByTestId("icon-container");
       expect(container.firstChild).toBeTruthy();
     });
 
-    it('共通部門のアイコンを返す', () => {
-      const icon = getDepartmentIcon('mixed');
+    it("共通部門のアイコンを返す", () => {
+      const icon = getDepartmentIcon("mixed");
       render(<div data-testid="icon-container">{icon}</div>);
 
-      const container = screen.getByTestId('icon-container');
+      const container = screen.getByTestId("icon-container");
       expect(container.firstChild).toBeTruthy();
     });
 
-    it('カスタムクラス名を適用する', () => {
-      const customClass = 'custom-class';
-      const icon = getDepartmentIcon('ski', customClass);
+    it("カスタムクラス名を適用する", () => {
+      const customClass = "custom-class";
+      const icon = getDepartmentIcon("ski", customClass);
       render(<div data-testid="icon-container">{icon}</div>);
 
-      const container = screen.getByTestId('icon-container');
+      const container = screen.getByTestId("icon-container");
       expect(container.firstChild).toHaveClass(customClass);
     });
   });
 
-  describe('createDepartmentSection', () => {
+  describe("createDepartmentSection", () => {
     const mockIcon = <div data-testid="mock-icon">Icon</div>;
 
-    it('表示専用モード（clickable: false）でセクションを生成する', () => {
+    it("表示専用モード（clickable: false）でセクションを生成する", () => {
       const options: DepartmentSectionOptions = { clickable: false };
 
-      const section = createDepartmentSection('ski', mockShifts, mockIcon, options);
+      const section = createDepartmentSection(
+        "ski",
+        mockShifts,
+        mockIcon,
+        options
+      );
       render(<div>{section}</div>);
 
-      expect(screen.getByText('スキー')).toBeInTheDocument();
-      expect(screen.getByText('初級レッスン')).toBeInTheDocument();
-      expect(screen.getByText('山田太郎')).toBeInTheDocument();
-      expect(screen.getByText('鈴木花子')).toBeInTheDocument();
-      expect(screen.getByText('2名配置')).toBeInTheDocument();
+      expect(screen.getByText("スキー")).toBeInTheDocument();
+      expect(screen.getByText("初級レッスン")).toBeInTheDocument();
+      expect(screen.getByText("山田太郎")).toBeInTheDocument();
+      expect(screen.getByText("鈴木花子")).toBeInTheDocument();
+      expect(screen.getByText("2名配置")).toBeInTheDocument();
     });
 
-    it('クリック可能モード（clickable: true）でセクションを生成する', () => {
+    it("クリック可能モード（clickable: true）でセクションを生成する", () => {
       const mockOnShiftClick = jest.fn();
       const options: DepartmentSectionOptions = {
         clickable: true,
@@ -126,19 +131,24 @@ describe('shiftComponents', () => {
         isLoading: false,
       };
 
-      const section = createDepartmentSection('ski', mockShifts, mockIcon, options);
+      const section = createDepartmentSection(
+        "ski",
+        mockShifts,
+        mockIcon,
+        options
+      );
       render(<div>{section}</div>);
 
-      const shiftElement = screen.getByText('初級レッスン').closest('button');
+      const shiftElement = screen.getByText("初級レッスン").closest("button");
       expect(shiftElement).toBeInTheDocument();
 
       if (shiftElement) {
         fireEvent.click(shiftElement);
-        expect(mockOnShiftClick).toHaveBeenCalledWith('初級レッスン', 'ski');
+        expect(mockOnShiftClick).toHaveBeenCalledWith("初級レッスン", "ski");
       }
     });
 
-    it('ローディング状態でボタンが無効化される', () => {
+    it("ローディング状態でボタンが無効化される", () => {
       const mockOnShiftClick = jest.fn();
       const options: DepartmentSectionOptions = {
         clickable: true,
@@ -146,59 +156,66 @@ describe('shiftComponents', () => {
         isLoading: true,
       };
 
-      const section = createDepartmentSection('ski', mockShifts, mockIcon, options);
+      const section = createDepartmentSection(
+        "ski",
+        mockShifts,
+        mockIcon,
+        options
+      );
       render(<div>{section}</div>);
 
-      const shiftElement = screen.getByText('初級レッスン').closest('button');
+      const shiftElement = screen.getByText("初級レッスン").closest("button");
       expect(shiftElement).toBeDisabled();
     });
 
-    it('インストラクターが未配置の場合にメッセージを表示する', () => {
-      const section = createDepartmentSection('mixed', mockShifts, mockIcon);
+    it("インストラクターが未配置の場合にメッセージを表示する", () => {
+      const section = createDepartmentSection("mixed", mockShifts, mockIcon);
       render(<div>{section}</div>);
 
-      expect(screen.getByText('インストラクターが未配置です')).toBeInTheDocument();
+      expect(
+        screen.getByText("インストラクターが未配置です")
+      ).toBeInTheDocument();
     });
 
-    it('指定された部門のシフトのみを表示する', () => {
-      const section = createDepartmentSection('ski', mockShifts, mockIcon);
+    it("指定された部門のシフトのみを表示する", () => {
+      const section = createDepartmentSection("ski", mockShifts, mockIcon);
       render(<div>{section}</div>);
 
-      expect(screen.getByText('初級レッスン')).toBeInTheDocument();
-      expect(screen.queryByText('中級レッスン')).not.toBeInTheDocument();
-      expect(screen.queryByText('共通受付')).not.toBeInTheDocument();
+      expect(screen.getByText("初級レッスン")).toBeInTheDocument();
+      expect(screen.queryByText("中級レッスン")).not.toBeInTheDocument();
+      expect(screen.queryByText("共通受付")).not.toBeInTheDocument();
     });
   });
 
-  describe('renderDepartmentSections', () => {
-    it('全部門のセクションを生成する', () => {
+  describe("renderDepartmentSections", () => {
+    it("全部門のセクションを生成する", () => {
       const sections = renderDepartmentSections(mockShifts);
       render(<div>{sections}</div>);
 
-      expect(screen.getByText('スキー')).toBeInTheDocument();
-      expect(screen.getByText('スノーボード')).toBeInTheDocument();
-      expect(screen.getByText('共通')).toBeInTheDocument();
+      expect(screen.getByText("スキー")).toBeInTheDocument();
+      expect(screen.getByText("スノーボード")).toBeInTheDocument();
+      expect(screen.getByText("共通")).toBeInTheDocument();
     });
 
-    it('シフトがない部門のセクションは生成されない', () => {
-      const skiOnlyShifts = mockShifts.filter((s) => s.department === 'ski');
+    it("シフトがない部門のセクションは生成されない", () => {
+      const skiOnlyShifts = mockShifts.filter((s) => s.department === "ski");
       const sections = renderDepartmentSections(skiOnlyShifts);
       render(<div>{sections}</div>);
 
-      expect(screen.getByText('スキー')).toBeInTheDocument();
-      expect(screen.queryByText('スノーボード')).not.toBeInTheDocument();
-      expect(screen.queryByText('共通')).not.toBeInTheDocument();
+      expect(screen.getByText("スキー")).toBeInTheDocument();
+      expect(screen.queryByText("スノーボード")).not.toBeInTheDocument();
+      expect(screen.queryByText("共通")).not.toBeInTheDocument();
     });
 
-    it('空のシフト配列で空の結果を返す', () => {
+    it("空のシフト配列で空の結果を返す", () => {
       const sections = renderDepartmentSections(mockEmptyShifts);
       render(<div data-testid="sections-container">{sections}</div>);
 
-      const container = screen.getByTestId('sections-container');
+      const container = screen.getByTestId("sections-container");
       expect(container).toBeEmptyDOMElement();
     });
 
-    it('オプションを各セクションに正しく渡す', () => {
+    it("オプションを各セクションに正しく渡す", () => {
       const mockOnShiftClick = jest.fn();
       const options: DepartmentSectionOptions = {
         clickable: true,
@@ -208,18 +225,18 @@ describe('shiftComponents', () => {
       const sections = renderDepartmentSections(mockShifts, options);
       render(<div>{sections}</div>);
 
-      const shiftElement = screen.getByText('初級レッスン').closest('button');
+      const shiftElement = screen.getByText("初級レッスン").closest("button");
       expect(shiftElement).toBeInTheDocument();
 
       if (shiftElement) {
         fireEvent.click(shiftElement);
-        expect(mockOnShiftClick).toHaveBeenCalledWith('初級レッスン', 'ski');
+        expect(mockOnShiftClick).toHaveBeenCalledWith("初級レッスン", "ski");
       }
     });
   });
 
-  describe('DepartmentSectionOptions型安全性', () => {
-    it('全てのオプションが指定可能', () => {
+  describe("DepartmentSectionOptions型安全性", () => {
+    it("全てのオプションが指定可能", () => {
       const fullOptions: DepartmentSectionOptions = {
         clickable: true,
         onShiftClick: jest.fn(),
@@ -227,21 +244,35 @@ describe('shiftComponents', () => {
         isLoading: false,
       };
 
-      const section = createDepartmentSection('ski', mockShifts, <div>Icon</div>, fullOptions);
+      const section = createDepartmentSection(
+        "ski",
+        mockShifts,
+        <div>Icon</div>,
+        fullOptions
+      );
       expect(section).toBeTruthy();
     });
 
-    it('部分的なオプションが指定可能', () => {
+    it("部分的なオプションが指定可能", () => {
       const partialOptions: DepartmentSectionOptions = {
         clickable: false,
       };
 
-      const section = createDepartmentSection('ski', mockShifts, <div>Icon</div>, partialOptions);
+      const section = createDepartmentSection(
+        "ski",
+        mockShifts,
+        <div>Icon</div>,
+        partialOptions
+      );
       expect(section).toBeTruthy();
     });
 
-    it('オプションなしでも動作する', () => {
-      const section = createDepartmentSection('ski', mockShifts, <div>Icon</div>);
+    it("オプションなしでも動作する", () => {
+      const section = createDepartmentSection(
+        "ski",
+        mockShifts,
+        <div>Icon</div>
+      );
       expect(section).toBeTruthy();
     });
   });

@@ -1,7 +1,6 @@
-import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/db';
-import { NextRequest } from 'next/server';
-import { authenticateFromRequest } from '@/lib/auth/middleware';
+import { type NextRequest, NextResponse } from "next/server";
+import { authenticateFromRequest } from "@/lib/auth/middleware";
+import { prisma } from "@/lib/db";
 
 export async function GET(request: NextRequest) {
   const authResult = await authenticateFromRequest(request);
@@ -9,7 +8,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(
       {
         success: false,
-        error: 'Authentication required',
+        error: "Authentication required",
         data: null,
         message: null,
       },
@@ -18,10 +17,10 @@ export async function GET(request: NextRequest) {
   }
   try {
     const searchParams = request.nextUrl.searchParams;
-    const departmentId = searchParams.get('departmentId');
-    const shiftTypeId = searchParams.get('shiftTypeId');
-    const dateFrom = searchParams.get('dateFrom');
-    const dateTo = searchParams.get('dateTo');
+    const departmentId = searchParams.get("departmentId");
+    const shiftTypeId = searchParams.get("shiftTypeId");
+    const dateFrom = searchParams.get("dateFrom");
+    const dateTo = searchParams.get("dateTo");
 
     // フィルター条件を構築
     const where: {
@@ -34,11 +33,11 @@ export async function GET(request: NextRequest) {
     } = {};
 
     if (departmentId) {
-      where.departmentId = parseInt(departmentId);
+      where.departmentId = Number.parseInt(departmentId);
     }
 
     if (shiftTypeId) {
-      where.shiftTypeId = parseInt(shiftTypeId);
+      where.shiftTypeId = Number.parseInt(shiftTypeId);
     }
 
     if (dateFrom || dateTo) {
@@ -62,13 +61,17 @@ export async function GET(request: NextRequest) {
           },
         },
       },
-      orderBy: [{ date: 'asc' }, { departmentId: 'asc' }, { shiftTypeId: 'asc' }],
+      orderBy: [
+        { date: "asc" },
+        { departmentId: "asc" },
+        { shiftTypeId: "asc" },
+      ],
     });
 
     // ShiftWithStats形式に変換
     const shiftsWithStats = shifts.map((shift) => ({
       id: shift.id,
-      date: shift.date.toISOString().split('T')[0], // date形式
+      date: shift.date.toISOString().split("T")[0], // date形式
       departmentId: shift.departmentId,
       shiftTypeId: shift.shiftTypeId,
       description: shift.description,
@@ -99,13 +102,13 @@ export async function GET(request: NextRequest) {
       error: null,
     });
   } catch (error) {
-    console.error('Shifts API error:', error);
+    console.error("Shifts API error:", error);
     return NextResponse.json(
       {
         success: false,
         data: null,
         message: null,
-        error: 'Internal server error',
+        error: "Internal server error",
       },
       { status: 500 }
     );
@@ -118,7 +121,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         success: false,
-        error: 'Authentication required',
+        error: "Authentication required",
         data: null,
         message: null,
       },
@@ -138,13 +141,13 @@ export async function POST(request: NextRequest) {
     } = body;
 
     // バリデーション
-    if (!date || !departmentId || !shiftTypeId) {
+    if (!(date && departmentId && shiftTypeId)) {
       return NextResponse.json(
         {
           success: false,
           data: null,
           message: null,
-          error: 'Required fields: date, departmentId, shiftTypeId',
+          error: "Required fields: date, departmentId, shiftTypeId",
         },
         { status: 400 }
       );
@@ -155,8 +158,8 @@ export async function POST(request: NextRequest) {
       where: {
         unique_shift_per_day: {
           date: new Date(date),
-          departmentId: parseInt(departmentId),
-          shiftTypeId: parseInt(shiftTypeId),
+          departmentId: Number.parseInt(departmentId),
+          shiftTypeId: Number.parseInt(shiftTypeId),
         },
       },
       include: {
@@ -175,11 +178,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           success: false,
-          error: 'DUPLICATE_SHIFT',
+          error: "DUPLICATE_SHIFT",
           data: {
             existing: {
               id: existingShift.id,
-              date: existingShift.date.toISOString().split('T')[0],
+              date: existingShift.date.toISOString().split("T")[0],
               departmentId: existingShift.departmentId,
               shiftTypeId: existingShift.shiftTypeId,
               description: existingShift.description,
@@ -200,9 +203,9 @@ export async function POST(request: NextRequest) {
               assignedCount: existingShift.shiftAssignments.length,
             },
             canForce: true,
-            options: ['merge', 'replace', 'cancel'],
+            options: ["merge", "replace", "cancel"],
           },
-          message: '同じ日付・部門・シフト種別のシフトが既に存在します',
+          message: "同じ日付・部門・シフト種別のシフトが既に存在します",
         },
         { status: 409 }
       );
@@ -229,8 +232,8 @@ export async function POST(request: NextRequest) {
         shift = await tx.shift.create({
           data: {
             date: new Date(date),
-            departmentId: parseInt(departmentId),
-            shiftTypeId: parseInt(shiftTypeId),
+            departmentId: Number.parseInt(departmentId),
+            shiftTypeId: Number.parseInt(shiftTypeId),
             description: description || null,
           },
           include: {
@@ -250,16 +253,17 @@ export async function POST(request: NextRequest) {
         }
 
         // 新しい割り当てを作成
-        const assignmentPromises = assignedInstructorIds.map((instructorId: number) =>
-          tx.shiftAssignment.create({
-            data: {
-              shiftId: shift.id,
-              instructorId,
-            },
-            include: {
-              instructor: true,
-            },
-          })
+        const assignmentPromises = assignedInstructorIds.map(
+          (instructorId: number) =>
+            tx.shiftAssignment.create({
+              data: {
+                shiftId: shift.id,
+                instructorId,
+              },
+              include: {
+                instructor: true,
+              },
+            })
         );
 
         const assignments = await Promise.all(assignmentPromises);
@@ -272,7 +276,7 @@ export async function POST(request: NextRequest) {
     // レスポンス用データを整形
     const shiftWithStats = {
       id: result.shift.id,
-      date: result.shift.date.toISOString().split('T')[0],
+      date: result.shift.date.toISOString().split("T")[0],
       departmentId: result.shift.departmentId,
       shiftTypeId: result.shift.shiftTypeId,
       description: result.shift.description,
@@ -299,22 +303,29 @@ export async function POST(request: NextRequest) {
       {
         success: true,
         data: shiftWithStats,
-        message: force ? 'シフトが正常に更新されました' : 'シフトが正常に作成されました',
+        message: force
+          ? "シフトが正常に更新されました"
+          : "シフトが正常に作成されました",
         error: null,
       },
       { status: force ? 200 : 201 }
     );
   } catch (error) {
-    console.error('Shift creation error:', error);
+    console.error("Shift creation error:", error);
 
     // Prisma unique constraint violation
-    if (error && typeof error === 'object' && 'code' in error && error.code === 'P2002') {
+    if (
+      error &&
+      typeof error === "object" &&
+      "code" in error &&
+      error.code === "P2002"
+    ) {
       return NextResponse.json(
         {
           success: false,
           data: null,
           message: null,
-          error: 'DUPLICATE_SHIFT',
+          error: "DUPLICATE_SHIFT",
         },
         { status: 409 }
       );
@@ -325,7 +336,7 @@ export async function POST(request: NextRequest) {
         success: false,
         data: null,
         message: null,
-        error: 'Internal server error',
+        error: "Internal server error",
       },
       { status: 500 }
     );

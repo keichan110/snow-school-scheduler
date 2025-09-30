@@ -1,13 +1,12 @@
-'use client';
+"use client";
 
-import { ReactNode, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { notFound } from 'next/navigation';
-import { useAuth, User } from '@/contexts/AuthContext';
-import { Card, CardContent } from '@/components/ui/card';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Button } from '@/components/ui/button';
-import { AlertTriangle, Home, Loader2, LogIn } from 'lucide-react';
+import { AlertTriangle, Home, Loader2, LogIn } from "lucide-react";
+import { notFound, useRouter } from "next/navigation";
+import { type ReactNode, useEffect } from "react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { type User, useAuth } from "@/contexts/AuthContext";
 
 /**
  * 認証ガードコンポーネントのProps
@@ -15,7 +14,7 @@ import { AlertTriangle, Home, Loader2, LogIn } from 'lucide-react';
 interface AuthGuardProps {
   children: ReactNode;
   /** 必要な権限レベル */
-  requiredRole?: 'ADMIN' | 'MANAGER' | 'MEMBER';
+  requiredRole?: "ADMIN" | "MANAGER" | "MEMBER";
   /** 認証失敗時のリダイレクト先 */
   fallbackUrl?: string;
   /** ローディング中の表示カスタマイズ */
@@ -55,7 +54,7 @@ interface AuthGuardProps {
 export function AuthGuard({
   children,
   requiredRole,
-  fallbackUrl = '/login',
+  fallbackUrl = "/login",
   loadingComponent,
   errorComponent,
   accessDeniedComponent,
@@ -83,7 +82,7 @@ export function AuthGuard({
    * 認証状態に基づくリダイレクト処理
    */
   useEffect(() => {
-    if (status === 'unauthenticated') {
+    if (status === "unauthenticated") {
       // 未認証の場合、現在のURLを保存してログインページにリダイレクト
       const currentPath = window.location.pathname + window.location.search;
       const encodedRedirect = encodeURIComponent(currentPath);
@@ -94,7 +93,7 @@ export function AuthGuard({
   /**
    * ローディング状態
    */
-  if (status === 'loading') {
+  if (status === "loading") {
     if (loadingComponent) {
       return <>{loadingComponent}</>;
     }
@@ -105,7 +104,7 @@ export function AuthGuard({
   /**
    * 認証エラー状態
    */
-  if (status === 'error') {
+  if (status === "error") {
     if (errorComponent) {
       return <>{errorComponent}</>;
     }
@@ -117,24 +116,32 @@ export function AuthGuard({
             <div className="flex flex-col items-center space-y-4 text-center">
               <AlertTriangle className="h-12 w-12 text-destructive" />
               <div className="space-y-2">
-                <h3 className="text-lg font-semibold">認証エラー</h3>
-                <p className="text-muted-foreground">認証処理中にエラーが発生しました</p>
+                <h3 className="font-semibold text-lg">認証エラー</h3>
+                <p className="text-muted-foreground">
+                  認証処理中にエラーが発生しました
+                </p>
               </div>
 
               <Alert variant="destructive">
-                <AlertDescription>{error || '不明なエラーが発生しました'}</AlertDescription>
+                <AlertDescription>
+                  {error || "不明なエラーが発生しました"}
+                </AlertDescription>
               </Alert>
 
               <div className="flex w-full flex-col space-y-2">
                 <Button
+                  className="w-full"
                   onClick={() => window.location.reload()}
                   variant="outline"
-                  className="w-full"
                 >
                   <LogIn className="mr-2 h-4 w-4" />
                   再試行
                 </Button>
-                <Button onClick={() => router.push('/')} variant="ghost" className="w-full">
+                <Button
+                  className="w-full"
+                  onClick={() => router.push("/")}
+                  variant="ghost"
+                >
                   <Home className="mr-2 h-4 w-4" />
                   ホームに戻る
                 </Button>
@@ -149,12 +156,14 @@ export function AuthGuard({
   /**
    * 未認証状態（リダイレクト処理中）
    */
-  if (status === 'unauthenticated' || !user) {
+  if (status === "unauthenticated" || !user) {
     return (
       <div className="flex min-h-[400px] items-center justify-center">
         <div className="flex flex-col items-center space-y-4">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          <p className="text-muted-foreground">ログインページにリダイレクトしています...</p>
+          <p className="text-muted-foreground">
+            ログインページにリダイレクトしています...
+          </p>
         </div>
       </div>
     );
@@ -181,7 +190,10 @@ export function AuthGuard({
 /**
  * 管理者専用ガードコンポーネント
  */
-export function AdminGuard({ children, ...props }: Omit<AuthGuardProps, 'requiredRole'>) {
+export function AdminGuard({
+  children,
+  ...props
+}: Omit<AuthGuardProps, "requiredRole">) {
   return (
     <AuthGuard requiredRole="ADMIN" {...props}>
       {children}
@@ -192,7 +204,10 @@ export function AdminGuard({ children, ...props }: Omit<AuthGuardProps, 'require
 /**
  * マネージャー以上専用ガードコンポーネント
  */
-export function ManagerGuard({ children, ...props }: Omit<AuthGuardProps, 'requiredRole'>) {
+export function ManagerGuard({
+  children,
+  ...props
+}: Omit<AuthGuardProps, "requiredRole">) {
   return (
     <AuthGuard requiredRole="MANAGER" {...props}>
       {children}
@@ -203,7 +218,10 @@ export function ManagerGuard({ children, ...props }: Omit<AuthGuardProps, 'requi
 /**
  * メンバー以上専用ガードコンポーネント（基本的な認証保護）
  */
-export function MemberGuard({ children, ...props }: Omit<AuthGuardProps, 'requiredRole'>) {
+export function MemberGuard({
+  children,
+  ...props
+}: Omit<AuthGuardProps, "requiredRole">) {
   return (
     <AuthGuard requiredRole="MEMBER" {...props}>
       {children}
@@ -216,15 +234,13 @@ export function MemberGuard({ children, ...props }: Omit<AuthGuardProps, 'requir
  */
 export function withAuth<P extends object>(
   Component: React.ComponentType<P>,
-  requiredRole?: 'ADMIN' | 'MANAGER' | 'MEMBER'
+  requiredRole?: "ADMIN" | "MANAGER" | "MEMBER"
 ) {
-  const AuthenticatedComponent = (props: P) => {
-    return (
-      <AuthGuard {...(requiredRole !== undefined && { requiredRole })}>
-        <Component {...props} />
-      </AuthGuard>
-    );
-  };
+  const AuthenticatedComponent = (props: P) => (
+    <AuthGuard {...(requiredRole !== undefined && { requiredRole })}>
+      <Component {...props} />
+    </AuthGuard>
+  );
 
   AuthenticatedComponent.displayName = `withAuth(${Component.displayName || Component.name})`;
 
@@ -245,7 +261,7 @@ interface ConditionalAuthProps {
   /** エラー時に表示 */
   error?: ReactNode;
   /** 権限レベルチェック */
-  requiredRole?: 'ADMIN' | 'MANAGER' | 'MEMBER';
+  requiredRole?: "ADMIN" | "MANAGER" | "MEMBER";
   /** 権限不足時に表示 */
   accessDenied?: ReactNode;
 }
@@ -273,15 +289,15 @@ export function ConditionalAuth({
 }: ConditionalAuthProps) {
   const { user, status } = useAuth();
 
-  if (status === 'loading') {
+  if (status === "loading") {
     return <>{loading || children}</>;
   }
 
-  if (status === 'error') {
+  if (status === "error") {
     return <>{errorComponent || children}</>;
   }
 
-  if (status === 'unauthenticated' || !user) {
+  if (status === "unauthenticated" || !user) {
     return <>{unauthenticated || children}</>;
   }
 

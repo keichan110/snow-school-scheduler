@@ -6,7 +6,7 @@ export interface UserWithDetails {
   id: string;
   lineUserId: string;
   displayName: string;
-  role: 'ADMIN' | 'MANAGER' | 'MEMBER';
+  role: "ADMIN" | "MANAGER" | "MEMBER";
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -15,13 +15,13 @@ export interface UserWithDetails {
 
 export interface UpdateUserRequest {
   displayName?: string;
-  role?: 'ADMIN' | 'MANAGER' | 'MEMBER';
+  role?: "ADMIN" | "MANAGER" | "MEMBER";
   isActive?: boolean;
 }
 
 export interface UserFormData {
   displayName: string;
-  role: 'ADMIN' | 'MANAGER' | 'MEMBER';
+  role: "ADMIN" | "MANAGER" | "MEMBER";
   isActive: boolean;
 }
 
@@ -39,9 +39,9 @@ export interface UserApiResponse<T> {
   error?: string;
 }
 
-export type UserRole = 'ADMIN' | 'MANAGER' | 'MEMBER';
+export type UserRole = "ADMIN" | "MANAGER" | "MEMBER";
 
 export interface UserFilters {
-  role: 'all' | UserRole;
-  status: 'all' | 'active' | 'inactive';
+  role: "all" | UserRole;
+  status: "all" | "active" | "inactive";
 }

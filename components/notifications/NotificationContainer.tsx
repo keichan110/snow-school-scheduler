@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { useNotificationContext } from './NotificationProvider';
-import { NotificationItem } from './NotificationItem';
+import React from "react";
+import { NotificationItem } from "./NotificationItem";
+import { useNotificationContext } from "./NotificationProvider";
 
 export function NotificationContainer() {
   const { state } = useNotificationContext();

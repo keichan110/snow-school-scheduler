@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { secureLog } from '@/lib/utils/logging';
-import { checkRateLimit } from '@/lib/api/rate-limiting';
-import { getClientIp, isAllowedReferrer } from '@/lib/utils/request';
+import { type NextRequest, NextResponse } from "next/server";
+import { checkRateLimit } from "@/lib/api/rate-limiting";
+import { secureLog } from "@/lib/utils/logging";
+import { getClientIp, isAllowedReferrer } from "@/lib/utils/request";
 
 /**
  * Next.js Middleware - APIルート保護とページ認証リダイレクト
@@ -12,24 +12,24 @@ import { getClientIp, isAllowedReferrer } from '@/lib/utils/request';
 
 // 認証不要なAPIパス（完全一致）
 const PUBLIC_API_PATHS = new Set([
-  '/api/health',
-  '/api/auth/line/login',
-  '/api/auth/line/callback',
-  '/api/auth/logout',
+  "/api/health",
+  "/api/auth/line/login",
+  "/api/auth/line/callback",
+  "/api/auth/logout",
 ]);
 
 // 認証不要なAPIパス（プレフィックス一致）
 const PUBLIC_API_PREFIXES = [
-  '/api/auth/invitations/', // 招待URL検証は認証不要
+  "/api/auth/invitations/", // 招待URL検証は認証不要
 ];
 
 // 認証不要なページパス（完全一致）
-const PUBLIC_PAGE_PATHS = new Set(['/login', '/terms', '/privacy', '/error']);
+const PUBLIC_PAGE_PATHS = new Set(["/login", "/terms", "/privacy", "/error"]);
 
 // 認証不要なページパス（プレフィックス一致）
 const PUBLIC_PAGE_PREFIXES = [
-  '/_next/', // Next.js内部ファイル
-  '/favicon.ico',
+  "/_next/", // Next.js内部ファイル
+  "/favicon.ico",
 ];
 
 /**
@@ -63,13 +63,13 @@ function isPublicPagePath(pathname: string): boolean {
  */
 function getJwtToken(request: NextRequest): string | null {
   // Authorization ヘッダーから取得
-  const authHeader = request.headers.get('authorization');
-  if (authHeader && authHeader.startsWith('Bearer ')) {
+  const authHeader = request.headers.get("authorization");
+  if (authHeader && authHeader.startsWith("Bearer ")) {
     return authHeader.substring(7);
   }
 
   // Cookieから取得
-  const cookieToken = request.cookies.get('auth-token')?.value;
+  const cookieToken = request.cookies.get("auth-token")?.value;
   if (cookieToken) {
     return cookieToken;
   }
@@ -80,12 +80,12 @@ function getJwtToken(request: NextRequest): string | null {
 /**
  * 認証エラーレスポンス生成
  */
-function createAuthErrorResponse(message: string = 'Authentication required') {
+function createAuthErrorResponse(message = "Authentication required") {
   return NextResponse.json(
     {
       success: false,
       error: message,
-      code: 'AUTHENTICATION_REQUIRED',
+      code: "AUTHENTICATION_REQUIRED",
     },
     { status: 401 }
   );
@@ -94,18 +94,22 @@ function createAuthErrorResponse(message: string = 'Authentication required') {
 /**
  * Rate Limitエラーレスポンス生成
  */
-function createRateLimitErrorResponse(resetTime: number, limit: number, ruleId: string) {
+function createRateLimitErrorResponse(
+  resetTime: number,
+  limit: number,
+  ruleId: string
+) {
   const headers = new Headers();
-  headers.set('X-RateLimit-Limit', limit.toString());
-  headers.set('X-RateLimit-Remaining', '0');
-  headers.set('X-RateLimit-Reset', Math.ceil(resetTime / 1000).toString());
-  headers.set('X-RateLimit-Bucket', ruleId);
+  headers.set("X-RateLimit-Limit", limit.toString());
+  headers.set("X-RateLimit-Remaining", "0");
+  headers.set("X-RateLimit-Reset", Math.ceil(resetTime / 1000).toString());
+  headers.set("X-RateLimit-Bucket", ruleId);
 
   return NextResponse.json(
     {
       success: false,
-      error: 'Too many requests',
-      code: 'RATE_LIMIT_EXCEEDED',
+      error: "Too many requests",
+      code: "RATE_LIMIT_EXCEEDED",
     },
     { status: 429, headers }
   );
@@ -115,8 +119,8 @@ function createReferrerErrorResponse() {
   return NextResponse.json(
     {
       success: false,
-      error: 'Forbidden',
-      code: 'INVALID_REFERRER',
+      error: "Forbidden",
+      code: "INVALID_REFERRER",
     },
     { status: 403 }
   );
@@ -126,13 +130,15 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // デバッグモードでのみログ出力
-  secureLog('info', 'Middleware: Checking access', { pathname });
+  secureLog("info", "Middleware: Checking access", { pathname });
 
   // APIルートの処理
-  if (pathname.startsWith('/api/')) {
+  if (pathname.startsWith("/api/")) {
     // プリフライト要求はレートリミット対象外（CORS通過専用）
-    if (request.method === 'OPTIONS') {
-      secureLog('info', 'Middleware: Skipping rate limit for OPTIONS request', { pathname });
+    if (request.method === "OPTIONS") {
+      secureLog("info", "Middleware: Skipping rate limit for OPTIONS request", {
+        pathname,
+      });
       return NextResponse.next();
     }
 
@@ -141,7 +147,7 @@ export async function middleware(request: NextRequest) {
     const rateLimitResult = checkRateLimit(ip, pathname);
 
     if (!rateLimitResult.allowed) {
-      secureLog('warn', 'Rate limit exceeded', {
+      secureLog("warn", "Rate limit exceeded", {
         ip,
         pathname,
         remaining: rateLimitResult.remaining,
@@ -156,26 +162,32 @@ export async function middleware(request: NextRequest) {
 
     // Rate Limitヘッダーを追加する関数
     const addRateLimitHeaders = (response: NextResponse) => {
-      response.headers.set('X-RateLimit-Limit', rateLimitResult.limit.toString());
-      response.headers.set('X-RateLimit-Remaining', rateLimitResult.remaining.toString());
       response.headers.set(
-        'X-RateLimit-Reset',
+        "X-RateLimit-Limit",
+        rateLimitResult.limit.toString()
+      );
+      response.headers.set(
+        "X-RateLimit-Remaining",
+        rateLimitResult.remaining.toString()
+      );
+      response.headers.set(
+        "X-RateLimit-Reset",
         Math.ceil(rateLimitResult.resetTime / 1000).toString()
       );
-      response.headers.set('X-RateLimit-Bucket', rateLimitResult.ruleId);
+      response.headers.set("X-RateLimit-Bucket", rateLimitResult.ruleId);
       return response;
     };
 
     // 認証不要なAPIパスはそのまま通す
     if (isPublicApiPath(pathname)) {
-      secureLog('info', 'Middleware: Public API access allowed');
+      secureLog("info", "Middleware: Public API access allowed");
       return addRateLimitHeaders(NextResponse.next());
     }
 
     if (!isAllowedReferrer(request)) {
-      secureLog('warn', 'Middleware: Blocked by referrer policy', {
+      secureLog("warn", "Middleware: Blocked by referrer policy", {
         pathname,
-        hasRefererHeader: Boolean(request.headers.get('referer')),
+        hasRefererHeader: Boolean(request.headers.get("referer")),
         nodeEnv: process.env.NODE_ENV,
       });
       return addRateLimitHeaders(createReferrerErrorResponse());
@@ -184,33 +196,37 @@ export async function middleware(request: NextRequest) {
     // JWTトークン存在チェック
     const token = getJwtToken(request);
     if (!token) {
-      secureLog('warn', 'Middleware: No JWT token found for API');
+      secureLog("warn", "Middleware: No JWT token found for API");
       return createAuthErrorResponse();
     }
 
     // トークンが存在する場合、APIルートに処理を委譲
-    secureLog('info', 'Middleware: Token found, delegating to API route', { hasToken: !!token });
+    secureLog("info", "Middleware: Token found, delegating to API route", {
+      hasToken: !!token,
+    });
     return addRateLimitHeaders(NextResponse.next());
   }
 
   // ページルートの処理
   // 認証不要なページパスはそのまま通す
   if (isPublicPagePath(pathname)) {
-    secureLog('info', 'Middleware: Public page access allowed');
+    secureLog("info", "Middleware: Public page access allowed");
     return NextResponse.next();
   }
 
   // ページアクセスの認証チェック
   const token = getJwtToken(request);
   if (!token) {
-    secureLog('warn', 'Middleware: No JWT token found, redirecting to login');
+    secureLog("warn", "Middleware: No JWT token found, redirecting to login");
     // 認証が必要なページにアクセスした場合、/loginにリダイレクト
-    const loginUrl = new URL('/login', request.url);
+    const loginUrl = new URL("/login", request.url);
     return NextResponse.redirect(loginUrl);
   }
 
   // トークンが存在する場合、ページに処理を委譲
-  secureLog('info', 'Middleware: Token found, allowing page access', { hasToken: !!token });
+  secureLog("info", "Middleware: Token found, allowing page access", {
+    hasToken: !!token,
+  });
   return NextResponse.next();
 }
 
@@ -224,6 +240,6 @@ export const config = {
      * - favicon.ico (ファビコン)
      * - 公開ファイル (.svg, .png, .jpg, .jpeg, .gif, .webp)
      */
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 };

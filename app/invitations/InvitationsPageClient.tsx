@@ -1,7 +1,5 @@
-'use client';
+"use client";
 
-import { useCallback, useMemo, useState } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   CalendarX,
   CheckCircle,
@@ -10,15 +8,15 @@ import {
   EyeSlash,
   Plus,
   UserCheck,
-} from '@phosphor-icons/react';
-import { format } from 'date-fns';
-import { ja } from 'date-fns/locale';
-
-import { invitationsQueryKeys, useInvitationsQuery } from '@/features/invitations';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
+} from "@phosphor-icons/react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { format } from "date-fns";
+import { ja } from "date-fns/locale";
+import { useCallback, useMemo, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import {
   Table,
   TableBody,
@@ -26,19 +24,28 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
-
-import InvitationModal from './InvitationModal';
-import InvitationWarningModal from './InvitationWarningModal';
-import { checkActiveInvitation, createInvitation, deactivateInvitation } from './api';
+} from "@/components/ui/table";
+import {
+  invitationsQueryKeys,
+  useInvitationsQuery,
+} from "@/features/invitations";
+import {
+  checkActiveInvitation,
+  createInvitation,
+  deactivateInvitation,
+} from "./api";
+import InvitationModal from "./InvitationModal";
+import InvitationWarningModal from "./InvitationWarningModal";
 import type {
   CreateInvitationRequest,
   InvitationFormData,
   InvitationStats,
   InvitationTokenWithStats,
-} from './types';
+} from "./types";
 
-function sortInvitations(invitations: InvitationTokenWithStats[]): InvitationTokenWithStats[] {
+function sortInvitations(
+  invitations: InvitationTokenWithStats[]
+): InvitationTokenWithStats[] {
   return [...invitations].sort(
     (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
   );
@@ -58,7 +65,10 @@ function filterInvitations(
       return false;
     }
 
-    if (invitation.expiresAt && new Date(invitation.expiresAt).getTime() < now) {
+    if (
+      invitation.expiresAt &&
+      new Date(invitation.expiresAt).getTime() < now
+    ) {
       return false;
     }
 
@@ -66,7 +76,9 @@ function filterInvitations(
   });
 }
 
-function calculateStats(invitations: InvitationTokenWithStats[]): InvitationStats {
+function calculateStats(
+  invitations: InvitationTokenWithStats[]
+): InvitationStats {
   const now = Date.now();
 
   let active = 0;
@@ -77,7 +89,9 @@ function calculateStats(invitations: InvitationTokenWithStats[]): InvitationStat
       return;
     }
 
-    const isExpired = invitation.expiresAt ? new Date(invitation.expiresAt).getTime() < now : false;
+    const isExpired = invitation.expiresAt
+      ? new Date(invitation.expiresAt).getTime() < now
+      : false;
 
     if (isExpired) {
       expired += 1;
@@ -97,18 +111,23 @@ function calculateStats(invitations: InvitationTokenWithStats[]): InvitationStat
   };
 }
 
-type InvitationStatus = 'active' | 'expired' | 'inactive';
+type InvitationStatus = "active" | "expired" | "inactive";
 
-function getInvitationStatus(invitation: InvitationTokenWithStats): InvitationStatus {
+function getInvitationStatus(
+  invitation: InvitationTokenWithStats
+): InvitationStatus {
   if (!invitation.isActive) {
-    return 'inactive';
+    return "inactive";
   }
 
-  if (invitation.expiresAt && new Date(invitation.expiresAt).getTime() < Date.now()) {
-    return 'expired';
+  if (
+    invitation.expiresAt &&
+    new Date(invitation.expiresAt).getTime() < Date.now()
+  ) {
+    return "expired";
   }
 
-  return 'active';
+  return "active";
 }
 
 const STATUS_ICON = {
@@ -119,31 +138,36 @@ const STATUS_ICON = {
 
 const STATUS_STYLES = {
   active: {
-    row: 'bg-green-50/30 hover:bg-green-50/50 dark:bg-green-900/5 dark:hover:bg-green-900/10',
-    icon: 'text-green-600 dark:text-green-400',
-    text: 'text-foreground',
+    row: "bg-green-50/30 hover:bg-green-50/50 dark:bg-green-900/5 dark:hover:bg-green-900/10",
+    icon: "text-green-600 dark:text-green-400",
+    text: "text-foreground",
   },
   expired: {
-    row: 'bg-red-50/30 hover:bg-red-50/50 dark:bg-red-900/5 dark:hover:bg-red-900/10',
-    icon: 'text-red-600 dark:text-red-400',
-    text: 'text-foreground',
+    row: "bg-red-50/30 hover:bg-red-50/50 dark:bg-red-900/5 dark:hover:bg-red-900/10",
+    icon: "text-red-600 dark:text-red-400",
+    text: "text-foreground",
   },
   inactive: {
-    row: 'bg-gray-50/30 hover:bg-gray-50/50 dark:bg-gray-900/5 dark:hover:bg-gray-900/10',
-    icon: 'text-gray-600 dark:text-gray-400',
-    text: 'text-foreground',
+    row: "bg-gray-50/30 hover:bg-gray-50/50 dark:bg-gray-900/5 dark:hover:bg-gray-900/10",
+    icon: "text-gray-600 dark:text-gray-400",
+    text: "text-foreground",
   },
-} satisfies Record<InvitationStatus, { row: string; icon: string; text: string }>;
+} satisfies Record<
+  InvitationStatus,
+  { row: string; icon: string; text: string }
+>;
 
 export default function InvitationsPageClient() {
   const [showActiveOnly, setShowActiveOnly] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingInvitation, setEditingInvitation] = useState<InvitationTokenWithStats | null>(null);
+  const [editingInvitation, setEditingInvitation] =
+    useState<InvitationTokenWithStats | null>(null);
   const [copiedToken, setCopiedToken] = useState<string | null>(null);
   const [warningModalOpen, setWarningModalOpen] = useState(false);
   const [existingActiveInvitation, setExistingActiveInvitation] =
     useState<InvitationTokenWithStats | null>(null);
-  const [pendingFormData, setPendingFormData] = useState<InvitationFormData | null>(null);
+  const [pendingFormData, setPendingFormData] =
+    useState<InvitationFormData | null>(null);
 
   const queryClient = useQueryClient();
 
@@ -158,20 +182,24 @@ export default function InvitationsPageClient() {
 
   const stats = useMemo(() => calculateStats(invitations), [invitations]);
 
-  const { mutateAsync: createInvitationMutateAsync, isPending: isCreatingInvitation } = useMutation(
-    {
-      mutationFn: (data: CreateInvitationRequest) => createInvitation(data),
-    }
-  );
+  const {
+    mutateAsync: createInvitationMutateAsync,
+    isPending: isCreatingInvitation,
+  } = useMutation({
+    mutationFn: (data: CreateInvitationRequest) => createInvitation(data),
+  });
 
   const { mutateAsync: deactivateInvitationMutateAsync } = useMutation({
     mutationFn: (token: string) => deactivateInvitation(token),
   });
 
-  const handleOpenModal = useCallback((invitation?: InvitationTokenWithStats) => {
-    setEditingInvitation(invitation ?? null);
-    setIsModalOpen(true);
-  }, []);
+  const handleOpenModal = useCallback(
+    (invitation?: InvitationTokenWithStats) => {
+      setEditingInvitation(invitation ?? null);
+      setIsModalOpen(true);
+    },
+    []
+  );
 
   const handleCloseModal = useCallback(() => {
     setIsModalOpen(false);
@@ -183,7 +211,9 @@ export default function InvitationsPageClient() {
   }, []);
 
   const updateInvitationCache = useCallback(
-    (updater: (items: InvitationTokenWithStats[]) => InvitationTokenWithStats[]) => {
+    (
+      updater: (items: InvitationTokenWithStats[]) => InvitationTokenWithStats[]
+    ) => {
       queryClient.setQueryData<InvitationTokenWithStats[]>(
         invitationsQueryKeys.list(),
         (previous) => {
@@ -199,7 +229,10 @@ export default function InvitationsPageClient() {
   );
 
   const executeInvitationCreation = useCallback(
-    async (formData: InvitationFormData, activeInvitation: InvitationTokenWithStats | null) => {
+    async (
+      formData: InvitationFormData,
+      activeInvitation: InvitationTokenWithStats | null
+    ) => {
       const requestData: CreateInvitationRequest = {
         description: formData.description,
         expiresAt: formData.expiresAt.toISOString(),
@@ -220,7 +253,9 @@ export default function InvitationsPageClient() {
         return sortInvitations(withoutDuplicate);
       });
 
-      await queryClient.invalidateQueries({ queryKey: invitationsQueryKeys.all });
+      await queryClient.invalidateQueries({
+        queryKey: invitationsQueryKeys.all,
+      });
     },
     [createInvitationMutateAsync, updateInvitationCache, queryClient]
   );
@@ -267,11 +302,15 @@ export default function InvitationsPageClient() {
 
       updateInvitationCache((items) =>
         items.map((invitation) =>
-          invitation.token === token ? { ...invitation, isActive: false } : invitation
+          invitation.token === token
+            ? { ...invitation, isActive: false }
+            : invitation
         )
       );
 
-      await queryClient.invalidateQueries({ queryKey: invitationsQueryKeys.all });
+      await queryClient.invalidateQueries({
+        queryKey: invitationsQueryKeys.all,
+      });
     },
     [deactivateInvitationMutateAsync, updateInvitationCache, queryClient]
   );
@@ -286,7 +325,7 @@ export default function InvitationsPageClient() {
       setCopiedToken(token);
       window.setTimeout(() => setCopiedToken(null), 2000);
     } catch (error) {
-      console.error('クリップボードへのコピーに失敗しました:', error);
+      console.error("クリップボードへのコピーに失敗しました:", error);
     }
   }, []);
 
@@ -303,8 +342,10 @@ export default function InvitationsPageClient() {
       <div className="mb-6 md:mb-8">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between">
           <div>
-            <h1 className="mb-2 text-2xl font-bold text-foreground md:text-3xl">招待管理</h1>
-            <p className="text-sm text-muted-foreground md:text-base">
+            <h1 className="mb-2 font-bold text-2xl text-foreground md:text-3xl">
+              招待管理
+            </h1>
+            <p className="text-muted-foreground text-sm md:text-base">
               新規メンバー招待用URLの作成・管理を行います
             </p>
           </div>
@@ -320,21 +361,27 @@ export default function InvitationsPageClient() {
                   className="h-4 w-4 text-green-600 dark:text-green-400"
                   weight="regular"
                 />
-                <div className="text-base font-bold text-green-600 dark:text-green-400">
+                <div className="font-bold text-base text-green-600 dark:text-green-400">
                   {stats.active}
                 </div>
               </div>
 
               <div className="flex items-center gap-2 px-4 py-1">
-                <CalendarX className="h-4 w-4 text-red-600 dark:text-red-400" weight="regular" />
-                <div className="text-base font-bold text-red-600 dark:text-red-400">
+                <CalendarX
+                  className="h-4 w-4 text-red-600 dark:text-red-400"
+                  weight="regular"
+                />
+                <div className="font-bold text-base text-red-600 dark:text-red-400">
                   {stats.expired}
                 </div>
               </div>
 
               <div className="flex items-center gap-2 px-4 py-1">
-                <EyeSlash className="h-4 w-4 text-amber-600 dark:text-amber-400" weight="regular" />
-                <div className="text-base font-bold text-amber-600 dark:text-amber-400">
+                <EyeSlash
+                  className="h-4 w-4 text-amber-600 dark:text-amber-400"
+                  weight="regular"
+                />
+                <div className="font-bold text-amber-600 text-base dark:text-amber-400">
                   {stats.used}
                 </div>
               </div>
@@ -346,8 +393,11 @@ export default function InvitationsPageClient() {
       <div className="overflow-x-auto rounded-lg border bg-white shadow-lg dark:bg-gray-900">
         <div className="space-y-4 border-b p-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold">招待一覧</h2>
-            <Button onClick={() => handleOpenModal()} className="flex items-center gap-2">
+            <h2 className="font-semibold text-lg">招待一覧</h2>
+            <Button
+              className="flex items-center gap-2"
+              onClick={() => handleOpenModal()}
+            >
               <Plus className="h-4 w-4" />
               新規作成
             </Button>
@@ -356,11 +406,14 @@ export default function InvitationsPageClient() {
           <div className="flex items-center justify-end">
             <div className="flex items-center space-x-2">
               <Switch
-                id="active-only"
                 checked={showActiveOnly}
+                id="active-only"
                 onCheckedChange={handleActiveFilterChange}
               />
-              <Label htmlFor="active-only" className="flex cursor-pointer items-center gap-1">
+              <Label
+                className="flex cursor-pointer items-center gap-1"
+                htmlFor="active-only"
+              >
                 {showActiveOnly ? (
                   <Eye className="h-4 w-4 text-green-600 dark:text-green-400" />
                 ) : (
@@ -375,7 +428,7 @@ export default function InvitationsPageClient() {
         <Table>
           <TableHeader>
             <TableRow className="bg-white dark:bg-gray-900">
-              <TableHead className="w-12"></TableHead>
+              <TableHead className="w-12" />
               <TableHead className="min-w-[200px]">説明</TableHead>
               <TableHead className="min-w-[80px]">使用回数</TableHead>
               <TableHead className="min-w-[120px]">有効期限</TableHead>
@@ -386,8 +439,13 @@ export default function InvitationsPageClient() {
           <TableBody>
             {filteredInvitations.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="py-8 text-center text-muted-foreground">
-                  {showActiveOnly ? '有効な招待がありません' : '招待が作成されていません'}
+                <TableCell
+                  className="py-8 text-center text-muted-foreground"
+                  colSpan={6}
+                >
+                  {showActiveOnly
+                    ? "有効な招待がありません"
+                    : "招待が作成されていません"}
                 </TableCell>
               </TableRow>
             ) : (
@@ -395,26 +453,29 @@ export default function InvitationsPageClient() {
                 const status = getInvitationStatus(invitation);
                 const StatusIcon = STATUS_ICON[status];
                 const statusStyles = STATUS_STYLES[status];
-                const isInactiveLabel = status !== 'active';
+                const isInactiveLabel = status !== "active";
 
                 return (
                   <TableRow
+                    className={`transition-colors ${statusStyles.row} ${isInactiveLabel ? "opacity-60" : ""}`}
                     key={invitation.token}
-                    className={`transition-colors ${statusStyles.row} ${isInactiveLabel ? 'opacity-60' : ''}`}
                   >
                     <TableCell>
-                      <StatusIcon className={`h-5 w-5 ${statusStyles.icon}`} weight="regular" />
+                      <StatusIcon
+                        className={`h-5 w-5 ${statusStyles.icon}`}
+                        weight="regular"
+                      />
                     </TableCell>
                     <TableCell
                       className="cursor-pointer"
                       onClick={() => handleOpenModal(invitation)}
                     >
                       <p
-                        className={`line-clamp-2 text-sm font-medium ${statusStyles.text} ${
-                          isInactiveLabel ? 'line-through' : ''
+                        className={`line-clamp-2 font-medium text-sm ${statusStyles.text} ${
+                          isInactiveLabel ? "line-through" : ""
                         }`}
                       >
-                        {invitation.description || '説明なし'}
+                        {invitation.description || "説明なし"}
                       </p>
                     </TableCell>
                     <TableCell
@@ -423,7 +484,7 @@ export default function InvitationsPageClient() {
                     >
                       <span
                         className={`font-mono text-sm ${statusStyles.text} ${
-                          isInactiveLabel ? 'line-through' : ''
+                          isInactiveLabel ? "line-through" : ""
                         }`}
                       >
                         {invitation.usageCount}
@@ -436,13 +497,17 @@ export default function InvitationsPageClient() {
                       {invitation.expiresAt ? (
                         <span
                           className={`text-sm ${statusStyles.text} ${
-                            isInactiveLabel ? 'line-through' : ''
+                            isInactiveLabel ? "line-through" : ""
                           }`}
                         >
-                          {format(new Date(invitation.expiresAt), 'MM/dd', { locale: ja })}
+                          {format(new Date(invitation.expiresAt), "MM/dd", {
+                            locale: ja,
+                          })}
                         </span>
                       ) : (
-                        <span className="text-sm text-muted-foreground">なし</span>
+                        <span className="text-muted-foreground text-sm">
+                          なし
+                        </span>
                       )}
                     </TableCell>
                     <TableCell
@@ -450,33 +515,38 @@ export default function InvitationsPageClient() {
                       onClick={() => handleOpenModal(invitation)}
                     >
                       <span
-                        className={`text-sm text-muted-foreground ${
-                          isInactiveLabel ? 'line-through' : ''
+                        className={`text-muted-foreground text-sm ${
+                          isInactiveLabel ? "line-through" : ""
                         }`}
                       >
-                        {format(new Date(invitation.createdAt), 'MM/dd HH:mm', { locale: ja })}
+                        {format(new Date(invitation.createdAt), "MM/dd HH:mm", {
+                          locale: ja,
+                        })}
                       </span>
                     </TableCell>
                     <TableCell className="text-center">
-                      {status === 'active' ? (
+                      {status === "active" ? (
                         <Button
-                          variant="outline"
-                          size="sm"
+                          className="h-8 w-8 p-0"
                           onClick={(event) => {
                             event.stopPropagation();
                             handleCopyInvitationUrl(invitation.token);
                           }}
-                          className="h-8 w-8 p-0"
+                          size="sm"
                           title="招待URLをコピー"
+                          variant="outline"
                         >
                           {copiedToken === invitation.token ? (
-                            <CheckCircle className="h-4 w-4 text-green-600" weight="fill" />
+                            <CheckCircle
+                              className="h-4 w-4 text-green-600"
+                              weight="fill"
+                            />
                           ) : (
                             <Copy className="h-4 w-4" weight="regular" />
                           )}
                         </Button>
                       ) : (
-                        <span className="text-xs text-muted-foreground">-</span>
+                        <span className="text-muted-foreground text-xs">-</span>
                       )}
                     </TableCell>
                   </TableRow>
@@ -488,20 +558,20 @@ export default function InvitationsPageClient() {
       </div>
 
       <InvitationModal
+        invitation={editingInvitation}
         isOpen={isModalOpen}
         onClose={handleCloseModal}
-        onSave={handleSave}
-        invitation={editingInvitation}
         onDeactivate={handleDeactivate}
+        onSave={handleSave}
       />
 
       {existingActiveInvitation && (
         <InvitationWarningModal
+          existingInvitation={existingActiveInvitation}
           isOpen={warningModalOpen}
+          isSubmitting={isCreatingInvitation}
           onClose={handleCloseWarningModal}
           onConfirm={handleConfirmReplacement}
-          existingInvitation={existingActiveInvitation}
-          isSubmitting={isCreatingInvitation}
         />
       )}
     </div>

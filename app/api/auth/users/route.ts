@@ -1,9 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { z } from 'zod';
-import { prisma } from '@/lib/db';
-import { authenticateFromRequest } from '@/lib/auth/middleware';
-import type { ApiResponse } from '@/lib/auth/types';
-import type { User } from '@prisma/client';
+import type { User } from "@prisma/client";
+import { type NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
+import { authenticateFromRequest } from "@/lib/auth/middleware";
+import type { ApiResponse } from "@/lib/auth/types";
+import { prisma } from "@/lib/db";
 
 /**
  * ユーザー管理API
@@ -15,7 +15,12 @@ import type { User } from '@prisma/client';
 
 // ユーザー一覧レスポンス型
 interface UserListResponse {
-  users: Array<Pick<User, 'id' | 'displayName' | 'role' | 'isActive' | 'createdAt' | 'updatedAt'>>;
+  users: Array<
+    Pick<
+      User,
+      "id" | "displayName" | "role" | "isActive" | "createdAt" | "updatedAt"
+    >
+  >;
   total: number;
   page: number;
   limit: number;
@@ -23,10 +28,10 @@ interface UserListResponse {
 
 // クエリパラメータのバリデーションスキーマ
 const getUsersQuerySchema = z.object({
-  page: z.string().optional().default('1'),
-  limit: z.string().optional().default('20'),
-  role: z.enum(['ADMIN', 'MANAGER', 'MEMBER']).optional(),
-  isActive: z.enum(['true', 'false']).optional(),
+  page: z.string().optional().default("1"),
+  limit: z.string().optional().default("20"),
+  role: z.enum(["ADMIN", "MANAGER", "MEMBER"]).optional(),
+  isActive: z.enum(["true", "false"]).optional(),
   search: z.string().optional(),
 });
 
@@ -48,22 +53,22 @@ export async function GET(
   try {
     // 認証チェック
     const authResult = await authenticateFromRequest(request);
-    if (!authResult.success || !authResult.user) {
+    if (!(authResult.success && authResult.user)) {
       return NextResponse.json(
         {
           success: false,
-          error: 'Authentication required',
+          error: "Authentication required",
         },
         { status: 401 }
       );
     }
 
     // 権限チェック（管理者・マネージャーのみアクセス可能）
-    if (!['ADMIN', 'MANAGER'].includes(authResult.user.role)) {
+    if (!["ADMIN", "MANAGER"].includes(authResult.user.role)) {
       return NextResponse.json(
         {
           success: false,
-          error: 'Insufficient permissions',
+          error: "Insufficient permissions",
         },
         { status: 403 }
       );
@@ -71,13 +76,15 @@ export async function GET(
 
     // クエリパラメータ解析
     const { searchParams } = new URL(request.url);
-    const queryResult = getUsersQuerySchema.safeParse(Object.fromEntries(searchParams));
+    const queryResult = getUsersQuerySchema.safeParse(
+      Object.fromEntries(searchParams)
+    );
 
     if (!queryResult.success) {
       return NextResponse.json(
         {
           success: false,
-          error: 'Invalid query parameters',
+          error: "Invalid query parameters",
         },
         { status: 400 }
       );
@@ -86,29 +93,29 @@ export async function GET(
     const { page, limit: limitStr, role, isActive, search } = queryResult.data;
 
     // ページネーション設定
-    const pageNum = Math.max(1, parseInt(page, 10));
-    const limitNum = Math.min(100, Math.max(1, parseInt(limitStr, 10)));
+    const pageNum = Math.max(1, Number.parseInt(page, 10));
+    const limitNum = Math.min(100, Math.max(1, Number.parseInt(limitStr, 10)));
     const skip = (pageNum - 1) * limitNum;
 
     // フィルター条件構築
     const where: {
-      role?: 'ADMIN' | 'MANAGER' | 'MEMBER';
+      role?: "ADMIN" | "MANAGER" | "MEMBER";
       isActive?: boolean;
-      displayName?: { contains: string; mode: 'insensitive' };
+      displayName?: { contains: string; mode: "insensitive" };
     } = {};
 
     if (role) {
-      where.role = role as 'ADMIN' | 'MANAGER' | 'MEMBER';
+      where.role = role as "ADMIN" | "MANAGER" | "MEMBER";
     }
 
     if (isActive !== undefined) {
-      where.isActive = isActive === 'true';
+      where.isActive = isActive === "true";
     }
 
     if (search && search.trim()) {
       where.displayName = {
         contains: search.trim(),
-        mode: 'insensitive',
+        mode: "insensitive",
       };
     }
 
@@ -125,8 +132,8 @@ export async function GET(
           updatedAt: true,
         },
         orderBy: [
-          { role: 'asc' }, // 権限順
-          { displayName: 'asc' }, // 表示名順
+          { role: "asc" }, // 権限順
+          { displayName: "asc" }, // 表示名順
         ],
         skip,
         take: limitNum,
@@ -146,11 +153,11 @@ export async function GET(
       data: response,
     });
   } catch (error) {
-    console.error('Users API error:', error);
+    console.error("Users API error:", error);
     return NextResponse.json(
       {
         success: false,
-        error: 'Internal server error',
+        error: "Internal server error",
       },
       { status: 500 }
     );

@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/db';
-import { authenticateFromRequest } from '@/lib/auth/middleware';
+import { type NextRequest, NextResponse } from "next/server";
+import { authenticateFromRequest } from "@/lib/auth/middleware";
+import { prisma } from "@/lib/db";
 
 interface Params {
   params: Promise<{ id: string }>;
@@ -9,7 +9,7 @@ interface Params {
 export async function GET(request: NextRequest, context: Params) {
   try {
     const { id } = await context.params;
-    const shiftTypeId = parseInt(id);
+    const shiftTypeId = Number.parseInt(id);
 
     if (isNaN(shiftTypeId)) {
       return NextResponse.json(
@@ -17,7 +17,7 @@ export async function GET(request: NextRequest, context: Params) {
           success: false,
           data: null,
           message: null,
-          error: 'Resource not found',
+          error: "Resource not found",
         },
         { status: 404 }
       );
@@ -35,7 +35,7 @@ export async function GET(request: NextRequest, context: Params) {
           success: false,
           data: null,
           message: null,
-          error: 'Resource not found',
+          error: "Resource not found",
         },
         { status: 404 }
       );
@@ -43,13 +43,13 @@ export async function GET(request: NextRequest, context: Params) {
 
     return NextResponse.json(shiftType);
   } catch (error) {
-    console.error('ShiftTypes GET API error:', error);
+    console.error("ShiftTypes GET API error:", error);
     return NextResponse.json(
       {
         success: false,
         data: null,
         message: null,
-        error: 'Internal server error',
+        error: "Internal server error",
       },
       { status: 500 }
     );
@@ -62,7 +62,7 @@ export async function PUT(request: NextRequest, context: Params) {
     return NextResponse.json(
       {
         success: false,
-        error: 'Authentication required',
+        error: "Authentication required",
         data: null,
         message: null,
       },
@@ -71,7 +71,7 @@ export async function PUT(request: NextRequest, context: Params) {
   }
   try {
     const { id } = await context.params;
-    const shiftTypeId = parseInt(id);
+    const shiftTypeId = Number.parseInt(id);
 
     if (isNaN(shiftTypeId)) {
       return NextResponse.json(
@@ -79,7 +79,7 @@ export async function PUT(request: NextRequest, context: Params) {
           success: false,
           data: null,
           message: null,
-          error: 'Resource not found',
+          error: "Resource not found",
         },
         { status: 404 }
       );
@@ -94,7 +94,7 @@ export async function PUT(request: NextRequest, context: Params) {
           success: false,
           data: null,
           message: null,
-          error: 'Validation failed',
+          error: "Validation failed",
         },
         { status: 400 }
       );
@@ -113,7 +113,7 @@ export async function PUT(request: NextRequest, context: Params) {
           success: false,
           data: null,
           message: null,
-          error: 'Resource not found',
+          error: "Resource not found",
         },
         { status: 404 }
       );
@@ -131,13 +131,13 @@ export async function PUT(request: NextRequest, context: Params) {
 
     return NextResponse.json(shiftType);
   } catch (error) {
-    console.error('ShiftTypes PUT API error:', error);
+    console.error("ShiftTypes PUT API error:", error);
     return NextResponse.json(
       {
         success: false,
         data: null,
         message: null,
-        error: 'Internal server error',
+        error: "Internal server error",
       },
       { status: 500 }
     );

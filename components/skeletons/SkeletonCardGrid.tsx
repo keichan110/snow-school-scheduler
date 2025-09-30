@@ -1,6 +1,6 @@
-import { HTMLAttributes } from 'react';
+import type { HTMLAttributes } from "react";
 
-import { cn } from '@/lib/utils';
+import { cn } from "@/lib/utils";
 
 export interface SkeletonCardGridProps extends HTMLAttributes<HTMLDivElement> {
   items?: number;
@@ -9,19 +9,26 @@ export interface SkeletonCardGridProps extends HTMLAttributes<HTMLDivElement> {
 /**
  * SkeletonCardGrid displays a responsive collection of card placeholders for dashboards or overview panels.
  */
-export function SkeletonCardGrid({ items = 4, className, ...rest }: SkeletonCardGridProps) {
+export function SkeletonCardGrid({
+  items = 4,
+  className,
+  ...rest
+}: SkeletonCardGridProps) {
   const count = Math.max(1, items);
 
   return (
     <div
       aria-hidden="true"
-      className={cn('grid animate-pulse gap-4 sm:grid-cols-2 xl:grid-cols-4', className)}
+      className={cn(
+        "grid animate-pulse gap-4 sm:grid-cols-2 xl:grid-cols-4",
+        className
+      )}
       {...rest}
     >
       {Array.from({ length: count }).map((_, index) => (
         <div
-          key={`skeleton-card-${index}`}
           className="flex flex-col justify-between rounded-xl border border-border/40 bg-card/60 p-5 shadow-sm"
+          key={`skeleton-card-${index}`}
         >
           <div className="space-y-3">
             <div className="h-5 w-24 rounded-md bg-muted" />

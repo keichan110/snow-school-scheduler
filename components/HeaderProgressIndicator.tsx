@@ -1,15 +1,15 @@
-'use client';
+"use client";
 
-import { useEffect, useRef, useState } from 'react';
-import { useIsFetching } from '@tanstack/react-query';
-import { cn } from '@/lib/utils';
+import { useIsFetching } from "@tanstack/react-query";
+import { useEffect, useRef, useState } from "react";
+import { cn } from "@/lib/utils";
 
 const MIN_VISIBLE_MS = 200;
 const COMPLETE_DELAY_MS = 150;
 const PROGRESS_TICK_MS = 160;
 
 function getTime() {
-  if (typeof performance !== 'undefined') {
+  if (typeof performance !== "undefined") {
     return performance.now();
   }
 
@@ -27,8 +27,8 @@ export function HeaderProgressIndicator() {
 
   const shouldRender = visible || isFetching > 0;
 
-  useEffect(() => {
-    return () => {
+  useEffect(
+    () => () => {
       if (intervalRef.current) {
         window.clearInterval(intervalRef.current);
         intervalRef.current = null;
@@ -38,8 +38,9 @@ export function HeaderProgressIndicator() {
         window.clearTimeout(hideTimeoutRef.current);
         hideTimeoutRef.current = null;
       }
-    };
-  }, []);
+    },
+    []
+  );
 
   useEffect(() => {
     if (isFetching > 0) {
@@ -76,7 +77,9 @@ export function HeaderProgressIndicator() {
 
     setProgress(100);
 
-    const elapsed = startTimeRef.current ? getTime() - startTimeRef.current : MIN_VISIBLE_MS;
+    const elapsed = startTimeRef.current
+      ? getTime() - startTimeRef.current
+      : MIN_VISIBLE_MS;
     const delay = Math.max(MIN_VISIBLE_MS - elapsed, 0) + COMPLETE_DELAY_MS;
 
     hideTimeoutRef.current = window.setTimeout(() => {
@@ -93,11 +96,11 @@ export function HeaderProgressIndicator() {
 
   return (
     <div
-      className={cn(
-        'pointer-events-none absolute inset-0 z-0 overflow-hidden transition-opacity duration-200 ease-out',
-        visible ? 'opacity-100' : 'opacity-0'
-      )}
       aria-hidden
+      className={cn(
+        "pointer-events-none absolute inset-0 z-0 overflow-hidden transition-opacity duration-200 ease-out",
+        visible ? "opacity-100" : "opacity-0"
+      )}
     >
       <div className="absolute inset-0 bg-primary/[0.03]" />
       <div

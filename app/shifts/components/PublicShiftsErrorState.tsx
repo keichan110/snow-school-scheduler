@@ -1,5 +1,5 @@
-import Header from '@/components/Header';
-import { Button } from '@/components/ui/button';
+import Header from "@/components/Header";
+import { Button } from "@/components/ui/button";
 
 interface PublicShiftsErrorStateProps {
   error: unknown;
@@ -11,10 +11,13 @@ function getErrorMessage(error: unknown): string {
     return error.message;
   }
 
-  return 'データの読み込みに失敗しました';
+  return "データの読み込みに失敗しました";
 }
 
-export function PublicShiftsErrorState({ error, onRetry }: PublicShiftsErrorStateProps) {
+export function PublicShiftsErrorState({
+  error,
+  onRetry,
+}: PublicShiftsErrorStateProps) {
   const message = getErrorMessage(error);
 
   return (
@@ -23,11 +26,11 @@ export function PublicShiftsErrorState({ error, onRetry }: PublicShiftsErrorStat
 
       <div className="flex items-center justify-center px-4 py-12">
         <div className="max-w-md text-center">
-          <div className="mb-2 text-lg font-medium text-red-600 dark:text-red-400">
+          <div className="mb-2 font-medium text-lg text-red-600 dark:text-red-400">
             エラーが発生しました
           </div>
-          <div className="text-sm text-muted-foreground">{message}</div>
-          <Button onClick={onRetry} className="mt-6" type="button">
+          <div className="text-muted-foreground text-sm">{message}</div>
+          <Button className="mt-6" onClick={onRetry} type="button">
             再試行
           </Button>
         </div>

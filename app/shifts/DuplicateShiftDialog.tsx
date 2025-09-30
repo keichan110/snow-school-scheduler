@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { AlertTriangle, Calendar, Users, FileText } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { AlertTriangle, Calendar, FileText, Users } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -9,7 +9,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
+} from "@/components/ui/dialog";
 
 // 既存シフトの型定義
 export interface ExistingShiftData {
@@ -48,7 +48,7 @@ export interface NewShiftData {
 }
 
 // ダイアログのアクション型
-export type DuplicateShiftAction = 'merge' | 'replace' | 'cancel';
+export type DuplicateShiftAction = "merge" | "replace" | "cancel";
 
 interface DuplicateShiftDialogProps {
   isOpen: boolean;
@@ -69,11 +69,11 @@ export function DuplicateShiftDialog({
 }: DuplicateShiftDialogProps) {
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('ja-JP', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      weekday: 'long',
+    return date.toLocaleDateString("ja-JP", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      weekday: "long",
     });
   };
 
@@ -83,7 +83,7 @@ export function DuplicateShiftDialog({
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog onOpenChange={onClose} open={isOpen}>
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-amber-600">
@@ -91,8 +91,9 @@ export function DuplicateShiftDialog({
             重複するシフトが見つかりました
           </DialogTitle>
           <DialogDescription>
-            {formatDate(existingShift.date)} の {existingShift.department.name} -{' '}
-            {existingShift.shiftType.name} は既に存在します。 どのように処理しますか？
+            {formatDate(existingShift.date)} の {existingShift.department.name}{" "}
+            - {existingShift.shiftType.name} は既に存在します。
+            どのように処理しますか？
           </DialogDescription>
         </DialogHeader>
 
@@ -106,24 +107,29 @@ export function DuplicateShiftDialog({
             <div className="space-y-2 text-sm">
               <div className="flex items-center gap-2">
                 <FileText className="h-3 w-3 text-blue-600" />
-                <span className="text-blue-700">説明: {existingShift.description || 'なし'}</span>
+                <span className="text-blue-700">
+                  説明: {existingShift.description || "なし"}
+                </span>
               </div>
               <div className="flex items-center gap-2">
                 <Users className="h-3 w-3 text-blue-600" />
-                <span className="text-blue-700">割り当て: {existingShift.assignedCount}人</span>
+                <span className="text-blue-700">
+                  割り当て: {existingShift.assignedCount}人
+                </span>
               </div>
               {existingShift.assignments.length > 0 && (
                 <div className="mt-2">
-                  <div className="mb-1 text-xs font-medium text-blue-600">
+                  <div className="mb-1 font-medium text-blue-600 text-xs">
                     割り当て済みインストラクター:
                   </div>
                   <div className="flex flex-wrap gap-1">
                     {existingShift.assignments.map((assignment) => (
                       <span
+                        className="rounded bg-blue-100 px-2 py-1 text-blue-800 text-xs"
                         key={assignment.id}
-                        className="rounded bg-blue-100 px-2 py-1 text-xs text-blue-800"
                       >
-                        {assignment.instructor.lastName} {assignment.instructor.firstName}
+                        {assignment.instructor.lastName}{" "}
+                        {assignment.instructor.firstName}
                       </span>
                     ))}
                   </div>
@@ -141,7 +147,9 @@ export function DuplicateShiftDialog({
             <div className="space-y-2 text-sm">
               <div className="flex items-center gap-2">
                 <FileText className="h-3 w-3 text-green-600" />
-                <span className="text-green-700">説明: {newShiftData.description || 'なし'}</span>
+                <span className="text-green-700">
+                  説明: {newShiftData.description || "なし"}
+                </span>
               </div>
               <div className="flex items-center gap-2">
                 <Users className="h-3 w-3 text-green-600" />
@@ -187,28 +195,28 @@ export function DuplicateShiftDialog({
 
         <DialogFooter className="gap-2 sm:gap-2">
           <Button
-            variant="outline"
-            onClick={() => handleAction('cancel')}
-            disabled={isProcessing}
             className="flex-1 sm:flex-none"
+            disabled={isProcessing}
+            onClick={() => handleAction("cancel")}
+            variant="outline"
           >
             キャンセル
           </Button>
           <Button
-            variant="secondary"
-            onClick={() => handleAction('merge')}
-            disabled={isProcessing}
             className="flex-1 sm:flex-none"
+            disabled={isProcessing}
+            onClick={() => handleAction("merge")}
+            variant="secondary"
           >
-            {isProcessing ? '処理中...' : 'マージ'}
+            {isProcessing ? "処理中..." : "マージ"}
           </Button>
           <Button
-            variant="destructive"
-            onClick={() => handleAction('replace')}
-            disabled={isProcessing}
             className="flex-1 sm:flex-none"
+            disabled={isProcessing}
+            onClick={() => handleAction("replace")}
+            variant="destructive"
           >
-            {isProcessing ? '処理中...' : '置換'}
+            {isProcessing ? "処理中..." : "置換"}
           </Button>
         </DialogFooter>
       </DialogContent>

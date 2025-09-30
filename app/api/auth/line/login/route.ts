@@ -1,8 +1,12 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { generateState, generateLineAuthUrl, validateLineAuthConfig } from '@/lib/auth/line';
-import { secureLog, secureAuthLog } from '@/lib/utils/logging';
-import { setSessionCookie } from '@/lib/utils/cookies';
-import { getClientIp, getRequestUserAgent } from '@/lib/utils/request';
+import { type NextRequest, NextResponse } from "next/server";
+import {
+  generateLineAuthUrl,
+  generateState,
+  validateLineAuthConfig,
+} from "@/lib/auth/line";
+import { setSessionCookie } from "@/lib/utils/cookies";
+import { secureAuthLog, secureLog } from "@/lib/utils/logging";
+import { getClientIp, getRequestUserAgent } from "@/lib/utils/request";
 
 /**
  * LINE認証開始API
@@ -34,7 +38,7 @@ export async function POST(request: NextRequest) {
     // LINE認証設定の妥当性チェック
     const configCheck = validateLineAuthConfig();
     if (!configCheck.isValid) {
-      secureLog('error', 'LINE authentication configuration is invalid', {
+      secureLog("error", "LINE authentication configuration is invalid", {
         errors: configCheck.errors,
         ip: clientIp,
         userAgent,
@@ -42,7 +46,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           success: false,
-          error: 'Authentication service is not properly configured',
+          error: "Authentication service is not properly configured",
           details: configCheck.errors,
         },
         { status: 500 }
@@ -60,7 +64,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           success: false,
-          error: 'Invalid request body format',
+          error: "Invalid request body format",
         },
         { status: 400 }
       );
@@ -80,7 +84,7 @@ export async function POST(request: NextRequest) {
     const authUrl = generateLineAuthUrl(
       state,
       requestData.inviteToken,
-      requestData.disableAutoLogin || false
+      requestData.disableAutoLogin
     );
 
     // レスポンスを作成してセッション情報をCookieに設定
@@ -89,7 +93,7 @@ export async function POST(request: NextRequest) {
     // セッション情報をCookieに保存（一時的、認証完了まで）
     setSessionCookie(response, JSON.stringify(sessionData));
 
-    secureAuthLog('LINE authentication flow initiated', {
+    secureAuthLog("LINE authentication flow initiated", {
       hasInviteToken: !!requestData.inviteToken,
       hasAuthUrl: !!authUrl,
       disableAutoLogin: Boolean(requestData.disableAutoLogin),
@@ -99,16 +103,16 @@ export async function POST(request: NextRequest) {
 
     return response;
   } catch (error) {
-    secureLog('error', 'LINE authentication initiation error', {
-      message: error instanceof Error ? error.message : 'Unknown error',
+    secureLog("error", "LINE authentication initiation error", {
+      message: error instanceof Error ? error.message : "Unknown error",
       ip: clientIp,
       userAgent,
     });
     return NextResponse.json(
       {
         success: false,
-        error: 'Failed to initiate authentication',
-        message: error instanceof Error ? error.message : 'Unknown error',
+        error: "Failed to initiate authentication",
+        message: error instanceof Error ? error.message : "Unknown error",
       },
       { status: 500 }
     );
@@ -127,7 +131,7 @@ export async function GET(request: NextRequest) {
     // LINE認証設定の妥当性チェック
     const configCheck = validateLineAuthConfig();
     if (!configCheck.isValid) {
-      secureLog('error', 'LINE authentication configuration is invalid', {
+      secureLog("error", "LINE authentication configuration is invalid", {
         errors: configCheck.errors,
         ip: clientIp,
         userAgent,
@@ -135,7 +139,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(
         {
           success: false,
-          error: 'Authentication service is not properly configured',
+          error: "Authentication service is not properly configured",
           details: configCheck.errors,
         },
         { status: 500 }
@@ -144,9 +148,9 @@ export async function GET(request: NextRequest) {
 
     // URLパラメータから招待トークン、リダイレクト先、自動ログイン設定を取得
     const { searchParams } = new URL(request.url);
-    const inviteToken = searchParams.get('invite') || undefined;
-    const redirectUrl = searchParams.get('redirect') || '/'; // 認証後の戻り先
-    const disableAutoLogin = searchParams.get('disable_auto_login') === 'true'; // 自動ログイン無効化フラグ
+    const inviteToken = searchParams.get("invite") || undefined;
+    const redirectUrl = searchParams.get("redirect") || "/"; // 認証後の戻り先
+    const disableAutoLogin = searchParams.get("disable_auto_login") === "true"; // 自動ログイン無効化フラグ
 
     // CSRF防止用のstateを生成
     const state = generateState(32);
@@ -168,7 +172,7 @@ export async function GET(request: NextRequest) {
     // セッション情報をCookieに保存（一時的、認証完了まで）
     setSessionCookie(response, JSON.stringify(sessionData));
 
-    secureAuthLog('LINE authentication flow initiated via GET', {
+    secureAuthLog("LINE authentication flow initiated via GET", {
       hasInviteToken: !!inviteToken,
       hasAuthUrl: !!authUrl,
       redirectUrl,
@@ -179,16 +183,16 @@ export async function GET(request: NextRequest) {
 
     return response;
   } catch (error) {
-    secureLog('error', 'LINE authentication initiation error (GET)', {
-      message: error instanceof Error ? error.message : 'Unknown error',
+    secureLog("error", "LINE authentication initiation error (GET)", {
+      message: error instanceof Error ? error.message : "Unknown error",
       ip: clientIp,
       userAgent,
     });
     return NextResponse.json(
       {
         success: false,
-        error: 'Failed to initiate authentication',
-        message: error instanceof Error ? error.message : 'Unknown error',
+        error: "Failed to initiate authentication",
+        message: error instanceof Error ? error.message : "Unknown error",
       },
       { status: 500 }
     );
@@ -203,9 +207,9 @@ export async function OPTIONS() {
   return new NextResponse(null, {
     status: 200,
     headers: {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type',
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type",
     },
   });
 }

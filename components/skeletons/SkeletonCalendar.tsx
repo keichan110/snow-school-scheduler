@@ -1,6 +1,6 @@
-import { HTMLAttributes } from 'react';
+import type { HTMLAttributes } from "react";
 
-import { cn } from '@/lib/utils';
+import { cn } from "@/lib/utils";
 
 export interface SkeletonCalendarProps extends HTMLAttributes<HTMLDivElement> {
   weeks?: number;
@@ -27,7 +27,7 @@ export function SkeletonCalendar({
     <div
       aria-hidden="true"
       className={cn(
-        'animate-pulse space-y-4 rounded-xl border border-border/40 bg-card/60 p-4 shadow-sm sm:p-6',
+        "animate-pulse space-y-4 rounded-xl border border-border/40 bg-card/60 p-4 shadow-sm sm:p-6",
         className
       )}
       style={style}
@@ -35,11 +35,16 @@ export function SkeletonCalendar({
     >
       {showWeekdayHeader ? (
         <div
-          className="grid gap-2 text-xs font-medium uppercase tracking-wide text-muted-foreground/70"
-          style={{ gridTemplateColumns: `repeat(${totalDays}, minmax(0, 1fr))` }}
+          className="grid gap-2 font-medium text-muted-foreground/70 text-xs uppercase tracking-wide"
+          style={{
+            gridTemplateColumns: `repeat(${totalDays}, minmax(0, 1fr))`,
+          }}
         >
           {Array.from({ length: totalDays }).map((_, index) => (
-            <div key={`skeleton-calendar-header-${index}`} className="h-3 rounded-md bg-muted/50" />
+            <div
+              className="h-3 rounded-md bg-muted/50"
+              key={`skeleton-calendar-header-${index}`}
+            />
           ))}
         </div>
       ) : null}
@@ -49,8 +54,8 @@ export function SkeletonCalendar({
       >
         {Array.from({ length: cellCount }).map((_, index) => (
           <div
-            key={`skeleton-calendar-cell-${index}`}
             className="rounded-lg border border-border/40 bg-muted/40 p-3 shadow-sm"
+            key={`skeleton-calendar-cell-${index}`}
           >
             <div className="h-4 w-8 rounded-md bg-muted" />
             <div className="mt-4 space-y-2">

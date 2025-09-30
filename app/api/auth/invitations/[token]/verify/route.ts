@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { validateInvitationToken } from '@/lib/auth/invitations';
-import { ApiResponse, InvitationValidationData } from '@/lib/auth/types';
-import { secureAuthLog, secureLog } from '@/lib/utils/logging';
-import { getClientIp, getRequestUserAgent } from '@/lib/utils/request';
+import { type NextRequest, NextResponse } from "next/server";
+import { validateInvitationToken } from "@/lib/auth/invitations";
+import type { ApiResponse, InvitationValidationData } from "@/lib/auth/types";
+import { secureAuthLog, secureLog } from "@/lib/utils/logging";
+import { getClientIp, getRequestUserAgent } from "@/lib/utils/request";
 
 /**
  * 招待URL検証API
@@ -26,19 +26,19 @@ export async function GET(
   const userAgent = getRequestUserAgent(request);
   const maskTokenValue = (value: string): string => {
     if (value.length <= 8) {
-      return '****';
+      return "****";
     }
     return `${value.substring(0, 4)}...${value.substring(value.length - 4)}`;
   };
-  let maskedToken = '(unavailable)';
+  let maskedToken = "(unavailable)";
 
   try {
     const { token } = await context.params;
 
     // トークンパラメータの基本チェック
-    if (!token || typeof token !== 'string' || token.trim().length === 0) {
+    if (!token || typeof token !== "string" || token.trim().length === 0) {
       return NextResponse.json(
-        { success: false, error: 'Token parameter is required' },
+        { success: false, error: "Token parameter is required" },
         { status: 400 }
       );
     }
@@ -47,7 +47,7 @@ export async function GET(
     const decodedToken = decodeURIComponent(token.trim());
     maskedToken = maskTokenValue(decodedToken);
 
-    secureAuthLog('Invitation token verification attempt', {
+    secureAuthLog("Invitation token verification attempt", {
       maskedToken,
       ip: clientIp,
       userAgent,
@@ -62,62 +62,67 @@ export async function GET(
         isValid: true,
       };
 
-      secureAuthLog('Invitation token verification succeeded', {
+      secureAuthLog("Invitation token verification succeeded", {
         maskedToken,
         ip: clientIp,
         userAgent,
         hasMetadata: Boolean(validationResult.token),
       });
 
-      return NextResponse.json({ success: true, data: responseData }, { status: 200 });
-    } else {
-      // 無効なトークンの場合
-      let statusCode = 400; // デフォルトは400
-
-      // エラーコードに応じてステータスコードを調整
-      switch (validationResult.errorCode) {
-        case 'NOT_FOUND':
-          statusCode = 404;
-          break;
-        case 'EXPIRED':
-        case 'INACTIVE':
-        case 'MAX_USES_EXCEEDED':
-          statusCode = 410; // Gone - リソースは存在していたが現在は利用不可
-          break;
-        default:
-          statusCode = 400;
-      }
-
-      secureLog('warn', 'Invitation token verification rejected', {
-        maskedToken,
-        error: validationResult.error,
-        errorCode: validationResult.errorCode,
-        statusCode,
-        ip: clientIp,
-        userAgent,
-      });
-
-      const errorMessage = validationResult.error || 'Invalid invitation token';
-      const errorResponse: ApiResponse<InvitationValidationData> = {
-        success: false,
-        error: errorMessage,
-      };
-
-      return NextResponse.json(errorResponse, { status: statusCode });
+      return NextResponse.json(
+        { success: true, data: responseData },
+        { status: 200 }
+      );
     }
+    // 無効なトークンの場合
+    let statusCode = 400; // デフォルトは400
+
+    // エラーコードに応じてステータスコードを調整
+    switch (validationResult.errorCode) {
+      case "NOT_FOUND":
+        statusCode = 404;
+        break;
+      case "EXPIRED":
+      case "INACTIVE":
+      case "MAX_USES_EXCEEDED":
+        statusCode = 410; // Gone - リソースは存在していたが現在は利用不可
+        break;
+      default:
+        statusCode = 400;
+    }
+
+    secureLog("warn", "Invitation token verification rejected", {
+      maskedToken,
+      error: validationResult.error,
+      errorCode: validationResult.errorCode,
+      statusCode,
+      ip: clientIp,
+      userAgent,
+    });
+
+    const errorMessage = validationResult.error || "Invalid invitation token";
+    const errorResponse: ApiResponse<InvitationValidationData> = {
+      success: false,
+      error: errorMessage,
+    };
+
+    return NextResponse.json(errorResponse, { status: statusCode });
   } catch (error) {
-    secureLog('error', 'Invitation token verification error', {
+    secureLog("error", "Invitation token verification error", {
       maskedToken,
       ip: clientIp,
       userAgent,
-      message: error instanceof Error ? error.message : 'Unknown error',
+      message: error instanceof Error ? error.message : "Unknown error",
     });
 
-    let errorMessage = 'Failed to verify invitation token';
+    let errorMessage = "Failed to verify invitation token";
     if (error instanceof Error) {
       errorMessage = error.message;
     }
 
-    return NextResponse.json({ success: false, error: errorMessage }, { status: 500 });
+    return NextResponse.json(
+      { success: false, error: errorMessage },
+      { status: 500 }
+    );
   }
 }

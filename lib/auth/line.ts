@@ -1,5 +1,5 @@
-import { lineAuthConfig } from '@/lib/env';
-import { logDebugConfig } from '@/lib/utils/logging';
+import { lineAuthConfig } from "@/lib/env";
+import { logDebugConfig } from "@/lib/utils/logging";
 
 /**
  * LINE OAuth2 認証クライアント
@@ -64,9 +64,10 @@ export interface LineTokenValidation {
  * @param length - 生成する文字列の長さ（デフォルト: 32）
  * @returns ランダムなstate文字列
  */
-export function generateState(length: number = 32): string {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  let result = '';
+export function generateState(length = 32): string {
+  const chars =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  let result = "";
 
   for (let i = 0; i < length; i++) {
     result += chars.charAt(Math.floor(Math.random() * chars.length));
@@ -93,23 +94,23 @@ export function generateState(length: number = 32): string {
 export function generateLineAuthUrl(
   state: string,
   inviteToken?: string,
-  disableAutoLogin: boolean = false
+  disableAutoLogin = false
 ): string {
-  const baseUrl = 'https://access.line.me/oauth2/v2.1/authorize';
+  const baseUrl = "https://access.line.me/oauth2/v2.1/authorize";
 
   const params = new URLSearchParams({
-    response_type: 'code',
+    response_type: "code",
     client_id: lineAuthConfig.channelId,
     redirect_uri: lineAuthConfig.callbackUrl,
     state: inviteToken ? `${state}:${inviteToken}` : state,
-    scope: 'profile openid',
-    ui_locales: 'ja-JP', // 日本語表示
+    scope: "profile openid",
+    ui_locales: "ja-JP", // 日本語表示
   });
 
   // ログアウト後の再認証時は自動ログインを無効化
   // これによりLINEの自動ログイン機能による意図しない再ログインを防ぐ
   if (disableAutoLogin) {
-    params.set('disable_auto_login', 'true');
+    params.set("disable_auto_login", "true");
   }
 
   return `${baseUrl}?${params.toString()}`;
@@ -130,13 +131,13 @@ export function validateState(
   isValid: boolean;
   inviteToken?: string;
 } {
-  if (!receivedState || !expectedState) {
+  if (!(receivedState && expectedState)) {
     return { isValid: false };
   }
 
   // 招待トークンが含まれている場合の処理
-  if (receivedState.includes(':')) {
-    const [state, inviteToken] = receivedState.split(':');
+  if (receivedState.includes(":")) {
+    const [state, inviteToken] = receivedState.split(":");
     const result: { isValid: boolean; inviteToken?: string } = {
       isValid: state === expectedState,
     };
@@ -164,10 +165,10 @@ export async function exchangeCodeForToken(code: string): Promise<{
   error?: string;
 }> {
   try {
-    const tokenUrl = 'https://api.line.me/oauth2/v2.1/token';
+    const tokenUrl = "https://api.line.me/oauth2/v2.1/token";
 
     const params = new URLSearchParams({
-      grant_type: 'authorization_code',
+      grant_type: "authorization_code",
       code,
       redirect_uri: lineAuthConfig.callbackUrl,
       client_id: lineAuthConfig.channelId,
@@ -175,9 +176,9 @@ export async function exchangeCodeForToken(code: string): Promise<{
     });
 
     const response = await fetch(tokenUrl, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
+        "Content-Type": "application/x-www-form-urlencoded",
       },
       body: params.toString(),
     });
@@ -195,7 +196,7 @@ export async function exchangeCodeForToken(code: string): Promise<{
     if (!data.access_token) {
       return {
         success: false,
-        error: 'Access token not found in response',
+        error: "Access token not found in response",
       };
     }
 
@@ -206,7 +207,7 @@ export async function exchangeCodeForToken(code: string): Promise<{
   } catch (error) {
     return {
       success: false,
-      error: `Token exchange error: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      error: `Token exchange error: ${error instanceof Error ? error.message : "Unknown error"}`,
     };
   }
 }
@@ -217,12 +218,14 @@ export async function exchangeCodeForToken(code: string): Promise<{
  * @param accessToken - LINEアクセストークン
  * @returns ユーザープロフィール取得結果
  */
-export async function getLineUserProfile(accessToken: string): Promise<LineTokenValidation> {
+export async function getLineUserProfile(
+  accessToken: string
+): Promise<LineTokenValidation> {
   try {
-    const profileUrl = 'https://api.line.me/v2/profile';
+    const profileUrl = "https://api.line.me/v2/profile";
 
     const response = await fetch(profileUrl, {
-      method: 'GET',
+      method: "GET",
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
@@ -239,10 +242,10 @@ export async function getLineUserProfile(accessToken: string): Promise<LineToken
     const profileData = await response.json();
 
     // 必須フィールドの検証
-    if (!profileData.userId || !profileData.displayName) {
+    if (!(profileData.userId && profileData.displayName)) {
       return {
         success: false,
-        error: 'Invalid profile data: missing required fields',
+        error: "Invalid profile data: missing required fields",
       };
     }
 
@@ -260,7 +263,7 @@ export async function getLineUserProfile(accessToken: string): Promise<LineToken
   } catch (error) {
     return {
       success: false,
-      error: `Profile fetch error: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      error: `Profile fetch error: ${error instanceof Error ? error.message : "Unknown error"}`,
     };
   }
 }
@@ -298,25 +301,25 @@ export async function executeLineAuthFlow(
   if (!stateValidation.isValid) {
     return {
       success: false,
-      error: 'Invalid state parameter - possible CSRF attack',
+      error: "Invalid state parameter - possible CSRF attack",
     };
   }
 
   // 2. アクセストークン取得
   const tokenResult = await exchangeCodeForToken(code);
-  if (!tokenResult.success || !tokenResult.accessToken) {
+  if (!(tokenResult.success && tokenResult.accessToken)) {
     return {
       success: false,
-      error: tokenResult.error || 'Failed to obtain access token',
+      error: tokenResult.error || "Failed to obtain access token",
     };
   }
 
   // 3. ユーザープロフィール取得
   const profileResult = await getLineUserProfile(tokenResult.accessToken);
-  if (!profileResult.success || !profileResult.profile) {
+  if (!(profileResult.success && profileResult.profile)) {
     return {
       success: false,
-      error: profileResult.error || 'Failed to fetch user profile',
+      error: profileResult.error || "Failed to fetch user profile",
     };
   }
 
@@ -350,25 +353,28 @@ export function validateLineAuthConfig(): {
   const errors: string[] = [];
 
   if (!lineAuthConfig.channelId) {
-    errors.push('LINE_CHANNEL_ID is not configured');
+    errors.push("LINE_CHANNEL_ID is not configured");
   }
 
   if (!lineAuthConfig.channelSecret) {
-    errors.push('LINE_CHANNEL_SECRET is not configured');
+    errors.push("LINE_CHANNEL_SECRET is not configured");
   }
 
   if (!lineAuthConfig.callbackUrl) {
-    errors.push('Callback URL is not configured');
+    errors.push("Callback URL is not configured");
   }
 
   // Channel IDの形式チェック（数値のみ）
   if (lineAuthConfig.channelId && !/^\d+$/.test(lineAuthConfig.channelId)) {
-    errors.push('LINE_CHANNEL_ID must be numeric');
+    errors.push("LINE_CHANNEL_ID must be numeric");
   }
 
   // Channel Secretの形式チェック（32文字の16進数）
-  if (lineAuthConfig.channelSecret && !/^[a-f0-9]{32}$/.test(lineAuthConfig.channelSecret)) {
-    errors.push('LINE_CHANNEL_SECRET must be 32 character hex string');
+  if (
+    lineAuthConfig.channelSecret &&
+    !/^[a-f0-9]{32}$/.test(lineAuthConfig.channelSecret)
+  ) {
+    errors.push("LINE_CHANNEL_SECRET must be 32 character hex string");
   }
 
   return {
@@ -395,7 +401,7 @@ export function getDebugConfig() {
 
   return {
     channelId: lineAuthConfig.channelId,
-    channelSecret: lineAuthConfig.channelSecret ? '****' : 'NOT_SET',
+    channelSecret: lineAuthConfig.channelSecret ? "****" : "NOT_SET",
     callbackUrl: lineAuthConfig.callbackUrl,
     configValid: validateLineAuthConfig().isValid,
   };

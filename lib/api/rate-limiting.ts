@@ -16,19 +16,19 @@ export interface RateLimitConfig {
 type RateLimitRule =
   | {
       id: string;
-      type: 'regex';
+      type: "regex";
       pattern: RegExp;
       config: RateLimitConfig;
     }
   | {
       id: string;
-      type: 'exact';
+      type: "exact";
       path: string;
       config: RateLimitConfig;
     }
   | {
       id: string;
-      type: 'prefix';
+      type: "prefix";
       prefix: string;
       config: RateLimitConfig;
     };
@@ -39,49 +39,49 @@ const rateLimitStore = new Map<string, RateLimitEntry>();
 // ルール設定（上から順にマッチを評価）
 const RATE_LIMIT_RULES: RateLimitRule[] = [
   {
-    id: 'auth-invitation-verify',
-    type: 'regex',
+    id: "auth-invitation-verify",
+    type: "regex",
     pattern: /^\/api\/auth\/invitations\/[^/]+\/verify$/,
     config: { windowMs: 60 * 1000, maxRequests: 5 }, // 1分に5回
   },
   {
-    id: 'auth-line-login',
-    type: 'exact',
-    path: '/api/auth/line/login',
+    id: "auth-line-login",
+    type: "exact",
+    path: "/api/auth/line/login",
     config: { windowMs: 60 * 1000, maxRequests: 5 }, // 1分に5回
   },
   {
-    id: 'auth-general',
-    type: 'prefix',
-    prefix: '/api/auth/',
+    id: "auth-general",
+    type: "prefix",
+    prefix: "/api/auth/",
     config: { windowMs: 15 * 60 * 1000, maxRequests: 10 }, // 15分に10回
   },
   {
-    id: 'api-general',
-    type: 'prefix',
-    prefix: '/api/',
+    id: "api-general",
+    type: "prefix",
+    prefix: "/api/",
     config: { windowMs: 60 * 1000, maxRequests: 100 }, // 1分に100回
   },
 ];
 
 function findRateLimitRule(pathname: string): RateLimitRule {
   if (RATE_LIMIT_RULES.length === 0) {
-    throw new Error('Rate limit rules are not configured');
+    throw new Error("Rate limit rules are not configured");
   }
 
   for (const rule of RATE_LIMIT_RULES) {
     switch (rule.type) {
-      case 'exact':
+      case "exact":
         if (pathname === rule.path) {
           return rule;
         }
         break;
-      case 'prefix':
+      case "prefix":
         if (pathname.startsWith(rule.prefix)) {
           return rule;
         }
         break;
-      case 'regex':
+      case "regex":
         if (rule.pattern.test(pathname)) {
           return rule;
         }
@@ -92,7 +92,7 @@ function findRateLimitRule(pathname: string): RateLimitRule {
   // 最後のルールはフォールバック
   const fallbackRule = RATE_LIMIT_RULES[RATE_LIMIT_RULES.length - 1];
   if (!fallbackRule) {
-    throw new Error('Rate limit fallback rule not found');
+    throw new Error("Rate limit fallback rule not found");
   }
   return fallbackRule;
 }
@@ -101,13 +101,13 @@ function findRateLimitRule(pathname: string): RateLimitRule {
  * IPアドレスとルールIDから識別子を生成
  */
 function generateIdentifier(ip: string, ruleId: string): string {
-  const sanitizedIp = ip || '127.0.0.1';
+  const sanitizedIp = ip || "127.0.0.1";
   return `${ruleId}|${sanitizedIp}`;
 }
 
 function extractRuleIdFromKey(key: string): string {
-  const [ruleId] = key.split('|');
-  return ruleId ?? 'unknown';
+  const [ruleId] = key.split("|");
+  return ruleId ?? "unknown";
 }
 
 /**

@@ -60,7 +60,7 @@ export interface ApiResponse<T> {
 }
 
 // Department types
-export type DepartmentType = 'ski' | 'snowboard' | 'mixed';
+export type DepartmentType = "ski" | "snowboard" | "mixed";
 
 // Shift summary and statistics
 export interface ShiftSummary {
@@ -90,7 +90,8 @@ export interface DetailedShiftStats {
 }
 
 // Readonly entity interfaces for better immutability
-export interface ReadonlyShift extends Omit<Shift, 'department' | 'shiftType' | 'assignments'> {
+export interface ReadonlyShift
+  extends Omit<Shift, "department" | "shiftType" | "assignments"> {
   readonly department: Department;
   readonly shiftType: ShiftType;
   readonly assignments: readonly ShiftAssignment[];

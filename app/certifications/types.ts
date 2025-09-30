@@ -1,4 +1,4 @@
-import type { Certification, Department } from '@prisma/client';
+import type { Certification, Department } from "@prisma/client";
 
 export interface CertificationWithDepartment extends Certification {
   department: {
@@ -19,10 +19,10 @@ export interface CertificationStats {
 export interface CertificationFormData {
   name: string;
   shortName: string;
-  department: 'ski' | 'snowboard';
+  department: "ski" | "snowboard";
   organization: string;
   description: string;
-  status: 'active' | 'inactive';
+  status: "active" | "inactive";
 }
 
 export interface CertificationModalProps {
@@ -37,4 +37,4 @@ export interface CertificationCardProps {
   onEdit: (certification: CertificationWithDepartment) => void;
 }
 
-export type FilterType = 'all' | 'ski' | 'snowboard' | 'active';
+export type FilterType = "all" | "ski" | "snowboard" | "active";

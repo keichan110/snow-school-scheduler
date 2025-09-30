@@ -1,16 +1,18 @@
-import { NextResponse } from 'next/server';
-import { NextRequest } from 'next/server';
-import { prisma } from '@/lib/db';
-import { authenticateFromRequest } from '@/lib/auth/middleware';
+import { type NextRequest, NextResponse } from "next/server";
+import { authenticateFromRequest } from "@/lib/auth/middleware";
+import { prisma } from "@/lib/db";
 
 interface Params {
   id: string;
 }
 
-export async function GET(request: NextRequest, context: { params: Promise<Params> }) {
+export async function GET(
+  request: NextRequest,
+  context: { params: Promise<Params> }
+) {
   try {
     const params = await context.params;
-    const id = parseInt(params.id);
+    const id = Number.parseInt(params.id);
 
     if (isNaN(id)) {
       return NextResponse.json(
@@ -18,7 +20,7 @@ export async function GET(request: NextRequest, context: { params: Promise<Param
           success: false,
           data: null,
           message: null,
-          error: 'Invalid shift ID',
+          error: "Invalid shift ID",
         },
         { status: 400 }
       );
@@ -43,7 +45,7 @@ export async function GET(request: NextRequest, context: { params: Promise<Param
           success: false,
           data: null,
           message: null,
-          error: 'Resource not found',
+          error: "Resource not found",
         },
         { status: 404 }
       );
@@ -52,7 +54,7 @@ export async function GET(request: NextRequest, context: { params: Promise<Param
     // ShiftWithStats形式に変換
     const shiftWithStats = {
       id: shift.id,
-      date: shift.date.toISOString().split('T')[0],
+      date: shift.date.toISOString().split("T")[0],
       departmentId: shift.departmentId,
       shiftTypeId: shift.shiftTypeId,
       description: shift.description,
@@ -78,30 +80,33 @@ export async function GET(request: NextRequest, context: { params: Promise<Param
     return NextResponse.json({
       success: true,
       data: shiftWithStats,
-      message: 'Shift operation completed successfully',
+      message: "Shift operation completed successfully",
       error: null,
     });
   } catch (error) {
-    console.error('Shift GET error:', error);
+    console.error("Shift GET error:", error);
     return NextResponse.json(
       {
         success: false,
         data: null,
         message: null,
-        error: 'Internal server error',
+        error: "Internal server error",
       },
       { status: 500 }
     );
   }
 }
 
-export async function PUT(request: NextRequest, context: { params: Promise<Params> }) {
+export async function PUT(
+  request: NextRequest,
+  context: { params: Promise<Params> }
+) {
   const authResult = await authenticateFromRequest(request);
   if (!authResult.success) {
     return NextResponse.json(
       {
         success: false,
-        error: 'Authentication required',
+        error: "Authentication required",
         data: null,
         message: null,
       },
@@ -110,7 +115,7 @@ export async function PUT(request: NextRequest, context: { params: Promise<Param
   }
   try {
     const params = await context.params;
-    const id = parseInt(params.id);
+    const id = Number.parseInt(params.id);
 
     if (isNaN(id)) {
       return NextResponse.json(
@@ -118,23 +123,29 @@ export async function PUT(request: NextRequest, context: { params: Promise<Param
           success: false,
           data: null,
           message: null,
-          error: 'Invalid shift ID',
+          error: "Invalid shift ID",
         },
         { status: 400 }
       );
     }
 
     const body = await request.json();
-    const { date, departmentId, shiftTypeId, description, assignedInstructorIds = [] } = body;
+    const {
+      date,
+      departmentId,
+      shiftTypeId,
+      description,
+      assignedInstructorIds = [],
+    } = body;
 
     // バリデーション
-    if (!date || !departmentId || !shiftTypeId) {
+    if (!(date && departmentId && shiftTypeId)) {
       return NextResponse.json(
         {
           success: false,
           data: null,
           message: null,
-          error: 'Required fields: date, departmentId, shiftTypeId',
+          error: "Required fields: date, departmentId, shiftTypeId",
         },
         { status: 400 }
       );
@@ -151,7 +162,7 @@ export async function PUT(request: NextRequest, context: { params: Promise<Param
           success: false,
           data: null,
           message: null,
-          error: 'Resource not found',
+          error: "Resource not found",
         },
         { status: 404 }
       );
@@ -164,8 +175,8 @@ export async function PUT(request: NextRequest, context: { params: Promise<Param
         where: { id },
         data: {
           date: new Date(date),
-          departmentId: parseInt(departmentId),
-          shiftTypeId: parseInt(shiftTypeId),
+          departmentId: Number.parseInt(departmentId),
+          shiftTypeId: Number.parseInt(shiftTypeId),
           description: description || null,
         },
         include: {
@@ -180,16 +191,17 @@ export async function PUT(request: NextRequest, context: { params: Promise<Param
       });
 
       // 新しい割り当てを作成
-      const assignmentPromises = assignedInstructorIds.map((instructorId: number) =>
-        tx.shiftAssignment.create({
-          data: {
-            shiftId: id,
-            instructorId,
-          },
-          include: {
-            instructor: true,
-          },
-        })
+      const assignmentPromises = assignedInstructorIds.map(
+        (instructorId: number) =>
+          tx.shiftAssignment.create({
+            data: {
+              shiftId: id,
+              instructorId,
+            },
+            include: {
+              instructor: true,
+            },
+          })
       );
 
       const assignments = await Promise.all(assignmentPromises);
@@ -200,7 +212,7 @@ export async function PUT(request: NextRequest, context: { params: Promise<Param
     // レスポンス用データを整形
     const shiftWithStats = {
       id: result.shift.id,
-      date: result.shift.date.toISOString().split('T')[0],
+      date: result.shift.date.toISOString().split("T")[0],
       departmentId: result.shift.departmentId,
       shiftTypeId: result.shift.shiftTypeId,
       description: result.shift.description,
@@ -226,30 +238,33 @@ export async function PUT(request: NextRequest, context: { params: Promise<Param
     return NextResponse.json({
       success: true,
       data: shiftWithStats,
-      message: 'Shift operation completed successfully',
+      message: "Shift operation completed successfully",
       error: null,
     });
   } catch (error) {
-    console.error('Shift PUT error:', error);
+    console.error("Shift PUT error:", error);
     return NextResponse.json(
       {
         success: false,
         data: null,
         message: null,
-        error: 'Internal server error',
+        error: "Internal server error",
       },
       { status: 500 }
     );
   }
 }
 
-export async function DELETE(request: NextRequest, context: { params: Promise<Params> }) {
+export async function DELETE(
+  request: NextRequest,
+  context: { params: Promise<Params> }
+) {
   const authResult = await authenticateFromRequest(request);
   if (!authResult.success) {
     return NextResponse.json(
       {
         success: false,
-        error: 'Authentication required',
+        error: "Authentication required",
         data: null,
         message: null,
       },
@@ -258,7 +273,7 @@ export async function DELETE(request: NextRequest, context: { params: Promise<Pa
   }
   try {
     const params = await context.params;
-    const id = parseInt(params.id);
+    const id = Number.parseInt(params.id);
 
     if (isNaN(id)) {
       return NextResponse.json(
@@ -266,7 +281,7 @@ export async function DELETE(request: NextRequest, context: { params: Promise<Pa
           success: false,
           data: null,
           message: null,
-          error: 'Invalid shift ID',
+          error: "Invalid shift ID",
         },
         { status: 400 }
       );
@@ -283,7 +298,7 @@ export async function DELETE(request: NextRequest, context: { params: Promise<Pa
           success: false,
           data: null,
           message: null,
-          error: 'Resource not found',
+          error: "Resource not found",
         },
         { status: 404 }
       );
@@ -304,13 +319,13 @@ export async function DELETE(request: NextRequest, context: { params: Promise<Pa
 
     return new NextResponse(null, { status: 204 });
   } catch (error) {
-    console.error('Shift DELETE error:', error);
+    console.error("Shift DELETE error:", error);
     return NextResponse.json(
       {
         success: false,
         data: null,
         message: null,
-        error: 'Internal server error',
+        error: "Internal server error",
       },
       { status: 500 }
     );

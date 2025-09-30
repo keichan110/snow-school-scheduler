@@ -1,5 +1,5 @@
-import jwt from 'jsonwebtoken';
-import { jwtConfig } from '@/lib/env';
+import jwt from "jsonwebtoken";
+import { jwtConfig } from "@/lib/env";
 
 /**
  * JWT関連のユーティリティ関数
@@ -17,7 +17,7 @@ export interface JwtPayload {
   /** 表示名 */
   displayName: string;
   /** ユーザー権限 */
-  role: 'ADMIN' | 'MANAGER' | 'MEMBER';
+  role: "ADMIN" | "MANAGER" | "MEMBER";
   /** アクティブフラグ */
   isActive: boolean;
   /** 発行時刻 (Unix timestamp) */
@@ -56,27 +56,29 @@ export interface JwtVerificationResult {
  * });
  * ```
  */
-export function generateJwt(payload: Omit<JwtPayload, 'iat' | 'exp' | 'iss' | 'aud'>): string {
+export function generateJwt(
+  payload: Omit<JwtPayload, "iat" | "exp" | "iss" | "aud">
+): string {
   const now = Math.floor(Date.now() / 1000);
 
   const jwtPayload: JwtPayload = {
     ...payload,
     iat: now,
-    iss: 'snow-school-scheduler',
-    aud: 'snow-school-users',
+    iss: "snow-school-scheduler",
+    aud: "snow-school-users",
   };
 
   try {
     // ペイロードで iss/aud を設定済みのため、optionsでは設定しない
     const options = {
       expiresIn: jwtConfig.expiresIn, // 48h (from env.ts)
-      algorithm: 'HS256',
+      algorithm: "HS256",
     };
 
     return jwt.sign(jwtPayload, jwtConfig.secret, options as jwt.SignOptions);
   } catch (error) {
     throw new Error(
-      `JWT generation failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+      `JWT generation failed: ${error instanceof Error ? error.message : "Unknown error"}`
     );
   }
 }
@@ -100,24 +102,28 @@ export function verifyJwt(token: string): JwtVerificationResult {
   if (!token) {
     return {
       success: false,
-      error: 'Token is required',
+      error: "Token is required",
     };
   }
 
   try {
     const verifyOptions: jwt.VerifyOptions = {
-      algorithms: ['HS256'],
-      issuer: 'snow-school-scheduler',
-      audience: 'snow-school-users',
+      algorithms: ["HS256"],
+      issuer: "snow-school-scheduler",
+      audience: "snow-school-users",
     };
 
-    const decoded = jwt.verify(token, jwtConfig.secret, verifyOptions) as JwtPayload;
+    const decoded = jwt.verify(
+      token,
+      jwtConfig.secret,
+      verifyOptions
+    ) as JwtPayload;
 
     // 必須フィールドの検証
-    if (!decoded.userId || !decoded.lineUserId || !decoded.role) {
+    if (!(decoded.userId && decoded.lineUserId && decoded.role)) {
       return {
         success: false,
-        error: 'Invalid token payload: missing required fields',
+        error: "Invalid token payload: missing required fields",
       };
     }
 
@@ -125,7 +131,7 @@ export function verifyJwt(token: string): JwtVerificationResult {
     if (!decoded.isActive) {
       return {
         success: false,
-        error: 'User is not active',
+        error: "User is not active",
       };
     }
 
@@ -134,14 +140,14 @@ export function verifyJwt(token: string): JwtVerificationResult {
       payload: decoded,
     };
   } catch (error) {
-    let errorMessage = 'Token verification failed';
+    let errorMessage = "Token verification failed";
 
     if (error instanceof jwt.TokenExpiredError) {
-      errorMessage = 'Token has expired';
+      errorMessage = "Token has expired";
     } else if (error instanceof jwt.JsonWebTokenError) {
-      errorMessage = 'Invalid token format';
+      errorMessage = "Invalid token format";
     } else if (error instanceof jwt.NotBeforeError) {
-      errorMessage = 'Token not yet valid';
+      errorMessage = "Token not yet valid";
     }
 
     return {
@@ -172,7 +178,7 @@ export function decodeJwt(token: string): JwtVerificationResult {
   if (!token) {
     return {
       success: false,
-      error: 'Token is required',
+      error: "Token is required",
     };
   }
 
@@ -182,7 +188,7 @@ export function decodeJwt(token: string): JwtVerificationResult {
     if (!decoded) {
       return {
         success: false,
-        error: 'Failed to decode token',
+        error: "Failed to decode token",
       };
     }
 
@@ -193,7 +199,7 @@ export function decodeJwt(token: string): JwtVerificationResult {
   } catch (error) {
     return {
       success: false,
-      error: `Token decode failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      error: `Token decode failed: ${error instanceof Error ? error.message : "Unknown error"}`,
     };
   }
 }
@@ -221,10 +227,10 @@ export function getTokenExpiry(token: string): {
 } {
   const decoded = decodeJwt(token);
 
-  if (!decoded.success || !decoded.payload?.exp) {
+  if (!(decoded.success && decoded.payload?.exp)) {
     return {
       success: false,
-      error: 'Unable to decode token or missing expiry',
+      error: "Unable to decode token or missing expiry",
     };
   }
 
@@ -248,7 +254,7 @@ export function getTokenExpiry(token: string): {
 export function shouldRefreshToken(token: string): boolean {
   const expiry = getTokenExpiry(token);
 
-  if (!expiry.success || !expiry.expiresAt) {
+  if (!(expiry.success && expiry.expiresAt)) {
     return true; // トークンが無効な場合は再認証が必要
   }
 
@@ -271,12 +277,12 @@ export function extractUserFromToken(token: string): {
   userId: string;
   lineUserId: string;
   displayName: string;
-  role: 'ADMIN' | 'MANAGER' | 'MEMBER';
+  role: "ADMIN" | "MANAGER" | "MEMBER";
   isActive: boolean;
 } | null {
   const result = verifyJwt(token);
 
-  if (!result.success || !result.payload) {
+  if (!(result.success && result.payload)) {
     return null;
   }
 

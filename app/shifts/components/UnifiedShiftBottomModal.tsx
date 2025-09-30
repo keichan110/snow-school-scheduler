@@ -1,29 +1,32 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
-import { hasManagePermission } from '@/lib/auth/permissions';
-import type { AuthenticatedUser } from '@/lib/auth/types';
-import { DayData } from '../types';
-import { AdminShiftModal } from '@/components/shared/modals/BaseShiftModal';
-
+import { Check, User } from "@phosphor-icons/react";
 // Admin機能からインポート
-import { ArrowRight, Search, X } from 'lucide-react';
-import { User, Check } from '@phosphor-icons/react';
-import { Button } from '@/components/ui/button';
-import { DrawerFooter } from '@/components/ui/drawer';
-import { Label } from '@/components/ui/label';
-import { cn } from '@/lib/utils';
-import { DepartmentType, Department, ShiftType, ApiResponse } from '../types';
-import { DEPARTMENT_STYLES } from '../constants/shiftConstants';
-import { CertificationBadge } from '@/components/ui/certification-badge';
-import { Edit3 } from 'lucide-react';
-import { prepareShift } from '../shiftApiClient';
-import { ExistingShiftData } from '../DuplicateShiftDialog';
-import { useNotification } from '@/components/notifications';
-import { getDepartmentIcon } from '@/app/shifts/utils/shiftComponents';
+import { ArrowRight, Edit3, Search, X } from "lucide-react";
+import { useEffect, useState } from "react";
+import { getDepartmentIcon } from "@/app/shifts/utils/shiftComponents";
+import { useNotification } from "@/components/notifications";
+import { AdminShiftModal } from "@/components/shared/modals/BaseShiftModal";
+import { Button } from "@/components/ui/button";
+import { CertificationBadge } from "@/components/ui/certification-badge";
+import { DrawerFooter } from "@/components/ui/drawer";
+import { Label } from "@/components/ui/label";
+import { useAuth } from "@/contexts/AuthContext";
+import { hasManagePermission } from "@/lib/auth/permissions";
+import type { AuthenticatedUser } from "@/lib/auth/types";
+import { cn } from "@/lib/utils";
+import { DEPARTMENT_STYLES } from "../constants/shiftConstants";
+import type { ExistingShiftData } from "../DuplicateShiftDialog";
+import { prepareShift } from "../shiftApiClient";
+import type {
+  ApiResponse,
+  DayData,
+  Department,
+  DepartmentType,
+  ShiftType,
+} from "../types";
 
-type ModalStep = 'create-step1' | 'create-step2';
+type ModalStep = "create-step1" | "create-step2";
 
 interface Instructor {
   id: number;
@@ -57,7 +60,7 @@ interface UnifiedShiftBottomModalProps {
   selectedDate: string | null;
   dayData: DayData | null;
   onShiftUpdated?: () => Promise<void>;
-  initialStep?: 'create-step1' | 'create-step2';
+  initialStep?: "create-step1" | "create-step2";
 }
 
 export function UnifiedShiftBottomModal({
@@ -66,7 +69,7 @@ export function UnifiedShiftBottomModal({
   selectedDate,
   dayData,
   onShiftUpdated,
-  initialStep = 'create-step1',
+  initialStep = "create-step1",
 }: UnifiedShiftBottomModalProps) {
   const { user } = useAuth();
   const { showNotification } = useNotification();
@@ -81,7 +84,7 @@ export function UnifiedShiftBottomModal({
           role: user.role,
           isActive: user.isActive,
         } as AuthenticatedUser,
-        'shifts'
+        "shifts"
       )
     : false;
 
@@ -90,7 +93,7 @@ export function UnifiedShiftBottomModal({
   const [formData, setFormData] = useState<ShiftFormData>({
     departmentId: 0,
     shiftTypeId: 0,
-    notes: '',
+    notes: "",
     selectedInstructorIds: [],
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -99,7 +102,7 @@ export function UnifiedShiftBottomModal({
   const [instructors, setInstructors] = useState<Instructor[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isCreatingShift, setIsCreatingShift] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [editMode, setEditMode] = useState<{
     isEdit: boolean;
     existingShift?: ExistingShiftData;
@@ -123,44 +126,49 @@ export function UnifiedShiftBottomModal({
       try {
         const requests = [];
 
-        if (currentStep === 'create-step1') {
-          requests.push(fetch('/api/departments'), fetch('/api/shift-types'));
-        } else if (currentStep === 'create-step2') {
+        if (currentStep === "create-step1") {
+          requests.push(fetch("/api/departments"), fetch("/api/shift-types"));
+        } else if (currentStep === "create-step2") {
           requests.push(
-            fetch(`/api/instructors?status=ACTIVE&departmentId=${formData.departmentId}`)
+            fetch(
+              `/api/instructors?status=ACTIVE&departmentId=${formData.departmentId}`
+            )
           );
         }
 
         const responses = await Promise.all(requests);
 
-        if (currentStep === 'create-step1' && responses.length >= 2) {
+        if (currentStep === "create-step1" && responses.length >= 2) {
           const [departmentsRes, shiftTypesRes] = responses;
 
           if (departmentsRes && departmentsRes.ok) {
-            const departmentsData: ApiResponse<Department[]> = await departmentsRes.json();
+            const departmentsData: ApiResponse<Department[]> =
+              await departmentsRes.json();
             if (departmentsData.success && departmentsData.data) {
               setDepartments(departmentsData.data);
             }
           }
 
           if (shiftTypesRes && shiftTypesRes.ok) {
-            const shiftTypesData: ApiResponse<ShiftType[]> = await shiftTypesRes.json();
+            const shiftTypesData: ApiResponse<ShiftType[]> =
+              await shiftTypesRes.json();
             if (shiftTypesData.success && shiftTypesData.data) {
               setShiftTypes(shiftTypesData.data);
             }
           }
-        } else if (currentStep === 'create-step2' && responses.length >= 1) {
+        } else if (currentStep === "create-step2" && responses.length >= 1) {
           const [instructorsRes] = responses;
 
           if (instructorsRes && instructorsRes.ok) {
-            const instructorsData: ApiResponse<Instructor[]> = await instructorsRes.json();
+            const instructorsData: ApiResponse<Instructor[]> =
+              await instructorsRes.json();
             if (instructorsData.success && instructorsData.data) {
               setInstructors(instructorsData.data);
             }
           }
         }
       } catch (error) {
-        console.error('Failed to fetch data:', error);
+        console.error("Failed to fetch data:", error);
       } finally {
         setIsLoading(false);
       }
@@ -170,13 +178,18 @@ export function UnifiedShiftBottomModal({
   }, [currentStep, formData.departmentId]);
 
   // 権限がない場合、選択された日付がない場合はモーダルを表示しない
-  if (!canManage || !selectedDate || !localDayData) {
+  if (!(canManage && selectedDate && localDayData)) {
     return null;
   }
 
   // 管理機能のハンドラー
   const handleCancel = () => {
-    setFormData({ departmentId: 0, shiftTypeId: 0, notes: '', selectedInstructorIds: [] });
+    setFormData({
+      departmentId: 0,
+      shiftTypeId: 0,
+      notes: "",
+      selectedInstructorIds: [],
+    });
     setErrors({});
     setEditMode({ isEdit: false });
     onOpenChange(false);
@@ -185,7 +198,7 @@ export function UnifiedShiftBottomModal({
   const handleDepartmentSelect = (departmentId: number) => {
     setFormData((prev) => ({ ...prev, departmentId }));
     if (errors.departmentId) {
-      setErrors((prev) => ({ ...prev, departmentId: '' }));
+      setErrors((prev) => ({ ...prev, departmentId: "" }));
     }
   };
 
@@ -193,11 +206,11 @@ export function UnifiedShiftBottomModal({
     const newErrors: Record<string, string> = {};
 
     if (!formData.departmentId) {
-      newErrors.departmentId = '部門を選択してください';
+      newErrors.departmentId = "部門を選択してください";
     }
 
     if (!formData.shiftTypeId) {
-      newErrors.shiftTypeId = 'シフト種類を選択してください';
+      newErrors.shiftTypeId = "シフト種類を選択してください";
     }
 
     setErrors(newErrors);
@@ -205,7 +218,7 @@ export function UnifiedShiftBottomModal({
   };
 
   const handleNext = async () => {
-    if (!canManage || !validateForm()) return;
+    if (!(canManage && validateForm())) return;
 
     setIsLoading(true);
 
@@ -217,7 +230,10 @@ export function UnifiedShiftBottomModal({
       });
 
       if (prepareResponse.success && prepareResponse.data) {
-        if (prepareResponse.data.mode === 'edit' && prepareResponse.data.shift) {
+        if (
+          prepareResponse.data.mode === "edit" &&
+          prepareResponse.data.shift
+        ) {
           setEditMode({
             isEdit: true,
             existingShift: prepareResponse.data.shift,
@@ -230,17 +246,18 @@ export function UnifiedShiftBottomModal({
 
         setFormData((prev) => ({
           ...prev,
-          notes: prepareResponse.data?.formData.description || '',
-          selectedInstructorIds: prepareResponse.data?.formData.selectedInstructorIds || [],
+          notes: prepareResponse.data?.formData.description || "",
+          selectedInstructorIds:
+            prepareResponse.data?.formData.selectedInstructorIds || [],
         }));
 
-        setCurrentStep('create-step2');
+        setCurrentStep("create-step2");
       } else {
-        setErrors({ submit: prepareResponse.error || 'エラーが発生しました' });
+        setErrors({ submit: prepareResponse.error || "エラーが発生しました" });
       }
     } catch (error) {
-      console.error('Prepare shift error:', error);
-      setErrors({ submit: 'ネットワークエラーが発生しました' });
+      console.error("Prepare shift error:", error);
+      setErrors({ submit: "ネットワークエラーが発生しました" });
     } finally {
       setIsLoading(false);
     }
@@ -259,7 +276,7 @@ export function UnifiedShiftBottomModal({
 
   const handleCreateShift = async () => {
     if (!canManage || formData.selectedInstructorIds.length === 0) {
-      setErrors({ instructors: '最低1名のインストラクターを選択してください' });
+      setErrors({ instructors: "最低1名のインストラクターを選択してください" });
       return;
     }
 
@@ -267,10 +284,10 @@ export function UnifiedShiftBottomModal({
     setErrors({});
 
     try {
-      const response = await fetch('/api/shifts', {
-        method: 'POST',
+      const response = await fetch("/api/shifts", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           date: selectedDate,
@@ -286,14 +303,19 @@ export function UnifiedShiftBottomModal({
 
       if (result.success) {
         const message = editMode.isEdit
-          ? 'シフトが正常に更新されました'
-          : 'シフトが正常に作成されました';
+          ? "シフトが正常に更新されました"
+          : "シフトが正常に作成されました";
 
-        showNotification(message, 'success');
+        showNotification(message, "success");
 
-        setFormData({ departmentId: 0, shiftTypeId: 0, notes: '', selectedInstructorIds: [] });
+        setFormData({
+          departmentId: 0,
+          shiftTypeId: 0,
+          notes: "",
+          selectedInstructorIds: [],
+        });
         setErrors({});
-        setSearchTerm('');
+        setSearchTerm("");
         setEditMode({ isEdit: false });
         onOpenChange(false);
 
@@ -301,11 +323,11 @@ export function UnifiedShiftBottomModal({
           await onShiftUpdated();
         }
       } else {
-        setErrors({ submit: result.error || 'シフトの処理に失敗しました' });
+        setErrors({ submit: result.error || "シフトの処理に失敗しました" });
       }
     } catch (error) {
-      console.error('Shift creation error:', error);
-      setErrors({ submit: 'シフトの処理中にエラーが発生しました' });
+      console.error("Shift creation error:", error);
+      setErrors({ submit: "シフトの処理中にエラーが発生しました" });
     } finally {
       setIsCreatingShift(false);
     }
@@ -313,9 +335,14 @@ export function UnifiedShiftBottomModal({
 
   const handleModalOpenChange = (open: boolean) => {
     if (!open) {
-      setFormData({ departmentId: 0, shiftTypeId: 0, notes: '', selectedInstructorIds: [] });
+      setFormData({
+        departmentId: 0,
+        shiftTypeId: 0,
+        notes: "",
+        selectedInstructorIds: [],
+      });
       setErrors({});
-      setSearchTerm('');
+      setSearchTerm("");
       setEditMode({ isEdit: false });
     }
     onOpenChange(open);
@@ -329,8 +356,10 @@ export function UnifiedShiftBottomModal({
     return (
       instructor.lastName.toLowerCase().includes(searchLower) ||
       instructor.firstName.toLowerCase().includes(searchLower) ||
-      (instructor.lastNameKana && instructor.lastNameKana.toLowerCase().includes(searchLower)) ||
-      (instructor.firstNameKana && instructor.firstNameKana.toLowerCase().includes(searchLower))
+      (instructor.lastNameKana &&
+        instructor.lastNameKana.toLowerCase().includes(searchLower)) ||
+      (instructor.firstNameKana &&
+        instructor.firstNameKana.toLowerCase().includes(searchLower))
     );
   });
 
@@ -341,41 +370,55 @@ export function UnifiedShiftBottomModal({
   const handleRemoveSelectedInstructor = (instructorId: number) => {
     setFormData((prev) => ({
       ...prev,
-      selectedInstructorIds: prev.selectedInstructorIds.filter((id) => id !== instructorId),
+      selectedInstructorIds: prev.selectedInstructorIds.filter(
+        (id) => id !== instructorId
+      ),
     }));
   };
 
   const renderDepartmentCard = (department: Department) => {
     const getDepartmentType = (name: string): DepartmentType => {
-      if (name.toLowerCase().includes('スキー') || name.toLowerCase().includes('ski')) {
-        return 'ski';
-      } else if (
-        name.toLowerCase().includes('スノーボード') ||
-        name.toLowerCase().includes('snowboard')
+      if (
+        name.toLowerCase().includes("スキー") ||
+        name.toLowerCase().includes("ski")
       ) {
-        return 'snowboard';
+        return "ski";
       }
-      return 'mixed';
+      if (
+        name.toLowerCase().includes("スノーボード") ||
+        name.toLowerCase().includes("snowboard")
+      ) {
+        return "snowboard";
+      }
+      return "mixed";
     };
 
     const departmentType = getDepartmentType(department.name);
     const styles = DEPARTMENT_STYLES[departmentType];
     const isSelected = formData.departmentId === department.id;
-    const iconElement = getDepartmentIcon(departmentType, cn('h-5 w-5', styles.iconColor));
+    const iconElement = getDepartmentIcon(
+      departmentType,
+      cn("h-5 w-5", styles.iconColor)
+    );
 
     return (
       <div
-        key={department.id}
-        onClick={() => handleDepartmentSelect(department.id)}
         className={cn(
-          'flex cursor-pointer items-center space-x-2 rounded-lg border p-3 transition-all duration-200 hover:bg-accent',
+          "flex cursor-pointer items-center space-x-2 rounded-lg border p-3 transition-all duration-200 hover:bg-accent",
           isSelected
             ? `${styles.sectionBorderClass} ${styles.sectionBgClass}`
-            : 'border-gray-200 hover:border-gray-300'
+            : "border-gray-200 hover:border-gray-300"
         )}
+        key={department.id}
+        onClick={() => handleDepartmentSelect(department.id)}
       >
         {iconElement}
-        <span className={cn('font-medium', isSelected ? styles.sectionTextClass : 'text-gray-600')}>
+        <span
+          className={cn(
+            "font-medium",
+            isSelected ? styles.sectionTextClass : "text-gray-600"
+          )}
+        >
           {department.name}
         </span>
       </div>
@@ -385,28 +428,42 @@ export function UnifiedShiftBottomModal({
   // フッター
   const renderFooter = () => (
     <DrawerFooter>
-      {currentStep === 'create-step1' ? (
+      {currentStep === "create-step1" ? (
         <div className="flex flex-col gap-2 md:flex-row md:gap-4">
-          <Button onClick={handleCancel} variant="outline" size="lg" className="gap-2 md:flex-1">
+          <Button
+            className="gap-2 md:flex-1"
+            onClick={handleCancel}
+            size="lg"
+            variant="outline"
+          >
             キャンセル
           </Button>
-          <Button onClick={handleNext} size="lg" className="gap-2 md:flex-1">
+          <Button className="gap-2 md:flex-1" onClick={handleNext} size="lg">
             次へ：インストラクター選択
             <ArrowRight className="h-4 w-4" />
           </Button>
         </div>
       ) : (
         <div className="flex flex-col gap-2 md:flex-row md:gap-4">
-          <Button onClick={handleCancel} variant="outline" size="lg" className="gap-2 md:flex-1">
+          <Button
+            className="gap-2 md:flex-1"
+            onClick={handleCancel}
+            size="lg"
+            variant="outline"
+          >
             キャンセル
           </Button>
           <Button
-            onClick={handleCreateShift}
-            size="lg"
             className="gap-2 md:flex-1"
             disabled={isCreatingShift}
+            onClick={handleCreateShift}
+            size="lg"
           >
-            {isCreatingShift ? '処理中...' : editMode.isEdit ? 'シフトを更新' : 'シフト登録'}
+            {isCreatingShift
+              ? "処理中..."
+              : editMode.isEdit
+                ? "シフトを更新"
+                : "シフト登録"}
           </Button>
         </div>
       )}
@@ -415,12 +472,12 @@ export function UnifiedShiftBottomModal({
 
   return (
     <AdminShiftModal
+      dayData={localDayData}
+      footer={renderFooter()}
       isOpen={isOpen}
       onOpenChange={handleModalOpenChange}
       selectedDate={selectedDate}
-      dayData={localDayData}
       showEmptyState={false}
-      footer={renderFooter()}
     >
       {/* 管理機能のフォーム */}
       <div className="mx-auto max-w-2xl space-y-6">
@@ -428,87 +485,96 @@ export function UnifiedShiftBottomModal({
         <div className="mb-6 flex items-center justify-center space-x-2">
           <div
             className={cn(
-              'flex h-6 w-6 items-center justify-center rounded-full border-2 text-xs font-medium',
-              currentStep === 'create-step1' || currentStep === 'create-step2'
-                ? 'border-primary bg-primary text-primary-foreground'
-                : 'border-border bg-background'
+              "flex h-6 w-6 items-center justify-center rounded-full border-2 font-medium text-xs",
+              currentStep === "create-step1" || currentStep === "create-step2"
+                ? "border-primary bg-primary text-primary-foreground"
+                : "border-border bg-background"
             )}
           >
             1
           </div>
           <div
-            className={cn('h-px w-8', currentStep === 'create-step2' ? 'bg-primary' : 'bg-border')}
-          ></div>
+            className={cn(
+              "h-px w-8",
+              currentStep === "create-step2" ? "bg-primary" : "bg-border"
+            )}
+          />
           <div
             className={cn(
-              'flex h-6 w-6 items-center justify-center rounded-full border-2 text-xs font-medium',
-              currentStep === 'create-step2'
-                ? 'border-primary bg-primary text-primary-foreground'
-                : 'border-border bg-background'
+              "flex h-6 w-6 items-center justify-center rounded-full border-2 font-medium text-xs",
+              currentStep === "create-step2"
+                ? "border-primary bg-primary text-primary-foreground"
+                : "border-border bg-background"
             )}
           >
             2
           </div>
         </div>
 
-        {currentStep === 'create-step2' && (
+        {currentStep === "create-step2" && (
           <div className="mb-6 space-y-1 text-center">
-            <div className="text-sm text-muted-foreground">
-              {departments.find((d) => d.id === formData.departmentId)?.name} -{' '}
+            <div className="text-muted-foreground text-sm">
+              {departments.find((d) => d.id === formData.departmentId)?.name} -{" "}
               {shiftTypes.find((t) => t.id === formData.shiftTypeId)?.name}
             </div>
           </div>
         )}
 
-        {currentStep === 'create-step2' && editMode.isEdit && (
+        {currentStep === "create-step2" && editMode.isEdit && (
           <div className="mb-4 rounded-lg border-2 border-blue-200 bg-blue-50 p-4 dark:border-blue-700 dark:bg-blue-950">
             <div className="mb-2 flex items-center gap-2">
               <Edit3 className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-              <h3 className="font-semibold text-blue-900 dark:text-blue-100">既存シフトの編集</h3>
+              <h3 className="font-semibold text-blue-900 dark:text-blue-100">
+                既存シフトの編集
+              </h3>
             </div>
-            <p className="text-sm text-blue-700 dark:text-blue-200">
+            <p className="text-blue-700 text-sm dark:text-blue-200">
               このシフトは既に存在します。インストラクターの追加・変更・削除ができます。
             </p>
-            <div className="mt-2 text-xs text-blue-600 dark:text-blue-300">
+            <div className="mt-2 text-blue-600 text-xs dark:text-blue-300">
               現在の割り当て: {editMode.existingShift?.assignedCount || 0}名
             </div>
           </div>
         )}
 
-        {currentStep === 'create-step1' && (
+        {currentStep === "create-step1" && (
           <>
             {/* 部門選択 */}
             <div className="space-y-3">
-              <Label className="text-sm font-medium">
+              <Label className="font-medium text-sm">
                 部門 <span className="text-red-500">*</span>
               </Label>
               {isLoading ? (
-                <div className="text-sm text-muted-foreground">読み込み中...</div>
+                <div className="text-muted-foreground text-sm">
+                  読み込み中...
+                </div>
               ) : (
                 <div className="flex gap-4">
                   {departments.map((dept) => renderDepartmentCard(dept))}
                 </div>
               )}
-              {errors.departmentId && <p className="text-sm text-red-500">{errors.departmentId}</p>}
+              {errors.departmentId && (
+                <p className="text-red-500 text-sm">{errors.departmentId}</p>
+              )}
             </div>
 
             {/* シフト種類選択 */}
             <div className="space-y-3">
-              <Label htmlFor="shiftType" className="text-sm font-medium">
+              <Label className="font-medium text-sm" htmlFor="shiftType">
                 シフト種類 <span className="text-red-500">*</span>
               </Label>
               <select
-                id="shiftType"
-                value={formData.shiftTypeId}
-                onChange={(e) => {
-                  const value = parseInt(e.target.value) || 0;
-                  setFormData((prev) => ({ ...prev, shiftTypeId: value }));
-                  if (errors.shiftTypeId) {
-                    setErrors((prev) => ({ ...prev, shiftTypeId: '' }));
-                  }
-                }}
                 className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:border-transparent focus:outline-none focus:ring-2 focus:ring-primary"
                 disabled={isLoading}
+                id="shiftType"
+                onChange={(e) => {
+                  const value = Number.parseInt(e.target.value) || 0;
+                  setFormData((prev) => ({ ...prev, shiftTypeId: value }));
+                  if (errors.shiftTypeId) {
+                    setErrors((prev) => ({ ...prev, shiftTypeId: "" }));
+                  }
+                }}
+                value={formData.shiftTypeId}
               >
                 <option value={0}>選択してください</option>
                 {shiftTypes.map((type) => (
@@ -517,62 +583,70 @@ export function UnifiedShiftBottomModal({
                   </option>
                 ))}
               </select>
-              {errors.shiftTypeId && <p className="text-sm text-red-500">{errors.shiftTypeId}</p>}
+              {errors.shiftTypeId && (
+                <p className="text-red-500 text-sm">{errors.shiftTypeId}</p>
+              )}
             </div>
 
             {/* 備考 */}
             <div className="space-y-3">
-              <Label htmlFor="notes" className="text-sm font-medium">
+              <Label className="font-medium text-sm" htmlFor="notes">
                 備考
               </Label>
               <textarea
+                className="w-full rounded-md border border-input px-3 py-2 text-sm placeholder:text-muted-foreground focus:border-transparent focus:outline-none focus:ring-2 focus:ring-primary"
                 id="notes"
-                value={formData.notes}
-                onChange={(e) => setFormData((prev) => ({ ...prev, notes: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, notes: e.target.value }))
+                }
                 placeholder="追加の情報があれば入力してください"
                 rows={4}
-                className="w-full rounded-md border border-input px-3 py-2 text-sm placeholder:text-muted-foreground focus:border-transparent focus:outline-none focus:ring-2 focus:ring-primary"
+                value={formData.notes}
               />
             </div>
           </>
         )}
 
-        {currentStep === 'create-step2' && (
+        {currentStep === "create-step2" && (
           <>
             {/* インストラクター選択 */}
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <Label className="text-sm font-medium">
+                <Label className="font-medium text-sm">
                   インストラクター選択 <span className="text-red-500">*</span>
                 </Label>
-                <div className="text-xs text-muted-foreground">
+                <div className="text-muted-foreground text-xs">
                   {formData.selectedInstructorIds.length}名選択中
                 </div>
               </div>
 
               {isLoading ? (
-                <div className="py-8 text-center text-sm text-muted-foreground">読み込み中...</div>
+                <div className="py-8 text-center text-muted-foreground text-sm">
+                  読み込み中...
+                </div>
               ) : (
                 <>
                   {/* 選択済みインストラクター表示エリア */}
                   {selectedInstructors.length > 0 && (
                     <div className="rounded-lg border border-blue-200 bg-blue-50 p-3 dark:border-blue-700 dark:bg-blue-950">
-                      <div className="mb-2 text-sm font-medium text-blue-800 dark:text-blue-200">
+                      <div className="mb-2 font-medium text-blue-800 text-sm dark:text-blue-200">
                         選択済み（{selectedInstructors.length}名）
                       </div>
                       <div className="flex flex-wrap gap-2">
                         {selectedInstructors.map((instructor) => (
                           <div
+                            className="group inline-flex items-center gap-1 rounded-md border border-blue-200 bg-blue-100 px-2 py-1 font-medium text-blue-800 text-xs transition-colors hover:bg-blue-200 dark:border-blue-700 dark:bg-blue-900 dark:text-blue-100 dark:hover:bg-blue-800"
                             key={instructor.id}
-                            className="group inline-flex items-center gap-1 rounded-md border border-blue-200 bg-blue-100 px-2 py-1 text-xs font-medium text-blue-800 transition-colors hover:bg-blue-200 dark:border-blue-700 dark:bg-blue-900 dark:text-blue-100 dark:hover:bg-blue-800"
                           >
                             <User className="h-3 w-3" />
                             <span>
                               {instructor.lastName} {instructor.firstName}
                             </span>
                             <button
-                              onClick={() => handleRemoveSelectedInstructor(instructor.id)}
                               className="ml-1 text-blue-600 transition-colors hover:text-blue-800 dark:text-blue-300 dark:hover:text-blue-200"
+                              onClick={() =>
+                                handleRemoveSelectedInstructor(instructor.id)
+                              }
                               type="button"
                             >
                               <X className="h-3 w-3" />
@@ -585,18 +659,18 @@ export function UnifiedShiftBottomModal({
 
                   {/* 検索 */}
                   <div className="relative">
-                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 transform text-muted-foreground" />
+                    <Search className="-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 transform text-muted-foreground" />
                     <input
-                      type="text"
-                      placeholder="インストラクターを検索（名前・フリガナ）"
-                      value={searchTerm}
+                      className="w-full rounded-md border border-input py-2 pr-4 pl-10 text-sm focus:border-transparent focus:outline-none focus:ring-2 focus:ring-primary"
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      className="w-full rounded-md border border-input py-2 pl-10 pr-4 text-sm focus:border-transparent focus:outline-none focus:ring-2 focus:ring-primary"
+                      placeholder="インストラクターを検索（名前・フリガナ）"
+                      type="text"
+                      value={searchTerm}
                     />
                     {searchTerm && (
                       <button
-                        onClick={() => setSearchTerm('')}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 transform text-muted-foreground hover:text-foreground"
+                        className="-translate-y-1/2 absolute top-1/2 right-3 transform text-muted-foreground hover:text-foreground"
+                        onClick={() => setSearchTerm("")}
                         type="button"
                       >
                         <X className="h-4 w-4" />
@@ -611,13 +685,13 @@ export function UnifiedShiftBottomModal({
                         <User className="mx-auto mb-2 h-8 w-8 opacity-50" />
                         <div className="text-sm">
                           {searchTerm
-                            ? '該当するインストラクターが見つかりません'
-                            : 'インストラクターが登録されていません'}
+                            ? "該当するインストラクターが見つかりません"
+                            : "インストラクターが登録されていません"}
                         </div>
                         {searchTerm && (
                           <button
-                            onClick={() => setSearchTerm('')}
-                            className="mt-1 text-xs text-primary hover:underline"
+                            className="mt-1 text-primary text-xs hover:underline"
+                            onClick={() => setSearchTerm("")}
                             type="button"
                           >
                             検索条件をクリア
@@ -626,33 +700,42 @@ export function UnifiedShiftBottomModal({
                       </div>
                     ) : (
                       filteredInstructors.map((instructor) => {
-                        const isSelected = formData.selectedInstructorIds.includes(instructor.id);
-                        const hasRequiredCertification = instructor.certifications.some(
-                          (cert) => cert.department.id === formData.departmentId
-                        );
-                        const departmentCertifications = instructor.certifications.filter(
-                          (cert) => cert.department.id === formData.departmentId
-                        );
+                        const isSelected =
+                          formData.selectedInstructorIds.includes(
+                            instructor.id
+                          );
+                        const hasRequiredCertification =
+                          instructor.certifications.some(
+                            (cert) =>
+                              cert.department.id === formData.departmentId
+                          );
+                        const departmentCertifications =
+                          instructor.certifications.filter(
+                            (cert) =>
+                              cert.department.id === formData.departmentId
+                          );
 
                         return (
                           <div
-                            key={instructor.id}
-                            onClick={() => handleInstructorToggle(instructor.id)}
                             className={cn(
-                              'flex cursor-pointer items-center justify-between p-3 transition-all duration-200',
-                              'border-b border-gray-100 last:border-b-0 hover:bg-blue-50 dark:border-gray-800 dark:hover:bg-blue-950',
+                              "flex cursor-pointer items-center justify-between p-3 transition-all duration-200",
+                              "border-gray-100 border-b last:border-b-0 hover:bg-blue-50 dark:border-gray-800 dark:hover:bg-blue-950",
                               isSelected &&
-                                'border-blue-200 bg-blue-50 dark:border-blue-700 dark:bg-blue-950',
-                              !hasRequiredCertification && 'opacity-60'
+                                "border-blue-200 bg-blue-50 dark:border-blue-700 dark:bg-blue-950",
+                              !hasRequiredCertification && "opacity-60"
                             )}
+                            key={instructor.id}
+                            onClick={() =>
+                              handleInstructorToggle(instructor.id)
+                            }
                           >
                             <div className="flex items-center space-x-3">
                               <div
                                 className={cn(
-                                  'flex h-6 w-6 items-center justify-center rounded-full border-2 transition-all',
+                                  "flex h-6 w-6 items-center justify-center rounded-full border-2 transition-all",
                                   isSelected
-                                    ? 'scale-110 border-blue-500 bg-blue-500 text-white dark:border-blue-400 dark:bg-blue-500'
-                                    : 'border-gray-300 hover:border-blue-300 dark:border-gray-500 dark:hover:border-blue-400'
+                                    ? "scale-110 border-blue-500 bg-blue-500 text-white dark:border-blue-400 dark:bg-blue-500"
+                                    : "border-gray-300 hover:border-blue-300 dark:border-gray-500 dark:hover:border-blue-400"
                                 )}
                               >
                                 {isSelected ? (
@@ -662,14 +745,16 @@ export function UnifiedShiftBottomModal({
                                 )}
                               </div>
                               <div>
-                                <div className="text-sm font-medium">
+                                <div className="font-medium text-sm">
                                   {instructor.lastName} {instructor.firstName}
                                 </div>
-                                {instructor.lastNameKana && instructor.firstNameKana && (
-                                  <div className="text-xs text-muted-foreground">
-                                    {instructor.lastNameKana} {instructor.firstNameKana}
-                                  </div>
-                                )}
+                                {instructor.lastNameKana &&
+                                  instructor.firstNameKana && (
+                                    <div className="text-muted-foreground text-xs">
+                                      {instructor.lastNameKana}{" "}
+                                      {instructor.firstNameKana}
+                                    </div>
+                                  )}
                               </div>
                             </div>
                             <div className="text-right">
@@ -677,14 +762,14 @@ export function UnifiedShiftBottomModal({
                                 <div className="flex flex-wrap justify-end gap-1">
                                   {departmentCertifications.map((cert) => (
                                     <CertificationBadge
+                                      departmentName={cert.department.name}
                                       key={cert.id}
                                       shortName={cert.shortName}
-                                      departmentName={cert.department.name}
                                     />
                                   ))}
                                 </div>
                               ) : (
-                                <div className="rounded-full border border-orange-200 bg-orange-100 px-2 py-1 text-xs text-orange-800 dark:border-orange-700 dark:bg-orange-900 dark:text-orange-100">
+                                <div className="rounded-full border border-orange-200 bg-orange-100 px-2 py-1 text-orange-800 text-xs dark:border-orange-700 dark:bg-orange-900 dark:text-orange-100">
                                   認定なし
                                 </div>
                               )}
@@ -696,16 +781,19 @@ export function UnifiedShiftBottomModal({
                   </div>
 
                   {/* 選択状況の統計 */}
-                  <div className="flex items-center justify-between rounded-md border border-gray-200 bg-gray-50 px-3 py-2 text-xs text-muted-foreground dark:border-gray-700 dark:bg-gray-900">
+                  <div className="flex items-center justify-between rounded-md border border-gray-200 bg-gray-50 px-3 py-2 text-muted-foreground text-xs dark:border-gray-700 dark:bg-gray-900">
                     <div>
-                      表示: {filteredInstructors.length}名{searchTerm && ` (検索結果)`}
+                      表示: {filteredInstructors.length}名
+                      {searchTerm && " (検索結果)"}
                     </div>
                     <div className="flex items-center gap-4">
                       <span>
-                        認定保有者:{' '}
+                        認定保有者:{" "}
                         {
                           filteredInstructors.filter((i) =>
-                            i.certifications.some((c) => c.department.id === formData.departmentId)
+                            i.certifications.some(
+                              (c) => c.department.id === formData.departmentId
+                            )
                           ).length
                         }
                         名
@@ -715,8 +803,12 @@ export function UnifiedShiftBottomModal({
                 </>
               )}
 
-              {errors.instructors && <p className="text-sm text-red-500">{errors.instructors}</p>}
-              {errors.submit && <p className="text-sm text-red-500">{errors.submit}</p>}
+              {errors.instructors && (
+                <p className="text-red-500 text-sm">{errors.instructors}</p>
+              )}
+              {errors.submit && (
+                <p className="text-red-500 text-sm">{errors.submit}</p>
+              )}
             </div>
           </>
         )}

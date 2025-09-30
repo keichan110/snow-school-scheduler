@@ -1,4 +1,4 @@
-import type { Instructor } from '@prisma/client';
+import type { Instructor } from "@prisma/client";
 
 export interface InstructorWithCertifications extends Instructor {
   certifications: {
@@ -25,7 +25,7 @@ export interface InstructorFormData {
   firstName: string;
   lastNameKana?: string;
   firstNameKana?: string;
-  status: 'active' | 'inactive' | 'retired';
+  status: "active" | "inactive" | "retired";
   notes?: string;
   certificationIds?: number[];
 }
@@ -42,4 +42,4 @@ export interface InstructorCardProps {
   onEdit: (instructor: InstructorWithCertifications) => void;
 }
 
-export type CategoryFilterType = 'all' | 'ski' | 'snowboard';
+export type CategoryFilterType = "all" | "ski" | "snowboard";

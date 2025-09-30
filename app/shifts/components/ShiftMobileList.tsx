@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { BaseShiftMobileList } from './BaseShiftMobileList';
-import { BaseShiftDisplayProps } from '@/shared/types/shiftDisplayTypes';
+import type { BaseShiftDisplayProps } from "@/shared/types/shiftDisplayTypes";
+import { BaseShiftMobileList } from "./BaseShiftMobileList";
 
 /**
  * 統合モバイルリストコンポーネントのProps型
@@ -9,7 +9,7 @@ import { BaseShiftDisplayProps } from '@/shared/types/shiftDisplayTypes';
  */
 interface UnifiedShiftMobileListProps extends BaseShiftDisplayProps {
   /** バリアント（将来の拡張用） */
-  variant?: 'admin' | 'public';
+  variant?: "admin" | "public";
 }
 
 /**

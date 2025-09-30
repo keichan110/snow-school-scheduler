@@ -1,7 +1,9 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { Calendar } from '@phosphor-icons/react';
+import { Calendar } from "@phosphor-icons/react";
+import type React from "react";
+import type { DayData } from "@/app/shifts/types";
+import { Button } from "@/components/ui/button";
 import {
   Drawer,
   DrawerClose,
@@ -9,17 +11,15 @@ import {
   DrawerDescription,
   DrawerHeader,
   DrawerTitle,
-} from '@/components/ui/drawer';
-import { Button } from '@/components/ui/button';
-import { DayData } from '@/app/shifts/types';
-import { formatDateForDisplay } from '@/shared/utils/dateFormatter';
+} from "@/components/ui/drawer";
+import { formatDateForDisplay } from "@/shared/utils/dateFormatter";
 
 export interface BaseShiftModalProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   selectedDate: string | null;
   dayData: DayData | null;
-  variant: 'admin' | 'public';
+  variant: "admin" | "public";
   children?: React.ReactNode;
   footer?: React.ReactNode;
   title?: string;
@@ -48,7 +48,7 @@ export function BaseShiftModal({
   const renderEmptyState = () => (
     <div className="py-8 text-center text-muted-foreground">
       <Calendar className="mx-auto mb-4 h-12 w-12 opacity-50" />
-      <div className="text-lg font-medium">シフトが設定されていません</div>
+      <div className="font-medium text-lg">シフトが設定されていません</div>
       <div className="mt-1 text-sm">この日はシフトの設定がありません</div>
     </div>
   );
@@ -57,7 +57,7 @@ export function BaseShiftModal({
   const renderDefaultFooter = () => (
     <div className="border-t bg-background px-4 py-4">
       <DrawerClose asChild>
-        <Button variant="outline" size="lg" className="w-full">
+        <Button className="w-full" size="lg" variant="outline">
           閉じる
         </Button>
       </DrawerClose>
@@ -65,13 +65,15 @@ export function BaseShiftModal({
   );
 
   return (
-    <Drawer open={isOpen} onOpenChange={onOpenChange}>
+    <Drawer onOpenChange={onOpenChange} open={isOpen}>
       <DrawerContent className="max-h-[80vh]">
         <DrawerHeader className="pb-2 text-center">
           <DrawerTitle className="flex items-center justify-center gap-2 text-xl md:text-2xl">
             {displayTitle}
           </DrawerTitle>
-          <DrawerDescription>選択した日のシフト情報を表示しています</DrawerDescription>
+          <DrawerDescription>
+            選択した日のシフト情報を表示しています
+          </DrawerDescription>
         </DrawerHeader>
 
         <div className="overflow-y-auto px-4 pb-4">
@@ -82,7 +84,7 @@ export function BaseShiftModal({
           </div>
         </div>
 
-        {footer || (variant === 'public' && renderDefaultFooter())}
+        {footer || (variant === "public" && renderDefaultFooter())}
       </DrawerContent>
     </Drawer>
   );

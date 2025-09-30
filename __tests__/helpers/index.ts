@@ -6,7 +6,7 @@
  */
 
 // データファクトリー
-export * from './factories';
+export * from "./factories";
 
 // テストユーティリティ
-export * from './test-utils';
+export * from "./test-utils";

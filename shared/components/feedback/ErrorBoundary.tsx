@@ -3,13 +3,19 @@
  * アプリケーション全体のエラーハンドリングを統一
  */
 
-'use client';
+"use client";
 
-import React from 'react';
-import { ErrorBoundary as ReactErrorBoundary } from 'react-error-boundary';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
+import { AlertTriangle, Home, RefreshCw } from "lucide-react";
+import React from "react";
+import { ErrorBoundary as ReactErrorBoundary } from "react-error-boundary";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
 /**
  * エラー情報の型定義
@@ -38,17 +44,17 @@ const logError = (error: Error, errorInfo: React.ErrorInfo): void => {
   const errorReport: ErrorReport = {
     message: error.message,
     stack: error.stack,
-    componentStack: errorInfo.componentStack || '',
+    componentStack: errorInfo.componentStack || "",
     timestamp: new Date().toISOString(),
     userAgent: navigator.userAgent,
     url: window.location.href,
   };
 
   // エラー監視サービス（例: Sentry、LogRocket）に送信
-  console.error('Application Error:', errorReport);
+  console.error("Application Error:", errorReport);
 
   // 本番環境では実際の監視サービスに送信
-  if (process.env.NODE_ENV === 'production') {
+  if (process.env.NODE_ENV === "production") {
     // TODO: 実際のエラー監視サービスに送信
     // Sentry.captureException(error, { extra: errorReport });
   }
@@ -65,7 +71,10 @@ interface ErrorFallbackProps {
 /**
  * 一般的なエラー表示コンポーネント
  */
-const ErrorFallback: React.FC<ErrorFallbackProps> = ({ error, resetErrorBoundary }) => (
+const ErrorFallback: React.FC<ErrorFallbackProps> = ({
+  error,
+  resetErrorBoundary,
+}) => (
   <div className="flex min-h-screen items-center justify-center bg-background p-4">
     <Card className="w-full max-w-md">
       <CardHeader className="text-center">
@@ -76,7 +85,7 @@ const ErrorFallback: React.FC<ErrorFallbackProps> = ({ error, resetErrorBoundary
         <p className="text-center text-muted-foreground">
           申し訳ございません。予期しないエラーが発生しました。
         </p>
-        {process.env.NODE_ENV === 'development' && (
+        {process.env.NODE_ENV === "development" && (
           <details className="rounded border bg-muted p-2 text-sm">
             <summary className="cursor-pointer font-medium">エラー詳細</summary>
             <pre className="mt-2 overflow-auto whitespace-pre-wrap text-xs">
@@ -87,11 +96,15 @@ const ErrorFallback: React.FC<ErrorFallbackProps> = ({ error, resetErrorBoundary
         )}
       </CardContent>
       <CardFooter className="flex flex-col gap-2">
-        <Button onClick={resetErrorBoundary} className="w-full">
+        <Button className="w-full" onClick={resetErrorBoundary}>
           <RefreshCw className="mr-2 h-4 w-4" />
           再試行
         </Button>
-        <Button variant="outline" onClick={() => (window.location.href = '/')} className="w-full">
+        <Button
+          className="w-full"
+          onClick={() => (window.location.href = "/")}
+          variant="outline"
+        >
           <Home className="mr-2 h-4 w-4" />
           ホームに戻る
         </Button>
@@ -103,7 +116,10 @@ const ErrorFallback: React.FC<ErrorFallbackProps> = ({ error, resetErrorBoundary
 /**
  * フォーム専用エラー表示コンポーネント
  */
-const FormErrorFallback: React.FC<ErrorFallbackProps> = ({ error, resetErrorBoundary }) => (
+const FormErrorFallback: React.FC<ErrorFallbackProps> = ({
+  error,
+  resetErrorBoundary,
+}) => (
   <Card className="border-destructive">
     <CardHeader>
       <CardTitle className="flex items-center text-destructive">
@@ -112,18 +128,20 @@ const FormErrorFallback: React.FC<ErrorFallbackProps> = ({ error, resetErrorBoun
       </CardTitle>
     </CardHeader>
     <CardContent>
-      <p className="text-sm text-muted-foreground">
+      <p className="text-muted-foreground text-sm">
         フォームの処理中にエラーが発生しました。もう一度お試しください。
       </p>
-      {process.env.NODE_ENV === 'development' && (
+      {process.env.NODE_ENV === "development" && (
         <details className="mt-2 rounded border bg-muted p-2 text-xs">
           <summary className="cursor-pointer">エラー詳細</summary>
-          <pre className="mt-1 overflow-auto whitespace-pre-wrap">{error.message}</pre>
+          <pre className="mt-1 overflow-auto whitespace-pre-wrap">
+            {error.message}
+          </pre>
         </details>
       )}
     </CardContent>
     <CardFooter>
-      <Button onClick={resetErrorBoundary} size="sm" className="w-full">
+      <Button className="w-full" onClick={resetErrorBoundary} size="sm">
         <RefreshCw className="mr-2 h-4 w-4" />
         リセット
       </Button>
@@ -174,7 +192,11 @@ export const FormErrorBoundary: React.FC<{
   children: React.ReactNode;
   onError?: (error: Error, errorInfo: React.ErrorInfo) => void;
 }> = ({ children, onError }) => (
-  <AppErrorBoundary fallback={FormErrorFallback} onError={onError || undefined} isolate={true}>
+  <AppErrorBoundary
+    fallback={FormErrorFallback}
+    isolate={true}
+    onError={onError || undefined}
+  >
     {children}
   </AppErrorBoundary>
 );

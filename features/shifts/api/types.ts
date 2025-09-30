@@ -2,20 +2,20 @@
  * Shifts API の型定義
  */
 
-import type { ApiResponse, BaseQueryParams } from '@/shared/types';
+import type { ApiResponse, BaseQueryParams } from "@/shared/types";
 import type {
-  Shift,
-  ShiftWithDetails,
-  ShiftCreateInput,
-  ShiftUpdateInput,
-  ShiftFilter,
   CalendarShift,
-  WeeklyShiftData,
   MonthlyShiftData,
-  ShiftType,
-  ShiftAssignmentInput,
+  Shift,
   ShiftAssignmentBulkInput,
-} from '../types/domain';
+  ShiftAssignmentInput,
+  ShiftCreateInput,
+  ShiftFilter,
+  ShiftType,
+  ShiftUpdateInput,
+  ShiftWithDetails,
+  WeeklyShiftData,
+} from "../types/domain";
 
 /**
  * Shifts API クエリパラメータ
@@ -37,7 +37,7 @@ export interface CalendarQueryParams {
   readonly year: number;
   readonly month: number;
   readonly departmentId?: number;
-  readonly view?: 'month' | 'week' | 'day';
+  readonly view?: "month" | "week" | "day";
 }
 
 /**
@@ -130,5 +130,10 @@ export interface ShiftErrorResponse {
 export interface ShiftValidationError {
   readonly field: string;
   readonly message: string;
-  readonly code: 'REQUIRED' | 'INVALID_FORMAT' | 'INVALID_DATE' | 'CONFLICT' | 'NOT_FOUND';
+  readonly code:
+    | "REQUIRED"
+    | "INVALID_FORMAT"
+    | "INVALID_DATE"
+    | "CONFLICT"
+    | "NOT_FOUND";
 }

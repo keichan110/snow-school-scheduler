@@ -1,5 +1,5 @@
-import { useQuery } from '@tanstack/react-query';
-import type { ApiResponse } from '@/lib/api/types';
+import { useQuery } from "@tanstack/react-query";
+import type { ApiResponse } from "@/lib/api/types";
 
 // 部門データの型定義
 interface Department {
@@ -36,10 +36,10 @@ interface Certification {
 
 // 静的データ用のクエリキー
 export const staticDataQueryKeys = {
-  departments: ['departments'] as const,
-  shiftTypes: ['shift-types'] as const,
-  instructors: ['instructors'] as const,
-  certifications: ['certifications'] as const,
+  departments: ["departments"] as const,
+  shiftTypes: ["shift-types"] as const,
+  instructors: ["instructors"] as const,
+  certifications: ["certifications"] as const,
 };
 
 // 部門データ取得フック（設計書：長期キャッシュ対応）
@@ -47,14 +47,14 @@ export function useDepartments() {
   return useQuery({
     queryKey: staticDataQueryKeys.departments,
     queryFn: async (): Promise<Department[]> => {
-      const response = await fetch('/api/departments');
+      const response = await fetch("/api/departments");
       if (!response.ok) {
-        throw new Error('Failed to fetch departments');
+        throw new Error("Failed to fetch departments");
       }
 
       const data: ApiResponse<Department[]> = await response.json();
-      if (!data.success || !data.data) {
-        throw new Error(data.error || 'Failed to fetch departments');
+      if (!(data.success && data.data)) {
+        throw new Error(data.error || "Failed to fetch departments");
       }
 
       return data.data;
@@ -72,14 +72,14 @@ export function useShiftTypes() {
   return useQuery({
     queryKey: staticDataQueryKeys.shiftTypes,
     queryFn: async (): Promise<ShiftType[]> => {
-      const response = await fetch('/api/shift-types');
+      const response = await fetch("/api/shift-types");
       if (!response.ok) {
-        throw new Error('Failed to fetch shift types');
+        throw new Error("Failed to fetch shift types");
       }
 
       const data: ApiResponse<ShiftType[]> = await response.json();
-      if (!data.success || !data.data) {
-        throw new Error(data.error || 'Failed to fetch shift types');
+      if (!(data.success && data.data)) {
+        throw new Error(data.error || "Failed to fetch shift types");
       }
 
       return data.data;
@@ -97,14 +97,14 @@ export function useInstructors() {
   return useQuery({
     queryKey: staticDataQueryKeys.instructors,
     queryFn: async (): Promise<Instructor[]> => {
-      const response = await fetch('/api/instructors');
+      const response = await fetch("/api/instructors");
       if (!response.ok) {
-        throw new Error('Failed to fetch instructors');
+        throw new Error("Failed to fetch instructors");
       }
 
       const data: ApiResponse<Instructor[]> = await response.json();
-      if (!data.success || !data.data) {
-        throw new Error(data.error || 'Failed to fetch instructors');
+      if (!(data.success && data.data)) {
+        throw new Error(data.error || "Failed to fetch instructors");
       }
 
       return data.data;
@@ -121,14 +121,14 @@ export function useCertifications() {
   return useQuery({
     queryKey: staticDataQueryKeys.certifications,
     queryFn: async (): Promise<Certification[]> => {
-      const response = await fetch('/api/certifications');
+      const response = await fetch("/api/certifications");
       if (!response.ok) {
-        throw new Error('Failed to fetch certifications');
+        throw new Error("Failed to fetch certifications");
       }
 
       const data: ApiResponse<Certification[]> = await response.json();
-      if (!data.success || !data.data) {
-        throw new Error(data.error || 'Failed to fetch certifications');
+      if (!(data.success && data.data)) {
+        throw new Error(data.error || "Failed to fetch certifications");
       }
 
       return data.data;
@@ -167,6 +167,9 @@ export function useAllStaticData() {
       certifications.isSuccess,
     // いずれかのデータでエラーが発生した場合
     hasError:
-      departments.isError || shiftTypes.isError || instructors.isError || certifications.isError,
+      departments.isError ||
+      shiftTypes.isError ||
+      instructors.isError ||
+      certifications.isError,
   };
 }

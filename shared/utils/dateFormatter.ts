@@ -5,7 +5,7 @@
 
 export interface DateFormatOptions {
   includeWeekday?: boolean;
-  format?: 'long' | 'short' | 'numeric';
+  format?: "long" | "short" | "numeric";
 }
 
 /**
@@ -14,11 +14,14 @@ export interface DateFormatOptions {
  * @param options - フォーマットオプション
  * @returns フォーマットされた日付文字列
  */
-export function formatDateForDisplay(dateString: string, options: DateFormatOptions = {}): string {
-  const { includeWeekday = true, format = 'long' } = options;
+export function formatDateForDisplay(
+  dateString: string,
+  options: DateFormatOptions = {}
+): string {
+  const { includeWeekday = true, format = "long" } = options;
 
   // 不正な入力のチェック
-  if (!dateString || dateString.trim() === '' || dateString === 'null') {
+  if (!dateString || dateString.trim() === "" || dateString === "null") {
     return dateString;
   }
 
@@ -31,20 +34,20 @@ export function formatDateForDisplay(dateString: string, options: DateFormatOpti
     }
 
     let dateStr: string;
-    if (format === 'short') {
+    if (format === "short") {
       // short形式の場合は 2024/3/15 形式
       dateStr = `${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()}`;
     } else {
-      dateStr = date.toLocaleDateString('ja-JP', {
-        year: 'numeric',
+      dateStr = date.toLocaleDateString("ja-JP", {
+        year: "numeric",
         month: format,
-        day: 'numeric',
+        day: "numeric",
       });
     }
 
     if (includeWeekday) {
-      const weekdayStr = date.toLocaleDateString('ja-JP', {
-        weekday: 'short',
+      const weekdayStr = date.toLocaleDateString("ja-JP", {
+        weekday: "short",
       });
       return `${dateStr}（${weekdayStr}）`;
     }

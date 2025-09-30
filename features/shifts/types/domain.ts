@@ -4,13 +4,13 @@
 
 import type {
   BaseEntity,
-  ShiftId,
-  ShiftTypeId,
+  DateRange,
   DepartmentId,
   InstructorId,
   ShiftAssignmentId,
-  DateRange,
-} from '@/shared/types/common';
+  ShiftId,
+  ShiftTypeId,
+} from "@/shared/types/common";
 
 /**
  * シフト種別
@@ -67,7 +67,7 @@ export interface Instructor extends BaseEntity {
   readonly firstName: string;
   readonly lastNameKana?: string;
   readonly firstNameKana?: string;
-  readonly status: 'ACTIVE' | 'INACTIVE' | 'RETIRED';
+  readonly status: "ACTIVE" | "INACTIVE" | "RETIRED";
   readonly notes?: string;
 }
 
@@ -80,7 +80,7 @@ export interface ShiftWithDetails extends Shift {
   readonly assignments: readonly (ShiftAssignment & {
     instructor: Pick<
       Instructor,
-      'id' | 'lastName' | 'firstName' | 'lastNameKana' | 'firstNameKana'
+      "id" | "lastName" | "firstName" | "lastNameKana" | "firstNameKana"
     >;
   })[];
 }
@@ -131,8 +131,8 @@ export interface CalendarShift {
   readonly id: ShiftId;
   readonly date: Date;
   readonly title: string;
-  readonly department: Pick<Department, 'id' | 'name' | 'code'>;
-  readonly shiftType: Pick<ShiftType, 'id' | 'name'>;
+  readonly department: Pick<Department, "id" | "name" | "code">;
+  readonly shiftType: Pick<ShiftType, "id" | "name">;
   readonly instructorCount: number;
   readonly description?: string;
 }

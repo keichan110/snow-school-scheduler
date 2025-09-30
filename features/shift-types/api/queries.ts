@@ -1,25 +1,25 @@
 import {
-  useSuspenseQuery,
   type UseSuspenseQueryOptions,
   type UseSuspenseQueryResult,
-} from '@tanstack/react-query';
+  useSuspenseQuery,
+} from "@tanstack/react-query";
 
-import { fetchShiftTypes } from '@/app/shift-types/api';
-import type { ShiftType } from '@/app/shift-types/types';
+import { fetchShiftTypes } from "@/app/shift-types/api";
+import type { ShiftType } from "@/app/shift-types/types";
 
 /**
  * シフト種類一覧向けのクエリキー
  */
 export const shiftTypesQueryKeys = {
-  all: ['shift-types'] as const,
-  list: () => [...shiftTypesQueryKeys.all, 'list'] as const,
+  all: ["shift-types"] as const,
+  list: () => [...shiftTypesQueryKeys.all, "list"] as const,
 };
 
 export type ShiftTypesQueryKey = ReturnType<typeof shiftTypesQueryKeys.list>;
 
 type ShiftTypesQueryOptions<TData> = Omit<
   UseSuspenseQueryOptions<ShiftType[], Error, TData, ShiftTypesQueryKey>,
-  'queryKey' | 'queryFn' | 'suspense'
+  "queryKey" | "queryFn" | "suspense"
 >;
 
 export function useShiftTypesQuery<TData = ShiftType[]>(

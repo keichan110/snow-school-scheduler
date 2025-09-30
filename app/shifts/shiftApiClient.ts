@@ -1,12 +1,12 @@
 // シフト作成API クライアント関数
 
-import { ExistingShiftData, NewShiftData } from './DuplicateShiftDialog';
+import type { ExistingShiftData, NewShiftData } from "./DuplicateShiftDialog";
 
 // 統合API用の型定義
 export interface PrepareShiftResponse {
   success: boolean;
   data?: {
-    mode: 'create' | 'edit';
+    mode: "create" | "edit";
     shift: ExistingShiftData | null;
     formData: {
       date: string;
@@ -30,7 +30,7 @@ export interface ShiftApiResponse {
 // 重複エラーレスポンスの型定義
 export interface DuplicateShiftError extends ShiftApiResponse {
   success: false;
-  error: 'DUPLICATE_SHIFT';
+  error: "DUPLICATE_SHIFT";
   data: {
     existing: ExistingShiftData;
     canForce: boolean;
@@ -50,12 +50,14 @@ export interface CreateShiftParams {
 }
 
 // シフト作成API関数
-export async function createShift(params: CreateShiftParams): Promise<ShiftApiResponse> {
+export async function createShift(
+  params: CreateShiftParams
+): Promise<ShiftApiResponse> {
   try {
-    const response = await fetch('/api/shifts', {
-      method: 'POST',
+    const response = await fetch("/api/shifts", {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify(params),
     });
@@ -64,7 +66,7 @@ export async function createShift(params: CreateShiftParams): Promise<ShiftApiRe
 
     // HTTPステータスが成功でない場合の処理
     if (!response.ok) {
-      if (response.status === 409 && result.error === 'DUPLICATE_SHIFT') {
+      if (response.status === 409 && result.error === "DUPLICATE_SHIFT") {
         // 重複エラーの場合、そのまま返す
         return result as DuplicateShiftError;
       }
@@ -79,17 +81,19 @@ export async function createShift(params: CreateShiftParams): Promise<ShiftApiRe
 
     return result;
   } catch (error) {
-    console.error('Shift creation API error:', error);
+    console.error("Shift creation API error:", error);
     return {
       success: false,
-      error: 'ネットワークエラーが発生しました',
+      error: "ネットワークエラーが発生しました",
     };
   }
 }
 
 // 重複エラーかどうかを判定するヘルパー関数
-export function isDuplicateShiftError(response: ShiftApiResponse): response is DuplicateShiftError {
-  return !response.success && response.error === 'DUPLICATE_SHIFT';
+export function isDuplicateShiftError(
+  response: ShiftApiResponse
+): response is DuplicateShiftError {
+  return !response.success && response.error === "DUPLICATE_SHIFT";
 }
 
 // シフト作成処理のメインロジック
@@ -98,7 +102,7 @@ export async function handleShiftCreation(
   onDuplicateFound: (
     existingShift: ExistingShiftData,
     newShiftData: NewShiftData
-  ) => Promise<'merge' | 'replace' | 'cancel'>,
+  ) => Promise<"merge" | "replace" | "cancel">,
   onSuccess: (message: string) => void,
   onError: (error: string) => void
 ): Promise<void> {
@@ -115,20 +119,23 @@ export async function handleShiftCreation(
 
     if (response.success) {
       // 成功
-      onSuccess(response.message || 'シフトが正常に作成されました');
+      onSuccess(response.message || "シフトが正常に作成されました");
       return;
     }
 
     if (isDuplicateShiftError(response)) {
       // 重複検出 - ユーザーに選択を求める
-      const userAction = await onDuplicateFound(response.data.existing, shiftData);
+      const userAction = await onDuplicateFound(
+        response.data.existing,
+        shiftData
+      );
 
-      if (userAction === 'cancel') {
+      if (userAction === "cancel") {
         // キャンセルの場合は何もしない
         return;
       }
 
-      if (userAction === 'replace') {
+      if (userAction === "replace") {
         // 置換の場合は force=true で再実行
         const forceResponse = await createShift({
           date: shiftData.date,
@@ -140,17 +147,18 @@ export async function handleShiftCreation(
         });
 
         if (forceResponse.success) {
-          onSuccess(forceResponse.message || 'シフトが正常に更新されました');
+          onSuccess(forceResponse.message || "シフトが正常に更新されました");
         } else {
-          onError(forceResponse.error || 'シフトの更新に失敗しました');
+          onError(forceResponse.error || "シフトの更新に失敗しました");
         }
         return;
       }
 
-      if (userAction === 'merge') {
+      if (userAction === "merge") {
         // マージの場合は既存のインストラクターと新しいインストラクターを結合
         const existingInstructorIds = response.data.existing.assignments.map(
-          (assignment: { instructor: { id: number } }) => assignment.instructor.id
+          (assignment: { instructor: { id: number } }) =>
+            assignment.instructor.id
         );
 
         // 重複を除いて結合
@@ -165,25 +173,28 @@ export async function handleShiftCreation(
           date: shiftData.date,
           departmentId: shiftData.departmentId,
           shiftTypeId: shiftData.shiftTypeId,
-          description: shiftData.description || response.data.existing.description || undefined,
+          description:
+            shiftData.description ||
+            response.data.existing.description ||
+            undefined,
           assignedInstructorIds: mergedInstructorIds,
           force: true,
         });
 
         if (mergeResponse.success) {
-          onSuccess(mergeResponse.message || 'シフトが正常にマージされました');
+          onSuccess(mergeResponse.message || "シフトが正常にマージされました");
         } else {
-          onError(mergeResponse.error || 'シフトのマージに失敗しました');
+          onError(mergeResponse.error || "シフトのマージに失敗しました");
         }
         return;
       }
     }
 
     // その他のエラー
-    onError(response.error || 'シフトの作成に失敗しました');
+    onError(response.error || "シフトの作成に失敗しました");
   } catch (error) {
-    console.error('Shift creation handler error:', error);
-    onError('予期しないエラーが発生しました');
+    console.error("Shift creation handler error:", error);
+    onError("予期しないエラーが発生しました");
   }
 }
 
@@ -210,10 +221,10 @@ export async function prepareShift(params: {
 
     return result;
   } catch (error) {
-    console.error('Prepare shift API error:', error);
+    console.error("Prepare shift API error:", error);
     return {
       success: false,
-      error: 'ネットワークエラーが発生しました',
+      error: "ネットワークエラーが発生しました",
     };
   }
 }

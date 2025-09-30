@@ -1,4 +1,4 @@
-import { Department, DepartmentType } from '../types';
+import type { Department, DepartmentType } from "../types";
 
 // Performance optimization: pre-compiled regex patterns
 const SKI_PATTERN = /スキー/;
@@ -9,23 +9,23 @@ const departmentCache = new Map<number, DepartmentType>();
 
 // シフト種別の短縮名マッピング (type-safe Record)
 const SHIFT_TYPE_SHORT_MAP: Record<string, string> = {
-  スキーレッスン: 'レッスン',
-  スノーボードレッスン: 'レッスン',
-  スキー検定: '検定',
-  スノーボード検定: '検定',
-  県連事業: '県連',
-  月末イベント: 'イベント',
+  スキーレッスン: "レッスン",
+  スノーボードレッスン: "レッスン",
+  スキー検定: "検定",
+  スノーボード検定: "検定",
+  県連事業: "県連",
+  月末イベント: "イベント",
 } as const;
 
 // 部門背景クラスのマッピング (immutable)
 const DEPARTMENT_BG_CLASS_MAP = new Map<DepartmentType, string>([
-  ['ski', 'bg-ski-200 dark:bg-ski-800'],
-  ['snowboard', 'bg-snowboard-200 dark:bg-snowboard-800'],
-  ['mixed', 'bg-gray-200 dark:bg-gray-800'],
+  ["ski", "bg-ski-200 dark:bg-ski-800"],
+  ["snowboard", "bg-snowboard-200 dark:bg-snowboard-800"],
+  ["mixed", "bg-gray-200 dark:bg-gray-800"],
 ] as const);
 
 // Weekday cache for performance
-const WEEKDAYS = ['日', '月', '火', '水', '木', '金', '土'] as const;
+const WEEKDAYS = ["日", "月", "火", "水", "木", "金", "土"] as const;
 
 /**
  * シフト種別名を短縮形に変換 (type-safe with Record)
@@ -38,7 +38,9 @@ export function getShiftTypeShort(type: string): string {
  * 部門タイプに応じた背景クラスを取得 (optimized with Map)
  */
 export function getDepartmentBgClass(department: DepartmentType): string {
-  return DEPARTMENT_BG_CLASS_MAP.get(department) ?? 'bg-gray-200 dark:bg-gray-800';
+  return (
+    DEPARTMENT_BG_CLASS_MAP.get(department) ?? "bg-gray-200 dark:bg-gray-800"
+  );
 }
 
 /**
@@ -53,13 +55,16 @@ export function formatDate(year: number, month: number, day: number): string {
 /**
  * 部門名から部門タイプを判定 (optimized with regex)
  */
-export function determineDepartmentType(departmentName: string): DepartmentType {
+export function determineDepartmentType(
+  departmentName: string
+): DepartmentType {
   if (SKI_PATTERN.test(departmentName)) {
-    return 'ski';
-  } else if (SNOWBOARD_PATTERN.test(departmentName)) {
-    return 'snowboard';
+    return "ski";
   }
-  return 'mixed';
+  if (SNOWBOARD_PATTERN.test(departmentName)) {
+    return "snowboard";
+  }
+  return "mixed";
 }
 
 /**
@@ -75,7 +80,7 @@ export function getDepartmentTypeById(
   }
 
   const department = departments.find((d) => d.id === departmentId);
-  const type = department ? determineDepartmentType(department.name) : 'mixed';
+  const type = department ? determineDepartmentType(department.name) : "mixed";
 
   // Cache the result
   departmentCache.set(departmentId, type);
@@ -87,7 +92,7 @@ export function getDepartmentTypeById(
  */
 export function getWeekdayFromDate(dateString: string): string {
   const date = new Date(dateString);
-  return WEEKDAYS[date.getDay()] ?? '?';
+  return WEEKDAYS[date.getDay()] ?? "?";
 }
 
 /**

@@ -1,17 +1,19 @@
-import { useState, useCallback, useMemo } from 'react';
-import { ShiftQueryParams } from '../types';
+import { useCallback, useMemo, useState } from "react";
+import type { ShiftQueryParams } from "../types";
 import {
+  formatDateToString,
   getMonday,
   getSunday,
-  formatDateToString,
   getWeekPeriodDisplay,
-} from '../utils/weekCalculations';
+} from "../utils/weekCalculations";
 
 /**
  * 週間ナビゲーションのカスタムフック
  */
 export function useWeekNavigation(initialDate?: Date) {
-  const [weeklyBaseDate, setWeeklyBaseDate] = useState(initialDate || new Date());
+  const [weeklyBaseDate, setWeeklyBaseDate] = useState(
+    initialDate || new Date()
+  );
 
   // 週間ビュー用のクエリパラメータ計算
   const weeklyQueryParams = useMemo<ShiftQueryParams>(() => {
@@ -25,7 +27,10 @@ export function useWeekNavigation(initialDate?: Date) {
   }, [weeklyBaseDate]);
 
   // 週の期間表示文字列
-  const weekPeriod = useMemo(() => getWeekPeriodDisplay(weeklyBaseDate), [weeklyBaseDate]);
+  const weekPeriod = useMemo(
+    () => getWeekPeriodDisplay(weeklyBaseDate),
+    [weeklyBaseDate]
+  );
 
   // 年月情報
   const yearMonth = useMemo(
