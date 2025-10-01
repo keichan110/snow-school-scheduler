@@ -16,7 +16,7 @@ declare global {
 
 // Jest custom matchers の拡張
 declare module "@jest/expect" {
-  interface Matchers<R> {
+  type Matchers<R> = {
     /**
      * APIレスポンスが成功形式かをチェック
      */
@@ -56,12 +56,12 @@ declare module "@jest/expect" {
      * Promiseが指定時間内に解決されるかをチェック
      */
     toResolveWithin(timeoutMs: number): R;
-  }
+  };
 }
 
 // Testing Library の拡張
 declare module "@testing-library/react" {
-  interface RenderOptions {
+  type RenderOptions = {
     /**
      * テスト用QueryClient
      */
@@ -71,23 +71,23 @@ declare module "@testing-library/react" {
      * 初期プロパティ
      */
     initialProps?: Record<string, unknown>;
-  }
+  };
 }
 
 // テストデータ型定義
-export interface TestApiResponse<T = unknown> {
+export type TestApiResponse<T = unknown> = {
   success: boolean;
   data?: T;
   error?: string;
-}
+};
 
-export interface TestRouterState {
+export type TestRouterState = {
   pathname: string;
   searchParams: URLSearchParams;
   params: Record<string, string>;
-}
+};
 
-export interface TestPrismaConfig {
+export type TestPrismaConfig = {
   mockData?: {
     departments?: any[];
     instructors?: any[];
@@ -97,7 +97,7 @@ export interface TestPrismaConfig {
     shiftAssignments?: any[];
   };
   resetOnTest?: boolean;
-}
+};
 
 // モック関数の型定義
 export type MockFunction<T extends (...args: any[]) => any> = jest.Mock<
@@ -106,7 +106,7 @@ export type MockFunction<T extends (...args: any[]) => any> = jest.Mock<
 >;
 
 // テストユーティリティの型定義
-export interface TestUtils {
+export type TestUtils = {
   // ファクトリー関数
   factories: {
     createDepartment: (
@@ -142,10 +142,10 @@ export interface TestUtils {
 
   // レンダリング
   render: (ui: React.ReactElement, options?: any) => any;
-}
+};
 
 // Next.js App Router 関連の型定義
-export interface MockNavigationHooks {
+export type MockNavigationHooks = {
   useRouter: MockFunction<
     () => {
       push: jest.Mock;
@@ -170,18 +170,18 @@ export interface MockNavigationHooks {
   >;
   usePathname: MockFunction<() => string>;
   useParams: MockFunction<() => Record<string, string>>;
-}
+};
 
 // テスト環境変数の型定義
-export interface TestEnvironmentConfig {
+export type TestEnvironmentConfig = {
   NODE_ENV: "test";
   TZ: "Asia/Tokyo";
   DATABASE_URL: string;
   NEXT_PUBLIC_APP_URL?: string;
-}
+};
 
 // カスタムイベントハンドラーの型定義
-export interface MockEventHandlers {
+export type MockEventHandlers = {
   onClick: jest.Mock;
   onChange: jest.Mock;
   onSubmit: jest.Mock;
@@ -189,20 +189,20 @@ export interface MockEventHandlers {
   onBlur: jest.Mock;
   onKeyDown: jest.Mock;
   onKeyUp: jest.Mock;
-}
+};
 
 // テストケース共通の型定義
-export interface TestCase<T = any> {
+export type TestCase<T = any> = {
   description: string;
   input: T;
   expected: any;
   shouldThrow?: boolean;
   setup?: () => void | Promise<void>;
   teardown?: () => void | Promise<void>;
-}
+};
 
 // パフォーマンステストの型定義
-export interface PerformanceTestResult {
+export type PerformanceTestResult = {
   duration: number;
   memoryUsage: {
     heapUsed: number;
@@ -210,14 +210,14 @@ export interface PerformanceTestResult {
     external: number;
   };
   operationsPerSecond?: number;
-}
+};
 
 // テストスイート設定の型定義
-export interface TestSuiteConfig {
+export type TestSuiteConfig = {
   timeout?: number;
   retries?: number;
   setupFiles?: string[];
   teardownFiles?: string[];
   mockResets?: boolean;
   isolateModules?: boolean;
-}
+};

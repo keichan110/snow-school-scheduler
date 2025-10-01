@@ -7,13 +7,8 @@
 
 import { jest } from "@jest/globals";
 
-// 統一APIレスポンス形式の型定義
-type ApiResponse<T> =
-  | { success: true; data: T }
-  | { success: false; error: string };
-
 // APIレスポンスの型定義
-interface MockApiCall {
+type MockApiCall = {
   url: string;
   method: string;
   body?: any;
@@ -21,7 +16,7 @@ interface MockApiCall {
   response: any;
   status: number;
   delay?: number;
-}
+};
 
 // モックされたAPI呼び出しの履歴
 let mockApiCalls: MockApiCall[] = [];
@@ -35,10 +30,13 @@ const mockResponses = new Map<string, MockApiCall>();
 export const mockApiResponse = (
   method: string,
   url: string,
-  response: any,
-  status = 200,
-  delay = 0
+  options: {
+    response: any;
+    status?: number;
+    delay?: number;
+  }
 ) => {
+  const { response, status = 200, delay = 0 } = options;
   const key = `${method.toUpperCase()}:${url}`;
   mockResponses.set(key, {
     url,
@@ -57,7 +55,11 @@ export const mockSuccessResponse = <T>(
   url: string,
   data: T,
   status = 200
-) => mockApiResponse(method, url, { success: true, data }, status);
+) =>
+  mockApiResponse(method, url, {
+    response: { success: true, data },
+    status,
+  });
 
 export const mockErrorResponse = (
   method: string,
@@ -65,7 +67,10 @@ export const mockErrorResponse = (
   error: string,
   status = 400
 ) => {
-  mockApiResponse(method, url, { success: false, error }, status);
+  mockApiResponse(method, url, {
+    response: { success: false, error },
+    status,
+  });
 };
 
 /**
@@ -153,32 +158,42 @@ export const setupApiMocks = {
   departments: {
     list: (departments: any[] = []) =>
       mockApiResponse("GET", "/api/departments", {
-        success: true,
-        data: departments,
+        response: {
+          success: true,
+          data: departments,
+        },
       }),
 
     get: (id: number, department: any) =>
       mockApiResponse("GET", `/api/departments/${id}`, {
-        success: true,
-        data: department,
+        response: {
+          success: true,
+          data: department,
+        },
       }),
 
     create: (department: any) =>
       mockApiResponse("POST", "/api/departments", {
-        success: true,
-        data: department,
+        response: {
+          success: true,
+          data: department,
+        },
       }),
 
     update: (id: number, department: any) =>
       mockApiResponse("PUT", `/api/departments/${id}`, {
-        success: true,
-        data: department,
+        response: {
+          success: true,
+          data: department,
+        },
       }),
 
     delete: (id: number) =>
       mockApiResponse("DELETE", `/api/departments/${id}`, {
-        success: true,
-        data: null,
+        response: {
+          success: true,
+          data: null,
+        },
       }),
   },
 
@@ -186,32 +201,42 @@ export const setupApiMocks = {
   instructors: {
     list: (instructors: any[] = []) =>
       mockApiResponse("GET", "/api/instructors", {
-        success: true,
-        data: instructors,
+        response: {
+          success: true,
+          data: instructors,
+        },
       }),
 
     get: (id: number, instructor: any) =>
       mockApiResponse("GET", `/api/instructors/${id}`, {
-        success: true,
-        data: instructor,
+        response: {
+          success: true,
+          data: instructor,
+        },
       }),
 
     create: (instructor: any) =>
       mockApiResponse("POST", "/api/instructors", {
-        success: true,
-        data: instructor,
+        response: {
+          success: true,
+          data: instructor,
+        },
       }),
 
     update: (id: number, instructor: any) =>
       mockApiResponse("PUT", `/api/instructors/${id}`, {
-        success: true,
-        data: instructor,
+        response: {
+          success: true,
+          data: instructor,
+        },
       }),
 
     delete: (id: number) =>
       mockApiResponse("DELETE", `/api/instructors/${id}`, {
-        success: true,
-        data: null,
+        response: {
+          success: true,
+          data: null,
+        },
       }),
   },
 
@@ -219,65 +244,87 @@ export const setupApiMocks = {
   certifications: {
     list: (certifications: any[] = []) =>
       mockApiResponse("GET", "/api/certifications", {
-        success: true,
-        data: certifications,
+        response: {
+          success: true,
+          data: certifications,
+        },
       }),
 
     get: (id: number, certification: any) =>
       mockApiResponse("GET", `/api/certifications/${id}`, {
-        success: true,
-        data: certification,
+        response: {
+          success: true,
+          data: certification,
+        },
       }),
 
     create: (certification: any) =>
       mockApiResponse("POST", "/api/certifications", {
-        success: true,
-        data: certification,
+        response: {
+          success: true,
+          data: certification,
+        },
       }),
 
     update: (id: number, certification: any) =>
       mockApiResponse("PUT", `/api/certifications/${id}`, {
-        success: true,
-        data: certification,
+        response: {
+          success: true,
+          data: certification,
+        },
       }),
 
     delete: (id: number) =>
       mockApiResponse("DELETE", `/api/certifications/${id}`, {
-        success: true,
-        data: null,
+        response: {
+          success: true,
+          data: null,
+        },
       }),
   },
 
   // シフトAPI
   shifts: {
     list: (shifts: any[] = []) =>
-      mockApiResponse("GET", "/api/shifts", { success: true, data: shifts }),
+      mockApiResponse("GET", "/api/shifts", {
+        response: { success: true, data: shifts },
+      }),
 
     get: (id: number, shift: any) =>
       mockApiResponse("GET", `/api/shifts/${id}`, {
-        success: true,
-        data: shift,
+        response: {
+          success: true,
+          data: shift,
+        },
       }),
 
     create: (shift: any) =>
-      mockApiResponse("POST", "/api/shifts", { success: true, data: shift }),
+      mockApiResponse("POST", "/api/shifts", {
+        response: { success: true, data: shift },
+      }),
 
     update: (id: number, shift: any) =>
       mockApiResponse("PUT", `/api/shifts/${id}`, {
-        success: true,
-        data: shift,
+        response: {
+          success: true,
+          data: shift,
+        },
       }),
 
     delete: (id: number) =>
       mockApiResponse("DELETE", `/api/shifts/${id}`, {
-        success: true,
-        data: null,
+        response: {
+          success: true,
+          data: null,
+        },
       }),
 
     prepare: (prepareData: any) =>
       mockApiResponse("GET", "/api/shifts/prepare", {
-        success: true,
-        data: prepareData,
+        response: {
+          success: true,
+          data: prepareData,
+        },
       }),
   },
 
@@ -285,40 +332,52 @@ export const setupApiMocks = {
   shiftTypes: {
     list: (shiftTypes: any[] = []) =>
       mockApiResponse("GET", "/api/shift-types", {
-        success: true,
-        data: shiftTypes,
+        response: {
+          success: true,
+          data: shiftTypes,
+        },
       }),
 
     get: (id: number, shiftType: any) =>
       mockApiResponse("GET", `/api/shift-types/${id}`, {
-        success: true,
-        data: shiftType,
+        response: {
+          success: true,
+          data: shiftType,
+        },
       }),
 
     create: (shiftType: any) =>
       mockApiResponse("POST", "/api/shift-types", {
-        success: true,
-        data: shiftType,
+        response: {
+          success: true,
+          data: shiftType,
+        },
       }),
 
     update: (id: number, shiftType: any) =>
       mockApiResponse("PUT", `/api/shift-types/${id}`, {
-        success: true,
-        data: shiftType,
+        response: {
+          success: true,
+          data: shiftType,
+        },
       }),
 
     delete: (id: number) =>
       mockApiResponse("DELETE", `/api/shift-types/${id}`, {
-        success: true,
-        data: null,
+        response: {
+          success: true,
+          data: null,
+        },
       }),
   },
 
   // ヘルスチェック
   health: () =>
     mockApiResponse("GET", "/api/health", {
-      success: true,
-      data: { status: "ok" },
+      response: {
+        success: true,
+        data: { status: "ok" },
+      },
     }),
 };
 
@@ -351,7 +410,10 @@ export const setupApiErrors = {
 
   // ネットワークエラー
   networkError: (method: string, url: string) => {
-    mockApiResponse(method, url, null, 0); // status 0 for network errors
+    mockApiResponse(method, url, {
+      response: null,
+      status: 0,
+    }); // status 0 for network errors
   },
 };
 
@@ -395,9 +457,9 @@ export const expectApiCallWith = (
   }
 
   if (expectedHeaders) {
-    Object.entries(expectedHeaders).forEach(([key, value]) => {
+    for (const [key, value] of Object.entries(expectedHeaders)) {
       expect(call?.headers?.[key]).toBe(value);
-    });
+    }
   }
 };
 

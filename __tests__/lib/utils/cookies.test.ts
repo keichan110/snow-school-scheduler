@@ -3,7 +3,6 @@
  * CSRF攻撃対策とセキュリティ強化されたCookie管理を検証
  */
 
-import { NextResponse } from "next/server";
 import {
   clearAuthCookies,
   deleteCookie,

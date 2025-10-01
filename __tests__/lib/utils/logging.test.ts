@@ -5,6 +5,9 @@
 
 import { maskSensitiveData, secureLog } from "@/lib/utils/logging";
 
+// テスト用の正規表現パターン
+const MASKED_PATTERN = /\.\.\.$/;
+
 // 環境変数のモック
 const originalNodeEnv = process.env.NODE_ENV;
 
@@ -136,7 +139,7 @@ describe("セキュリティテストケース", () => {
     expect(masked.channelSecret).not.toContain(
       "abcdef1234567890abcdef1234567890"
     );
-    expect(masked.jwt).toMatch(/\.\.\.$/); // マスク形式
+    expect(masked.jwt).toMatch(MASKED_PATTERN); // マスク形式
     expect(masked.channelSecret).toBe("abcd...7890"); // マスク形式
 
     // 通常データはそのまま

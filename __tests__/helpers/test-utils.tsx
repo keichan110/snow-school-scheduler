@@ -25,10 +25,10 @@ const createTestQueryClient = () =>
   });
 
 // プロバイダーラッパーコンポーネント
-interface ProvidersProps {
+type ProvidersProps = {
   children: React.ReactNode;
   queryClient?: QueryClient;
-}
+};
 
 const TestProviders: React.FC<ProvidersProps> = ({
   children,
@@ -105,7 +105,7 @@ export const waitForElementToBeRemoved = async (
 /**
  * フォーム送信のシミュレーション
  */
-export const submitForm = async (form: HTMLFormElement): Promise<void> => {
+export const submitForm = (form: HTMLFormElement): void => {
   const submitEvent = new Event("submit", { bubbles: true, cancelable: true });
   form.dispatchEvent(submitEvent);
 };
@@ -134,10 +134,12 @@ export const mockLocalStorage = () => {
       store[key] = value;
     }),
     removeItem: jest.fn((key: string) => {
-      delete store[key];
+      store[key] = undefined as any;
     }),
     clear: jest.fn(() => {
-      Object.keys(store).forEach((key) => delete store[key]);
+      for (const key of Object.keys(store)) {
+        store[key] = undefined as any;
+      }
     }),
     get length() {
       return Object.keys(store).length;
@@ -184,10 +186,14 @@ export const mockMatchMedia = (matches = false) => {
  * エラーハンドリングのテスト用ユーティリティ
  */
 export const suppressConsoleError = (): jest.SpyInstance =>
-  jest.spyOn(console, "error").mockImplementation(() => {});
+  jest.spyOn(console, "error").mockImplementation(() => {
+    // Intentionally suppress console.error in tests
+  });
 
 export const suppressConsoleWarn = (): jest.SpyInstance =>
-  jest.spyOn(console, "warn").mockImplementation(() => {});
+  jest.spyOn(console, "warn").mockImplementation(() => {
+    // Intentionally suppress console.warn in tests
+  });
 
 /**
  * テスト用のカスタムフック

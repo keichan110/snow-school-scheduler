@@ -8,7 +8,7 @@
 import { jest } from "@jest/globals";
 
 // Router モック状態の管理
-interface RouterMockState {
+type RouterMockState = {
   pathname: string;
   searchParams: URLSearchParams;
   params: Record<string, string>;
@@ -20,7 +20,7 @@ interface RouterMockState {
     refresh: jest.Mock;
     prefetch: jest.Mock;
   };
-}
+};
 
 // デフォルトのルーター状態
 const defaultRouterState: RouterMockState = {
@@ -57,11 +57,14 @@ export const createMockUseRouter = (
 export const createMockUseSearchParams = (
   searchParams?: URLSearchParams | string
 ) => {
-  const params = searchParams
-    ? typeof searchParams === "string"
-      ? new URLSearchParams(searchParams)
-      : searchParams
-    : currentRouterState.searchParams;
+  let params: URLSearchParams;
+  if (!searchParams) {
+    params = currentRouterState.searchParams;
+  } else if (typeof searchParams === "string") {
+    params = new URLSearchParams(searchParams);
+  } else {
+    params = searchParams;
+  }
 
   const mockSearchParams = {
     get: jest.fn((key: string) => params.get(key)),
@@ -171,13 +174,13 @@ export const simulateNavigation = (
  * 検索パラメータの更新シミュレーション
  */
 export const updateSearchParams = (params: Record<string, string | null>) => {
-  Object.entries(params).forEach(([key, value]) => {
+  for (const [key, value] of Object.entries(params)) {
     if (value === null) {
       currentRouterState.searchParams.delete(key);
     } else {
       currentRouterState.searchParams.set(key, value);
     }
-  });
+  }
 };
 
 /**

@@ -147,7 +147,7 @@ function toBeJapaneseHoliday(received: Date) {
     const holiday = japaneseHolidays.isHoliday(received);
     isHoliday = !!holiday;
     holidayName = holiday ? holiday.name : "";
-  } catch (error) {
+  } catch (_error) {
     // ライブラリが利用できない場合はスキップ
     return {
       pass: false,
@@ -227,7 +227,7 @@ async function toResolveWithin(received: Promise<any>, timeoutMs: number) {
   const startTime = Date.now();
 
   try {
-    const result = await Promise.race([
+    const _result = await Promise.race([
       received,
       new Promise((_, reject) =>
         setTimeout(

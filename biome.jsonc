@@ -1,6 +1,19 @@
 {
   "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
   "extends": ["ultracite"],
+  "javascript": {
+    "globals": [
+      "jest",
+      "describe",
+      "it",
+      "test",
+      "expect",
+      "beforeEach",
+      "afterEach",
+      "beforeAll",
+      "afterAll"
+    ]
+  },
   "linter": {
     "rules": {
       "style": {
@@ -22,6 +35,16 @@
         "rules": {
           "style": {
             "noMagicNumbers": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["**/__tests__/mocks/**/*"],
+      "linter": {
+        "rules": {
+          "suspicious": {
+            "noMisplacedAssertion": "off"
           }
         }
       }

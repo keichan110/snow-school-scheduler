@@ -52,10 +52,15 @@ const createMockCrudOperations = (tableName: keyof typeof mockDatabase) => ({
               !Array.isArray(value)
             ) {
               // 複雑な条件（equals, gt, lt等）は簡単に実装
-              if ("equals" in value) return item[key] === value.equals;
-              if ("in" in value) return (value.in as any).includes(item[key]);
-              if ("contains" in value)
+              if ("equals" in value) {
+                return item[key] === value.equals;
+              }
+              if ("in" in value) {
+                return (value.in as any).includes(item[key]);
+              }
+              if ("contains" in value) {
                 return String(item[key]).includes(String(value.contains));
+              }
               // サポートされていない条件はfalseを返す（フィルタリングを確実に行う）
               return false;
             }
@@ -85,15 +90,21 @@ const createMockCrudOperations = (tableName: keyof typeof mockDatabase) => ({
     }
 
     // take/skip の実装
-    if (args.skip) data = data.slice(args.skip);
-    if (args.take) data = data.slice(0, args.take);
+    if (args.skip) {
+      data = data.slice(args.skip);
+    }
+    if (args.take) {
+      data = data.slice(0, args.take);
+    }
 
     return Promise.resolve(data);
   }),
 
   findUnique: jest.fn().mockImplementation((args: any) => {
     const data = mockDatabase[tableName].find((item) => {
-      if (args.where.id) return item.id === args.where.id;
+      if (args.where.id) {
+        return item.id === args.where.id;
+      }
       // その他の unique フィールドに対する検索
       return Object.entries(args.where).every(
         ([key, value]) => item[key] === value
@@ -145,7 +156,9 @@ const createMockCrudOperations = (tableName: keyof typeof mockDatabase) => ({
 
   update: jest.fn().mockImplementation((args: any) => {
     const index = mockDatabase[tableName].findIndex((item) => {
-      if (args.where.id) return item.id === args.where.id;
+      if (args.where.id) {
+        return item.id === args.where.id;
+      }
       return Object.entries(args.where).every(
         ([key, value]) => item[key] === value
       );
@@ -167,7 +180,9 @@ const createMockCrudOperations = (tableName: keyof typeof mockDatabase) => ({
 
   delete: jest.fn().mockImplementation((args: any) => {
     const index = mockDatabase[tableName].findIndex((item) => {
-      if (args.where.id) return item.id === args.where.id;
+      if (args.where.id) {
+        return item.id === args.where.id;
+      }
       return Object.entries(args.where).every(
         ([key, value]) => item[key] === value
       );
@@ -239,7 +254,7 @@ export const createMockPrismaClient = (): MockPrismaClient => {
     $transaction: jest.fn().mockImplementation(async (...args: any[]) => {
       const [operations] = args as [any[]];
       // 簡単なトランザクションシミュレーション
-      const results = [];
+      const results: any[] = [];
       for (const operation of operations) {
         if (typeof operation === "function") {
           results.push(await operation(mockPrisma));
@@ -300,9 +315,9 @@ export const setupMockData = () => {
 
 // モックデータベースのリセット
 export const resetMockDatabase = () => {
-  Object.keys(mockDatabase).forEach((key) => {
+  for (const key of Object.keys(mockDatabase)) {
     mockDatabase[key as keyof typeof mockDatabase] = [];
-  });
+  }
   idCounter = 1;
 };
 
