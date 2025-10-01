@@ -1,6 +1,10 @@
 import { lineAuthConfig } from "@/lib/env";
 import { logDebugConfig } from "@/lib/utils/logging";
 
+// LINE認証設定の検証用正規表現
+const CHANNEL_ID_REGEX = /^\d+$/;
+const CHANNEL_SECRET_REGEX = /^[a-f0-9]{32}$/;
+
 /**
  * LINE OAuth2 認証クライアント
  * LINE Login APIとの連携機能を提供
@@ -9,7 +13,7 @@ import { logDebugConfig } from "@/lib/utils/logging";
 /**
  * LINE認証の状態管理用の型定義
  */
-export interface LineAuthState {
+export type LineAuthState = {
   /** CSRF攻撃防止用のstateパラメータ */
   state: string;
   /** nonce値（必要に応じて） */
@@ -18,12 +22,12 @@ export interface LineAuthState {
   inviteToken?: string;
   /** 生成時刻 */
   createdAt: number;
-}
+};
 
 /**
  * LINE認証結果の型定義
  */
-export interface LineAuthResult {
+export type LineAuthResult = {
   success: boolean;
   data?: {
     /** LINE認証コード */
@@ -32,12 +36,12 @@ export interface LineAuthResult {
     state: string;
   };
   error?: string;
-}
+};
 
 /**
  * LINEユーザープロフィールの型定義
  */
-export interface LineUserProfile {
+export type LineUserProfile = {
   /** LINEユーザーID */
   userId: string;
   /** 表示名 */
@@ -46,16 +50,16 @@ export interface LineUserProfile {
   pictureUrl?: string;
   /** ステータスメッセージ（オプション） */
   statusMessage?: string;
-}
+};
 
 /**
  * LINEアクセストークン検証結果の型定義
  */
-export interface LineTokenValidation {
+export type LineTokenValidation = {
   success: boolean;
   profile?: LineUserProfile;
   error?: string;
-}
+};
 
 /**
  * ランダムなstate値を生成
@@ -365,14 +369,17 @@ export function validateLineAuthConfig(): {
   }
 
   // Channel IDの形式チェック（数値のみ）
-  if (lineAuthConfig.channelId && !/^\d+$/.test(lineAuthConfig.channelId)) {
+  if (
+    lineAuthConfig.channelId &&
+    !CHANNEL_ID_REGEX.test(lineAuthConfig.channelId)
+  ) {
     errors.push("LINE_CHANNEL_ID must be numeric");
   }
 
   // Channel Secretの形式チェック（32文字の16進数）
   if (
     lineAuthConfig.channelSecret &&
-    !/^[a-f0-9]{32}$/.test(lineAuthConfig.channelSecret)
+    !CHANNEL_SECRET_REGEX.test(lineAuthConfig.channelSecret)
   ) {
     errors.push("LINE_CHANNEL_SECRET must be 32 character hex string");
   }

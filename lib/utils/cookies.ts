@@ -5,7 +5,7 @@
 
 import type { NextResponse } from "next/server";
 
-export interface SecureCookieOptions {
+export type SecureCookieOptions = {
   name: string;
   value: string;
   maxAge?: number;
@@ -14,7 +14,7 @@ export interface SecureCookieOptions {
   httpOnly?: boolean;
   secure?: boolean;
   sameSite?: "strict" | "lax" | "none";
-}
+};
 
 /**
  * セキュアなCookie設定
@@ -51,6 +51,7 @@ export function setAuthCookie(response: NextResponse, token: string) {
   setSecureCookie(response, {
     name: "auth-token",
     value: token,
+    // biome-ignore lint/style/noMagicNumbers: 時間計算は数式のままが可読性が高い
     maxAge: 48 * 60 * 60, // 48時間（既存の設定に合わせる）
     sameSite: "strict", // 最も厳格なCSRF対策
     httpOnly: true, // JavaScriptからアクセス不可
@@ -84,6 +85,7 @@ export function setRefreshTokenCookie(
   setSecureCookie(response, {
     name: "refresh-token",
     value: refreshToken,
+    // biome-ignore lint/style/noMagicNumbers: 時間計算は数式のままが可読性が高い
     maxAge: 7 * 24 * 60 * 60, // 7日間
     sameSite: "strict",
     httpOnly: true,
@@ -149,6 +151,7 @@ export function validateCookieOptions(options: SecureCookieOptions): {
   if (
     options.name.includes("token") &&
     options.maxAge &&
+    // biome-ignore lint/style/noMagicNumbers: 時間計算は数式のままが可読性が高い
     options.maxAge >= 48 * 60 * 60
   ) {
     warnings.push(

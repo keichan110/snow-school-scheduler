@@ -6,10 +6,13 @@ import { jwtConfig } from "@/lib/env";
  * セキュアなJWT生成・検証・デコード機能を提供
  */
 
+// biome-ignore lint/style/noMagicNumbers: 時間計算は可読性のため意図的にマジックナンバーを使用
+const REFRESH_THRESHOLD_MS = 6 * 60 * 60 * 1000; // 6時間
+
 /**
  * JWTペイロードの型定義
  */
-export interface JwtPayload {
+export type JwtPayload = {
   /** ユーザーID (cuid形式) */
   userId: string;
   /** LINEユーザーID */
@@ -28,16 +31,16 @@ export interface JwtPayload {
   iss?: string;
   /** 対象者 */
   aud?: string;
-}
+};
 
 /**
  * JWT検証結果の型定義
  */
-export interface JwtVerificationResult {
+export type JwtVerificationResult = {
   success: boolean;
   payload?: JwtPayload;
   error?: string;
-}
+};
 
 /**
  * JWTトークン生成
@@ -59,6 +62,7 @@ export interface JwtVerificationResult {
 export function generateJwt(
   payload: Omit<JwtPayload, "iat" | "exp" | "iss" | "aud">
 ): string {
+  // biome-ignore lint/style/noMagicNumbers: Unix timestamp変換のため1000を使用
   const now = Math.floor(Date.now() / 1000);
 
   const jwtPayload: JwtPayload = {
@@ -234,6 +238,7 @@ export function getTokenExpiry(token: string): {
     };
   }
 
+  // biome-ignore lint/style/noMagicNumbers: Unix timestamp変換のため1000を使用
   const expiresAt = new Date(decoded.payload.exp * 1000);
   const isExpired = expiresAt.getTime() < Date.now();
 
@@ -263,7 +268,7 @@ export function shouldRefreshToken(token: string): boolean {
   }
 
   // 残り時間が6時間未満の場合はリフレッシュを推奨
-  const sixHoursFromNow = Date.now() + 6 * 60 * 60 * 1000;
+  const sixHoursFromNow = Date.now() + REFRESH_THRESHOLD_MS;
   return expiry.expiresAt.getTime() < sixHoursFromNow;
 }
 

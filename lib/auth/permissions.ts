@@ -128,7 +128,7 @@ export function hasMinimumRole(
   user: AuthenticatedUser | null | undefined,
   minimumRole: UserRole
 ): boolean {
-  if (!(user && user.isActive)) {
+  if (!user?.isActive) {
     return false;
   }
 
@@ -168,7 +168,7 @@ export function hasFullAccess(
   user: AuthenticatedUser | null | undefined,
   resource: Resource
 ): boolean {
-  if (!(user && user.isActive)) {
+  if (!user?.isActive) {
     return false;
   }
 
@@ -243,7 +243,7 @@ export function canAccessUser(
   targetUserId: string,
   action: Action
 ): boolean {
-  if (!(currentUser && currentUser.isActive)) {
+  if (!currentUser?.isActive) {
     return false;
   }
 
@@ -298,7 +298,7 @@ export function checkApiPermission(
  * デバッグ用: ユーザーの全権限を取得
  */
 export function getUserPermissions(user: AuthenticatedUser | null | undefined) {
-  if (!(user && user.isActive)) {
+  if (!user?.isActive) {
     return {
       role: null,
       permissions: {},

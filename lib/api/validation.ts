@@ -1,12 +1,19 @@
 import type { ValidationError } from "./types";
 
+// 正規表現パターン（トップレベル定義）
+const DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
+
+// バリデーション定数
+const MAX_LENGTH_NAME = 50;
+const MAX_LENGTH_NOTES = 500;
+
 /**
  * バリデーション結果
  */
-export interface ValidationResult {
+export type ValidationResult = {
   readonly isValid: boolean;
   readonly errors: ValidationError[];
-}
+};
 
 /**
  * バリデーション関数の型
@@ -39,13 +46,13 @@ export const required: ValidatorFunction = (
  * 文字列長バリデーター
  */
 export const minLength =
-  (min: number): ValidatorFunction<string> =>
+  (minLen: number): ValidatorFunction<string> =>
   (value, field = "field") => {
-    if (typeof value === "string" && value.length < min) {
+    if (typeof value === "string" && value.length < minLen) {
       return [
         {
           field,
-          message: `${field} must be at least ${min} characters long`,
+          message: `${field} must be at least ${minLen} characters long`,
           code: "MIN_LENGTH",
         },
       ];
@@ -54,13 +61,13 @@ export const minLength =
   };
 
 export const maxLength =
-  (max: number): ValidatorFunction<string> =>
+  (maxLen: number): ValidatorFunction<string> =>
   (value, field = "field") => {
-    if (typeof value === "string" && value.length > max) {
+    if (typeof value === "string" && value.length > maxLen) {
       return [
         {
           field,
-          message: `${field} must be at most ${max} characters long`,
+          message: `${field} must be at most ${maxLen} characters long`,
           code: "MAX_LENGTH",
         },
       ];
@@ -118,7 +125,7 @@ export const isString: ValidatorFunction = (value, field = "field") => {
 };
 
 export const isNumber: ValidatorFunction = (value, field = "field") => {
-  if (typeof value !== "number" || isNaN(value)) {
+  if (typeof value !== "number" || Number.isNaN(value)) {
     return [
       {
         field,
@@ -147,8 +154,7 @@ export const isBoolean: ValidatorFunction = (value, field = "field") => {
  * 日付バリデーター
  */
 export const isDate: ValidatorFunction = (value, field = "field") => {
-  const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
-  if (typeof value !== "string" || !dateRegex.test(value)) {
+  if (typeof value !== "string" || !DATE_REGEX.test(value)) {
     return [
       {
         field,
@@ -159,7 +165,7 @@ export const isDate: ValidatorFunction = (value, field = "field") => {
   }
 
   const date = new Date(value);
-  if (isNaN(date.getTime())) {
+  if (Number.isNaN(date.getTime())) {
     return [
       {
         field,
@@ -220,10 +226,10 @@ export const arrayOf =
     }
 
     const errors: ValidationError[] = [];
-    value.forEach((item, index) => {
+    for (const [index, item] of value.entries()) {
       const itemErrors = itemValidator(item, `${field}[${index}]`);
       errors.push(...itemErrors);
-    });
+    }
 
     return errors;
   };
@@ -232,7 +238,7 @@ export const arrayOf =
  * バリデーションスキーマ
  */
 export type ValidationSchema = {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // biome-ignore lint/suspicious/noExplicitAny: バリデーターは様々な型を受け入れる必要があるため
   [field: string]: ValidatorFunction<any>[];
 };
 
@@ -245,14 +251,14 @@ export function validate(
 ): ValidationResult {
   const errors: ValidationError[] = [];
 
-  Object.entries(schema).forEach(([field, validators]) => {
+  for (const [field, validators] of Object.entries(schema)) {
     const value = data[field];
 
-    validators.forEach((validator) => {
+    for (const validator of validators) {
       const fieldErrors = validator(value, field);
       errors.push(...fieldErrors);
-    });
-  });
+    }
+  }
 
   return {
     isValid: errors.length === 0,
@@ -269,7 +275,7 @@ export function checkRequiredFields(
 ): ValidationError[] {
   const errors: ValidationError[] = [];
 
-  requiredFields.forEach((field) => {
+  for (const field of requiredFields) {
     const value = data[field];
     if (value === undefined || value === null || value === "") {
       errors.push({
@@ -278,7 +284,7 @@ export function checkRequiredFields(
         code: "REQUIRED",
       });
     }
-  });
+  }
 
   return errors;
 }
@@ -289,12 +295,12 @@ export function checkRequiredFields(
 export const commonSchemas: { [key: string]: ValidationSchema } = {
   // インストラクター作成
   createInstructor: {
-    lastName: [required, isString, maxLength(50)],
-    firstName: [required, isString, maxLength(50)],
-    lastNameKana: [isString, maxLength(50)],
-    firstNameKana: [isString, maxLength(50)],
+    lastName: [required, isString, maxLength(MAX_LENGTH_NAME)],
+    firstName: [required, isString, maxLength(MAX_LENGTH_NAME)],
+    lastNameKana: [isString, maxLength(MAX_LENGTH_NAME)],
+    firstNameKana: [isString, maxLength(MAX_LENGTH_NAME)],
     status: [isOneOf(["ACTIVE", "INACTIVE", "RETIRED"])],
-    notes: [isString, maxLength(500)],
+    notes: [isString, maxLength(MAX_LENGTH_NOTES)],
     certificationIds: [isArray, arrayOf(isNumber)],
   },
 
@@ -303,7 +309,7 @@ export const commonSchemas: { [key: string]: ValidationSchema } = {
     date: [required, isDate],
     departmentId: [required, isNumber, min(1)],
     shiftTypeId: [required, isNumber, min(1)],
-    description: [isString, maxLength(500)],
+    description: [isString, maxLength(MAX_LENGTH_NOTES)],
     assignedInstructorIds: [isArray, arrayOf(isNumber)],
   },
 };

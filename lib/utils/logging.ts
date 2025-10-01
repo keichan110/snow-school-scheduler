@@ -3,9 +3,14 @@
  * 機密情報をマスキングしてログ出力する
  */
 
-interface SensitiveData {
+// マスキング定数
+const MIN_MASK_LENGTH = 8;
+const PREFIX_LENGTH = 4;
+const SUFFIX_LENGTH = 4;
+
+type SensitiveData = {
   [key: string]: unknown;
-}
+};
 
 /**
  * 機密情報をマスクしてログ出力
@@ -35,11 +40,11 @@ export function maskSensitiveData(data: SensitiveData): SensitiveData {
     );
 
     if (isSensitive && typeof value === "string") {
-      if (value.length <= 8) {
+      if (value.length <= MIN_MASK_LENGTH) {
         masked[key] = "****";
       } else {
         masked[key] =
-          `${value.substring(0, 4)}...${value.substring(value.length - 4)}`;
+          `${value.substring(0, PREFIX_LENGTH)}...${value.substring(value.length - SUFFIX_LENGTH)}`;
       }
     }
   }
@@ -65,13 +70,20 @@ export function secureLog(
 
   switch (level) {
     case "info":
+      // biome-ignore lint/suspicious/noConsole: ロギングユーティリティの本質的機能
       console.info(`🛡️ ${message}`, maskedData);
       break;
     case "warn":
+      // biome-ignore lint/suspicious/noConsole: ロギングユーティリティの本質的機能
       console.warn(`⚠️ ${message}`, maskedData);
       break;
     case "error":
+      // biome-ignore lint/suspicious/noConsole: ロギングユーティリティの本質的機能
       console.error(`❌ ${message}`, maskedData);
+      break;
+    default:
+      // biome-ignore lint/suspicious/noConsole: ロギングユーティリティの本質的機能
+      console.log(`${message}`, maskedData);
       break;
   }
 }
@@ -95,7 +107,9 @@ export function secureAuthLog(
     ? {
         ...data,
         // state は最初の8文字のみ表示
-        state: data.state ? `${data.state.substring(0, 8)}...` : undefined,
+        state: data.state
+          ? `${data.state.substring(0, MIN_MASK_LENGTH)}...`
+          : undefined,
       }
     : undefined;
 

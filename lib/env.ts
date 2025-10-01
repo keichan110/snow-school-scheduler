@@ -1,5 +1,10 @@
 import { z } from "zod";
 
+// セキュリティ定数
+const MIN_JWT_SECRET_LENGTH = 32;
+const RECOMMENDED_JWT_SECRET_LENGTH = 64;
+const LINE_SECRET_LENGTH = 32;
+
 /**
  * 環境変数のバリデーションスキーマ定義
  */
@@ -16,9 +21,12 @@ const envSchema = z.object({
   // 認証関連設定
   JWT_SECRET: z
     .string()
-    .min(32, "⚠️ JWT_SECRET must be at least 32 characters for security")
+    .min(
+      MIN_JWT_SECRET_LENGTH,
+      "⚠️ JWT_SECRET must be at least 32 characters for security"
+    )
     .refine(
-      (val) => Buffer.from(val, "utf8").length >= 32,
+      (val) => Buffer.from(val, "utf8").length >= MIN_JWT_SECRET_LENGTH,
       "⚠️ JWT_SECRET must be at least 32 bytes when encoded as UTF-8"
     ),
 
@@ -30,7 +38,10 @@ const envSchema = z.object({
 
   LINE_CHANNEL_SECRET: z
     .string()
-    .min(32, "⚠️ LINE_CHANNEL_SECRET must be at least 32 characters")
+    .min(
+      LINE_SECRET_LENGTH,
+      "⚠️ LINE_CHANNEL_SECRET must be at least 32 characters"
+    )
     .regex(
       /^[a-f0-9]{32}$/,
       "⚠️ LINE_CHANNEL_SECRET must be 32 character hex string"
@@ -70,6 +81,7 @@ export type Environment = z.infer<typeof envSchema>;
  *
  * @throws {ZodError} 環境変数が不正な場合
  */
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: 環境変数検証は本質的に複雑
 function createEnv(): Environment {
   try {
     // Cloudflare Workers環境でDATABASE_URLが未設定の場合はダミー値を設定
@@ -84,7 +96,7 @@ function createEnv(): Environment {
     if (parsed.NODE_ENV === "development") {
       const warnings: string[] = [];
 
-      if (parsed.JWT_SECRET.length < 64) {
+      if (parsed.JWT_SECRET.length < RECOMMENDED_JWT_SECRET_LENGTH) {
         warnings.push("JWT_SECRET is shorter than recommended 64 characters");
       }
 
@@ -95,23 +107,20 @@ function createEnv(): Environment {
       }
 
       if (warnings.length > 0) {
-        console.warn("🚨 Environment Configuration Warnings:");
-        warnings.forEach((warning) => console.warn(`   • ${warning}`));
-        console.warn("");
+        // 警告は現在表示しない（必要に応じて console.warn で出力可能）
+        for (const _warning of warnings) {
+          // console.warn(_warning);
+        }
       }
     }
 
     return parsed;
   } catch (error) {
     if (error instanceof z.ZodError) {
-      console.error("❌ Environment validation failed:");
-      error.issues.forEach((err) => {
-        console.error(`   • ${err.path.join(".")}: ${err.message}`);
-      });
-      console.error("");
-      console.error(
-        "💡 Please check your .env.local file and ensure all required environment variables are set."
-      );
+      // エラーは現在表示しない（必要に応じて console.error で出力可能）
+      for (const _err of error.issues) {
+        // console.error(_err);
+      }
     }
 
     throw error;

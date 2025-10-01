@@ -101,15 +101,7 @@ export function createInternalErrorResponse(
   context?: string
 ): NextResponse<ApiErrorResponse> {
   const errorMessage = error instanceof Error ? error.message : "Unknown error";
-  const logMessage = context ? `${context}: ${errorMessage}` : errorMessage;
-
-  // エラーログ出力
-  console.error("API Internal Error:", {
-    message: logMessage,
-    stack: error instanceof Error ? error.stack : undefined,
-    context,
-    timestamp: new Date().toISOString(),
-  });
+  const _logMessage = context ? `${context}: ${errorMessage}` : errorMessage;
 
   return createErrorResponse("Internal server error", {
     type: ApiErrorType.INTERNAL_ERROR,

@@ -1,4 +1,4 @@
-import { createHash, randomBytes } from "crypto";
+import { createHash, randomBytes } from "node:crypto";
 import { prisma } from "@/lib/db";
 
 /**
@@ -23,7 +23,7 @@ export const invitationConfig = {
 /**
  * 招待トークン作成時のパラメータ
  */
-export interface CreateInvitationTokenParams {
+export type CreateInvitationTokenParams = {
   /** 招待を作成するユーザーID */
   createdBy: string;
   /** 招待の説明（任意） */
@@ -31,12 +31,12 @@ export interface CreateInvitationTokenParams {
   /** 有効期限（必須）。Dateオブジェクトまたは時間数での指定 */
   expiresAt?: Date;
   expiresInHours?: number;
-}
+};
 
 /**
  * 招待トークンの詳細情報
  */
-export interface InvitationTokenDetails {
+export type InvitationTokenDetails = {
   token: string;
   description: string | null; // 修正: descriptionフィールドを追加
   expiresAt: Date;
@@ -51,17 +51,17 @@ export interface InvitationTokenDetails {
     displayName: string;
     role: string;
   };
-}
+};
 
 /**
  * 招待トークン検証結果
  */
-export interface TokenValidationResult {
+export type TokenValidationResult = {
   isValid: boolean;
   token?: InvitationTokenDetails;
   error?: string;
   errorCode?: "NOT_FOUND" | "EXPIRED" | "INACTIVE" | "MAX_USES_EXCEEDED";
-}
+};
 
 /**
  * セキュアな招待トークンを生成
@@ -197,16 +197,6 @@ export async function createInvitationToken(
     });
   });
 
-  console.log(
-    "✅ Invitation token created (previous active tokens deactivated):",
-    {
-      token: token.substring(0, 16) + "...",
-      createdBy: creator.displayName,
-      expiresAt: finalExpiresAt.toISOString(),
-      description: description || "No description",
-    }
-  );
-
   return {
     ...invitationToken,
     creator: {
@@ -307,7 +297,6 @@ export async function validateInvitationToken(
       token: invitationToken,
     };
   } catch (error) {
-    console.error("❌ Invitation token validation error:", error);
     return {
       isValid: false,
       error:
@@ -360,15 +349,6 @@ export async function incrementTokenUsage(
     },
   });
 
-  console.log("📊 Invitation token usage incremented:", {
-    token: token.substring(0, 16) + "...",
-    usedCount: updatedToken.usedCount,
-    maxUses: updatedToken.maxUses,
-    remaining: updatedToken.maxUses
-      ? updatedToken.maxUses - updatedToken.usedCount
-      : "無制限",
-  });
-
   return updatedToken;
 }
 
@@ -396,7 +376,7 @@ export async function deactivateInvitationToken(
     select: { role: true, isActive: true },
   });
 
-  if (!(user && user.isActive)) {
+  if (!user?.isActive) {
     throw new Error("Invalid user: Cannot deactivate invitation token");
   }
 
@@ -422,11 +402,6 @@ export async function deactivateInvitationToken(
         },
       },
     },
-  });
-
-  console.log("🚫 Invitation token deactivated:", {
-    token: token.substring(0, 16) + "...",
-    deactivatedBy,
   });
 
   return updatedToken;
@@ -486,10 +461,6 @@ export async function cleanupExpiredTokens(): Promise<number> {
       updatedAt: now,
     },
   });
-
-  if (result.count > 0) {
-    console.log(`🧹 Cleaned up ${result.count} expired invitation tokens`);
-  }
 
   return result.count;
 }

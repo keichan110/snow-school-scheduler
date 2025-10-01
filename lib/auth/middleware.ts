@@ -15,7 +15,7 @@ import { verifyJwt } from "./jwt";
 /**
  * 認証ユーザー情報の型定義
  */
-export interface AuthenticatedUser {
+export type AuthenticatedUser = {
   /** ユーザーID */
   id: string;
   /** LINEユーザーID */
@@ -32,27 +32,27 @@ export interface AuthenticatedUser {
   createdAt: Date;
   /** 更新日時 */
   updatedAt: Date;
-}
+};
 
 /**
  * 認証結果の型定義
  */
-export interface AuthenticationResult {
+export type AuthenticationResult = {
   success: boolean;
   user?: AuthenticatedUser;
   error?: string;
   statusCode?: number;
-}
+};
 
 /**
  * 権限チェック結果の型定義
  */
-export interface AuthorizationResult {
+export type AuthorizationResult = {
   success: boolean;
   user?: AuthenticatedUser;
   error?: string;
   statusCode?: number;
-}
+};
 
 /**
  * Cookieから認証トークンを取得
@@ -88,6 +88,7 @@ export function getAuthTokenFromRequest(request: NextRequest): string | null {
   // Authorization ヘッダーからもチェック（オプション）
   const authHeader = request.headers.get("authorization");
   if (authHeader?.startsWith("Bearer ")) {
+    // biome-ignore lint/style/noMagicNumbers: "Bearer "の文字列長
     return authHeader.substring(7);
   }
 
@@ -293,6 +294,7 @@ export async function withAuth(
         success: false,
         error: result.error || "Authentication failed",
       },
+      // biome-ignore lint/style/noMagicNumbers: 標準的なHTTPステータスコード
       { status: result.statusCode || 401 }
     );
 
@@ -340,8 +342,15 @@ export async function getAuthDebugInfo(request: NextRequest) {
   const token = getAuthTokenFromRequest(request);
   const hasToken = !!token;
 
-  let jwtInfo = null;
-  let dbUser = null;
+  let jwtInfo: {
+    valid: boolean;
+    payload: { userId: string; role: string; exp?: number } | null;
+    error?: string;
+  } | null = null;
+  let dbUser:
+    | { id: string; displayName: string; role: string; isActive: boolean }
+    | { error: string }
+    | null = null;
 
   if (token) {
     const jwtResult = verifyJwt(token);
@@ -376,6 +385,7 @@ export async function getAuthDebugInfo(request: NextRequest) {
 
   return {
     hasToken,
+    // biome-ignore lint/style/noMagicNumbers: デバッグ表示用の文字数制限
     token: token ? `${token.substring(0, 20)}...` : null, // 最初の20文字のみ表示
     jwt: jwtInfo,
     user: dbUser,
