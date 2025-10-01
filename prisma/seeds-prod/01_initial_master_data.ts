@@ -65,7 +65,9 @@ async function main() {
 
   const ensureShiftType = async (name: string) => {
     const existing = await prisma.shiftType.findFirst({ where: { name } });
-    if (existing) return existing;
+    if (existing) {
+      return existing;
+    }
     return prisma.shiftType.create({ data: { name } });
   };
 
@@ -103,7 +105,9 @@ async function main() {
           },
         });
 
-        if (existing) return existing;
+        if (existing) {
+          return existing;
+        }
 
         return prisma.certification.create({
           data: { ...cert, departmentId },

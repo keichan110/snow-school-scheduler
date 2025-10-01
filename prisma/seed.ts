@@ -557,7 +557,13 @@ async function main() {
   // ============================================
   console.log("シフトデータを作成中...");
 
-  const shifts = [];
+  const shifts: Array<{
+    id: number;
+    date: Date;
+    departmentId: number;
+    shiftTypeId: number;
+    description: string | null;
+  }> = [];
   const startDate = new Date("2025-12-20");
   const endDate = new Date("2026-03-01");
 

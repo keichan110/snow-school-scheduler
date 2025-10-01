@@ -25,6 +25,26 @@
           }
         }
       }
+    },
+    {
+      "includes": ["prisma/seed*.ts", "prisma/seeds-prod/**/*"],
+      "linter": {
+        "rules": {
+          "suspicious": {
+            "noConsole": "off",
+            "noEvolvingTypes": "off"
+          },
+          "complexity": {
+            "noExcessiveCognitiveComplexity": "off",
+            "useOptionalChain": "off"
+          },
+          "style": {
+            "useFilenamingConvention": "off",
+            "noMagicNumbers": "off",
+            "noNonNullAssertion": "off"
+          }
+        }
+      }
     }
   ]
 }
