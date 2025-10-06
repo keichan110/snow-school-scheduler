@@ -3,7 +3,7 @@ import { authenticateFromRequest } from "@/lib/auth/middleware";
 import { prisma } from "@/lib/db";
 
 // 既存シフトデータの型定義（レスポンス用）
-interface ExistingShiftData {
+type ExistingShiftData = {
   id: number;
   date: string;
   departmentId: number;
@@ -27,19 +27,19 @@ interface ExistingShiftData {
     };
   }>;
   assignedCount: number;
-}
+};
 
 // フォームデータの型定義
-interface FormData {
+type FormData = {
   date: string;
   departmentId: number;
   shiftTypeId: number;
   description: string | null;
   selectedInstructorIds: number[];
-}
+};
 
 // 統一レスポンスの型定義
-interface PrepareShiftResponse {
+type PrepareShiftResponse = {
   success: boolean;
   data: {
     mode: "create" | "edit";
@@ -47,7 +47,7 @@ interface PrepareShiftResponse {
     formData: FormData;
   };
   error?: string;
-}
+};
 
 // Prismaの型定義
 type ShiftWithRelations = {
@@ -77,9 +77,10 @@ type ShiftWithRelations = {
 
 // 既存シフトデータをレスポンス形式にフォーマットするヘルパー関数
 function formatExistingShift(shift: ShiftWithRelations): ExistingShiftData {
+  const dateStr = shift.date.toISOString().split("T")[0];
   return {
     id: shift.id,
-    date: shift.date.toISOString().split("T")[0]!,
+    date: dateStr ?? "",
     departmentId: shift.departmentId,
     shiftTypeId: shift.shiftTypeId,
     description: shift.description,
@@ -135,7 +136,7 @@ export async function GET(request: NextRequest) {
 
     // 日付フォーマットバリデーション
     const parsedDate = new Date(date);
-    if (isNaN(parsedDate.getTime())) {
+    if (Number.isNaN(parsedDate.getTime())) {
       return NextResponse.json(
         {
           success: false,
@@ -146,10 +147,10 @@ export async function GET(request: NextRequest) {
     }
 
     // 数値パラメータバリデーション
-    const parsedDepartmentId = Number.parseInt(departmentId);
-    const parsedShiftTypeId = Number.parseInt(shiftTypeId);
+    const parsedDepartmentId = Number.parseInt(departmentId, 10);
+    const parsedShiftTypeId = Number.parseInt(shiftTypeId, 10);
 
-    if (isNaN(parsedDepartmentId) || isNaN(parsedShiftTypeId)) {
+    if (Number.isNaN(parsedDepartmentId) || Number.isNaN(parsedShiftTypeId)) {
       return NextResponse.json(
         {
           success: false,
@@ -217,8 +218,7 @@ export async function GET(request: NextRequest) {
     };
 
     return NextResponse.json(response);
-  } catch (error) {
-    console.error("Prepare shift API error:", error);
+  } catch (_error) {
     return NextResponse.json(
       {
         success: false,

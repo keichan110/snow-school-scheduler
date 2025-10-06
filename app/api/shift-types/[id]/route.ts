@@ -2,16 +2,16 @@ import { type NextRequest, NextResponse } from "next/server";
 import { authenticateFromRequest } from "@/lib/auth/middleware";
 import { prisma } from "@/lib/db";
 
-interface Params {
+type Params = {
   params: Promise<{ id: string }>;
-}
+};
 
-export async function GET(request: NextRequest, context: Params) {
+export async function GET(_request: NextRequest, context: Params) {
   try {
     const { id } = await context.params;
-    const shiftTypeId = Number.parseInt(id);
+    const shiftTypeId = Number.parseInt(id, 10);
 
-    if (isNaN(shiftTypeId)) {
+    if (Number.isNaN(shiftTypeId)) {
       return NextResponse.json(
         {
           success: false,
@@ -42,8 +42,7 @@ export async function GET(request: NextRequest, context: Params) {
     }
 
     return NextResponse.json(shiftType);
-  } catch (error) {
-    console.error("ShiftTypes GET API error:", error);
+  } catch (_error) {
     return NextResponse.json(
       {
         success: false,
@@ -71,9 +70,9 @@ export async function PUT(request: NextRequest, context: Params) {
   }
   try {
     const { id } = await context.params;
-    const shiftTypeId = Number.parseInt(id);
+    const shiftTypeId = Number.parseInt(id, 10);
 
-    if (isNaN(shiftTypeId)) {
+    if (Number.isNaN(shiftTypeId)) {
       return NextResponse.json(
         {
           success: false,
@@ -130,8 +129,7 @@ export async function PUT(request: NextRequest, context: Params) {
     });
 
     return NextResponse.json(shiftType);
-  } catch (error) {
-    console.error("ShiftTypes PUT API error:", error);
+  } catch (_error) {
     return NextResponse.json(
       {
         success: false,

@@ -3,6 +3,18 @@ import { validateInvitationToken } from "@/lib/auth/invitations";
 import type { ApiResponse, InvitationValidationData } from "@/lib/auth/types";
 import { secureAuthLog, secureLog } from "@/lib/utils/logging";
 import { getClientIp, getRequestUserAgent } from "@/lib/utils/request";
+import {
+  TOKEN_MASK_MIN_LENGTH,
+  TOKEN_MASK_PREFIX_LENGTH,
+  TOKEN_MASK_SUFFIX_LENGTH,
+} from "@/shared/constants/auth";
+import {
+  HTTP_STATUS_BAD_REQUEST,
+  HTTP_STATUS_GONE,
+  HTTP_STATUS_INTERNAL_SERVER_ERROR,
+  HTTP_STATUS_NOT_FOUND,
+  HTTP_STATUS_OK,
+} from "@/shared/constants/http-status";
 
 /**
  * 招待URL検証API
@@ -25,10 +37,10 @@ export async function GET(
   const clientIp = getClientIp(request);
   const userAgent = getRequestUserAgent(request);
   const maskTokenValue = (value: string): string => {
-    if (value.length <= 8) {
+    if (value.length <= TOKEN_MASK_MIN_LENGTH) {
       return "****";
     }
-    return `${value.substring(0, 4)}...${value.substring(value.length - 4)}`;
+    return `${value.substring(0, TOKEN_MASK_PREFIX_LENGTH)}...${value.substring(value.length - TOKEN_MASK_SUFFIX_LENGTH)}`;
   };
   let maskedToken = "(unavailable)";
 
@@ -39,7 +51,7 @@ export async function GET(
     if (!token || typeof token !== "string" || token.trim().length === 0) {
       return NextResponse.json(
         { success: false, error: "Token parameter is required" },
-        { status: 400 }
+        { status: HTTP_STATUS_BAD_REQUEST }
       );
     }
 
@@ -71,24 +83,24 @@ export async function GET(
 
       return NextResponse.json(
         { success: true, data: responseData },
-        { status: 200 }
+        { status: HTTP_STATUS_OK }
       );
     }
     // 無効なトークンの場合
-    let statusCode = 400; // デフォルトは400
+    let statusCode = HTTP_STATUS_BAD_REQUEST; // デフォルトは400
 
     // エラーコードに応じてステータスコードを調整
     switch (validationResult.errorCode) {
       case "NOT_FOUND":
-        statusCode = 404;
+        statusCode = HTTP_STATUS_NOT_FOUND;
         break;
       case "EXPIRED":
       case "INACTIVE":
       case "MAX_USES_EXCEEDED":
-        statusCode = 410; // Gone - リソースは存在していたが現在は利用不可
+        statusCode = HTTP_STATUS_GONE; // Gone - リソースは存在していたが現在は利用不可
         break;
       default:
-        statusCode = 400;
+        statusCode = HTTP_STATUS_BAD_REQUEST;
     }
 
     secureLog("warn", "Invitation token verification rejected", {
@@ -122,7 +134,7 @@ export async function GET(
 
     return NextResponse.json(
       { success: false, error: errorMessage },
-      { status: 500 }
+      { status: HTTP_STATUS_INTERNAL_SERVER_ERROR }
     );
   }
 }

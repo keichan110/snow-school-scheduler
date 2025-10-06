@@ -33,7 +33,9 @@ describe("/api/departments/[id] GET", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     // console.errorをモック化してログ出力を抑制
-    jest.spyOn(console, "error").mockImplementation(() => {});
+    jest.spyOn(console, "error").mockImplementation(() => {
+      // ログ出力を抑制
+    });
     mockAuthenticateFromRequest.mockResolvedValue({
       success: true,
       user: {

@@ -1,11 +1,11 @@
 import type { InstructorFormData, InstructorWithCertifications } from "./types";
 
-export interface ApiResponse<T> {
+export type ApiResponse<T> = {
   success: boolean;
   data: T | null;
   message: string | null;
   error: string | null;
-}
+};
 
 export async function fetchInstructors(): Promise<
   InstructorWithCertifications[]

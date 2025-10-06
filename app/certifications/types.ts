@@ -9,32 +9,32 @@ export interface CertificationWithDepartment extends Certification {
 
 export type DepartmentData = Department;
 
-export interface CertificationStats {
+export type CertificationStats = {
   total: number;
   active: number;
   ski: number;
   snowboard: number;
-}
+};
 
-export interface CertificationFormData {
+export type CertificationFormData = {
   name: string;
   shortName: string;
   department: "ski" | "snowboard";
   organization: string;
   description: string;
   status: "active" | "inactive";
-}
+};
 
-export interface CertificationModalProps {
+export type CertificationModalProps = {
   isOpen: boolean;
   onClose: () => void;
   certification?: CertificationWithDepartment | null;
   onSave: (data: CertificationFormData) => Promise<void>;
-}
+};
 
-export interface CertificationCardProps {
+export type CertificationCardProps = {
   certification: CertificationWithDepartment;
   onEdit: (certification: CertificationWithDepartment) => void;
-}
+};
 
 export type FilterType = "all" | "ski" | "snowboard" | "active";

@@ -13,14 +13,14 @@ export interface InstructorWithCertifications extends Instructor {
   }[];
 }
 
-export interface InstructorStats {
+export type InstructorStats = {
   total: number;
   active: number;
   skiInstructors: number;
   snowboardInstructors: number;
-}
+};
 
-export interface InstructorFormData {
+export type InstructorFormData = {
   lastName: string;
   firstName: string;
   lastNameKana?: string;
@@ -28,18 +28,18 @@ export interface InstructorFormData {
   status: "active" | "inactive" | "retired";
   notes?: string;
   certificationIds?: number[];
-}
+};
 
-export interface InstructorModalProps {
+export type InstructorModalProps = {
   isOpen: boolean;
   onClose: () => void;
   instructor?: InstructorWithCertifications | null;
   onSave: (data: InstructorFormData) => Promise<void>;
-}
+};
 
-export interface InstructorCardProps {
+export type InstructorCardProps = {
   instructor: InstructorWithCertifications;
   onEdit: (instructor: InstructorWithCertifications) => void;
-}
+};
 
 export type CategoryFilterType = "all" | "ski" | "snowboard";

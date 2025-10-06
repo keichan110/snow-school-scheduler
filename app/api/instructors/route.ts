@@ -49,7 +49,7 @@ export async function GET(request: NextRequest) {
       let departmentIdFilter: number | undefined;
       if (departmentIdParam) {
         const departmentId = Number.parseInt(departmentIdParam, 10);
-        if (isNaN(departmentId) || departmentId <= 0) {
+        if (Number.isNaN(departmentId) || departmentId <= 0) {
           return createValidationErrorResponse([
             {
               field: "departmentId",
@@ -219,16 +219,16 @@ export async function POST(request: NextRequest) {
 
       // レスポンス形式をOpenAPI仕様に合わせて変換
       const formattedInstructor = {
-        id: result!.id,
-        lastName: result!.lastName,
-        firstName: result!.firstName,
-        lastNameKana: result!.lastNameKana,
-        firstNameKana: result!.firstNameKana,
-        status: result!.status,
-        notes: result!.notes,
-        createdAt: result!.createdAt,
-        updatedAt: result!.updatedAt,
-        certifications: result!.certifications.map((ic) => ({
+        id: result?.id,
+        lastName: result?.lastName,
+        firstName: result?.firstName,
+        lastNameKana: result?.lastNameKana,
+        firstNameKana: result?.firstNameKana,
+        status: result?.status,
+        notes: result?.notes,
+        createdAt: result?.createdAt,
+        updatedAt: result?.updatedAt,
+        certifications: result?.certifications.map((ic) => ({
           id: ic.certification.id,
           name: ic.certification.name,
           shortName: ic.certification.shortName,

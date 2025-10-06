@@ -53,8 +53,9 @@ const daysInMonthCache = new Map<string, number>();
 export function getDaysInMonth(year: number, month: number): number {
   const key = `${year}-${month}`;
 
-  if (daysInMonthCache.has(key)) {
-    return daysInMonthCache.get(key)!;
+  const cachedValue = daysInMonthCache.get(key);
+  if (cachedValue !== undefined) {
+    return cachedValue;
   }
 
   const days = new Date(year, month, 0).getDate();
@@ -70,8 +71,9 @@ const firstDayCache = new Map<string, number>();
 export function getFirstDayOfWeek(year: number, month: number): number {
   const key = `${year}-${month}`;
 
-  if (firstDayCache.has(key)) {
-    return firstDayCache.get(key)!;
+  const cachedValue = firstDayCache.get(key);
+  if (cachedValue !== undefined) {
+    return cachedValue;
   }
 
   const firstDay = new Date(year, month - 1, 1).getDay();

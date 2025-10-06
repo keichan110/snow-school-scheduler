@@ -2,24 +2,16 @@
 
 import { useQueryErrorResetBoundary } from "@tanstack/react-query";
 import { AlertTriangle } from "lucide-react";
-import { useEffect } from "react";
 
 import { Button } from "@/components/ui/button";
 
-interface InstructorsErrorProps {
+type InstructorsErrorProps = {
   error: Error & { digest?: string };
   reset: () => void;
-}
+};
 
-export default function InstructorsError({
-  error,
-  reset,
-}: InstructorsErrorProps) {
+export default function InstructorsError({ reset }: InstructorsErrorProps) {
   const { reset: resetQueryError } = useQueryErrorResetBoundary();
-
-  useEffect(() => {
-    console.error("Failed to render instructors page:", error);
-  }, [error]);
 
   return (
     <div className="mx-auto flex min-h-[320px] max-w-3xl flex-col items-center justify-center gap-4 px-4 py-10 text-center">

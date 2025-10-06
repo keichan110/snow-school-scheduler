@@ -2,17 +2,17 @@ import { type NextRequest, NextResponse } from "next/server";
 import { authenticateFromRequest } from "@/lib/auth/middleware";
 import { prisma } from "@/lib/db";
 
-interface RouteContext {
+type RouteContext = {
   params: Promise<{ id: string }>;
-}
+};
 
-export async function GET(request: NextRequest, context: RouteContext) {
+export async function GET(_request: NextRequest, context: RouteContext) {
   try {
     const { id } = await context.params;
 
     // IDが数値でない場合は404を返す
     const certificationId = Number.parseInt(id, 10);
-    if (isNaN(certificationId)) {
+    if (Number.isNaN(certificationId)) {
       return NextResponse.json(
         {
           success: false,
@@ -74,8 +74,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
       message: null,
       error: null,
     });
-  } catch (error) {
-    console.error("Certification API error:", error);
+  } catch (_error) {
     return NextResponse.json(
       {
         success: false,
@@ -106,7 +105,7 @@ export async function PUT(request: NextRequest, context: RouteContext) {
 
     // IDが数値でない場合は404を返す
     const certificationId = Number.parseInt(id, 10);
-    if (isNaN(certificationId)) {
+    if (Number.isNaN(certificationId)) {
       return NextResponse.json(
         {
           success: false,
@@ -169,8 +168,6 @@ export async function PUT(request: NextRequest, context: RouteContext) {
       error: null,
     });
   } catch (error: unknown) {
-    console.error("Certification API error:", error);
-
     // Prismaの "Record to update not found" エラーを404として処理
     if (
       error &&

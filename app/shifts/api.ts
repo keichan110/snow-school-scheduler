@@ -11,13 +11,14 @@ const API_BASE = "/api" as const;
 
 // Generic API error handler
 class ApiError extends Error {
-  constructor(
-    message: string,
-    public readonly statusCode?: number,
-    public readonly originalError?: unknown
-  ) {
+  readonly statusCode?: number;
+  readonly originalError?: unknown;
+
+  constructor(message: string, statusCode?: number, originalError?: unknown) {
     super(message);
     this.name = "ApiError";
+    this.statusCode = statusCode;
+    this.originalError = originalError;
   }
 }
 
@@ -62,11 +63,11 @@ export async function fetchShifts(params?: ShiftQueryParams): Promise<Shift[]> {
   const searchParams = new URLSearchParams();
 
   if (params) {
-    Object.entries(params).forEach(([key, value]) => {
+    for (const [key, value] of Object.entries(params)) {
       if (value !== undefined) {
         searchParams.append(key, value.toString());
       }
-    });
+    }
   }
 
   const result = await apiRequest<Shift[]>(`/shifts?${searchParams}`);

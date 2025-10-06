@@ -4,6 +4,17 @@ import { z } from "zod";
 import { authenticateFromRequest } from "@/lib/auth/middleware";
 import type { ApiResponse } from "@/lib/auth/types";
 import { prisma } from "@/lib/db";
+import {
+  HTTP_STATUS_BAD_REQUEST,
+  HTTP_STATUS_FORBIDDEN,
+  HTTP_STATUS_INTERNAL_SERVER_ERROR,
+  HTTP_STATUS_UNAUTHORIZED,
+} from "@/shared/constants/http-status";
+import {
+  PAGINATION_MAX_LIMIT,
+  PAGINATION_MIN_LIMIT,
+  PAGINATION_MIN_PAGE,
+} from "@/shared/constants/pagination";
 
 /**
  * ユーザー管理API
@@ -14,17 +25,15 @@ import { prisma } from "@/lib/db";
  */
 
 // ユーザー一覧レスポンス型
-interface UserListResponse {
-  users: Array<
-    Pick<
-      User,
-      "id" | "displayName" | "role" | "isActive" | "createdAt" | "updatedAt"
-    >
-  >;
+type UserListResponse = {
+  users: Pick<
+    User,
+    "id" | "displayName" | "role" | "isActive" | "createdAt" | "updatedAt"
+  >[];
   total: number;
   page: number;
   limit: number;
-}
+};
 
 // クエリパラメータのバリデーションスキーマ
 const getUsersQuerySchema = z.object({
@@ -59,7 +68,7 @@ export async function GET(
           success: false,
           error: "Authentication required",
         },
-        { status: 401 }
+        { status: HTTP_STATUS_UNAUTHORIZED }
       );
     }
 
@@ -70,7 +79,7 @@ export async function GET(
           success: false,
           error: "Insufficient permissions",
         },
-        { status: 403 }
+        { status: HTTP_STATUS_FORBIDDEN }
       );
     }
 
@@ -86,16 +95,19 @@ export async function GET(
           success: false,
           error: "Invalid query parameters",
         },
-        { status: 400 }
+        { status: HTTP_STATUS_BAD_REQUEST }
       );
     }
 
     const { page, limit: limitStr, role, isActive, search } = queryResult.data;
 
     // ページネーション設定
-    const pageNum = Math.max(1, Number.parseInt(page, 10));
-    const limitNum = Math.min(100, Math.max(1, Number.parseInt(limitStr, 10)));
-    const skip = (pageNum - 1) * limitNum;
+    const pageNum = Math.max(PAGINATION_MIN_PAGE, Number.parseInt(page, 10));
+    const limitNum = Math.min(
+      PAGINATION_MAX_LIMIT,
+      Math.max(PAGINATION_MIN_LIMIT, Number.parseInt(limitStr, 10))
+    );
+    const skip = (pageNum - PAGINATION_MIN_PAGE) * limitNum;
 
     // フィルター条件構築
     const where: {
@@ -112,7 +124,7 @@ export async function GET(
       where.isActive = isActive === "true";
     }
 
-    if (search && search.trim()) {
+    if (search?.trim()) {
       where.displayName = {
         contains: search.trim(),
         mode: "insensitive",
@@ -152,14 +164,13 @@ export async function GET(
       success: true,
       data: response,
     });
-  } catch (error) {
-    console.error("Users API error:", error);
+  } catch (_error) {
     return NextResponse.json(
       {
         success: false,
         error: "Internal server error",
       },
-      { status: 500 }
+      { status: HTTP_STATUS_INTERNAL_SERVER_ERROR }
     );
   }
 }

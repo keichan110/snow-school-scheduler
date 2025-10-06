@@ -3,6 +3,9 @@
 import { useEffect } from "react";
 import { useAuth } from "@/contexts/auth-context";
 
+// ログアウト後のリダイレクト遅延時間（ミリ秒）
+const LOGOUT_REDIRECT_DELAY = 500;
+
 /**
  * ログアウト専用ページ
  *
@@ -20,25 +23,20 @@ export default function LogoutPage() {
   useEffect(() => {
     // ページがマウントされたら即座にログアウト処理を開始
     const performLogout = async () => {
-      console.log("🚪 Starting logout process on dedicated logout page...");
-
       try {
         // ログアウト処理を実行（API呼び出し + 状態クリア）
         await logout();
-        console.log("✅ Logout completed successfully");
 
         // 少し待ってからホームページにリダイレクト
         // この遅延により、状態の更新が確実に完了
         setTimeout(() => {
-          console.log("🏠 Redirecting to home page...");
           window.location.href = "/";
-        }, 500);
+        }, LOGOUT_REDIRECT_DELAY);
       } catch {
-        console.error("❌ Logout failed");
         // エラーが発生してもホームページにリダイレクト
         setTimeout(() => {
           window.location.href = "/";
-        }, 500);
+        }, LOGOUT_REDIRECT_DELAY);
       }
     };
 

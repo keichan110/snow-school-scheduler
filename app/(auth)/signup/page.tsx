@@ -33,7 +33,6 @@ export default function SignupPage() {
    */
   useEffect(() => {
     if (status === "authenticated" && user) {
-      console.log("✅ User already authenticated, redirecting to home");
       router.push("/");
     }
   }, [status, user, router]);
@@ -47,10 +46,6 @@ export default function SignupPage() {
       const inviteParam = urlParams.get("invite");
 
       if (inviteParam) {
-        console.log(
-          "🎫 Invitation token detected:",
-          inviteParam.substring(0, 16) + "..."
-        );
         setInviteToken(inviteParam);
         setHasInvite(true);
       }
@@ -60,15 +55,10 @@ export default function SignupPage() {
   /**
    * LINE認証による新規登録開始
    */
-  const handleLineSignup = async () => {
+  const handleLineSignup = () => {
     try {
       setIsSigningUp(true);
       setError(null);
-
-      console.log("🆕 Starting LINE signup flow...", {
-        hasInvite,
-        inviteToken: inviteToken?.substring(0, 16) + "..." || "none",
-      });
 
       // 招待トークンがある場合はURLパラメータとして追加
       const loginUrl = inviteToken
@@ -80,7 +70,6 @@ export default function SignupPage() {
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "新規登録に失敗しました";
-      console.error("❌ LINE signup error:", errorMessage);
       setError(errorMessage);
       setIsSigningUp(false);
     }

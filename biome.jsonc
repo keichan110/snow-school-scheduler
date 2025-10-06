@@ -30,11 +30,27 @@
   },
   "overrides": [
     {
+      "includes": ["**/*.css"],
+      "linter": {
+        "rules": {
+          "suspicious": {
+            "noUnknownAtRules": "off"
+          }
+        }
+      }
+    },
+    {
       "includes": ["**/*.{test,spec}.{js,jsx,ts,tsx}", "**/__tests__/**/*"],
       "linter": {
         "rules": {
           "style": {
             "noMagicNumbers": "off"
+          },
+          "suspicious": {
+            "useAwait": "off"
+          },
+          "performance": {
+            "useTopLevelRegex": "off"
           }
         }
       }

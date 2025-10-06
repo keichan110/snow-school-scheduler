@@ -2,19 +2,19 @@ import { type NextRequest, NextResponse } from "next/server";
 import { authenticateFromRequest } from "@/lib/auth/middleware";
 import { prisma } from "@/lib/db";
 
-interface Params {
+type Params = {
   id: string;
-}
+};
 
 export async function GET(
-  request: NextRequest,
+  _request: NextRequest,
   context: { params: Promise<Params> }
 ) {
   try {
     const params = await context.params;
-    const id = Number.parseInt(params.id);
+    const id = Number.parseInt(params.id, 10);
 
-    if (isNaN(id)) {
+    if (Number.isNaN(id)) {
       return NextResponse.json(
         {
           success: false,
@@ -83,8 +83,7 @@ export async function GET(
       message: "Shift operation completed successfully",
       error: null,
     });
-  } catch (error) {
-    console.error("Shift GET error:", error);
+  } catch (_error) {
     return NextResponse.json(
       {
         success: false,
@@ -115,9 +114,9 @@ export async function PUT(
   }
   try {
     const params = await context.params;
-    const id = Number.parseInt(params.id);
+    const id = Number.parseInt(params.id, 10);
 
-    if (isNaN(id)) {
+    if (Number.isNaN(id)) {
       return NextResponse.json(
         {
           success: false,
@@ -175,8 +174,8 @@ export async function PUT(
         where: { id },
         data: {
           date: new Date(date),
-          departmentId: Number.parseInt(departmentId),
-          shiftTypeId: Number.parseInt(shiftTypeId),
+          departmentId: Number.parseInt(departmentId, 10),
+          shiftTypeId: Number.parseInt(shiftTypeId, 10),
           description: description || null,
         },
         include: {
@@ -241,8 +240,7 @@ export async function PUT(
       message: "Shift operation completed successfully",
       error: null,
     });
-  } catch (error) {
-    console.error("Shift PUT error:", error);
+  } catch (_error) {
     return NextResponse.json(
       {
         success: false,
@@ -273,9 +271,9 @@ export async function DELETE(
   }
   try {
     const params = await context.params;
-    const id = Number.parseInt(params.id);
+    const id = Number.parseInt(params.id, 10);
 
-    if (isNaN(id)) {
+    if (Number.isNaN(id)) {
       return NextResponse.json(
         {
           success: false,
@@ -318,8 +316,7 @@ export async function DELETE(
     });
 
     return new NextResponse(null, { status: 204 });
-  } catch (error) {
-    console.error("Shift DELETE error:", error);
+  } catch (_error) {
     return NextResponse.json(
       {
         success: false,

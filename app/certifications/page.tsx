@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
-import CertificationsPageClient from "./CertificationsPageClient";
+import CertificationsPageClient from "./certifications-page-client";
 import Loading from "./loading";
 
 export const dynamic = "force-dynamic";

@@ -2,6 +2,13 @@ import { type NextRequest, NextResponse } from "next/server";
 import { authenticateFromRequest, checkUserRole } from "@/lib/auth/middleware";
 import type { ApiResponse } from "@/lib/auth/types";
 import { prisma } from "@/lib/db";
+import {
+  HTTP_STATUS_FORBIDDEN,
+  HTTP_STATUS_INTERNAL_SERVER_ERROR,
+  HTTP_STATUS_NOT_FOUND,
+  HTTP_STATUS_OK,
+  HTTP_STATUS_UNAUTHORIZED,
+} from "@/shared/constants/http-status";
 
 /**
  * 有効な招待チェックAPI
@@ -30,7 +37,7 @@ export async function GET(request: NextRequest): Promise<
           success: false,
           error: authResult.error ?? "Authentication required",
         },
-        { status: authResult.statusCode ?? 401 }
+        { status: authResult.statusCode ?? HTTP_STATUS_UNAUTHORIZED }
       );
     }
 
@@ -43,7 +50,7 @@ export async function GET(request: NextRequest): Promise<
             roleResult.error ??
             "Insufficient permissions. Admin or Manager role required.",
         },
-        { status: roleResult.statusCode ?? 403 }
+        { status: roleResult.statusCode ?? HTTP_STATUS_FORBIDDEN }
       );
     }
 
@@ -70,7 +77,7 @@ export async function GET(request: NextRequest): Promise<
     if (!activeInvitation) {
       return NextResponse.json(
         { success: false, error: "No active invitation found" },
-        { status: 404 }
+        { status: HTTP_STATUS_NOT_FOUND }
       );
     }
 
@@ -88,20 +95,11 @@ export async function GET(request: NextRequest): Promise<
       createdBy: activeInvitation.creator.displayName,
     };
 
-    console.log("✅ Active invitation found:", {
-      token: activeInvitation.token.substring(0, 16) + "...",
-      description: activeInvitation.description,
-      expiresAt: activeInvitation.expiresAt.toISOString(),
-      usedCount: activeInvitation.usedCount,
-    });
-
     return NextResponse.json(
       { success: true, data: responseData },
-      { status: 200 }
+      { status: HTTP_STATUS_OK }
     );
   } catch (error) {
-    console.error("❌ Active invitation check failed:", error);
-
     let errorMessage = "Failed to check active invitation";
     if (error instanceof Error) {
       errorMessage = error.message;
@@ -109,7 +107,7 @@ export async function GET(request: NextRequest): Promise<
 
     return NextResponse.json(
       { success: false, error: errorMessage },
-      { status: 500 }
+      { status: HTTP_STATUS_INTERNAL_SERVER_ERROR }
     );
   }
 }

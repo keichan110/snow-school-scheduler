@@ -29,8 +29,7 @@ export async function GET(request: NextRequest) {
       message: null,
       error: null,
     });
-  } catch (error) {
-    console.error("Departments API error:", error);
+  } catch (_error) {
     return NextResponse.json(
       {
         success: false,

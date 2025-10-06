@@ -1,4 +1,4 @@
-export interface Shift {
+export type Shift = {
   id: number;
   date: string;
   departmentId: number;
@@ -10,84 +10,84 @@ export interface Shift {
   shiftType: ShiftType;
   assignments: ShiftAssignment[];
   assignedCount: number;
-}
+};
 
-export interface Department {
+export type Department = {
   id: number;
   name: string;
   createdAt: string;
   updatedAt: string;
-}
+};
 
-export interface ShiftType {
+export type ShiftType = {
   id: number;
   name: string;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
-}
+};
 
-export interface ShiftAssignment {
+export type ShiftAssignment = {
   id: number;
   shiftId: number;
   instructorId: number;
   assignedAt: string;
   instructor: Instructor;
-}
+};
 
-export interface Instructor {
+export type Instructor = {
   id: number;
   lastName: string;
   firstName: string;
   status: string;
-}
+};
 
 // アサイン済みインストラクター情報（公開ビュー用）
-export interface AssignedInstructor {
+export type AssignedInstructor = {
   id: number;
   lastName: string;
   firstName: string;
   displayName: string; // "lastName firstName" 形式
-}
+};
 
 // Base API response type
-export interface ApiResponse<T> {
+export type ApiResponse<T> = {
   success: boolean;
   data: T | null;
   count?: number;
   message: string | null;
   error: string | null;
-}
+};
 
 // Department types
 export type DepartmentType = "ski" | "snowboard" | "mixed";
 
 // Shift summary and statistics
-export interface ShiftSummary {
+export type ShiftSummary = {
   type: string;
   department: DepartmentType;
   count: number;
   assignedInstructors?: AssignedInstructor[]; // アサイン済みインストラクター情報
-}
+};
 
-export interface DetailedShiftSummary {
+export type DetailedShiftSummary = {
   type: string;
   department: DepartmentType;
   count: number;
   instructors: string[]; // インストラクター名の配列
-}
+};
 
-export interface ShiftStats {
+export type ShiftStats = {
   [date: string]: {
     shifts: ShiftSummary[];
   };
-}
+};
 
-export interface DetailedShiftStats {
+export type DetailedShiftStats = {
   [date: string]: {
     shifts: DetailedShiftSummary[];
   };
-}
+};
 
 // Readonly entity interfaces for better immutability
 export interface ReadonlyShift
@@ -98,41 +98,41 @@ export interface ReadonlyShift
 }
 
 // Query parameter types for better type safety
-export interface ShiftQueryParams {
+export type ShiftQueryParams = {
   readonly departmentId?: number;
   readonly shiftTypeId?: number;
   readonly dateFrom?: string;
   readonly dateTo?: string;
-}
+};
 
-export interface CreateShiftData {
+export type CreateShiftData = {
   readonly date: string;
   readonly departmentId: number;
   readonly shiftTypeId: number;
   readonly description?: string | null;
   readonly assignedInstructorIds?: readonly number[];
-}
+};
 
-export interface DayData {
+export type DayData = {
   readonly date: string;
   readonly shifts: readonly ShiftSummary[];
   readonly isHoliday: boolean;
-}
+};
 
-export interface DetailedDayData {
+export type DetailedDayData = {
   readonly date: string;
   readonly shifts: readonly DetailedShiftSummary[];
   readonly isHoliday: boolean;
-}
+};
 
 // Form data interfaces
-export interface ShiftFormData {
+export type ShiftFormData = {
   readonly selectedDate: string;
   readonly dateFormatted: string;
-}
+};
 
 // Calendar related types
-export interface CalendarDate {
+export type CalendarDate = {
   readonly year: number;
   readonly month: number;
   readonly day: number;
@@ -140,4 +140,4 @@ export interface CalendarDate {
   readonly weekday: number;
   readonly isHoliday: boolean;
   readonly isToday: boolean;
-}
+};

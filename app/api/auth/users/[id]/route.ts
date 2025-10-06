@@ -114,8 +114,7 @@ export async function GET(
       success: true,
       data: response,
     });
-  } catch (error) {
-    console.error("User detail API error:", error);
+  } catch (_error) {
     return NextResponse.json(
       {
         success: false,
@@ -182,7 +181,7 @@ export async function PUT(
     }
 
     // リクエストボディ解析
-    let requestBody;
+    let requestBody: unknown;
     try {
       requestBody = await request.json();
     } catch {
@@ -259,8 +258,7 @@ export async function PUT(
       success: true,
       data: response,
     });
-  } catch (error) {
-    console.error("User update API error:", error);
+  } catch (_error) {
     return NextResponse.json(
       {
         success: false,
@@ -361,8 +359,7 @@ export async function DELETE(
       success: true,
       data: { deleted: true },
     });
-  } catch (error) {
-    console.error("User deletion API error:", error);
+  } catch (_error) {
     return NextResponse.json(
       {
         success: false,

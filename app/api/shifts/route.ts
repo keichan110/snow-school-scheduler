@@ -1,6 +1,11 @@
 import { type NextRequest, NextResponse } from "next/server";
+import type { Department, Shift, ShiftType } from "@/generated/prisma";
 import { authenticateFromRequest } from "@/lib/auth/middleware";
 import { prisma } from "@/lib/db";
+import {
+  HTTP_STATUS_CREATED,
+  HTTP_STATUS_OK,
+} from "@/shared/constants/http-status";
 
 export async function GET(request: NextRequest) {
   const authResult = await authenticateFromRequest(request);
@@ -33,11 +38,11 @@ export async function GET(request: NextRequest) {
     } = {};
 
     if (departmentId) {
-      where.departmentId = Number.parseInt(departmentId);
+      where.departmentId = Number.parseInt(departmentId, 10);
     }
 
     if (shiftTypeId) {
-      where.shiftTypeId = Number.parseInt(shiftTypeId);
+      where.shiftTypeId = Number.parseInt(shiftTypeId, 10);
     }
 
     if (dateFrom || dateTo) {
@@ -101,8 +106,7 @@ export async function GET(request: NextRequest) {
       message: null,
       error: null,
     });
-  } catch (error) {
-    console.error("Shifts API error:", error);
+  } catch (_error) {
     return NextResponse.json(
       {
         success: false,
@@ -158,8 +162,8 @@ export async function POST(request: NextRequest) {
       where: {
         unique_shift_per_day: {
           date: new Date(date),
-          departmentId: Number.parseInt(departmentId),
-          shiftTypeId: Number.parseInt(shiftTypeId),
+          departmentId: Number.parseInt(departmentId, 10),
+          shiftTypeId: Number.parseInt(shiftTypeId, 10),
         },
       },
       include: {
@@ -213,7 +217,10 @@ export async function POST(request: NextRequest) {
 
     // トランザクションでシフト作成/更新
     const result = await prisma.$transaction(async (tx) => {
-      let shift;
+      let shift: Shift & {
+        department: Department;
+        shiftType: ShiftType;
+      };
 
       if (existingShift && force) {
         // 強制更新: 既存シフトを更新
@@ -232,8 +239,8 @@ export async function POST(request: NextRequest) {
         shift = await tx.shift.create({
           data: {
             date: new Date(date),
-            departmentId: Number.parseInt(departmentId),
-            shiftTypeId: Number.parseInt(shiftTypeId),
+            departmentId: Number.parseInt(departmentId, 10),
+            shiftTypeId: Number.parseInt(shiftTypeId, 10),
             description: description || null,
           },
           include: {
@@ -308,11 +315,9 @@ export async function POST(request: NextRequest) {
           : "シフトが正常に作成されました",
         error: null,
       },
-      { status: force ? 200 : 201 }
+      { status: force ? HTTP_STATUS_OK : HTTP_STATUS_CREATED }
     );
   } catch (error) {
-    console.error("Shift creation error:", error);
-
     // Prisma unique constraint violation
     if (
       error &&

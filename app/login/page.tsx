@@ -6,6 +6,11 @@ import { Suspense, useEffect, useState } from "react";
 import { LineLoginButton } from "@/components/ui/line-login-button";
 import { useAuth } from "@/contexts/auth-context";
 
+// 背景表示用定数
+const MAX_SHIFTS_PER_DAY = 5;
+const DAYS_IN_MONTH = 31;
+const COLOR_PATTERN_MODULO = 2;
+
 /**
  * ログインページのメインコンテンツ
  */
@@ -20,23 +25,17 @@ function LoginPageContent() {
     const redirect = searchParams.get("redirect");
     if (redirect) {
       setRedirectUrl(redirect);
-      console.log("🔄 Redirect URL detected:", redirect);
     }
   }, [searchParams]);
 
   // 既にログイン済みの場合はリダイレクト
   useEffect(() => {
     if (user && status === "authenticated") {
-      console.log(
-        "✅ User already authenticated, redirecting to:",
-        redirectUrl
-      );
       router.push(redirectUrl);
     }
   }, [user, status, redirectUrl, router]);
 
   const handleLineLogin = () => {
-    console.log("🔐 Starting LINE authentication...");
     // リダイレクト先をURLパラメータとして渡す
     const loginUrl = `/api/auth/line/login?redirect=${encodeURIComponent(redirectUrl)}`;
     window.location.href = loginUrl;
@@ -50,22 +49,24 @@ function LoginPageContent() {
     ];
 
     // Vary number of shifts based on day (0-4 shifts)
-    const shiftCount = (dayIndex + 1) % 5; // Some days 0, some 1-4
+    const shiftCount = (dayIndex + 1) % MAX_SHIFTS_PER_DAY; // Some days 0, some 1-4
 
     return Array.from({ length: shiftCount }, (_, i) => ({
+      id: `${dayIndex}-${i}`, // Unique identifier for each shift
       width: "w-full",
-      color: colors[i % 2] as string,
+      color: colors[i % COLOR_PATTERN_MODULO] as string,
     }));
   };
 
   // Helper function to render a single day card
   const renderDummyDay = (
     dayNumber: number,
-    shifts: Array<{ width: string; color: string }>
+    shifts: Array<{ id: string; width: string; color: string }>
   ) => {
     // Handle next month preview days (32-35 -> 1-4)
-    const displayNumber = dayNumber > 31 ? dayNumber - 31 : dayNumber;
-    const isNextMonth = dayNumber > 31;
+    const displayNumber =
+      dayNumber > DAYS_IN_MONTH ? dayNumber - DAYS_IN_MONTH : dayNumber;
+    const isNextMonth = dayNumber > DAYS_IN_MONTH;
 
     return (
       <div
@@ -79,10 +80,10 @@ function LoginPageContent() {
         </div>
         {!isNextMonth && (
           <div className="space-y-0.5">
-            {shifts.map((shift, i) => (
+            {shifts.map((shift) => (
               <div
                 className={`h-5 rounded ${shift.width} ${shift.color}`}
-                key={i}
+                key={shift.id}
               />
             ))}
           </div>

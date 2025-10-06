@@ -3,7 +3,7 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { AlertTriangle, Home, Loader2, RefreshCw } from "lucide-react";
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { useNotification } from "@/components/notifications";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,21 +18,16 @@ import {
   publicShiftsQueryKeys,
 } from "@/features/shifts/api/queries";
 
-interface ShiftsErrorProps {
+type ShiftsErrorProps = {
   readonly error: Error & { digest?: string };
   readonly reset: () => void;
-}
+};
 
 export default function ShiftsError({ error, reset }: ShiftsErrorProps) {
   const queryClient = useQueryClient();
   const { showSuccess, showError } = useNotification();
   const [isRetrying, setIsRetrying] = useState(false);
   const [retryMessage, setRetryMessage] = useState<string | null>(null);
-
-  useEffect(() => {
-    // SSR からの hydration mismatch を避けつつ、デバッグ情報を残す
-    console.error("Shifts route error boundary:", error);
-  }, [error]);
 
   const handleRetry = useCallback(async () => {
     setIsRetrying(true);
@@ -56,7 +51,6 @@ export default function ShiftsError({ error, reset }: ShiftsErrorProps) {
       showSuccess("最新のシフト情報を取得しました。");
       reset();
     } catch (refetchError) {
-      console.error("Failed to recover shifts route:", refetchError);
       const message =
         refetchError instanceof Error
           ? refetchError.message

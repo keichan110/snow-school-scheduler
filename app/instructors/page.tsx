@@ -2,7 +2,7 @@ import { Suspense } from "react";
 
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 
-import InstructorsPageClient from "./InstructorsPageClient";
+import InstructorsPageClient from "./instructors-page-client";
 import Loading from "./loading";
 
 export const dynamic = "force-dynamic";

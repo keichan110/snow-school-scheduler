@@ -2,7 +2,7 @@ import { Suspense } from "react";
 
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import Loading from "./loading";
-import UsersPageClient from "./UsersPageClient";
+import UsersPageClient from "./users-page-client";
 
 export const dynamic = "force-dynamic";
 export default function UsersPage() {

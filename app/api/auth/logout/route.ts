@@ -29,20 +29,13 @@ export async function POST(request: NextRequest) {
   try {
     // 現在の認証状態を確認（ログ出力用）
     const token = getAuthTokenFromRequest(request);
-    let currentUser = null;
+    let _currentUser: { id: number; displayName: string } | null = null;
 
     if (token) {
       const authResult = await authenticateFromRequest(request);
       if (authResult.success && authResult.user) {
-        currentUser = authResult.user;
-        console.log("🚪 User logout initiated:", {
-          userId: currentUser.id,
-          displayName: currentUser.displayName,
-          role: currentUser.role,
-        });
+        _currentUser = authResult.user;
       }
-    } else {
-      console.log("🚪 Logout requested without valid token");
     }
 
     // レスポンス作成
@@ -57,15 +50,8 @@ export async function POST(request: NextRequest) {
     // 全認証関連Cookieを安全に削除
     clearAuthCookies(response);
 
-    console.log("✅ Logout completed successfully:", {
-      userWasLoggedIn: !!currentUser,
-      userId: currentUser?.id || "unknown",
-    });
-
     return response;
   } catch {
-    console.error("❌ Logout failed");
-
     // エラーが発生してもCookieは削除する
     const response = NextResponse.json(
       {
@@ -99,20 +85,13 @@ export async function GET(request: NextRequest) {
 
     // 現在の認証状態を確認（ログ出力用）
     const token = getAuthTokenFromRequest(request);
-    let currentUser = null;
+    let _currentUser: { id: number; displayName: string } | null = null;
 
     if (token) {
       const authResult = await authenticateFromRequest(request);
       if (authResult.success && authResult.user) {
-        currentUser = authResult.user;
-        console.log("🚪 User logout initiated (GET):", {
-          userId: currentUser.id,
-          displayName: currentUser.displayName,
-          redirectTo,
-        });
+        _currentUser = authResult.user;
       }
-    } else {
-      console.log("🚪 Logout requested without valid token (GET)");
     }
 
     // リダイレクト先の検証（セキュリティ対策）
@@ -122,12 +101,10 @@ export async function GET(request: NextRequest) {
       // 同一オリジンのみ許可
       if (redirectUrl.origin === new URL(request.url).origin) {
         finalRedirectUrl = redirectUrl.pathname + redirectUrl.search;
-      } else {
-        console.warn("⚠️ External redirect blocked:", redirectTo);
       }
+      // else: 異なるオリジンの場合はデフォルトの "/" を使用
     } catch {
-      // 無効なURLの場合はルートにリダイレクト
-      console.warn("⚠️ Invalid redirect URL:", redirectTo);
+      // 無効なURL形式の場合はデフォルトの "/" を使用
     }
 
     // リダイレクトレスポンス作成
@@ -145,16 +122,8 @@ export async function GET(request: NextRequest) {
     // auth-sessionも統一ユーティリティで削除
     deleteCookie(response, "auth-session");
 
-    console.log("✅ Logout with redirect completed:", {
-      userWasLoggedIn: !!currentUser,
-      userId: currentUser?.id || "unknown",
-      redirectTo: finalRedirectUrl,
-    });
-
     return response;
   } catch {
-    console.error("❌ Logout GET request failed");
-
     // エラーが発生してもルートにリダイレクトしてCookieをクリア
     const response = NextResponse.redirect(new URL("/", request.url), {
       status: 302,
@@ -178,17 +147,12 @@ export async function DELETE(request: NextRequest) {
   try {
     // POST処理と同様の処理
     const token = getAuthTokenFromRequest(request);
-    let currentUser = null;
+    let _currentUser: { id: number; displayName: string } | null = null;
 
     if (token) {
       const authResult = await authenticateFromRequest(request);
       if (authResult.success && authResult.user) {
-        currentUser = authResult.user;
-        console.log("🚪 User logout initiated (DELETE):", {
-          userId: currentUser.id,
-          displayName: currentUser.displayName,
-          role: currentUser.role,
-        });
+        _currentUser = authResult.user;
       }
     }
 
@@ -207,15 +171,8 @@ export async function DELETE(request: NextRequest) {
     // auth-sessionも統一ユーティリティで削除
     deleteCookie(response, "auth-session");
 
-    console.log("✅ DELETE logout completed:", {
-      userWasLoggedIn: !!currentUser,
-      userId: currentUser?.id || "unknown",
-    });
-
     return response;
   } catch {
-    console.error("❌ DELETE logout failed");
-
     const response = NextResponse.json(
       {
         success: true,
@@ -239,7 +196,7 @@ export async function DELETE(request: NextRequest) {
  * OPTIONS /api/auth/logout
  * CORS対応
  */
-export async function OPTIONS() {
+export function OPTIONS() {
   return new NextResponse(null, {
     status: 200,
     headers: {

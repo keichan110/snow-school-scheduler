@@ -25,7 +25,7 @@ export async function GET(
 
     // IDパラメータの検証
     const id = Number.parseInt(resolvedParams.id, 10);
-    if (isNaN(id)) {
+    if (Number.isNaN(id)) {
       return NextResponse.json(
         {
           success: false,
@@ -62,8 +62,7 @@ export async function GET(
       message: null,
       error: null,
     });
-  } catch (error) {
-    console.error("Department detail API error:", error);
+  } catch (_error) {
     return NextResponse.json(
       {
         success: false,

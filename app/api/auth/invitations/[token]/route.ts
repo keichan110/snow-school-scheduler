@@ -1,7 +1,19 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { authenticateFromRequest, checkUserRole } from "@/lib/auth/middleware";
 import type { ApiResponse } from "@/lib/auth/types";
-import { prisma } from "@/lib/db";
+import {
+  HTTP_STATUS_INTERNAL_SERVER_ERROR,
+  HTTP_STATUS_OK,
+} from "@/shared/constants/http-status";
+import { checkAuthAndRole } from "../utils";
+import {
+  checkDeactivationPermission,
+  checkTokenActive,
+  deactivateToken,
+  fetchInvitationToken,
+  identifyDeletionError,
+  validateTokenParameter,
+} from "./utils";
 
 /**
  * 招待URL無効化API
@@ -18,12 +30,12 @@ import { prisma } from "@/lib/db";
  * ```
  */
 
-interface DeactivationResponse {
+type DeactivationResponse = {
   message: string;
   token: string;
   deactivatedAt: string;
   deactivatedBy: string;
-}
+};
 
 export async function DELETE(
   request: NextRequest,
@@ -32,111 +44,47 @@ export async function DELETE(
   try {
     const { token } = await context.params;
 
+    // 認証とロールチェック
     const authResult = await authenticateFromRequest(request);
-    if (!(authResult.success && authResult.user)) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: authResult.error ?? "Authentication required",
-        },
-        { status: authResult.statusCode ?? 401 }
-      );
-    }
-
     const roleResult = checkUserRole(authResult.user, "MANAGER");
-    if (!(roleResult.success && roleResult.user)) {
-      return NextResponse.json(
-        {
-          success: false,
-          error:
-            roleResult.error ??
-            "Insufficient permissions. Admin or Manager role required.",
-        },
-        { status: roleResult.statusCode ?? 403 }
-      );
+    const authCheck = checkAuthAndRole(authResult, roleResult);
+
+    if (!authCheck.success) {
+      return authCheck.response;
     }
 
-    const user = roleResult.user;
+    const user = authCheck.user;
 
-    // トークンパラメータの基本チェック
-    if (!token || typeof token !== "string" || token.trim().length === 0) {
-      return NextResponse.json(
-        { success: false, error: "Token parameter is required" },
-        { status: 400 }
-      );
+    // トークンパラメータのバリデーション
+    const tokenValidation = validateTokenParameter(token);
+    if (!tokenValidation.success) {
+      return tokenValidation.response;
     }
 
-    // URL デコード（必要に応じて）
-    const decodedToken = decodeURIComponent(token.trim());
-
-    console.log("🗑️ Attempting to deactivate invitation token:", {
-      token: decodedToken,
-      requestedBy: user.displayName,
-      role: user.role,
-    });
+    const decodedToken = tokenValidation.decodedToken;
 
     // 対象の招待トークンを取得
-    const invitationToken = await prisma.invitationToken.findUnique({
-      where: { token: decodedToken },
-      include: {
-        creator: {
-          select: {
-            id: true,
-            displayName: true,
-            role: true,
-          },
-        },
-      },
-    });
-
-    if (!invitationToken) {
-      return NextResponse.json(
-        { success: false, error: "Invitation token not found" },
-        { status: 404 }
-      );
+    const tokenFetch = await fetchInvitationToken(decodedToken);
+    if (!tokenFetch.success) {
+      return tokenFetch.response;
     }
 
-    // 権限チェック - 作成者または管理者のみ無効化可能
-    const canDeactivate =
-      user.role === "ADMIN" || // 管理者は全ての招待URLを無効化可能
-      invitationToken.createdBy === user.id; // 作成者は自分の招待URLを無効化可能
+    const invitationToken = tokenFetch.invitationToken;
 
-    if (!canDeactivate) {
-      return NextResponse.json(
-        {
-          success: false,
-          error:
-            "You can only deactivate invitation tokens you created, or you must be an admin",
-        },
-        { status: 403 }
-      );
+    // 権限チェック - 作成者または管理者のみ無効化可能
+    const permissionCheck = checkDeactivationPermission(user, invitationToken);
+    if (!permissionCheck.success) {
+      return permissionCheck.response;
     }
 
     // 既に無効化済みの場合
-    if (!invitationToken.isActive) {
-      return NextResponse.json(
-        { success: false, error: "Invitation token is already inactive" },
-        { status: 409 } // Conflict
-      );
+    const activeCheck = checkTokenActive(invitationToken);
+    if (!activeCheck.success) {
+      return activeCheck.response;
     }
 
     // 招待トークンを論理削除（無効化）
-    const deactivatedToken = await prisma.invitationToken.update({
-      where: { token: decodedToken },
-      data: {
-        isActive: false,
-        updatedAt: new Date(),
-      },
-      include: {
-        creator: {
-          select: {
-            id: true,
-            displayName: true,
-            role: true,
-          },
-        },
-      },
-    });
+    const deactivatedToken = await deactivateToken(decodedToken);
 
     const responseData: DeactivationResponse = {
       message: "Invitation token deactivated successfully",
@@ -145,36 +93,16 @@ export async function DELETE(
       deactivatedBy: user.displayName,
     };
 
-    console.log("✅ Invitation token deactivated successfully:", {
-      token: decodedToken,
-      originalCreator: invitationToken.creator.displayName,
-      deactivatedBy: user.displayName,
-      role: user.role,
-      deactivatedAt: deactivatedToken.updatedAt,
-    });
-
     return NextResponse.json(
       { success: true, data: responseData },
-      { status: 200 }
+      { status: HTTP_STATUS_OK }
     );
   } catch (error) {
-    console.error("❌ Invitation token deactivation failed:", error);
-
-    let errorMessage = "Failed to deactivate invitation token";
-    if (error instanceof Error) {
-      // 既知のエラーパターンを識別
-      if (error.message.includes("Record to update not found")) {
-        errorMessage = "Invitation token not found or already deleted";
-      } else if (error.message.includes("Unique constraint")) {
-        errorMessage = "Database constraint violation";
-      } else {
-        errorMessage = error.message;
-      }
-    }
+    const errorMessage = identifyDeletionError(error);
 
     return NextResponse.json(
       { success: false, error: errorMessage },
-      { status: 500 }
+      { status: HTTP_STATUS_INTERNAL_SERVER_ERROR }
     );
   }
 }

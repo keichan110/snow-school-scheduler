@@ -35,8 +35,7 @@ export async function GET(request: NextRequest) {
       message: null,
       error: null,
     });
-  } catch (error) {
-    console.error("Certifications API error:", error);
+  } catch (_error) {
     return NextResponse.json(
       {
         success: false,
@@ -116,8 +115,7 @@ export async function POST(request: NextRequest) {
       },
       { status: 201 }
     );
-  } catch (error) {
-    console.error("Certifications API error:", error);
+  } catch (_error) {
     return NextResponse.json(
       {
         success: false,

@@ -25,18 +25,18 @@ import {
 } from "@/features/shifts";
 import { hasManagePermission } from "@/lib/auth/permissions";
 import type { AuthenticatedUser } from "@/lib/auth/types";
-import { MonthlyCalendarWithDetails } from "./components/MonthlyCalendarWithDetails";
-import { PublicShiftsErrorState } from "./components/PublicShiftsErrorState";
-import { PublicShiftsSuspenseFallback } from "./components/PublicShiftsSuspenseFallback";
-import { ShiftMobileList } from "./components/ShiftMobileList";
-import { UnifiedShiftBottomModal } from "./components/UnifiedShiftBottomModal";
-import { ViewToggle } from "./components/ViewToggle";
-import { WeeklyShiftList } from "./components/WeeklyShiftList";
-import { WeekNavigation } from "./components/WeekNavigation";
-import { isHoliday } from "./constants/shiftConstants";
-import { useMonthNavigation } from "./hooks/useMonthNavigation";
-import { useShiftDataTransformation } from "./hooks/useShiftDataTransformation";
-import { useWeekNavigation } from "./hooks/useWeekNavigation";
+import { MonthlyCalendarWithDetails } from "./components/monthly-calendar-with-details";
+import { PublicShiftsErrorState } from "./components/public-shifts-error-state";
+import { PublicShiftsSuspenseFallback } from "./components/public-shifts-suspense-fallback";
+import { ShiftMobileList } from "./components/shift-mobile-list";
+import { UnifiedShiftBottomModal } from "./components/unified-shift-bottom-modal";
+import { ViewToggle } from "./components/view-toggle";
+import { WeekNavigation } from "./components/week-navigation";
+import { WeeklyShiftList } from "./components/weekly-shift-list";
+import { isHoliday } from "./constants/shift-constants";
+import { useMonthNavigation } from "./hooks/use-month-navigation";
+import { useShiftDataTransformation } from "./hooks/use-shift-data-transformation";
+import { useWeekNavigation } from "./hooks/use-week-navigation";
 import type { DayData, ShiftQueryParams, ShiftStats } from "./types";
 
 type ViewMode = "monthly" | "weekly";
@@ -97,7 +97,9 @@ function PublicShiftsPageContent() {
 
   const handleViewChange = useCallback(
     (newView: ViewMode) => {
-      if (newView === viewMode) return;
+      if (newView === viewMode) {
+        return;
+      }
       setPendingView(newView);
       startTransition(() => {
         setViewMode(newView);
@@ -124,13 +126,17 @@ function PublicShiftsPageContent() {
   }, []);
 
   const handleCreateShift = useCallback(() => {
-    if (!(canManage && selectedDate)) return;
+    if (!(canManage && selectedDate)) {
+      return;
+    }
     setModalInitialStep("create-step1");
     setIsModalOpen(true);
   }, [canManage, selectedDate]);
 
   const handleShiftDetailClick = useCallback(() => {
-    if (!(canManage && selectedDate)) return;
+    if (!(canManage && selectedDate)) {
+      return;
+    }
     setModalInitialStep("create-step2");
     setIsModalOpen(true);
   }, [canManage, selectedDate]);

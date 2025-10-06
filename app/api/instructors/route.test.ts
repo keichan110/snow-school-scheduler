@@ -1154,7 +1154,7 @@ describe("POST /api/instructors", () => {
         });
 
         mockNextResponse.json.mockImplementation(
-          (data, init) =>
+          (_data, init) =>
             ({
               status: init?.status || 200,
             }) as unknown as NextResponse

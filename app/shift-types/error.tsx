@@ -2,24 +2,16 @@
 
 import { useQueryErrorResetBoundary } from "@tanstack/react-query";
 import { AlertTriangle } from "lucide-react";
-import { useEffect } from "react";
 
 import { Button } from "@/components/ui/button";
 
-interface ShiftTypesErrorProps {
+type ShiftTypesErrorProps = {
   error: Error & { digest?: string };
   reset: () => void;
-}
+};
 
-export default function ShiftTypesError({
-  error,
-  reset,
-}: ShiftTypesErrorProps) {
+export default function ShiftTypesError({ reset }: ShiftTypesErrorProps) {
   const { reset: resetQueryError } = useQueryErrorResetBoundary();
-
-  useEffect(() => {
-    console.error("Failed to render shift types page:", error);
-  }, [error]);
 
   return (
     <div className="mx-auto flex min-h-[320px] max-w-3xl flex-col items-center justify-center gap-4 px-4 py-10 text-center">

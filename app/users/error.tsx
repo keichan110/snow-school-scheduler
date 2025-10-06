@@ -2,21 +2,16 @@
 
 import { useQueryErrorResetBoundary } from "@tanstack/react-query";
 import { AlertTriangle } from "lucide-react";
-import { useEffect } from "react";
 
 import { Button } from "@/components/ui/button";
 
-interface UsersErrorProps {
+type UsersErrorProps = {
   error: Error & { digest?: string };
   reset: () => void;
-}
+};
 
-export default function UsersError({ error, reset }: UsersErrorProps) {
+export default function UsersError({ reset }: UsersErrorProps) {
   const { reset: resetQueryError } = useQueryErrorResetBoundary();
-
-  useEffect(() => {
-    console.error("Failed to render users page:", error);
-  }, [error]);
 
   return (
     <div className="mx-auto flex min-h-[320px] max-w-3xl flex-col items-center justify-center gap-4 px-4 py-10 text-center">

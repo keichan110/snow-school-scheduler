@@ -8,7 +8,10 @@ import {
   useEffect,
   useState,
 } from "react";
-import { HTTP_STATUS } from "@/shared/constants";
+import {
+  HTTP_STATUS_FORBIDDEN,
+  HTTP_STATUS_UNAUTHORIZED,
+} from "@/shared/constants";
 
 /**
  * 認証状態管理Context
@@ -102,8 +105,8 @@ async function fetchUserInfo(): Promise<User | null> {
 
   if (!response.ok) {
     if (
-      response.status === HTTP_STATUS.UNAUTHORIZED ||
-      response.status === HTTP_STATUS.FORBIDDEN
+      response.status === HTTP_STATUS_UNAUTHORIZED ||
+      response.status === HTTP_STATUS_FORBIDDEN
     ) {
       // 未認証または無効なユーザー
       return null;

@@ -2,6 +2,7 @@
  * 招待管理API クライアント
  */
 
+import { HTTP_STATUS_NOT_FOUND } from "@/shared/constants/http-status";
 import type {
   CreateInvitationRequest,
   InvitationApiResponse,
@@ -20,7 +21,7 @@ export async function checkActiveInvitation(): Promise<InvitationTokenWithStats 
   });
 
   if (!response.ok) {
-    if (response.status === 404) {
+    if (response.status === HTTP_STATUS_NOT_FOUND) {
       return null;
     }
     throw new Error(`有効な招待のチェックに失敗しました: ${response.status}`);

@@ -208,9 +208,9 @@ describe("Shifts API", () => {
   describe("GET /api/shifts", () => {
     const createMockRequest = (searchParams: Record<string, string> = {}) => {
       const url = new URL("http://localhost/api/shifts");
-      Object.entries(searchParams).forEach(([key, value]) => {
+      for (const [key, value] of Object.entries(searchParams)) {
         url.searchParams.set(key, value);
-      });
+      }
 
       return new NextRequest(url.toString());
     };

@@ -3,7 +3,7 @@ import { authenticateFromRequest } from "@/lib/auth/middleware";
 import { prisma } from "@/lib/db";
 
 export async function GET(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
@@ -12,7 +12,7 @@ export async function GET(
 
     // IDのバリデーション
     const numericId = Number.parseInt(id, 10);
-    if (isNaN(numericId) || numericId <= 0) {
+    if (Number.isNaN(numericId) || numericId <= 0) {
       return NextResponse.json(
         {
           success: false,
@@ -84,8 +84,7 @@ export async function GET(
       message: "Instructor operation completed successfully",
       error: null,
     });
-  } catch (error) {
-    console.error("Instructor API error:", error);
+  } catch (_error) {
     return NextResponse.json(
       {
         success: false,
@@ -120,7 +119,7 @@ export async function PUT(
 
     // IDのバリデーション
     const numericId = Number.parseInt(id, 10);
-    if (isNaN(numericId) || numericId <= 0) {
+    if (Number.isNaN(numericId) || numericId <= 0) {
       return NextResponse.json(
         {
           success: false,
@@ -264,16 +263,16 @@ export async function PUT(
 
     // レスポンス形式をOpenAPI仕様に合わせて変換
     const formattedInstructor = {
-      id: result!.id,
-      lastName: result!.lastName,
-      firstName: result!.firstName,
-      lastNameKana: result!.lastNameKana,
-      firstNameKana: result!.firstNameKana,
-      status: result!.status,
-      notes: result!.notes,
-      createdAt: result!.createdAt,
-      updatedAt: result!.updatedAt,
-      certifications: result!.certifications.map((ic) => ({
+      id: result?.id,
+      lastName: result?.lastName,
+      firstName: result?.firstName,
+      lastNameKana: result?.lastNameKana,
+      firstNameKana: result?.firstNameKana,
+      status: result?.status,
+      notes: result?.notes,
+      createdAt: result?.createdAt,
+      updatedAt: result?.updatedAt,
+      certifications: result?.certifications.map((ic) => ({
         id: ic.certification.id,
         name: ic.certification.name,
         shortName: ic.certification.shortName,
@@ -288,8 +287,7 @@ export async function PUT(
       message: "Instructor operation completed successfully",
       error: null,
     });
-  } catch (error) {
-    console.error("Instructor API error:", error);
+  } catch (_error) {
     return NextResponse.json(
       {
         success: false,
