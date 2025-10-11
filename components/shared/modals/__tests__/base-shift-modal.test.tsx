@@ -4,7 +4,7 @@ import {
   AdminShiftModal,
   BaseShiftModal,
   PublicShiftModal,
-} from "../BaseShiftModal";
+} from "../base-shift-modal";
 
 // Mock data
 const mockDayDataEmpty: DayData = {

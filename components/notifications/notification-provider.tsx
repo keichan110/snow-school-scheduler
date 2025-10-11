@@ -3,7 +3,7 @@
 import type React from "react";
 import { createContext, useContext, useReducer } from "react";
 import { createPortal } from "react-dom";
-import { NotificationContainer } from "./notification-container";
+import { NotificationContainer } from "./NotificationContainer";
 import type { Notification, NotificationQueueConfig } from "./types";
 
 type NotificationState = {

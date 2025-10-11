@@ -4,9 +4,9 @@ import { AlertTriangle, CheckCircle, Info, X, XCircle } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { useNotificationContext } from "./NotificationProvider";
 import type { Notification } from "./types";
-import { useNotification } from "./useNotification";
+import { useNotification } from "./use-notification";
+import { useNotificationTimer } from "./use-notification-timer";
 
 const ICONS = {
   success: CheckCircle,
@@ -39,117 +39,168 @@ const PRIORITY_STYLES = {
   low: "opacity-90",
 };
 
+// アニメーション・プログレス関連の定数
+const ANIMATION_DURATION_MS = 200;
+const _PROGRESS_UPDATE_INTERVAL_MS = 50;
+const PROGRESS_PERCENT_BASE = 100;
+
+// プログレスバーコンポーネント
+function ProgressBar({
+  duration,
+  persistent,
+  progress,
+  type,
+}: {
+  duration: number | undefined;
+  persistent: boolean | undefined;
+  progress: number;
+  type: "success" | "error" | "warning" | "info";
+}) {
+  if (!duration || duration <= 0 || persistent) {
+    return null;
+  }
+
+  return (
+    <div className="absolute right-0 bottom-0 left-0 h-1 overflow-hidden rounded-b-lg bg-black/10 dark:bg-white/10">
+      <div
+        className={cn(
+          "h-full transition-all duration-100 ease-linear",
+          type === "success" && "bg-green-500",
+          type === "error" && "bg-red-500",
+          type === "warning" && "bg-yellow-500",
+          type === "info" && "bg-blue-500"
+        )}
+        style={{ width: `${PROGRESS_PERCENT_BASE - progress}%` }}
+      />
+    </div>
+  );
+}
+
+// アクションボタンコンポーネント
+function ActionButtons({
+  action,
+  actions,
+}: {
+  action?: Notification["action"];
+  actions?: Notification["actions"];
+}) {
+  if (action && !actions) {
+    return (
+      <div className="mt-3">
+        <Button
+          className="h-7 px-2 text-xs transition-transform duration-150 hover:scale-105"
+          disabled={action.loading}
+          onClick={action.onClick}
+          size="sm"
+          variant={action.variant || "outline"}
+        >
+          {action.loading ? (
+            <div className="h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent" />
+          ) : (
+            action.label
+          )}
+        </Button>
+      </div>
+    );
+  }
+
+  if (actions && actions.length > 0) {
+    return (
+      <div className="mt-3 flex flex-wrap gap-2">
+        {actions.map((act, index) => (
+          <Button
+            className={cn(
+              "h-7 px-2 text-xs transition-transform duration-150 hover:scale-105",
+              act.primary && "font-semibold"
+            )}
+            disabled={act.loading}
+            key={`${act.label}-${act.variant || "default"}-${index}`}
+            onClick={act.onClick}
+            size="sm"
+            variant={act.variant || (act.primary ? "default" : "outline")}
+          >
+            {act.loading ? (
+              <div className="h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent" />
+            ) : (
+              act.label
+            )}
+          </Button>
+        ))}
+      </div>
+    );
+  }
+
+  return null;
+}
+
+// 優先度インジケーターコンポーネント
+function PriorityIndicator({
+  priority,
+}: {
+  priority: Notification["priority"];
+}) {
+  if (!priority || priority === "normal") {
+    return null;
+  }
+
+  return (
+    <div
+      className={cn(
+        "absolute top-2 right-2 h-2 w-2 rounded-full",
+        priority === "urgent" && "animate-ping bg-red-500",
+        priority === "high" && "bg-orange-500",
+        priority === "low" && "bg-gray-400"
+      )}
+    />
+  );
+}
+
 type NotificationItemProps = {
   notification: Notification;
 };
 
 export function NotificationItem({ notification }: NotificationItemProps) {
   const { hideNotification } = useNotification();
-  const { state } = useNotificationContext();
   const [isVisible, setIsVisible] = useState(false);
   const [isExiting, setIsExiting] = useState(false);
-  const [isPaused, setIsPaused] = useState(false);
-  const [progress, setProgress] = useState(0);
   const timeoutRef = useRef<NodeJS.Timeout>();
-  const progressIntervalRef = useRef<NodeJS.Timeout>();
-  const startTimeRef = useRef<number>();
 
   // 安定した参照を作成してuseEffect依存配列問題を回避
   const hideNotificationRef = useRef(hideNotification);
   const notificationIdRef = useRef(notification.id);
-  const isPausedRef = useRef(isPaused);
-  const isExitingRef = useRef(isExiting);
 
   // refs を最新の値で更新
   hideNotificationRef.current = hideNotification;
   notificationIdRef.current = notification.id;
-  isPausedRef.current = isPaused;
-  isExitingRef.current = isExiting;
 
   const Icon = ICONS[notification.type];
 
-  // 共通の削除ロジック - useCallbackで安定化し、refを使用して依存配列を空にする
+  // タイマー完了時の処理
+  const handleTimerComplete = useCallback(() => {
+    setIsExiting(true);
+    setTimeout(() => {
+      hideNotificationRef.current(notificationIdRef.current);
+    }, ANIMATION_DURATION_MS);
+  }, []);
+
+  // タイマー管理をカスタムフックに委譲
+  const { progress } = useNotificationTimer({
+    duration: notification.duration,
+    persistent: notification.persistent,
+    onComplete: handleTimerComplete,
+    isPaused: false,
+    isExiting,
+  });
+
+  // 手動削除ロジック
   const handleDismiss = useCallback(() => {
     setIsExiting(true);
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
     }
-    if (progressIntervalRef.current) {
-      clearInterval(progressIntervalRef.current);
-    }
     setTimeout(() => {
       hideNotificationRef.current(notificationIdRef.current);
-    }, 200); // アニメーション時間と合わせる
-  }, []);
-
-  // 統合されたタイマー管理 - マウント時にのみ実行
-  useEffect(() => {
-    if (
-      !notification.duration ||
-      notification.duration <= 0 ||
-      notification.persistent
-    ) {
-      return;
-    }
-
-    const startTime = Date.now();
-    startTimeRef.current = startTime;
-    let pausedAt = 0;
-    let totalPausedTime = 0;
-
-    const updateProgress = () => {
-      if (isPausedRef.current) {
-        if (pausedAt === 0) {
-          pausedAt = Date.now();
-        }
-        return; // 一時停止中は何もしない
-      }
-
-      if (pausedAt > 0) {
-        totalPausedTime += Date.now() - pausedAt;
-        pausedAt = 0;
-      }
-
-      if (!isExitingRef.current) {
-        const elapsed = Date.now() - startTime - totalPausedTime;
-        const progressPercent = Math.min(
-          (elapsed / notification.duration!) * 100,
-          100
-        );
-        setProgress(progressPercent);
-
-        if (progressPercent >= 100) {
-          setIsExiting(true);
-          if (timeoutRef.current) {
-            clearTimeout(timeoutRef.current);
-          }
-          if (progressIntervalRef.current) {
-            clearInterval(progressIntervalRef.current);
-          }
-          setTimeout(() => {
-            hideNotificationRef.current(notificationIdRef.current);
-          }, 200);
-        }
-      }
-    };
-
-    const intervalId = setInterval(updateProgress, 50);
-    progressIntervalRef.current = intervalId;
-
-    // クリーンアップ関数
-    return () => {
-      // intervalIdは確実にクリアできるが、timeoutRefは手動削除で既にクリアされている可能性がある
-      if (intervalId) {
-        clearInterval(intervalId);
-      }
-      // timeoutRefのクリアは handleDismiss で行われるため、ここでは行わない
-    };
-  }, [notification.duration, notification.persistent]); // state依存を除外し、refで状態を参照
-
-  // 一時停止状態の監視のみ - タイマーリセットは行わない
-  useEffect(() => {
-    // このeffectは状態監視のみで、タイマー操作は行わない
-    // 実際の一時停止ロジックは上記のuseEffectのupdateProgress内で処理
+    }, ANIMATION_DURATION_MS);
   }, []);
 
   useEffect(() => {
@@ -160,21 +211,8 @@ export function NotificationItem({ notification }: NotificationItemProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleMouseEnter = () => {
-    if (state.config.pauseOnHover) {
-      setIsPaused(true);
-    }
-  };
-
-  const handleMouseLeave = () => {
-    if (state.config.pauseOnHover) {
-      setIsPaused(false);
-    }
-  };
-
   return (
     <div
-      aria-live={notification.type === "error" ? "assertive" : "polite"}
       className={cn(
         "pointer-events-auto relative transform rounded-lg border shadow-lg transition-all duration-300 ease-in-out",
         "hover:scale-[1.02] hover:shadow-xl",
@@ -182,32 +220,22 @@ export function NotificationItem({ notification }: NotificationItemProps) {
         PRIORITY_STYLES[notification.priority || "normal"],
         isVisible && !isExiting
           ? "translate-x-0 scale-100 opacity-100"
-          : "translate-x-full scale-95 opacity-0",
-        isPaused && "ring-2 ring-blue-400 ring-opacity-30"
+          : "translate-x-full scale-95 opacity-0"
       )}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-      role="alert"
     >
       {/* プログレスバー */}
-      {notification.duration &&
-        notification.duration > 0 &&
-        !notification.persistent && (
-          <div className="absolute right-0 bottom-0 left-0 h-1 overflow-hidden rounded-b-lg bg-black/10 dark:bg-white/10">
-            <div
-              className={cn(
-                "h-full transition-all duration-100 ease-linear",
-                notification.type === "success" && "bg-green-500",
-                notification.type === "error" && "bg-red-500",
-                notification.type === "warning" && "bg-yellow-500",
-                notification.type === "info" && "bg-blue-500"
-              )}
-              style={{ width: `${100 - progress}%` }}
-            />
-          </div>
-        )}
+      <ProgressBar
+        duration={notification.duration}
+        persistent={notification.persistent}
+        progress={progress}
+        type={notification.type}
+      />
 
-      <div className="p-4">
+      <div
+        aria-live={notification.type === "error" ? "assertive" : "polite"}
+        className="p-4"
+        role="alert"
+      >
         <div className="flex items-start gap-3">
           <Icon
             className={cn(
@@ -225,51 +253,11 @@ export function NotificationItem({ notification }: NotificationItemProps) {
             )}
             <p className="text-sm">{notification.message}</p>
 
-            {/* 単一アクション */}
-            {notification.action && !notification.actions && (
-              <div className="mt-3">
-                <Button
-                  className="h-7 px-2 text-xs transition-transform duration-150 hover:scale-105"
-                  disabled={notification.action.loading}
-                  onClick={notification.action.onClick}
-                  size="sm"
-                  variant={notification.action.variant || "outline"}
-                >
-                  {notification.action.loading ? (
-                    <div className="h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                  ) : (
-                    notification.action.label
-                  )}
-                </Button>
-              </div>
-            )}
-
-            {/* 複数アクション */}
-            {notification.actions && notification.actions.length > 0 && (
-              <div className="mt-3 flex flex-wrap gap-2">
-                {notification.actions.map((action, index) => (
-                  <Button
-                    className={cn(
-                      "h-7 px-2 text-xs transition-transform duration-150 hover:scale-105",
-                      action.primary && "font-semibold"
-                    )}
-                    disabled={action.loading}
-                    key={index}
-                    onClick={action.onClick}
-                    size="sm"
-                    variant={
-                      action.variant || (action.primary ? "default" : "outline")
-                    }
-                  >
-                    {action.loading ? (
-                      <div className="h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                    ) : (
-                      action.label
-                    )}
-                  </Button>
-                ))}
-              </div>
-            )}
+            {/* アクションボタン */}
+            <ActionButtons
+              action={notification.action}
+              actions={notification.actions}
+            />
           </div>
 
           {notification.dismissible && (
@@ -281,6 +269,7 @@ export function NotificationItem({ notification }: NotificationItemProps) {
                 "focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-1"
               )}
               onClick={handleDismiss}
+              type="button"
             >
               <X className="h-4 w-4" />
             </button>
@@ -289,16 +278,7 @@ export function NotificationItem({ notification }: NotificationItemProps) {
       </div>
 
       {/* 優先度インジケーター */}
-      {notification.priority && notification.priority !== "normal" && (
-        <div
-          className={cn(
-            "absolute top-2 right-2 h-2 w-2 rounded-full",
-            notification.priority === "urgent" && "animate-ping bg-red-500",
-            notification.priority === "high" && "bg-orange-500",
-            notification.priority === "low" && "bg-gray-400"
-          )}
-        />
-      )}
+      <PriorityIndicator priority={notification.priority} />
     </div>
   );
 }

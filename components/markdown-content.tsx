@@ -1,7 +1,14 @@
-interface MarkdownContentProps {
+// 正規表現パターンをトップレベルで定義（パフォーマンス最適化）
+const NUMBERED_LIST_PATTERN = /^\d+\.\s/;
+const BULLET_LIST_PATTERN = /^\s+-\s/;
+
+// キー生成用の定数
+const KEY_CONTENT_PREVIEW_LENGTH = 30;
+
+type MarkdownContentProps = {
   content: string;
   metadata?: Record<string, string>;
-}
+};
 
 export function MarkdownContent({ content, metadata }: MarkdownContentProps) {
   // Markdownを簡易的にHTMLに変換
@@ -9,6 +16,9 @@ export function MarkdownContent({ content, metadata }: MarkdownContentProps) {
     return text
       .split("\n")
       .map((line, index) => {
+        // 各行のユニークなkeyを生成（行番号 + 内容の最初のN文字）
+        const uniqueKey = `line-${index}-${line.slice(0, KEY_CONTENT_PREVIEW_LENGTH)}`;
+
         // h1要素はスキップ（タイトルとして別途処理される）
         if (line.startsWith("# ")) {
           return null;
@@ -17,38 +27,38 @@ export function MarkdownContent({ content, metadata }: MarkdownContentProps) {
         // 見出し
         if (line.startsWith("## ")) {
           return (
-            <h2 className="mb-3 font-semibold text-xl" key={index}>
+            <h2 className="mb-3 font-semibold text-xl" key={uniqueKey}>
               {line.replace("## ", "")}
             </h2>
           );
         }
 
         // リスト項目
-        if (line.match(/^\d+\.\s/)) {
+        if (line.match(NUMBERED_LIST_PATTERN)) {
           return (
-            <li className="ml-4" key={index}>
-              {line.replace(/^\d+\.\s/, "")}
+            <li className="ml-4" key={uniqueKey}>
+              {line.replace(NUMBERED_LIST_PATTERN, "")}
             </li>
           );
         }
 
         // サブリスト項目
-        if (line.match(/^\s+-\s/)) {
+        if (line.match(BULLET_LIST_PATTERN)) {
           return (
-            <li className="ml-8 list-disc" key={index}>
-              {line.replace(/^\s+-\s/, "")}
+            <li className="ml-8 list-disc" key={uniqueKey}>
+              {line.replace(BULLET_LIST_PATTERN, "")}
             </li>
           );
         }
 
         // 空行
         if (line.trim() === "") {
-          return <br key={index} />;
+          return <br key={uniqueKey} />;
         }
 
         // 通常のテキスト
         return (
-          <p className="mb-2" key={index}>
+          <p className="mb-2" key={uniqueKey}>
             {line}
           </p>
         );

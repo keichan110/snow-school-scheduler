@@ -3,7 +3,7 @@
 import { getDepartmentType } from "@/app/certifications/utils";
 import { cn } from "@/lib/utils";
 
-export interface CertificationBadgeProps {
+export type CertificationBadgeProps = {
   /**
    * 資格の短縮名（表示されるテキスト）
    */
@@ -17,7 +17,7 @@ export interface CertificationBadgeProps {
    * 追加のCSSクラス
    */
   className?: string;
-}
+};
 
 /**
  * 資格バッジコンポーネント

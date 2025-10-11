@@ -16,7 +16,8 @@ export function SkeletonSection({
   className,
   ...rest
 }: SkeletonSectionProps) {
-  const lines = Array.from({ length: Math.max(1, bodyLines) });
+  const lineCount = Math.max(1, bodyLines);
+  const lineArray = Array.from({ length: lineCount }, (_, i) => i);
 
   return (
     <div
@@ -32,13 +33,13 @@ export function SkeletonSection({
         <div className="h-4 w-3/5 rounded-md bg-muted/70" />
       ) : null}
       <div className="space-y-3">
-        {lines.map((_, index) => (
+        {lineArray.map((lineId) => (
           <div
             className={cn(
               "h-4 rounded-md bg-muted/60",
-              index === lines.length - 1 ? "w-3/4" : "w-full"
+              lineId === lineArray.length - 1 ? "w-3/4" : "w-full"
             )}
-            key={`skeleton-section-line-${index}`}
+            key={`skeleton-section-line-${lineId}`}
           />
         ))}
       </div>

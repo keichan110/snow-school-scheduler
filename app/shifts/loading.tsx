@@ -1,4 +1,4 @@
-import Header from "@/components/Header";
+import Header from "@/components/header";
 import { SkeletonCalendar, SkeletonSection } from "@/components/skeletons";
 
 export default function ShiftsLoading() {

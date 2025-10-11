@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 
-import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
+import { ProtectedRoute } from "@/components/auth/protected-route";
 
 import InvitationsPageClient from "./invitations-page-client";
 import Loading from "./loading";

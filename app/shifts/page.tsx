@@ -12,8 +12,8 @@ import {
   useTransition,
 } from "react";
 import { ErrorBoundary } from "react-error-boundary";
-import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
-import Header from "@/components/Header";
+import { ProtectedRoute } from "@/components/auth/protected-route";
+import Header from "@/components/header";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useAuth } from "@/contexts/auth-context";

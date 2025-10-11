@@ -15,6 +15,7 @@ export function SkeletonCardGrid({
   ...rest
 }: SkeletonCardGridProps) {
   const count = Math.max(1, items);
+  const cardArray = Array.from({ length: count }, (_, i) => i);
 
   return (
     <div
@@ -25,10 +26,10 @@ export function SkeletonCardGrid({
       )}
       {...rest}
     >
-      {Array.from({ length: count }).map((_, index) => (
+      {cardArray.map((cardId) => (
         <div
           className="flex flex-col justify-between rounded-xl border border-border/40 bg-card/60 p-5 shadow-sm"
-          key={`skeleton-card-${index}`}
+          key={`skeleton-card-${cardId}`}
         >
           <div className="space-y-3">
             <div className="h-5 w-24 rounded-md bg-muted" />

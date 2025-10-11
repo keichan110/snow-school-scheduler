@@ -1,4 +1,4 @@
-import type { HTMLAttributes } from "react";
+import { type HTMLAttributes, useMemo } from "react";
 
 import { cn } from "@/lib/utils";
 
@@ -23,6 +23,16 @@ export function SkeletonCalendar({
   const totalDays = Math.max(1, daysPerWeek);
   const cellCount = totalWeeks * totalDays;
 
+  const headerItems = useMemo(
+    () => Array.from({ length: totalDays }, () => crypto.randomUUID()),
+    [totalDays]
+  );
+
+  const cellItems = useMemo(
+    () => Array.from({ length: cellCount }, () => crypto.randomUUID()),
+    [cellCount]
+  );
+
   return (
     <div
       aria-hidden="true"
@@ -40,11 +50,8 @@ export function SkeletonCalendar({
             gridTemplateColumns: `repeat(${totalDays}, minmax(0, 1fr))`,
           }}
         >
-          {Array.from({ length: totalDays }).map((_, index) => (
-            <div
-              className="h-3 rounded-md bg-muted/50"
-              key={`skeleton-calendar-header-${index}`}
-            />
+          {headerItems.map((id) => (
+            <div className="h-3 rounded-md bg-muted/50" key={id} />
           ))}
         </div>
       ) : null}
@@ -52,10 +59,10 @@ export function SkeletonCalendar({
         className="grid gap-2"
         style={{ gridTemplateColumns: `repeat(${totalDays}, minmax(0, 1fr))` }}
       >
-        {Array.from({ length: cellCount }).map((_, index) => (
+        {cellItems.map((id) => (
           <div
             className="rounded-lg border border-border/40 bg-muted/40 p-3 shadow-sm"
-            key={`skeleton-calendar-cell-${index}`}
+            key={id}
           >
             <div className="h-4 w-8 rounded-md bg-muted" />
             <div className="mt-4 space-y-2">

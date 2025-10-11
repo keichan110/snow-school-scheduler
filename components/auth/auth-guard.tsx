@@ -66,7 +66,7 @@ export function AuthGuard({
    * 権限レベルの階層チェック
    */
   const hasRequiredPermission = (
-    currentUser: User,
+    targetUser: User,
     required: string
   ): boolean => {
     const roleHierarchy = {
@@ -75,7 +75,7 @@ export function AuthGuard({
       MEMBER: 1,
     };
 
-    const userLevel = roleHierarchy[currentUser.role];
+    const userLevel = roleHierarchy[targetUser.role];
     const requiredLevel = roleHierarchy[required as keyof typeof roleHierarchy];
 
     return userLevel >= requiredLevel;

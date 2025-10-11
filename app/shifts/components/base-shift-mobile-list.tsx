@@ -1,7 +1,7 @@
 "use client";
 
-import { DepartmentIcon } from "@/components/shared/ui/DepartmentIcon";
-import { ShiftBadge } from "@/components/shared/ui/ShiftBadge";
+import { DepartmentIcon } from "@/components/shared/ui/department-icon";
+import { ShiftBadge } from "@/components/shared/ui/shift-badge";
 import { cn } from "@/lib/utils";
 import type { BaseShiftDisplayProps, DepartmentType } from "./types";
 import {

@@ -11,10 +11,11 @@ import {
   UserGear,
   UsersThree,
 } from "@phosphor-icons/react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useCallback } from "react";
-import { HeaderProgressIndicator } from "@/components/HeaderProgressIndicator";
+import { HeaderProgressIndicator } from "@/components/header-progress-indicator";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -33,13 +34,13 @@ import { useAuth } from "@/contexts/auth-context";
 
 type UserRole = "ADMIN" | "MANAGER" | "MEMBER";
 
-interface MenuItem {
+type MenuItem = {
   href: string;
   icon: Icon;
   label: string;
   description: string;
   requiredRole: UserRole;
-}
+};
 
 export default function Header() {
   const pathname = usePathname();
@@ -48,7 +49,9 @@ export default function Header() {
 
   const handlePrefetch = useCallback(
     (href: string) => {
-      if (!href) return;
+      if (!href) {
+        return;
+      }
       router.prefetch(href);
     },
     [router]
@@ -101,7 +104,9 @@ export default function Header() {
 
   // 権限チェック関数
   const hasPermission = (requiredRole: UserRole): boolean => {
-    if (!user) return false;
+    if (!user) {
+      return false;
+    }
 
     const roleHierarchy: Record<UserRole, number> = {
       ADMIN: 3,
@@ -191,7 +196,13 @@ export default function Header() {
                 prefetch
               >
                 <div className="flex items-center justify-center">
-                  <img alt="logo" className="h-8 w-8" src="/icon.svg" />
+                  <Image
+                    alt="logo"
+                    className="h-8 w-8"
+                    height={32}
+                    src="/icon.svg"
+                    width={32}
+                  />
                 </div>
                 <div className="flex items-center">
                   <h1 className="font-bold text-foreground text-xl">Fuyugyō</h1>
@@ -234,11 +245,15 @@ export default function Header() {
                             {user.displayName}
                           </p>
                           <p className="text-muted-foreground text-xs">
-                            {user.role === "ADMIN"
-                              ? "管理者"
-                              : user.role === "MANAGER"
-                                ? "マネージャー"
-                                : "メンバー"}
+                            {(() => {
+                              if (user.role === "ADMIN") {
+                                return "管理者";
+                              }
+                              if (user.role === "MANAGER") {
+                                return "マネージャー";
+                              }
+                              return "メンバー";
+                            })()}
                           </p>
                         </div>
                       </div>

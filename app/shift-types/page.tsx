@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 
-import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
+import { ProtectedRoute } from "@/components/auth/protected-route";
 import Loading from "./loading";
 import ShiftTypesPageClient from "./shift-types-page-client";
 

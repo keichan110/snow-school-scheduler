@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { type ReactNode, useEffect } from "react";
+import { type ReactNode, useCallback, useEffect } from "react";
 import { useAuth } from "@/contexts/auth-context";
 import { AuthGuard } from "./AuthGuard";
 
@@ -16,8 +16,8 @@ type ProtectedRouteProps = {
   redirectTo?: string;
   /** 権限不足時のリダイレクト先 */
   accessDeniedRedirectTo?: string;
-  /** リダイレクト前の確認メッセージを表示するか */
-  showMessage?: boolean;
+  /** リダイレクト前の確認メッセージを表示するか（未使用） */
+  _showMessage?: boolean;
 };
 
 /**
@@ -51,7 +51,7 @@ export function ProtectedRoute({
   requiredRole,
   redirectTo = "/login", // シンプルなログインページパスに戻す
   accessDeniedRedirectTo = "/",
-  showMessage = false,
+  _showMessage = false,
 }: ProtectedRouteProps) {
   const { user, status } = useAuth();
   const router = useRouter();
@@ -59,18 +59,22 @@ export function ProtectedRoute({
   /**
    * 権限チェックロジック
    */
-  const hasPermission = (userRole: string, required: string): boolean => {
-    const roleHierarchy = {
-      ADMIN: 3,
-      MANAGER: 2,
-      MEMBER: 1,
-    };
+  const hasPermission = useCallback(
+    (userRole: string, required: string): boolean => {
+      const roleHierarchy = {
+        ADMIN: 3,
+        MANAGER: 2,
+        MEMBER: 1,
+      };
 
-    const userLevel = roleHierarchy[userRole as keyof typeof roleHierarchy];
-    const requiredLevel = roleHierarchy[required as keyof typeof roleHierarchy];
+      const userLevel = roleHierarchy[userRole as keyof typeof roleHierarchy];
+      const requiredLevel =
+        roleHierarchy[required as keyof typeof roleHierarchy];
 
-    return userLevel >= requiredLevel;
-  };
+      return userLevel >= requiredLevel;
+    },
+    []
+  );
 
   /**
    * 認証・権限状態に基づくリダイレクト処理
@@ -287,8 +291,6 @@ type ConditionalProtectionProps = {
   enabled: boolean;
   /** 必要な権限レベル */
   requiredRole?: "ADMIN" | "MANAGER" | "MEMBER";
-  /** 保護が無効時のメッセージ */
-  debugMessage?: string;
 };
 
 /**
@@ -300,7 +302,6 @@ type ConditionalProtectionProps = {
  * <ConditionalProtection
  *   enabled={process.env.NODE_ENV === 'production'}
  *   requiredRole="ADMIN"
- *   debugMessage="Development mode: Auth disabled"
  * >
  *   <DevPanel />
  * </ConditionalProtection>

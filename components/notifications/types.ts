@@ -2,7 +2,7 @@ export type NotificationType = "success" | "error" | "warning" | "info";
 
 export type NotificationPriority = "low" | "normal" | "high" | "urgent";
 
-export interface Notification {
+export type Notification = {
   id: string;
   type: NotificationType;
   title?: string;
@@ -37,11 +37,11 @@ export interface Notification {
     loading?: boolean;
     primary?: boolean;
   }>;
-}
+};
 
-export interface NotificationQueueConfig {
+export type NotificationQueueConfig = {
   maxNotifications: number;
   pauseOnHover: boolean;
   preventDuplicates: boolean;
   duplicateTimeWindow: number; // ms
-}
+};

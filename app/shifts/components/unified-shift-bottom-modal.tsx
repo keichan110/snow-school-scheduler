@@ -3,7 +3,7 @@
 import { ArrowRight, Edit3 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { useNotification } from "@/components/notifications";
-import { AdminShiftModal } from "@/components/shared/modals/BaseShiftModal";
+import { AdminShiftModal } from "@/components/shared/modals/base-shift-modal";
 import { Button } from "@/components/ui/button";
 import { DrawerFooter } from "@/components/ui/drawer";
 import { useAuth } from "@/contexts/auth-context";

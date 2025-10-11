@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/drawer";
 import { formatDateForDisplay } from "@/shared/utils/date-formatter";
 
-export interface BaseShiftModalProps {
+export type BaseShiftModalProps = {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   selectedDate: string | null;
@@ -25,7 +25,7 @@ export interface BaseShiftModalProps {
   title?: string;
   showEmptyState?: boolean;
   emptyStateContent?: React.ReactNode;
-}
+};
 
 export function BaseShiftModal({
   isOpen,
@@ -39,7 +39,9 @@ export function BaseShiftModal({
   showEmptyState = true,
   emptyStateContent,
 }: BaseShiftModalProps) {
-  if (!selectedDate) return null;
+  if (!selectedDate) {
+    return null;
+  }
 
   const formattedDate = formatDateForDisplay(selectedDate);
   const displayTitle = title || formattedDate;
@@ -91,20 +93,20 @@ export function BaseShiftModal({
 }
 
 // Variant別の便利コンポーネント
-export interface PublicShiftModalProps {
+export type PublicShiftModalProps = {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   selectedDate: string | null;
   dayData: DayData | null;
   children?: React.ReactNode;
   title?: string;
-}
+};
 
 export function PublicShiftModal(props: PublicShiftModalProps) {
   return <BaseShiftModal {...props} variant="public" />;
 }
 
-export interface AdminShiftModalProps {
+export type AdminShiftModalProps = {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   selectedDate: string | null;
@@ -114,7 +116,7 @@ export interface AdminShiftModalProps {
   title?: string;
   showEmptyState?: boolean;
   emptyStateContent?: React.ReactNode;
-}
+};
 
 export function AdminShiftModal(props: AdminShiftModalProps) {
   return <BaseShiftModal {...props} variant="admin" />;

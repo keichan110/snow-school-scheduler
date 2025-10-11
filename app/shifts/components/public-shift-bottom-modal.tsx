@@ -1,6 +1,6 @@
 "use client";
 
-import { PublicShiftModal } from "@/components/shared/modals/BaseShiftModal";
+import { PublicShiftModal } from "@/components/shared/modals/base-shift-modal";
 import type { DayData } from "../types";
 import { renderDepartmentSections } from "../utils/shift-components";
 

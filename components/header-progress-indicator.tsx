@@ -1,12 +1,17 @@
 "use client";
 
 import { useIsFetching } from "@tanstack/react-query";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 
 const MIN_VISIBLE_MS = 200;
 const COMPLETE_DELAY_MS = 150;
 const PROGRESS_TICK_MS = 160;
+const PROGRESS_INITIAL = 12;
+const PROGRESS_ALMOST_COMPLETE = 90;
+const PROGRESS_INCREMENT_FACTOR = 0.18;
+const PROGRESS_COMPLETE = 100;
+const PROGRESS_RESET = 0;
 
 function getTime() {
   if (typeof performance !== "undefined") {
@@ -42,63 +47,84 @@ export function HeaderProgressIndicator() {
     []
   );
 
-  useEffect(() => {
-    if (isFetching > 0) {
-      if (hideTimeoutRef.current) {
-        window.clearTimeout(hideTimeoutRef.current);
-        hideTimeoutRef.current = null;
-      }
-
-      if (!visible) {
-        startTimeRef.current = getTime();
-        setVisible(true);
-        setProgress(12);
-      }
-
-      if (!intervalRef.current) {
-        intervalRef.current = window.setInterval(() => {
-          setProgress((current) => {
-            if (current >= 90) {
-              return current;
-            }
-            const delta = (90 - current) * 0.18;
-            return current + delta;
-          });
-        }, PROGRESS_TICK_MS);
-      }
-
-      return;
+  // Fetching開始時の処理
+  const startProgressTracking = useCallback(() => {
+    // 既存の非表示タイマーをキャンセル
+    if (hideTimeoutRef.current) {
+      window.clearTimeout(hideTimeoutRef.current);
+      hideTimeoutRef.current = null;
     }
 
+    // 初回表示時の初期化
+    if (!visible) {
+      startTimeRef.current = getTime();
+      setVisible(true);
+      setProgress(PROGRESS_INITIAL);
+    }
+
+    // プログレス更新インターバルの開始
+    if (!intervalRef.current) {
+      intervalRef.current = window.setInterval(() => {
+        setProgress((current) => {
+          if (current >= PROGRESS_ALMOST_COMPLETE) {
+            return current;
+          }
+          const delta =
+            (PROGRESS_ALMOST_COMPLETE - current) * PROGRESS_INCREMENT_FACTOR;
+          return current + delta;
+        });
+      }, PROGRESS_TICK_MS);
+    }
+  }, [visible]);
+
+  // Fetching終了時の処理
+  const stopProgressTracking = useCallback(() => {
+    // プログレス更新インターバルの停止
     if (intervalRef.current) {
       window.clearInterval(intervalRef.current);
       intervalRef.current = null;
     }
 
+    // 非表示状態なら早期リターン
     if (!visible) {
       return;
     }
 
-    setProgress(100);
+    // 完了状態に設定
+    setProgress(PROGRESS_COMPLETE);
 
+    // 最小表示時間を考慮した遅延計算
     const elapsed = startTimeRef.current
       ? getTime() - startTimeRef.current
       : MIN_VISIBLE_MS;
-    const delay = Math.max(MIN_VISIBLE_MS - elapsed, 0) + COMPLETE_DELAY_MS;
+    const delay =
+      Math.max(MIN_VISIBLE_MS - elapsed, PROGRESS_RESET) + COMPLETE_DELAY_MS;
 
+    // 遅延後に非表示化
     hideTimeoutRef.current = window.setTimeout(() => {
       startTimeRef.current = null;
       setVisible(false);
-      setProgress(0);
+      setProgress(PROGRESS_RESET);
       hideTimeoutRef.current = null;
     }, delay);
-  }, [isFetching, visible]);
+  }, [visible]);
+
+  useEffect(() => {
+    if (isFetching > 0) {
+      startProgressTracking();
+      return;
+    }
+    stopProgressTracking();
+  }, [isFetching, startProgressTracking, stopProgressTracking]);
 
   if (!shouldRender) {
     return null;
   }
 
-  const clampedProgress = Math.max(0, Math.min(progress, 100));
+  const clampedProgress = Math.max(
+    PROGRESS_RESET,
+    Math.min(progress, PROGRESS_COMPLETE)
+  );
 
   return (
     <div

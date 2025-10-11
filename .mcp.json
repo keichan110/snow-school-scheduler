@@ -1,19 +1,10 @@
 {
   "mcpServers": {
-    "container-use": {
-      "command": "container-use",
-      "args": ["stdio"]
-    },
-    "github": {
-      "command": "docker",
-      "args": [
-        "run",
-        "-i",
-        "--rm",
-        "--env-file",
-        ".env",
-        "ghcr.io/github/github-mcp-server"
-      ]
+    "ultracite": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "mcp-remote", "https://www.ultracite.ai/api/mcp/mcp"],
+      "env": {}
     }
   }
 }

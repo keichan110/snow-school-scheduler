@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import Background from "@/components/Background";
-import Footer from "@/components/Footer";
-import Header from "@/components/Header";
+import Background from "@/components/background";
+import Footer from "@/components/footer";
+import Header from "@/components/header";
 import { NotificationProvider } from "@/components/notifications";
 import { ThemeProvider } from "@/components/theme-provider";
 import { AuthProvider } from "@/contexts/auth-context";

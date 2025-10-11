@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 
-import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
+import { ProtectedRoute } from "@/components/auth/protected-route";
 import CertificationsPageClient from "./certifications-page-client";
 import Loading from "./loading";
 
