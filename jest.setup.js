@@ -9,7 +9,7 @@ process.env.NEXT_PUBLIC_APP_URL = "http://localhost:3000";
 process.env.NEXT_PUBLIC_TEST_MODE = "true";
 
 // 日本語ロケール設定
-if (typeof Intl !== "undefined" && Intl.DateTimeFormat) {
+if (Intl?.DateTimeFormat) {
   global.Intl = Intl;
 }
 
@@ -86,7 +86,9 @@ global.IntersectionObserver = jest.fn().mockImplementation(() => ({
 // console のテスト時の抑制設定
 if (process.env.NODE_ENV === "test") {
   // エラーやワーニングは表示するが、ログは抑制
+  // biome-ignore lint/suspicious/noConsole: テストセットアップでのconsole制御が必要
   const originalError = console.error;
+  // biome-ignore lint/suspicious/noConsole: テストセットアップでのconsole制御が必要
   const originalWarn = console.warn;
 
   console.error = (...args) => {

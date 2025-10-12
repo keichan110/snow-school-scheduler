@@ -10,6 +10,11 @@ import { getClientIp, isAllowedReferrer } from "@/lib/utils/request";
  * middlewareでは基本的なトークン存在チェックと認証リダイレクトのみ実行
  */
 
+// Bearer トークンの接頭辞長（"Bearer "の文字数）
+const BEARER_PREFIX_LENGTH = 7;
+// ミリ秒を秒に変換する係数
+const MS_TO_SECONDS = 1000;
+
 // 認証不要なAPIパス（完全一致）
 const PUBLIC_API_PATHS = new Set([
   "/api/health",
@@ -64,8 +69,8 @@ function isPublicPagePath(pathname: string): boolean {
 function getJwtToken(request: NextRequest): string | null {
   // Authorization ヘッダーから取得
   const authHeader = request.headers.get("authorization");
-  if (authHeader && authHeader.startsWith("Bearer ")) {
-    return authHeader.substring(7);
+  if (authHeader?.startsWith("Bearer ")) {
+    return authHeader.substring(BEARER_PREFIX_LENGTH);
   }
 
   // Cookieから取得
@@ -102,7 +107,10 @@ function createRateLimitErrorResponse(
   const headers = new Headers();
   headers.set("X-RateLimit-Limit", limit.toString());
   headers.set("X-RateLimit-Remaining", "0");
-  headers.set("X-RateLimit-Reset", Math.ceil(resetTime / 1000).toString());
+  headers.set(
+    "X-RateLimit-Reset",
+    Math.ceil(resetTime / MS_TO_SECONDS).toString()
+  );
   headers.set("X-RateLimit-Bucket", ruleId);
 
   return NextResponse.json(
@@ -126,7 +134,7 @@ function createReferrerErrorResponse() {
   );
 }
 
-export async function middleware(request: NextRequest) {
+export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // デバッグモードでのみログ出力
@@ -172,7 +180,7 @@ export async function middleware(request: NextRequest) {
       );
       response.headers.set(
         "X-RateLimit-Reset",
-        Math.ceil(rateLimitResult.resetTime / 1000).toString()
+        Math.ceil(rateLimitResult.resetTime / MS_TO_SECONDS).toString()
       );
       response.headers.set("X-RateLimit-Bucket", rateLimitResult.ruleId);
       return response;

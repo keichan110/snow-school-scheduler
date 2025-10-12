@@ -10,7 +10,7 @@ const nextConfig = {
   eslint: {
     dirs: ["app", "lib", "components"],
   },
-  async headers() {
+  headers() {
     return [
       {
         source: "/(.*)",
