@@ -19,7 +19,7 @@ export {
   ManagerGuard,
   MemberGuard,
   withAuth,
-} from "./AuthGuard";
+} from "./auth-guard";
 // ページレベル保護コンポーネント
 export {
   type AuthCheckResult,
@@ -27,4 +27,4 @@ export {
   getServerAuthCheck,
   ProtectedLayout,
   ProtectedRoute,
-} from "./ProtectedRoute";
+} from "./protected-route";

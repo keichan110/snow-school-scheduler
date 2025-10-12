@@ -1,7 +1,7 @@
 "use client";
 
-import { NotificationItem } from "./NotificationItem";
-import { useNotificationContext } from "./NotificationProvider";
+import { NotificationItem } from "./notification-item";
+import { useNotificationContext } from "./notification-provider";
 
 export function NotificationContainer() {
   const { state } = useNotificationContext();

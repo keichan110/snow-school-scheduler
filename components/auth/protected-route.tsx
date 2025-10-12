@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { type ReactNode, useCallback, useEffect } from "react";
 import { useAuth } from "@/contexts/auth-context";
-import { AuthGuard } from "./AuthGuard";
+import { AuthGuard } from "./auth-guard";
 
 /**
  * 保護されたルートのProps
