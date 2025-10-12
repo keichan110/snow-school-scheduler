@@ -10,6 +10,7 @@ import {
   SESSION_TIMEOUT_MS,
 } from "@/shared/constants/auth";
 import { HTTP_STATUS_OK } from "@/shared/constants/http-status";
+import type { AuthSession } from "./utils";
 import {
   createErrorRedirect,
   createNewUser,
@@ -40,7 +41,11 @@ import {
 /**
  * 認証パラメータを検証する
  */
-function validateAuthParams(request: NextRequest) {
+function validateAuthParams(
+  request: NextRequest
+):
+  | { success: true; code: string; receivedState: string }
+  | { success: false; redirect: NextResponse } {
   const { searchParams } = new URL(request.url);
 
   // エラーパラメータのチェック
@@ -75,7 +80,11 @@ function validateAuthParams(request: NextRequest) {
 /**
  * セッション情報を検証する
  */
-function validateSessionCookie(request: NextRequest) {
+function validateSessionCookie(
+  request: NextRequest
+):
+  | { success: true; sessionData: AuthSession }
+  | { success: false; redirect: NextResponse } {
   const sessionCookie = request.cookies.get("auth-session")?.value;
   if (!sessionCookie) {
     secureLog("error", "Authentication session cookie missing");
@@ -111,10 +120,29 @@ function validateSessionCookie(request: NextRequest) {
  * ユーザーを取得または作成する
  */
 async function getOrCreateUser(
-  profile: { userId: string; displayName: string; pictureUrl?: string },
+  profile: {
+    userId: string;
+    displayName: string;
+    pictureUrl?: string | undefined;
+  },
   inviteToken: string | undefined,
   request: NextRequest
-) {
+): Promise<
+  | {
+      success: true;
+      user: {
+        id: string;
+        lineUserId: string;
+        displayName: string;
+        profileImageUrl: string | null;
+        role: string;
+        isActive: boolean;
+        createdAt: Date;
+        updatedAt: Date;
+      };
+    }
+  | { success: false; redirect: NextResponse }
+> {
   let user = await prisma.user.findUnique({
     where: { lineUserId: profile.userId },
   });
@@ -146,12 +174,16 @@ async function getOrCreateUser(
     };
   }
 
-  try {
-    // invitationValidation.isValid が true なので inviteToken は必ず存在する
-    if (!inviteToken) {
-      throw new Error("Invite token is required but not provided");
-    }
+  // invitationValidation.isValid が true なので inviteToken は必ず存在する
+  if (!inviteToken) {
+    secureLog("error", "Invite token is required but not provided");
+    return {
+      success: false,
+      redirect: createErrorRedirect(request, "invitation_required"),
+    };
+  }
 
+  try {
     user = await createNewUser(profile, inviteToken);
 
     // 招待トークンの使用回数を増加
@@ -187,7 +219,7 @@ async function getOrCreateUser(
  */
 function createSuccessResponse(
   user: {
-    id: number;
+    id: string;
     lineUserId: string;
     displayName: string;
     role: string;

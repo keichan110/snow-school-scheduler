@@ -253,7 +253,7 @@ export function canAccessUser(
   }
 
   // 自分の情報の場合
-  if (currentUser.userId === targetUserId) {
+  if (currentUser.id === targetUserId) {
     // 自分の情報は read のみ可能（更新・削除は管理者のみ）
     return action === "read";
   }

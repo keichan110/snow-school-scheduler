@@ -4,17 +4,17 @@ import { prisma } from "@/lib/db";
 import { secureLog } from "@/lib/utils/logging";
 import { TOKEN_PREVIEW_LENGTH } from "@/shared/constants/auth";
 
-type AuthSession = {
+export type AuthSession = {
   state: string;
   createdAt: number;
-  inviteToken?: string;
-  redirectUrl?: string;
+  inviteToken?: string | undefined;
+  redirectUrl?: string | undefined;
 };
 
-type LineProfile = {
+export type LineProfile = {
   userId: string;
   displayName: string;
-  pictureUrl?: string;
+  pictureUrl?: string | undefined;
 };
 
 /**
@@ -89,7 +89,7 @@ export function getInvitationErrorReason(
  */
 export async function updateUserProfileIfNeeded(
   user: {
-    id: number;
+    id: string;
     displayName: string;
     profileImageUrl: string | null;
     lineUserId: string;
@@ -123,7 +123,12 @@ export async function updateUserProfileIfNeeded(
 /**
  * 招待トークンを検証する
  */
-export async function validateInvitation(inviteToken: string | undefined) {
+export async function validateInvitation(
+  inviteToken: string | undefined
+): Promise<
+  | { isValid: true }
+  | { isValid: false; errorReason: string; errorMessage: string }
+> {
   if (!inviteToken) {
     return {
       isValid: false,

@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
   try {
     // 現在の認証状態を確認（ログ出力用）
     const token = getAuthTokenFromRequest(request);
-    let _currentUser: { id: number; displayName: string } | null = null;
+    let _currentUser: { id: string; displayName: string } | null = null;
 
     if (token) {
       const authResult = await authenticateFromRequest(request);
@@ -85,7 +85,7 @@ export async function GET(request: NextRequest) {
 
     // 現在の認証状態を確認（ログ出力用）
     const token = getAuthTokenFromRequest(request);
-    let _currentUser: { id: number; displayName: string } | null = null;
+    let _currentUser: { id: string; displayName: string } | null = null;
 
     if (token) {
       const authResult = await authenticateFromRequest(request);
@@ -147,7 +147,7 @@ export async function DELETE(request: NextRequest) {
   try {
     // POST処理と同様の処理
     const token = getAuthTokenFromRequest(request);
-    let _currentUser: { id: number; displayName: string } | null = null;
+    let _currentUser: { id: string; displayName: string } | null = null;
 
     if (token) {
       const authResult = await authenticateFromRequest(request);

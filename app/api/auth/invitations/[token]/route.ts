@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { authenticateFromRequest, checkUserRole } from "@/lib/auth/middleware";
+import { authenticateFromRequest } from "@/lib/auth/middleware";
 import type { ApiResponse } from "@/lib/auth/types";
 import {
   HTTP_STATUS_INTERNAL_SERVER_ERROR,
@@ -46,8 +46,7 @@ export async function DELETE(
 
     // 認証とロールチェック
     const authResult = await authenticateFromRequest(request);
-    const roleResult = checkUserRole(authResult.user, "MANAGER");
-    const authCheck = checkAuthAndRole(authResult, roleResult);
+    const authCheck = checkAuthAndRole(authResult, "MANAGER");
 
     if (!authCheck.success) {
       return authCheck.response;
@@ -58,7 +57,9 @@ export async function DELETE(
     // トークンパラメータのバリデーション
     const tokenValidation = validateTokenParameter(token);
     if (!tokenValidation.success) {
-      return tokenValidation.response;
+      return tokenValidation.response as NextResponse<
+        ApiResponse<DeactivationResponse>
+      >;
     }
 
     const decodedToken = tokenValidation.decodedToken;
@@ -80,7 +81,9 @@ export async function DELETE(
     // 既に無効化済みの場合
     const activeCheck = checkTokenActive(invitationToken);
     if (!activeCheck.success) {
-      return activeCheck.response;
+      return activeCheck.response as NextResponse<
+        ApiResponse<DeactivationResponse>
+      >;
     }
 
     // 招待トークンを論理削除（無効化）

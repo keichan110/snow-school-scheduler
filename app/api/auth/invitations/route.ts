@@ -3,7 +3,7 @@ import {
   type CreateInvitationTokenParams,
   createInvitationToken,
 } from "@/lib/auth/invitations";
-import { authenticateFromRequest, checkUserRole } from "@/lib/auth/middleware";
+import { authenticateFromRequest } from "@/lib/auth/middleware";
 import type {
   ApiResponse,
   InvitationListItem,
@@ -44,8 +44,7 @@ export async function POST(
   try {
     // 認証とロールチェック
     const authResult = await authenticateFromRequest(request);
-    const roleResult = checkUserRole(authResult.user, "MANAGER");
-    const authCheck = checkAuthAndRole(authResult, roleResult);
+    const authCheck = checkAuthAndRole(authResult, "MANAGER");
 
     if (!authCheck.success) {
       return authCheck.response;
@@ -71,7 +70,7 @@ export async function POST(
 
     // 招待トークン作成パラメータの準備
     const createParams: CreateInvitationTokenParams = {
-      createdBy: user.userId,
+      createdBy: user.id,
       ...(requestBody.description && { description: requestBody.description }),
       expiresAt,
     };
@@ -132,8 +131,7 @@ export async function GET(
   try {
     // 認証とロールチェック
     const authResult = await authenticateFromRequest(request);
-    const roleResult = checkUserRole(authResult.user, "MANAGER");
-    const authCheck = checkAuthAndRole(authResult, roleResult);
+    const authCheck = checkAuthAndRole(authResult, "MANAGER");
 
     if (!authCheck.success) {
       return authCheck.response;
@@ -149,7 +147,7 @@ export async function GET(
 
     // 招待トークン一覧取得
     const tokens = await fetchInvitationTokens(
-      user.userId,
+      user.id,
       user.role,
       includeInactive,
       showAll

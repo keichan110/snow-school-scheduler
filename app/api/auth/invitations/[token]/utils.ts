@@ -103,7 +103,7 @@ export function checkDeactivationPermission(
   | { success: true } {
   const canDeactivate =
     user.role === "ADMIN" || // 管理者は全ての招待URLを無効化可能
-    invitationToken.createdBy === user.userId; // 作成者は自分の招待URLを無効化可能
+    invitationToken.createdBy === user.id; // 作成者は自分の招待URLを無効化可能
 
   if (!canDeactivate) {
     return {

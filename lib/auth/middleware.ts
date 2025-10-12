@@ -344,8 +344,8 @@ export async function getAuthDebugInfo(request: NextRequest) {
 
   let jwtInfo: {
     valid: boolean;
-    payload: { userId: string; role: string; exp?: number } | null;
-    error?: string;
+    payload: { userId: string; role: string; exp?: number | undefined } | null;
+    error?: string | undefined;
   } | null = null;
   let dbUser:
     | { id: string; displayName: string; role: string; isActive: boolean }

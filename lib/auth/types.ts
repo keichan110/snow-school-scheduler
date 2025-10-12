@@ -2,6 +2,13 @@
  * 認証・招待システム関連の型定義
  */
 
+// ユーザー情報型をmiddlewareから再エクスポート
+export type {
+  AuthenticatedUser,
+  AuthenticationResult,
+  AuthorizationResult,
+} from "./middleware";
+
 // API共通レスポンス型
 export type ApiResponse<T> =
   | { success: true; data: T }
@@ -35,21 +42,17 @@ export type InvitationListItem = {
 // 招待URL検証APIのレスポンス型
 export type InvitationValidationData = {
   isValid: boolean;
-  error?: string;
-  errorCode?: "NOT_FOUND" | "EXPIRED" | "INACTIVE" | "MAX_USES_EXCEEDED";
+  error?: string | undefined;
+  errorCode?:
+    | "NOT_FOUND"
+    | "EXPIRED"
+    | "INACTIVE"
+    | "MAX_USES_EXCEEDED"
+    | undefined;
 };
 
 // 招待URL作成リクエスト型
 export type CreateInvitationRequest = {
-  expiresInHours?: number; // 1-8760 (1時間〜1年)
-  maxUses?: number; // 1-1000回
-};
-
-// ユーザー情報型（JWT由来）
-export type AuthenticatedUser = {
-  userId: string;
-  lineUserId: string;
-  displayName: string;
-  role: "ADMIN" | "MANAGER" | "MEMBER";
-  isActive: boolean;
+  expiresInHours?: number | undefined; // 1-8760 (1時間〜1年)
+  maxUses?: number | undefined; // 1-1000回
 };

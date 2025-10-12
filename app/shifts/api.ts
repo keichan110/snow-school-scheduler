@@ -11,10 +11,14 @@ const API_BASE = "/api" as const;
 
 // Generic API error handler
 class ApiError extends Error {
-  readonly statusCode?: number;
+  readonly statusCode?: number | undefined;
   readonly originalError?: unknown;
 
-  constructor(message: string, statusCode?: number, originalError?: unknown) {
+  constructor(
+    message: string,
+    statusCode?: number | undefined,
+    originalError?: unknown
+  ) {
     super(message);
     this.name = "ApiError";
     this.statusCode = statusCode;

@@ -1,6 +1,11 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import type { AuthenticatedUser, InvitationListItem } from "@/lib/auth/types";
+import { checkUserRole } from "@/lib/auth/middleware";
+import type {
+  AuthenticatedUser,
+  AuthenticationResult,
+  InvitationListItem,
+} from "@/lib/auth/types";
 import { prisma } from "@/lib/db";
 import {
   HTTP_STATUS_BAD_REQUEST,
@@ -22,18 +27,8 @@ type AuthCheckResult =
  * 認証とロールチェックを実行するヘルパー関数
  */
 export function checkAuthAndRole(
-  authResult: {
-    success: boolean;
-    user?: AuthenticatedUser;
-    error?: string;
-    statusCode?: number;
-  },
-  roleResult: {
-    success: boolean;
-    user?: AuthenticatedUser;
-    error?: string;
-    statusCode?: number;
-  }
+  authResult: AuthenticationResult,
+  requiredRole: "ADMIN" | "MANAGER" | "MEMBER" = "MANAGER"
 ): AuthCheckResult {
   if (!(authResult.success && authResult.user)) {
     return {
@@ -47,6 +42,8 @@ export function checkAuthAndRole(
       ),
     };
   }
+
+  const roleResult = checkUserRole(authResult.user, requiredRole);
 
   if (!(roleResult.success && roleResult.user)) {
     return {
@@ -200,7 +197,7 @@ export function buildInvitationListResponse(
     creator: {
       id: string;
       displayName: string;
-      role: "ADMIN" | "MANAGER" | "MEMBER";
+      role: string;
     };
   }>
 ): InvitationListItem[] {

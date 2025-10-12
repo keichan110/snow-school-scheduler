@@ -57,16 +57,7 @@ function PublicShiftsPageContent() {
   const [isPending, startTransition] = useTransition();
 
   const canManage = user
-    ? hasManagePermission(
-        {
-          userId: user.id,
-          lineUserId: user.lineUserId,
-          displayName: user.displayName,
-          role: user.role,
-          isActive: user.isActive,
-        } as AuthenticatedUser,
-        "shifts"
-      )
+    ? hasManagePermission(user as AuthenticatedUser, "shifts")
     : false;
 
   const { currentYear, currentMonth, monthlyQueryParams, navigateMonth } =

@@ -1,4 +1,6 @@
-export type { ShiftType } from "@prisma/client";
+import type { ShiftType as PrismaShiftType } from "@prisma/client";
+
+export type ShiftType = PrismaShiftType;
 
 export type ShiftTypeStats = {
   total: number;
@@ -13,6 +15,6 @@ export type ShiftTypeFormData = {
 export type ShiftTypeModalProps = {
   isOpen: boolean;
   onClose: () => void;
-  shiftType?: ShiftType | null;
+  shiftType?: ShiftType | null | undefined;
   onSave: (data: ShiftTypeFormData) => Promise<void>;
 };
