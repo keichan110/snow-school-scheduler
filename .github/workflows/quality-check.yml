@@ -38,10 +38,7 @@ jobs:
       - name: Run TypeScript type check
         run: npm run typecheck
 
-      - name: Check code formatting
-        run: npm run format:check
-
-      - name: Run ESLint
+      - name: Run Ultracite check (format + lint)
         run: npm run lint
 
       - name: Run tests
