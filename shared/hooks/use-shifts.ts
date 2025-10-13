@@ -1,5 +1,14 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
+import {
+  createShiftAction,
+  deleteShiftAction,
+  updateShiftAction,
+} from "@/features/shifts/actions";
+import type {
+  CreateShiftInput,
+  UpdateShiftInput,
+} from "@/features/shifts/schemas";
 import type { ApiResponse } from "@/lib/api/types";
 
 // 簡素化されたシフト型（実際のAPIレスポンスに合わせる）
@@ -17,15 +26,6 @@ type Shift = {
     instructor: { id: number; firstName: string; lastName: string };
   }>;
   assignedCount: number;
-};
-
-// シフト作成リクエスト型
-type CreateShiftRequest = {
-  date: string;
-  departmentId: number;
-  shiftTypeId: number;
-  description?: string;
-  assignedInstructorIds?: number[];
 };
 
 // シフト取得用のクエリキー生成関数
@@ -136,32 +136,18 @@ export function useCreateShift() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (shiftData: CreateShiftRequest): Promise<Shift> => {
-      const response = await fetch("/api/shifts", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(shiftData),
-      });
+    mutationFn: async (shiftData: CreateShiftInput) => {
+      const result = await createShiftAction(shiftData);
 
-      if (!response.ok) {
-        throw new Error("Failed to create shift");
+      if (!result.success) {
+        throw new Error(result.error || "Failed to create shift");
       }
 
-      const data: ApiResponse<Shift> = await response.json();
-      if (!(data.success && data.data)) {
-        throw new Error(data.error || "Failed to create shift");
-      }
-
-      return data.data;
+      return result.data;
     },
-    onSuccess: (newShift) => {
+    onSuccess: () => {
       // 関連するクエリを無効化してリフレッシュ
       queryClient.invalidateQueries({ queryKey: shiftsQueryKeys.all });
-
-      // 新しいシフトをキャッシュに追加
-      queryClient.setQueryData(shiftsQueryKeys.detail(newShift.id), newShift);
     },
   });
 }
@@ -176,36 +162,20 @@ export function useUpdateShift() {
       data,
     }: {
       id: number;
-      data: Partial<CreateShiftRequest>;
-    }): Promise<Shift> => {
-      const response = await fetch(`/api/shifts/${id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
-      });
+      data: UpdateShiftInput;
+    }) => {
+      const result = await updateShiftAction(id, data);
 
-      if (!response.ok) {
-        throw new Error("Failed to update shift");
+      if (!result.success) {
+        throw new Error(result.error || "Failed to update shift");
       }
 
-      const responseData: ApiResponse<Shift> = await response.json();
-      if (!(responseData.success && responseData.data)) {
-        throw new Error(responseData.error || "Failed to update shift");
-      }
-
-      return responseData.data;
+      return result.data;
     },
-    onSuccess: (updatedShift) => {
+    onSuccess: (_, { id }) => {
       // 関連するクエリを無効化
       queryClient.invalidateQueries({ queryKey: shiftsQueryKeys.all });
-
-      // 更新されたシフトをキャッシュに設定
-      queryClient.setQueryData(
-        shiftsQueryKeys.detail(updatedShift.id),
-        updatedShift
-      );
+      queryClient.invalidateQueries({ queryKey: shiftsQueryKeys.detail(id) });
     },
   });
 }
@@ -215,19 +185,14 @@ export function useDeleteShift() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (id: number): Promise<void> => {
-      const response = await fetch(`/api/shifts/${id}`, {
-        method: "DELETE",
-      });
+    mutationFn: async (id: number) => {
+      const result = await deleteShiftAction(id);
 
-      if (!response.ok) {
-        throw new Error("Failed to delete shift");
+      if (!result.success) {
+        throw new Error(result.error || "Failed to delete shift");
       }
 
-      const data: ApiResponse<null> = await response.json();
-      if (!data.success) {
-        throw new Error(data.error || "Failed to delete shift");
-      }
+      return result.data;
     },
     onSuccess: (_, deletedId) => {
       // 関連するクエリを無効化
