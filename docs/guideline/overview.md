@@ -16,11 +16,20 @@
 ---
 
 ## データ取得の意思決定（超要約）
-1) **読み取り（GET）** → **`app/api` の GET** を用意 → **RSC で prefetch** → CSR で **`<Hydrate>`**（TanStack Query）。  
-   - RSC の `fetch` では `next: { tags: [...] }` を必ず付与し、Server Action で `revalidateTag` と対応させる。  
-2) **更新（POST/PUT/PATCH/DELETE）** → **Server Actions** を実装（zod 検証 + `revalidatePath`/`revalidateTag`）。  
-3) **頻繁更新/リアルタイム** → **CSR + Query**（`refetchInterval` / WS など）。  
-4) **URLで受ける必要があるもの（Webhook/OAuth callback 等）** → 例外的に **`app/api`** を使用。
+1) **読み取り（GET）** → **`app/api` の GET** を用意 → **RSC で prefetch** → CSR で **`<Hydrate>`**（TanStack Query）。
+   - RSC の `fetch` では `next: { tags: [...] }` を必ず付与し、Server Action で `revalidateTag` と対応させる。
+2) **更新（POST/PUT/PATCH/DELETE）** → **Server Actions** を実装（zod 検証 + `revalidatePath`/`revalidateTag`）。
+3) **頻繁更新/リアルタイム** → **CSR + Query**（`refetchInterval` / WS など）。
+4) **外部からURLで呼ばれるもの（例外）** → **`app/api` に POST/PUT 等を実装**。
+
+### 例外ケース（外部URL必須）
+| ケース | メソッド | 配置例 | 備考 |
+|--------|----------|--------|------|
+| Webhook | POST | `app/api/webhooks/stripe/route.ts` | 外部サービスからのコールバック |
+| OAuth callback | GET/POST | `app/api/auth/line/callback/route.ts` | 認証プロバイダーからのリダイレクト |
+| 外部API公開 | GET/POST | `app/api/public/stats/route.ts` | 外部連携用エンドポイント |
+
+**原則**: これらの例外以外は Server Actions を使用
 
 ---
 

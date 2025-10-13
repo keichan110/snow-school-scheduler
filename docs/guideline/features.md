@@ -106,6 +106,11 @@ export const todoKeys = {
 };
 ```
 
+## queryKey 設計パターン
+- **階層構造**: `all` → `lists()` → `list(params)` → `details()` → `detail(id)` の順で詳細化
+- **無効化の粒度**: `all` で全体、`lists()` でリスト系のみ、`list(params)` で特定条件のみ
+- **複数パラメータ**: オブジェクトで渡し `{ departmentId, dateFrom, dateTo }` のように明示
+
 ```ts
 // features/todos/queries/prefetch.ts
 import { QueryClient } from '@tanstack/react-query';
