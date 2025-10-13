@@ -21,6 +21,7 @@
   - RSC からの `fetch` は `next: { tags: ['<feature>.<resource>'] }` を必ず指定し、Server Action の `revalidateTag` と対応させる。
 - **Write（POST/PUT/PATCH/DELETE）**: **Server Actions** を `/features/<feature>/actions.ts` に共置。CSR では `useMutation` から直接呼ぶ or `<form action>`。
 - I/O は **zod** で検証。UI は安全な型のみ扱う。
+- GET レスポンスは `success` を discriminated union で検証し、`success: false` の場合は明示的に throw する。
 - `keys.ts` に `queryKey` を集中（`as const`）。
 
 ## サンプル（Server Actions: Write）
@@ -65,18 +66,29 @@ export function useCreateTodo() {
 import { z } from 'zod';
 export const Todo = z.object({ id: z.string(), title: z.string(), done: z.boolean() });
 export const TodoList = z.array(Todo);
+export const TodoResponse = z.discriminatedUnion('success', [
+  z.object({ success: z.literal(true), data: TodoList }),
+  z.object({
+    success: z.literal(false),
+    error: z.object({ code: z.string(), message: z.string().optional() }),
+  }),
+]);
 ```
 
 ```ts
 // features/todos/api/client.ts
 import { fetchJson } from '@/shared/lib/fetch';
-import { TodoList } from './schema';
+import { TodoList, TodoResponse } from './schema';
 
 export async function fetchTodos() {
   const res = await fetchJson<unknown>('/api/todos', {
     next: { tags: ['todos.list'], revalidate: 60 },
   });
-  return TodoList.parse((res as any).data);
+  const parsed = TodoResponse.parse(res);
+  if (!parsed.success) {
+    throw new Error(parsed.error.code);
+  }
+  return TodoList.parse(parsed.data);
 }
 ```
 

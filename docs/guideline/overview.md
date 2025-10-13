@@ -77,6 +77,8 @@
 
 ### 5. API レスポンス（GET） & エラー
 - 成功: `{ success: true, data }`。失敗: `{ success: false, error: { code, message } }`。
+- Query/Server Components 側は `success` フラグを必ず判定し、失敗時はエラーを throw して UI の `error.tsx` や `onError` に委譲する。
+- レスポンス契約は zod の **discriminated union** で検証し、`data` にアクセスする前に型を確定させる。
 - UI は Query の `retry`, `select`, `onError` で分岐。`notFound()` を適切に。
 
 ### 6. Server Actions（Write）
