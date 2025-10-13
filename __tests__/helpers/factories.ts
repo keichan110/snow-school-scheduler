@@ -6,14 +6,14 @@
  */
 
 import type {
+  Certification,
   Department,
   Instructor,
-  Certification,
   Shift,
-  ShiftType,
   ShiftAssignment,
-} from '@prisma/client';
-import type { InstructorStatus } from '@/shared/types/common';
+  ShiftType,
+} from "@prisma/client";
+import type { InstructorStatus } from "@/shared/types/common";
 
 // カウンター（ユニークなID生成用）
 let departmentCounter = 1;
@@ -26,11 +26,13 @@ let assignmentCounter = 1;
 /**
  * 部門データファクトリー
  */
-export const createDepartment = (overrides: Partial<Department> = {}): Department => {
+export const createDepartment = (
+  overrides: Partial<Department> = {}
+): Department => {
   const id = departmentCounter++;
   return {
     id,
-    code: `DEPT${String(id).padStart(3, '0')}`,
+    code: `DEPT${String(id).padStart(3, "0")}`,
     name: `テスト部門${id}`,
     description: `テスト用の部門説明${id}`,
     isActive: true,
@@ -43,7 +45,9 @@ export const createDepartment = (overrides: Partial<Department> = {}): Departmen
 /**
  * インストラクターデータファクトリー
  */
-export const createInstructor = (overrides: Partial<Instructor> = {}): Instructor => {
+export const createInstructor = (
+  overrides: Partial<Instructor> = {}
+): Instructor => {
   const id = instructorCounter++;
   return {
     id,
@@ -51,7 +55,7 @@ export const createInstructor = (overrides: Partial<Instructor> = {}): Instructo
     firstName: `テスト名${id}`,
     lastNameKana: `テストセイ${id}`,
     firstNameKana: `テストメイ${id}`,
-    status: 'ACTIVE' as InstructorStatus,
+    status: "ACTIVE" as InstructorStatus,
     notes: `テスト用のメモ${id}`,
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -62,7 +66,9 @@ export const createInstructor = (overrides: Partial<Instructor> = {}): Instructo
 /**
  * 資格データファクトリー
  */
-export const createCertification = (overrides: Partial<Certification> = {}): Certification => {
+export const createCertification = (
+  overrides: Partial<Certification> = {}
+): Certification => {
   const id = certificationCounter++;
   return {
     id,
@@ -81,7 +87,9 @@ export const createCertification = (overrides: Partial<Certification> = {}): Cer
 /**
  * シフト種別データファクトリー
  */
-export const createShiftType = (overrides: Partial<ShiftType> = {}): ShiftType => {
+export const createShiftType = (
+  overrides: Partial<ShiftType> = {}
+): ShiftType => {
   const id = shiftTypeCounter++;
   return {
     id,
@@ -99,7 +107,11 @@ export const createShiftType = (overrides: Partial<ShiftType> = {}): ShiftType =
 export const createShift = (overrides: Partial<Shift> = {}): Shift => {
   const id = shiftCounter++;
   const now = new Date();
-  const defaultDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + id);
+  const defaultDate = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate() + id
+  );
 
   return {
     id,
@@ -136,28 +148,41 @@ export const createDepartments = (
   count: number,
   overridesList?: Partial<Department>[]
 ): Department[] =>
-  Array.from({ length: count }, (_, index) => createDepartment(overridesList?.[index] || {}));
+  Array.from({ length: count }, (_, index) =>
+    createDepartment(overridesList?.[index] || {})
+  );
 
 export const createInstructors = (
   count: number,
   overridesList?: Partial<Instructor>[]
 ): Instructor[] =>
-  Array.from({ length: count }, (_, index) => createInstructor(overridesList?.[index] || {}));
+  Array.from({ length: count }, (_, index) =>
+    createInstructor(overridesList?.[index] || {})
+  );
 
 export const createCertifications = (
   count: number,
   overridesList?: Partial<Certification>[]
 ): Certification[] =>
-  Array.from({ length: count }, (_, index) => createCertification(overridesList?.[index] || {}));
+  Array.from({ length: count }, (_, index) =>
+    createCertification(overridesList?.[index] || {})
+  );
 
-export const createShifts = (count: number, overridesList?: Partial<Shift>[]): Shift[] =>
-  Array.from({ length: count }, (_, index) => createShift(overridesList?.[index] || {}));
+export const createShifts = (
+  count: number,
+  overridesList?: Partial<Shift>[]
+): Shift[] =>
+  Array.from({ length: count }, (_, index) =>
+    createShift(overridesList?.[index] || {})
+  );
 
 export const createShiftAssignments = (
   count: number,
   overridesList?: Partial<ShiftAssignment>[]
 ): ShiftAssignment[] =>
-  Array.from({ length: count }, (_, index) => createShiftAssignment(overridesList?.[index] || {}));
+  Array.from({ length: count }, (_, index) =>
+    createShiftAssignment(overridesList?.[index] || {})
+  );
 
 /**
  * 関連データを含む複合ファクトリー
@@ -177,7 +202,7 @@ export const createCertificationWithDepartment = (
 
 export const createShiftWithAssignments = (
   shiftOverrides: Partial<Shift> = {},
-  assignmentCount: number = 2,
+  assignmentCount = 2,
   assignmentOverrides: Partial<ShiftAssignment>[] = []
 ) => {
   const shift = createShift(shiftOverrides);

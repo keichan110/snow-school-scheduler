@@ -1,10 +1,10 @@
 import {
-  useSuspenseQuery,
   type UseSuspenseQueryOptions,
   type UseSuspenseQueryResult,
-} from '@tanstack/react-query';
-import { fetchShifts, fetchDepartments, ApiError } from '@/app/shifts/api';
-import type { Shift, Department, ShiftQueryParams } from '@/app/shifts/types';
+  useSuspenseQuery,
+} from "@tanstack/react-query";
+import { type ApiError, fetchDepartments, fetchShifts } from "@/app/shifts/api";
+import type { Department, Shift, ShiftQueryParams } from "@/app/shifts/types";
 
 /**
  * 公開シフト一覧クエリのフィルタ型
@@ -16,7 +16,8 @@ type MutablePublicShiftsQueryFilters = {
   dateTo?: string;
 };
 
-export type PublicShiftsQueryFilters = Readonly<MutablePublicShiftsQueryFilters>;
+export type PublicShiftsQueryFilters =
+  Readonly<MutablePublicShiftsQueryFilters>;
 
 const EMPTY_FILTERS: PublicShiftsQueryFilters = Object.freeze({});
 
@@ -24,23 +25,28 @@ const EMPTY_FILTERS: PublicShiftsQueryFilters = Object.freeze({});
  * 公開シフト向けのクエリキー定義
  */
 export const publicShiftsQueryKeys = {
-  all: ['public-shifts'] as const,
+  all: ["public-shifts"] as const,
   list: (filters: PublicShiftsQueryFilters = EMPTY_FILTERS) =>
-    [...publicShiftsQueryKeys.all, 'list', filters] as const,
+    [...publicShiftsQueryKeys.all, "list", filters] as const,
 };
 
-export type PublicShiftsQueryKey = ReturnType<typeof publicShiftsQueryKeys.list>;
+export type PublicShiftsQueryKey = ReturnType<
+  typeof publicShiftsQueryKeys.list
+>;
 
 /**
  * 公開ビューで利用する部門クエリキー
  */
 export const publicShiftsDepartmentsQueryKeys = {
-  all: ['public-shifts', 'departments'] as const,
+  all: ["public-shifts", "departments"] as const,
 };
 
-export type PublicShiftsDepartmentsQueryKey = typeof publicShiftsDepartmentsQueryKeys.all;
+export type PublicShiftsDepartmentsQueryKey =
+  typeof publicShiftsDepartmentsQueryKeys.all;
 
-function normalizeShiftQueryParams(params?: ShiftQueryParams): PublicShiftsQueryFilters {
+function normalizeShiftQueryParams(
+  params?: ShiftQueryParams
+): PublicShiftsQueryFilters {
   if (!params) {
     return EMPTY_FILTERS;
   }
@@ -65,7 +71,7 @@ function normalizeShiftQueryParams(params?: ShiftQueryParams): PublicShiftsQuery
 
 type PublicShiftsQueryOptions<TData> = Omit<
   UseSuspenseQueryOptions<Shift[], ApiError, TData, PublicShiftsQueryKey>,
-  'queryKey' | 'queryFn' | 'suspense'
+  "queryKey" | "queryFn" | "suspense"
 >;
 
 export interface UsePublicShiftsQueryOptions<TData = Shift[]>
@@ -88,15 +94,25 @@ export function usePublicShiftsQuery<TData = Shift[]>(
 }
 
 type DepartmentsQueryOptions<TData> = Omit<
-  UseSuspenseQueryOptions<Department[], ApiError, TData, PublicShiftsDepartmentsQueryKey>,
-  'queryKey' | 'queryFn' | 'suspense'
+  UseSuspenseQueryOptions<
+    Department[],
+    ApiError,
+    TData,
+    PublicShiftsDepartmentsQueryKey
+  >,
+  "queryKey" | "queryFn" | "suspense"
 >;
 
 export function useDepartmentsQuery<TData = Department[]>(
   options: DepartmentsQueryOptions<TData> = {}
 ): UseSuspenseQueryResult<TData, ApiError> {
   // Suspense モードは useSuspenseQuery が内部で強制するため、明示的な指定は不要
-  return useSuspenseQuery<Department[], ApiError, TData, PublicShiftsDepartmentsQueryKey>({
+  return useSuspenseQuery<
+    Department[],
+    ApiError,
+    TData,
+    PublicShiftsDepartmentsQueryKey
+  >({
     queryKey: publicShiftsDepartmentsQueryKeys.all,
     queryFn: fetchDepartments,
     ...options,

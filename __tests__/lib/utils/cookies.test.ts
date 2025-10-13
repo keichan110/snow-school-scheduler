@@ -3,20 +3,19 @@
  * CSRF攻撃対策とセキュリティ強化されたCookie管理を検証
  */
 
-import { NextResponse } from 'next/server';
 import {
-  setSecureCookie,
-  setAuthCookie,
-  setSessionCookie,
-  setRefreshTokenCookie,
-  deleteCookie,
   clearAuthCookies,
-  validateCookieOptions,
+  deleteCookie,
   type SecureCookieOptions,
-} from '@/lib/utils/cookies';
+  setAuthCookie,
+  setRefreshTokenCookie,
+  setSecureCookie,
+  setSessionCookie,
+  validateCookieOptions,
+} from "@/lib/utils/cookies";
 
 // NextResponseのモック
-jest.mock('next/server', () => ({
+jest.mock("next/server", () => ({
   NextResponse: {
     json: jest.fn(() => ({
       cookies: {
@@ -29,7 +28,7 @@ jest.mock('next/server', () => ({
 // 環境変数のモック
 const originalNodeEnv = process.env.NODE_ENV;
 
-describe('setSecureCookie', () => {
+describe("setSecureCookie", () => {
   let mockResponse: any;
 
   beforeEach(() => {
@@ -44,64 +43,76 @@ describe('setSecureCookie', () => {
     (process.env as any).NODE_ENV = originalNodeEnv;
   });
 
-  test('デフォルトのセキュア設定を適用する', () => {
-    (process.env as any).NODE_ENV = 'production';
+  test("デフォルトのセキュア設定を適用する", () => {
+    (process.env as any).NODE_ENV = "production";
 
     setSecureCookie(mockResponse, {
-      name: 'test-cookie',
-      value: 'test-value',
+      name: "test-cookie",
+      value: "test-value",
     });
 
-    expect(mockResponse.cookies.set).toHaveBeenCalledWith('test-cookie', 'test-value', {
-      httpOnly: true,
-      secure: true, // 本番環境では true
-      sameSite: 'strict', // デフォルトでstrictに変更
-      maxAge: 3600, // デフォルト1時間
-      path: '/',
-    });
+    expect(mockResponse.cookies.set).toHaveBeenCalledWith(
+      "test-cookie",
+      "test-value",
+      {
+        httpOnly: true,
+        secure: true, // 本番環境では true
+        sameSite: "strict", // デフォルトでstrictに変更
+        maxAge: 3600, // デフォルト1時間
+        path: "/",
+      }
+    );
   });
 
-  test('開発環境ではsecureフラグをfalseにする', () => {
-    (process.env as any).NODE_ENV = 'development';
+  test("開発環境ではsecureフラグをfalseにする", () => {
+    (process.env as any).NODE_ENV = "development";
 
     setSecureCookie(mockResponse, {
-      name: 'dev-cookie',
-      value: 'dev-value',
+      name: "dev-cookie",
+      value: "dev-value",
     });
 
-    expect(mockResponse.cookies.set).toHaveBeenCalledWith('dev-cookie', 'dev-value', {
-      httpOnly: true,
-      secure: false, // 開発環境では false
-      sameSite: 'strict',
-      maxAge: 3600,
-      path: '/',
-    });
+    expect(mockResponse.cookies.set).toHaveBeenCalledWith(
+      "dev-cookie",
+      "dev-value",
+      {
+        httpOnly: true,
+        secure: false, // 開発環境では false
+        sameSite: "strict",
+        maxAge: 3600,
+        path: "/",
+      }
+    );
   });
 
-  test('カスタム設定を正しく適用する', () => {
+  test("カスタム設定を正しく適用する", () => {
     const customOptions: SecureCookieOptions = {
-      name: 'custom-cookie',
-      value: 'custom-value',
+      name: "custom-cookie",
+      value: "custom-value",
       maxAge: 7200,
-      path: '/api',
+      path: "/api",
       httpOnly: false,
       secure: true,
-      sameSite: 'lax',
+      sameSite: "lax",
     };
 
     setSecureCookie(mockResponse, customOptions);
 
-    expect(mockResponse.cookies.set).toHaveBeenCalledWith('custom-cookie', 'custom-value', {
-      httpOnly: false,
-      secure: true,
-      sameSite: 'lax',
-      maxAge: 7200,
-      path: '/api',
-    });
+    expect(mockResponse.cookies.set).toHaveBeenCalledWith(
+      "custom-cookie",
+      "custom-value",
+      {
+        httpOnly: false,
+        secure: true,
+        sameSite: "lax",
+        maxAge: 7200,
+        path: "/api",
+      }
+    );
   });
 });
 
-describe('setAuthCookie', () => {
+describe("setAuthCookie", () => {
   let mockResponse: any;
 
   beforeEach(() => {
@@ -112,22 +123,26 @@ describe('setAuthCookie', () => {
     };
   });
 
-  test('認証トークン用の厳格なセキュリティ設定を適用する', () => {
-    (process.env as any).NODE_ENV = 'production';
+  test("認証トークン用の厳格なセキュリティ設定を適用する", () => {
+    (process.env as any).NODE_ENV = "production";
 
-    setAuthCookie(mockResponse, 'jwt-token-12345');
+    setAuthCookie(mockResponse, "jwt-token-12345");
 
-    expect(mockResponse.cookies.set).toHaveBeenCalledWith('auth-token', 'jwt-token-12345', {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'strict', // 最も厳格な設定
-      maxAge: 48 * 60 * 60, // 48時間（既存の設定に合わせる）
-      path: '/',
-    });
+    expect(mockResponse.cookies.set).toHaveBeenCalledWith(
+      "auth-token",
+      "jwt-token-12345",
+      {
+        httpOnly: true,
+        secure: true,
+        sameSite: "strict", // 最も厳格な設定
+        maxAge: 48 * 60 * 60, // 48時間（既存の設定に合わせる）
+        path: "/",
+      }
+    );
   });
 });
 
-describe('setSessionCookie', () => {
+describe("setSessionCookie", () => {
   let mockResponse: any;
 
   beforeEach(() => {
@@ -138,22 +153,29 @@ describe('setSessionCookie', () => {
     };
   });
 
-  test('セッション用の適切なセキュリティ設定を適用する', () => {
-    const sessionData = JSON.stringify({ state: 'abc123', createdAt: Date.now() });
+  test("セッション用の適切なセキュリティ設定を適用する", () => {
+    const sessionData = JSON.stringify({
+      state: "abc123",
+      createdAt: Date.now(),
+    });
 
     setSessionCookie(mockResponse, sessionData);
 
-    expect(mockResponse.cookies.set).toHaveBeenCalledWith('auth-session', sessionData, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 10 * 60, // 10分間
-      path: '/',
-    });
+    expect(mockResponse.cookies.set).toHaveBeenCalledWith(
+      "auth-session",
+      sessionData,
+      {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        maxAge: 10 * 60, // 10分間
+        path: "/",
+      }
+    );
   });
 });
 
-describe('setRefreshTokenCookie', () => {
+describe("setRefreshTokenCookie", () => {
   let mockResponse: any;
 
   beforeEach(() => {
@@ -164,20 +186,24 @@ describe('setRefreshTokenCookie', () => {
     };
   });
 
-  test('リフレッシュトークン用の最高レベルセキュリティ設定を適用する', () => {
-    setRefreshTokenCookie(mockResponse, 'refresh-token-xyz789');
+  test("リフレッシュトークン用の最高レベルセキュリティ設定を適用する", () => {
+    setRefreshTokenCookie(mockResponse, "refresh-token-xyz789");
 
-    expect(mockResponse.cookies.set).toHaveBeenCalledWith('refresh-token', 'refresh-token-xyz789', {
-      httpOnly: true,
-      secure: true, // 常にHTTPS必須
-      sameSite: 'strict',
-      maxAge: 7 * 24 * 60 * 60, // 7日間
-      path: '/api/auth', // 認証API以外からはアクセス不可
-    });
+    expect(mockResponse.cookies.set).toHaveBeenCalledWith(
+      "refresh-token",
+      "refresh-token-xyz789",
+      {
+        httpOnly: true,
+        secure: true, // 常にHTTPS必須
+        sameSite: "strict",
+        maxAge: 7 * 24 * 60 * 60, // 7日間
+        path: "/api/auth", // 認証API以外からはアクセス不可
+      }
+    );
   });
 });
 
-describe('deleteCookie', () => {
+describe("deleteCookie", () => {
   let mockResponse: any;
 
   beforeEach(() => {
@@ -188,34 +214,34 @@ describe('deleteCookie', () => {
     };
   });
 
-  test('Cookieを安全に削除する', () => {
-    (process.env as any).NODE_ENV = 'production';
+  test("Cookieを安全に削除する", () => {
+    (process.env as any).NODE_ENV = "production";
 
-    deleteCookie(mockResponse, 'test-cookie');
+    deleteCookie(mockResponse, "test-cookie");
 
-    expect(mockResponse.cookies.set).toHaveBeenCalledWith('test-cookie', '', {
+    expect(mockResponse.cookies.set).toHaveBeenCalledWith("test-cookie", "", {
       httpOnly: true,
       secure: true,
-      sameSite: 'strict',
+      sameSite: "strict",
       maxAge: 0, // 即座に期限切れ
-      path: '/',
+      path: "/",
     });
   });
 
-  test('カスタムパスでCookieを削除する', () => {
-    deleteCookie(mockResponse, 'api-cookie', '/api/auth');
+  test("カスタムパスでCookieを削除する", () => {
+    deleteCookie(mockResponse, "api-cookie", "/api/auth");
 
-    expect(mockResponse.cookies.set).toHaveBeenCalledWith('api-cookie', '', {
+    expect(mockResponse.cookies.set).toHaveBeenCalledWith("api-cookie", "", {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
       maxAge: 0,
-      path: '/api/auth',
+      path: "/api/auth",
     });
   });
 });
 
-describe('clearAuthCookies', () => {
+describe("clearAuthCookies", () => {
   let mockResponse: any;
 
   beforeEach(() => {
@@ -226,7 +252,7 @@ describe('clearAuthCookies', () => {
     };
   });
 
-  test('全認証関連Cookieを削除する', () => {
+  test("全認証関連Cookieを削除する", () => {
     clearAuthCookies(mockResponse);
 
     // 3つのCookieが削除されることを確認
@@ -234,8 +260,8 @@ describe('clearAuthCookies', () => {
 
     // auth-token の削除
     expect(mockResponse.cookies.set).toHaveBeenCalledWith(
-      'auth-token',
-      '',
+      "auth-token",
+      "",
       expect.objectContaining({
         maxAge: 0,
       })
@@ -243,8 +269,8 @@ describe('clearAuthCookies', () => {
 
     // auth-session の削除
     expect(mockResponse.cookies.set).toHaveBeenCalledWith(
-      'auth-session',
-      '',
+      "auth-session",
+      "",
       expect.objectContaining({
         maxAge: 0,
       })
@@ -252,22 +278,22 @@ describe('clearAuthCookies', () => {
 
     // refresh-token の削除
     expect(mockResponse.cookies.set).toHaveBeenCalledWith(
-      'refresh-token',
-      '',
+      "refresh-token",
+      "",
       expect.objectContaining({
         maxAge: 0,
-        path: '/api/auth',
+        path: "/api/auth",
       })
     );
   });
 });
 
-describe('validateCookieOptions', () => {
-  test('セキュアな設定を正しく検証する', () => {
+describe("validateCookieOptions", () => {
+  test("セキュアな設定を正しく検証する", () => {
     const secureOptions: SecureCookieOptions = {
-      name: 'secure-cookie',
-      value: 'secure-value',
-      sameSite: 'strict',
+      name: "secure-cookie",
+      value: "secure-value",
+      sameSite: "strict",
       httpOnly: true,
       secure: true,
     };
@@ -278,13 +304,13 @@ describe('validateCookieOptions', () => {
     expect(result.warnings).toHaveLength(0);
   });
 
-  test('不安全な設定に対して警告を出す', () => {
-    (process.env as any).NODE_ENV = 'production';
+  test("不安全な設定に対して警告を出す", () => {
+    (process.env as any).NODE_ENV = "production";
 
     const insecureOptions: SecureCookieOptions = {
-      name: 'insecure-cookie',
-      value: 'insecure-value',
-      sameSite: 'none',
+      name: "insecure-cookie",
+      value: "insecure-value",
+      sameSite: "none",
       httpOnly: false,
       secure: false,
     };
@@ -292,50 +318,56 @@ describe('validateCookieOptions', () => {
     const result = validateCookieOptions(insecureOptions);
 
     expect(result.isSecure).toBe(false);
-    expect(result.warnings).toContain('SameSite should be "strict" or "lax" for CSRF protection');
-    expect(result.warnings).toContain('HttpOnly should be true to prevent XSS attacks');
-    expect(result.warnings).toContain('Secure flag should be true in production environment');
+    expect(result.warnings).toContain(
+      'SameSite should be "strict" or "lax" for CSRF protection'
+    );
+    expect(result.warnings).toContain(
+      "HttpOnly should be true to prevent XSS attacks"
+    );
+    expect(result.warnings).toContain(
+      "Secure flag should be true in production environment"
+    );
   });
 
-  test('認証トークンの長期間有効期限に対して警告を出す', () => {
+  test("認証トークンの長期間有効期限に対して警告を出す", () => {
     const longTermTokenOptions: SecureCookieOptions = {
-      name: 'long-term-token',
-      value: 'token-value',
+      name: "long-term-token",
+      value: "token-value",
       maxAge: 48 * 60 * 60, // 48時間
     };
 
     const result = validateCookieOptions(longTermTokenOptions);
 
     expect(result.warnings).toContain(
-      'Auth tokens should have shorter expiration time (max 48 hours)'
+      "Auth tokens should have shorter expiration time (max 48 hours)"
     );
   });
 });
 
-describe('CSRF攻撃対策テスト', () => {
-  test('SameSite=strictによりCSRF攻撃を防ぐ', () => {
+describe("CSRF攻撃対策テスト", () => {
+  test("SameSite=strictによりCSRF攻撃を防ぐ", () => {
     const mockResponse = { cookies: { set: jest.fn() } } as any;
 
     // 認証トークンは最も厳格な設定
-    setAuthCookie(mockResponse, 'auth-token');
+    setAuthCookie(mockResponse, "auth-token");
 
     expect(mockResponse.cookies.set).toHaveBeenCalledWith(
-      'auth-token',
-      'auth-token',
+      "auth-token",
+      "auth-token",
       expect.objectContaining({
-        sameSite: 'strict',
+        sameSite: "strict",
       })
     );
   });
 
-  test('HttpOnlyによりXSS攻撃を防ぐ', () => {
+  test("HttpOnlyによりXSS攻撃を防ぐ", () => {
     const mockResponse = { cookies: { set: jest.fn() } } as any;
 
-    setAuthCookie(mockResponse, 'auth-token');
+    setAuthCookie(mockResponse, "auth-token");
 
     expect(mockResponse.cookies.set).toHaveBeenCalledWith(
-      'auth-token',
-      'auth-token',
+      "auth-token",
+      "auth-token",
       expect.objectContaining({
         httpOnly: true,
       })

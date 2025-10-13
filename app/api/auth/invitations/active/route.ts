@@ -1,7 +1,14 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/db';
-import { ApiResponse } from '@/lib/auth/types';
-import { authenticateFromRequest, checkUserRole } from '@/lib/auth/middleware';
+import { type NextRequest, NextResponse } from "next/server";
+import { authenticateFromRequest, checkUserRole } from "@/lib/auth/middleware";
+import type { ApiResponse } from "@/lib/auth/types";
+import { prisma } from "@/lib/db";
+import {
+  HTTP_STATUS_FORBIDDEN,
+  HTTP_STATUS_INTERNAL_SERVER_ERROR,
+  HTTP_STATUS_NOT_FOUND,
+  HTTP_STATUS_OK,
+  HTTP_STATUS_UNAUTHORIZED,
+} from "@/shared/constants/http-status";
 
 /**
  * 有効な招待チェックAPI
@@ -24,21 +31,26 @@ export async function GET(request: NextRequest): Promise<
 > {
   try {
     const authResult = await authenticateFromRequest(request);
-    if (!authResult.success || !authResult.user) {
-      return NextResponse.json(
-        { success: false, error: authResult.error ?? 'Authentication required' },
-        { status: authResult.statusCode ?? 401 }
-      );
-    }
-
-    const roleResult = checkUserRole(authResult.user, 'MANAGER');
-    if (!roleResult.success || !roleResult.user) {
+    if (!(authResult.success && authResult.user)) {
       return NextResponse.json(
         {
           success: false,
-          error: roleResult.error ?? 'Insufficient permissions. Admin or Manager role required.',
+          error: authResult.error ?? "Authentication required",
         },
-        { status: roleResult.statusCode ?? 403 }
+        { status: authResult.statusCode ?? HTTP_STATUS_UNAUTHORIZED }
+      );
+    }
+
+    const roleResult = checkUserRole(authResult.user, "MANAGER");
+    if (!(roleResult.success && roleResult.user)) {
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            roleResult.error ??
+            "Insufficient permissions. Admin or Manager role required.",
+        },
+        { status: roleResult.statusCode ?? HTTP_STATUS_FORBIDDEN }
       );
     }
 
@@ -58,20 +70,20 @@ export async function GET(request: NextRequest): Promise<
         },
       },
       orderBy: {
-        createdAt: 'desc',
+        createdAt: "desc",
       },
     });
 
     if (!activeInvitation) {
       return NextResponse.json(
-        { success: false, error: 'No active invitation found' },
-        { status: 404 }
+        { success: false, error: "No active invitation found" },
+        { status: HTTP_STATUS_NOT_FOUND }
       );
     }
 
     const responseData = {
       token: activeInvitation.token,
-      description: activeInvitation.description || '',
+      description: activeInvitation.description || "",
       expiresAt: activeInvitation.expiresAt,
       isActive: activeInvitation.isActive,
       maxUses: activeInvitation.maxUses,
@@ -83,22 +95,19 @@ export async function GET(request: NextRequest): Promise<
       createdBy: activeInvitation.creator.displayName,
     };
 
-    console.log('✅ Active invitation found:', {
-      token: activeInvitation.token.substring(0, 16) + '...',
-      description: activeInvitation.description,
-      expiresAt: activeInvitation.expiresAt.toISOString(),
-      usedCount: activeInvitation.usedCount,
-    });
-
-    return NextResponse.json({ success: true, data: responseData }, { status: 200 });
+    return NextResponse.json(
+      { success: true, data: responseData },
+      { status: HTTP_STATUS_OK }
+    );
   } catch (error) {
-    console.error('❌ Active invitation check failed:', error);
-
-    let errorMessage = 'Failed to check active invitation';
+    let errorMessage = "Failed to check active invitation";
     if (error instanceof Error) {
       errorMessage = error.message;
     }
 
-    return NextResponse.json({ success: false, error: errorMessage }, { status: 500 });
+    return NextResponse.json(
+      { success: false, error: errorMessage },
+      { status: HTTP_STATUS_INTERNAL_SERVER_ERROR }
+    );
   }
 }

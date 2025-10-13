@@ -39,16 +39,17 @@ export const unwrap = <T, E>(result: Result<T, E>): T => {
 /**
  * Result の値を取得（デフォルト値付き）
  */
-export const unwrapOr = <T, E>(result: Result<T, E>, defaultValue: T): T => {
-  return result.success ? result.data : defaultValue;
-};
+export const unwrapOr = <T, E>(result: Result<T, E>, defaultValue: T): T =>
+  result.success ? result.data : defaultValue;
 
 /**
  * Result に関数を適用（map操作）
  */
-export const map = <T, U, E>(result: Result<T, E>, fn: (value: T) => U): Result<U, E> => {
-  return result.success ? success(fn(result.data)) : failure(result.error);
-};
+export const map = <T, U, E>(
+  result: Result<T, E>,
+  fn: (value: T) => U
+): Result<U, E> =>
+  result.success ? success(fn(result.data)) : failure(result.error);
 
 /**
  * Result に非同期関数を適用（flatMap操作）
@@ -56,16 +57,16 @@ export const map = <T, U, E>(result: Result<T, E>, fn: (value: T) => U): Result<
 export const flatMap = <T, U, E>(
   result: Result<T, E>,
   fn: (value: T) => Result<U, E>
-): Result<U, E> => {
-  return result.success ? fn(result.data) : failure(result.error);
-};
+): Result<U, E> => (result.success ? fn(result.data) : failure(result.error));
 
 /**
  * 複数の Result を結合
  */
-export const combine = <T extends readonly unknown[], E>(results: {
-  [K in keyof T]: Result<T[K], E>;
-}): Result<T, E> => {
+export const combine = <T extends readonly unknown[], E>(
+  results: {
+    [K in keyof T]: Result<T[K], E>;
+  }
+): Result<T, E> => {
   const values: unknown[] = [];
 
   for (const result of results) {
@@ -81,7 +82,9 @@ export const combine = <T extends readonly unknown[], E>(results: {
 /**
  * Promise を Result に変換
  */
-export const fromPromise = async <T>(promise: Promise<T>): Promise<Result<T, Error>> => {
+export const fromPromise = async <T>(
+  promise: Promise<T>
+): Promise<Result<T, Error>> => {
   try {
     const data = await promise;
     return success(data);
@@ -93,6 +96,5 @@ export const fromPromise = async <T>(promise: Promise<T>): Promise<Result<T, Err
 /**
  * Result を Promise に変換
  */
-export const toPromise = <T, E>(result: Result<T, E>): Promise<T> => {
-  return result.success ? Promise.resolve(result.data) : Promise.reject(result.error);
-};
+export const toPromise = <T, E>(result: Result<T, E>): Promise<T> =>
+  result.success ? Promise.resolve(result.data) : Promise.reject(result.error);

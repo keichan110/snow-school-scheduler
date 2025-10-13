@@ -2,11 +2,10 @@
  * Shared モジュールの統一エクスポート
  */
 
-// 型定義
-export * from './types';
-
 // コンポーネント
-export * from './components/feedback/ErrorBoundary';
+export * from "./components/feedback/error-boundary";
+// 型定義
+export * from "./types";
 
 // ユーティリティ
-export * from './utils/validation';
+export * from "./utils/validation";

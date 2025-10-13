@@ -1,35 +1,35 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'standalone',
+  output: "standalone",
   experimental: {
-    optimizePackageImports: ['lucide-react', '@phosphor-icons/react'],
+    optimizePackageImports: ["lucide-react", "@phosphor-icons/react"],
   },
   images: {
     unoptimized: true,
   },
   eslint: {
-    dirs: ['app', 'lib', 'components'],
+    dirs: ["app", "lib", "components"],
   },
-  async headers() {
+  headers() {
     return [
       {
-        source: '/(.*)',
+        source: "/(.*)",
         headers: [
           {
-            key: 'X-Content-Type-Options',
-            value: 'nosniff',
+            key: "X-Content-Type-Options",
+            value: "nosniff",
           },
           {
-            key: 'X-Frame-Options',
-            value: 'DENY',
+            key: "X-Frame-Options",
+            value: "DENY",
           },
           {
-            key: 'X-XSS-Protection',
-            value: '1; mode=block',
+            key: "X-XSS-Protection",
+            value: "1; mode=block",
           },
           {
-            key: 'Referrer-Policy',
-            value: 'origin-when-cross-origin',
+            key: "Referrer-Policy",
+            value: "origin-when-cross-origin",
           },
         ],
       },

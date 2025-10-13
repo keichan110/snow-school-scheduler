@@ -1,4 +1,4 @@
-import { SkeletonTable } from '@/components/skeletons';
+import { SkeletonTable } from "@/components/skeletons";
 
 export default function Loading() {
   return (
@@ -26,7 +26,7 @@ export default function Loading() {
       </div>
 
       <div className="overflow-hidden rounded-lg border border-border/40 bg-card/60 shadow-sm">
-        <div className="space-y-4 border-b border-border/40 p-4">
+        <div className="space-y-4 border-border/40 border-b p-4">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="h-5 w-24 rounded-md bg-muted/60" />
             <div className="h-9 w-36 rounded-md bg-muted/50" />
@@ -40,9 +40,9 @@ export default function Loading() {
         </div>
         <div className="p-4">
           <SkeletonTable
-            rows={6}
-            columns={5}
             className="border-none bg-transparent p-0 shadow-none"
+            columns={5}
+            rows={6}
           />
         </div>
       </div>

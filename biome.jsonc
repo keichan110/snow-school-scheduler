@@ -1,0 +1,89 @@
+{
+  "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
+  "extends": ["ultracite"],
+  "javascript": {
+    "globals": [
+      "jest",
+      "describe",
+      "it",
+      "test",
+      "expect",
+      "beforeEach",
+      "afterEach",
+      "beforeAll",
+      "afterAll"
+    ]
+  },
+  "linter": {
+    "rules": {
+      "style": {
+        "useNamingConvention": {
+          "options": {
+            "strictCase": false
+          }
+        }
+      },
+      "performance": {
+        "noBarrelFile": "off"
+      }
+    }
+  },
+  "overrides": [
+    {
+      "includes": ["**/*.css"],
+      "linter": {
+        "rules": {
+          "suspicious": {
+            "noUnknownAtRules": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["**/*.{test,spec}.{js,jsx,ts,tsx}", "**/__tests__/**/*"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noMagicNumbers": "off"
+          },
+          "suspicious": {
+            "useAwait": "off"
+          },
+          "performance": {
+            "useTopLevelRegex": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["**/__tests__/mocks/**/*"],
+      "linter": {
+        "rules": {
+          "suspicious": {
+            "noMisplacedAssertion": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["prisma/seed*.ts", "prisma/seeds-prod/**/*"],
+      "linter": {
+        "rules": {
+          "suspicious": {
+            "noConsole": "off",
+            "noEvolvingTypes": "off"
+          },
+          "complexity": {
+            "noExcessiveCognitiveComplexity": "off",
+            "useOptionalChain": "off"
+          },
+          "style": {
+            "useFilenamingConvention": "off",
+            "noMagicNumbers": "off",
+            "noNonNullAssertion": "off"
+          }
+        }
+      }
+    }
+  ]
+}

@@ -1,10 +1,25 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { setAuthCookie, deleteCookie } from '@/lib/utils/cookies';
-import { executeLineAuthFlow } from '@/lib/auth/line';
-import { generateJwt } from '@/lib/auth/jwt';
-import { validateInvitationToken, incrementTokenUsage } from '@/lib/auth/invitations';
-import { prisma } from '@/lib/db';
-import { secureAuthLog, secureLog } from '@/lib/utils/logging';
+import { NextRequest, NextResponse } from "next/server";
+import { incrementTokenUsage } from "@/lib/auth/invitations";
+import { generateJwt } from "@/lib/auth/jwt";
+import { executeLineAuthFlow } from "@/lib/auth/line";
+import { prisma } from "@/lib/db";
+import { deleteCookie, setAuthCookie } from "@/lib/utils/cookies";
+import { secureAuthLog, secureLog } from "@/lib/utils/logging";
+import {
+  MILLISECONDS_PER_SECOND,
+  SESSION_TIMEOUT_MS,
+} from "@/shared/constants/auth";
+import { HTTP_STATUS_OK } from "@/shared/constants/http-status";
+import type { AuthSession } from "./utils";
+import {
+  createErrorRedirect,
+  createNewUser,
+  parseSessionData,
+  resolveErrorMessage,
+  updateUserProfileIfNeeded,
+  validateInvitation,
+  validateSessionAge,
+} from "./utils";
 
 /**
  * LINE認証コールバックAPI
@@ -23,23 +38,224 @@ import { secureAuthLog, secureLog } from '@/lib/utils/logging';
  * - 400/401/500 Error: エラー詳細付きJSONレスポンスまたはエラーページリダイレクト
  */
 
-interface AuthSession {
-  state: string;
-  createdAt: number;
-  inviteToken?: string;
-  redirectUrl?: string; // 認証完了後のリダイレクト先
+/**
+ * 認証パラメータを検証する
+ */
+function validateAuthParams(
+  request: NextRequest
+):
+  | { success: true; code: string; receivedState: string }
+  | { success: false; redirect: NextResponse } {
+  const { searchParams } = new URL(request.url);
+
+  // エラーパラメータのチェック
+  const error = searchParams.get("error");
+  if (error) {
+    const errorDescription = searchParams.get("error_description");
+    secureLog("info", "LINE authentication cancelled or failed", {
+      error,
+      description: errorDescription,
+    });
+    return {
+      success: false,
+      redirect: createErrorRedirect(request, "cancelled"),
+    };
+  }
+
+  // 必須パラメータの取得
+  const code = searchParams.get("code");
+  const receivedState = searchParams.get("state");
+
+  if (!(code && receivedState)) {
+    secureLog("error", "Missing required LINE callback parameters");
+    return {
+      success: false,
+      redirect: createErrorRedirect(request, "invalid_callback"),
+    };
+  }
+
+  return { success: true, code, receivedState };
 }
 
-function resolveErrorMessage(error: unknown, fallback: string = 'Unknown error'): string {
-  if (error instanceof Error && error.message) {
-    return error.message;
+/**
+ * セッション情報を検証する
+ */
+function validateSessionCookie(
+  request: NextRequest
+):
+  | { success: true; sessionData: AuthSession }
+  | { success: false; redirect: NextResponse } {
+  const sessionCookie = request.cookies.get("auth-session")?.value;
+  if (!sessionCookie) {
+    secureLog("error", "Authentication session cookie missing");
+    return {
+      success: false,
+      redirect: createErrorRedirect(request, "session_expired"),
+    };
   }
 
-  if (typeof error === 'string' && error.trim().length > 0) {
-    return error.trim();
+  const parseResult = parseSessionData(sessionCookie);
+  if (!parseResult.success) {
+    secureLog("error", parseResult.error);
+    return {
+      success: false,
+      redirect: createErrorRedirect(request, "invalid_session"),
+    };
   }
 
-  return fallback;
+  const sessionData = parseResult.data;
+  const ageValidation = validateSessionAge(sessionData, SESSION_TIMEOUT_MS);
+  if (!ageValidation.isValid) {
+    secureLog("error", ageValidation.error);
+    return {
+      success: false,
+      redirect: createErrorRedirect(request, "session_expired"),
+    };
+  }
+
+  return { success: true, sessionData };
+}
+
+/**
+ * ユーザーを取得または作成する
+ */
+async function getOrCreateUser(
+  profile: {
+    userId: string;
+    displayName: string;
+    pictureUrl?: string | undefined;
+  },
+  inviteToken: string | undefined,
+  request: NextRequest
+): Promise<
+  | {
+      success: true;
+      user: {
+        id: string;
+        lineUserId: string;
+        displayName: string;
+        profileImageUrl: string | null;
+        role: string;
+        isActive: boolean;
+        createdAt: Date;
+        updatedAt: Date;
+      };
+    }
+  | { success: false; redirect: NextResponse }
+> {
+  let user = await prisma.user.findUnique({
+    where: { lineUserId: profile.userId },
+  });
+
+  if (user) {
+    secureAuthLog("Existing user login", {
+      id: user.id,
+      displayName: user.displayName,
+      role: user.role,
+      isActive: user.isActive,
+    });
+    user = await updateUserProfileIfNeeded(user, profile);
+    return { success: true, user };
+  }
+
+  // 新規ユーザー作成
+  secureAuthLog("Creating new user with invitation validation", {
+    lineUserId: profile.userId,
+    displayName: profile.displayName,
+    hasInviteToken: !!inviteToken,
+  });
+
+  const invitationValidation = await validateInvitation(inviteToken);
+  if (!invitationValidation.isValid) {
+    secureLog("error", invitationValidation.errorMessage);
+    return {
+      success: false,
+      redirect: createErrorRedirect(request, invitationValidation.errorReason),
+    };
+  }
+
+  // invitationValidation.isValid が true なので inviteToken は必ず存在する
+  if (!inviteToken) {
+    secureLog("error", "Invite token is required but not provided");
+    return {
+      success: false,
+      redirect: createErrorRedirect(request, "invitation_required"),
+    };
+  }
+
+  try {
+    user = await createNewUser(profile, inviteToken);
+
+    // 招待トークンの使用回数を増加
+    try {
+      await incrementTokenUsage(inviteToken);
+      secureLog("info", "Invitation token usage incremented successfully");
+    } catch (incrementError) {
+      secureLog("warn", "Failed to increment invitation token usage", {
+        error: resolveErrorMessage(
+          incrementError,
+          "Unknown error while incrementing invitation token usage"
+        ),
+      });
+    }
+
+    return { success: true, user };
+  } catch (userCreationError) {
+    secureLog("error", "Failed to create user", {
+      error: resolveErrorMessage(
+        userCreationError,
+        "Unknown error during user creation"
+      ),
+    });
+    return {
+      success: false,
+      redirect: createErrorRedirect(request, "user_creation_failed"),
+    };
+  }
+}
+
+/**
+ * 認証完了レスポンスを作成する
+ */
+function createSuccessResponse(
+  user: {
+    id: string;
+    lineUserId: string;
+    displayName: string;
+    role: string;
+    isActive: boolean;
+  },
+  redirectUrl: string,
+  request: NextRequest
+) {
+  const jwtPayload = {
+    userId: user.id,
+    lineUserId: user.lineUserId,
+    displayName: user.displayName,
+    role: user.role as "ADMIN" | "MANAGER" | "MEMBER",
+    isActive: user.isActive,
+  };
+
+  const token = generateJwt(jwtPayload);
+  secureLog("info", "JWT generated for user", {
+    displayName: user.displayName,
+  });
+
+  const redirectPath = redirectUrl || "/";
+  const successUrl = new URL(redirectPath, request.url);
+  const response = NextResponse.redirect(successUrl, { status: 302 });
+
+  setAuthCookie(response, token);
+  deleteCookie(response, "auth-session");
+
+  secureAuthLog("Authentication completed successfully", {
+    userId: user.id,
+    displayName: user.displayName,
+    role: user.role,
+    redirectUrl: successUrl.toString(),
+  });
+
+  return response;
 }
 
 /**
@@ -48,240 +264,75 @@ function resolveErrorMessage(error: unknown, fallback: string = 'Unknown error')
  */
 export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url);
-
-    // エラーパラメータのチェック
-    const error = searchParams.get('error');
-    if (error) {
-      const errorDescription = searchParams.get('error_description');
-      secureLog('info', 'LINE authentication cancelled or failed', {
-        error,
-        description: errorDescription,
-      });
-
-      // エラーページにリダイレクト（将来実装）
-      return NextResponse.redirect(new URL('/error?reason=cancelled', request.url), {
-        status: 302,
-      });
+    // 1. 認証パラメータの検証
+    const paramsValidation = validateAuthParams(request);
+    if (!paramsValidation.success) {
+      return paramsValidation.redirect;
     }
 
-    // 必須パラメータの取得
-    const code = searchParams.get('code');
-    const receivedState = searchParams.get('state');
-
-    if (!code || !receivedState) {
-      secureLog('error', 'Missing required LINE callback parameters');
-      return NextResponse.redirect(new URL('/error?reason=invalid_callback', request.url), {
-        status: 302,
-      });
+    // 2. セッションの検証
+    const sessionValidation = validateSessionCookie(request);
+    if (!sessionValidation.success) {
+      return sessionValidation.redirect;
     }
 
-    // セッション情報の取得と検証
-    const sessionCookie = request.cookies.get('auth-session')?.value;
-    if (!sessionCookie) {
-      secureLog('error', 'Authentication session cookie missing');
-      return NextResponse.redirect(new URL('/error?reason=session_expired', request.url), {
-        status: 302,
-      });
-    }
-
-    let sessionData: AuthSession;
-    try {
-      sessionData = JSON.parse(sessionCookie);
-    } catch {
-      secureLog('error', 'Invalid authentication session data format');
-      return NextResponse.redirect(new URL('/error?reason=invalid_session', request.url), {
-        status: 302,
-      });
-    }
-
-    // セッション有効期限チェック（10分）
+    const { sessionData } = sessionValidation;
     const sessionAge = Date.now() - sessionData.createdAt;
-    if (sessionAge > 10 * 60 * 1000) {
-      secureLog('error', 'Authentication session expired');
-      return NextResponse.redirect(new URL('/error?reason=session_expired', request.url), {
-        status: 302,
-      });
-    }
 
-    secureAuthLog('Processing LINE authentication callback', {
+    secureAuthLog("Processing LINE authentication callback", {
       hasCode: true,
       hasState: true,
       hasInviteToken: !!sessionData.inviteToken,
-      sessionAge: Math.round(sessionAge / 1000) + 's',
+      sessionAge: `${Math.round(sessionAge / MILLISECONDS_PER_SECOND)}s`,
     });
 
-    // LINE認証フローの実行
-    const authResult = await executeLineAuthFlow(code, receivedState, sessionData.state);
+    // 3. LINE認証フローの実行
+    const authResult = await executeLineAuthFlow(
+      paramsValidation.code,
+      paramsValidation.receivedState,
+      sessionData.state
+    );
 
-    if (!authResult.success || !authResult.profile) {
-      secureLog('error', 'LINE authentication flow failed');
-      return NextResponse.redirect(new URL('/error?reason=auth_failed', request.url), {
-        status: 302,
-      });
+    if (!(authResult.success && authResult.profile)) {
+      secureLog("error", "LINE authentication flow failed");
+      return createErrorRedirect(request, "auth_failed");
     }
 
-    secureAuthLog('LINE authentication successful', {
+    secureAuthLog("LINE authentication successful", {
       userId: authResult.profile.userId,
       displayName: authResult.profile.displayName,
       hasInviteToken: !!authResult.inviteToken,
     });
 
-    // ユーザーの存在確認・作成処理
-    let user = await prisma.user.findUnique({
-      where: {
-        lineUserId: authResult.profile.userId,
-      },
-    });
+    // 4. ユーザーの取得または作成
+    const userResult = await getOrCreateUser(
+      authResult.profile,
+      sessionData.inviteToken,
+      request
+    );
 
-    if (!user) {
-      // 新規ユーザーの場合 - 招待トークン検証が必要
-      secureAuthLog('Creating new user with invitation validation', {
-        lineUserId: authResult.profile.userId,
-        displayName: authResult.profile.displayName,
-        hasInviteToken: !!sessionData.inviteToken,
-      });
-
-      // 招待トークンの検証
-      if (!sessionData.inviteToken) {
-        secureLog('error', 'New user registration requires invitation token');
-        return NextResponse.redirect(new URL('/error?reason=invitation_required', request.url), {
-          status: 302,
-        });
-      }
-
-      // 招待トークンの有効性チェック
-      const tokenValidation = await validateInvitationToken(sessionData.inviteToken);
-      if (!tokenValidation.isValid) {
-        secureLog('error', 'Invalid invitation token');
-
-        const errorReason =
-          tokenValidation.errorCode === 'EXPIRED'
-            ? 'invitation_expired'
-            : tokenValidation.errorCode === 'MAX_USES_EXCEEDED'
-              ? 'invitation_exhausted'
-              : tokenValidation.errorCode === 'INACTIVE'
-                ? 'invitation_inactive'
-                : 'invitation_invalid';
-
-        return NextResponse.redirect(new URL(`/error?reason=${errorReason}`, request.url), {
-          status: 302,
-        });
-      }
-
-      try {
-        // ユーザー作成
-        user = await prisma.user.create({
-          data: {
-            lineUserId: authResult.profile.userId,
-            displayName: authResult.profile.displayName,
-            profileImageUrl: authResult.profile.pictureUrl || null,
-            role: 'MEMBER', // 招待経由のユーザーはMEMBER権限
-            isActive: true,
-          },
-        });
-
-        secureAuthLog('New user created via invitation', {
-          id: user.id,
-          role: user.role,
-          inviteToken: sessionData.inviteToken.substring(0, 16) + '...',
-        });
-
-        // 招待トークンの使用回数を増加
-        try {
-          await incrementTokenUsage(sessionData.inviteToken);
-          secureLog('info', 'Invitation token usage incremented successfully');
-        } catch (incrementError) {
-          // 使用回数増加に失敗してもユーザー作成は成功しているので警告レベル
-          secureLog('warn', 'Failed to increment invitation token usage', {
-            error: resolveErrorMessage(
-              incrementError,
-              'Unknown error while incrementing invitation token usage'
-            ),
-          });
-        }
-      } catch (userCreationError) {
-        secureLog('error', 'Failed to create user', {
-          error: resolveErrorMessage(userCreationError, 'Unknown error during user creation'),
-        });
-        return NextResponse.redirect(new URL('/error?reason=user_creation_failed', request.url), {
-          status: 302,
-        });
-      }
-    } else {
-      // 既存ユーザーの場合
-      secureAuthLog('Existing user login', {
-        id: user.id,
-        displayName: user.displayName,
-        role: user.role,
-        isActive: user.isActive,
-      });
-
-      // 表示名とプロフィール画像の更新（LINEで変更された場合）
-      const needsUpdate =
-        user.displayName !== authResult.profile.displayName ||
-        user.profileImageUrl !== (authResult.profile.pictureUrl || null);
-
-      if (needsUpdate) {
-        user = await prisma.user.update({
-          where: { id: user.id },
-          data: {
-            displayName: authResult.profile.displayName,
-            profileImageUrl: authResult.profile.pictureUrl || null,
-          },
-        });
-        secureLog('info', 'Updated user profile (display name and/or image)');
-      }
+    if (!userResult.success) {
+      return userResult.redirect;
     }
 
-    // 非アクティブユーザーのチェック
+    const { user } = userResult;
+
+    // 5. 非アクティブユーザーのチェック
     if (!user.isActive) {
-      secureLog('warn', 'Inactive user attempted login', { userId: user.id });
-      return NextResponse.redirect(new URL('/error?reason=inactive_user', request.url), {
-        status: 302,
-      });
+      secureLog("warn", "Inactive user attempted login", { userId: user.id });
+      return createErrorRedirect(request, "inactive_user");
     }
 
-    // JWT生成
-    const jwtPayload = {
-      userId: user.id,
-      lineUserId: user.lineUserId,
-      displayName: user.displayName,
-      role: user.role as 'ADMIN' | 'MANAGER' | 'MEMBER',
-      isActive: user.isActive,
-    };
-
-    const token = generateJwt(jwtPayload);
-    secureLog('info', 'JWT generated for user', { displayName: user.displayName });
-
-    // 認証成功レスポンスの作成（保存されたリダイレクト先を使用）
-    const redirectPath = sessionData.redirectUrl || '/'; // デフォルトはホームページ
-    const successUrl = new URL(redirectPath, request.url);
-    const response = NextResponse.redirect(successUrl, { status: 302 });
-
-    // JWTをCookieに設定（セキュアな設定を適用）
-    setAuthCookie(response, token);
-
-    // 認証セッションCookieの削除
-    deleteCookie(response, 'auth-session');
-
-    secureAuthLog('Authentication completed successfully', {
-      userId: user.id,
-      displayName: user.displayName,
-      role: user.role,
-      redirectUrl: successUrl.toString(),
-    });
-
-    return response;
+    // 6. 認証成功レスポンスの作成
+    return createSuccessResponse(user, sessionData.redirectUrl || "/", request);
   } catch (error) {
-    secureLog('error', 'Authentication callback failed', {
-      error: resolveErrorMessage(error, 'Unknown error during authentication callback'),
+    secureLog("error", "Authentication callback failed", {
+      error: resolveErrorMessage(
+        error,
+        "Unknown error during authentication callback"
+      ),
     });
-
-    // システムエラー時のリダイレクト
-    return NextResponse.redirect(new URL('/error?reason=system_error', request.url), {
-      status: 302,
-    });
+    return createErrorRedirect(request, "system_error");
   }
 }
 
@@ -293,37 +344,48 @@ export async function POST(request: NextRequest) {
   // POSTでのコールバックは通常使用されないが、念のため実装
   try {
     const formData = await request.formData();
-    const code = formData.get('code')?.toString();
-    const state = formData.get('state')?.toString();
-    const error = formData.get('error')?.toString();
+    const code = formData.get("code")?.toString();
+    const state = formData.get("state")?.toString();
+    const error = formData.get("error")?.toString();
 
     if (error) {
-      secureLog('info', 'LINE authentication cancelled via POST callback', { error });
-      return NextResponse.redirect(new URL('/error?reason=cancelled', request.url), {
-        status: 302,
+      secureLog("info", "LINE authentication cancelled via POST callback", {
+        error,
       });
+      return NextResponse.redirect(
+        new URL("/error?reason=cancelled", request.url),
+        {
+          status: 302,
+        }
+      );
     }
 
-    if (!code || !state) {
-      return NextResponse.redirect(new URL('/error?reason=invalid_callback', request.url), {
-        status: 302,
-      });
+    if (!(code && state)) {
+      return NextResponse.redirect(
+        new URL("/error?reason=invalid_callback", request.url),
+        {
+          status: 302,
+        }
+      );
     }
 
     // GET処理と同様の処理を実行
     const urlWithParams = new URL(request.url);
-    urlWithParams.searchParams.set('code', code);
-    urlWithParams.searchParams.set('state', state);
+    urlWithParams.searchParams.set("code", code);
+    urlWithParams.searchParams.set("state", state);
 
     const modifiedRequest = new NextRequest(urlWithParams);
     return await GET(modifiedRequest);
   } catch (error) {
-    secureLog('error', 'POST callback processing failed', {
-      error: resolveErrorMessage(error, 'Unknown error during POST callback'),
+    secureLog("error", "POST callback processing failed", {
+      error: resolveErrorMessage(error, "Unknown error during POST callback"),
     });
-    return NextResponse.redirect(new URL('/error?reason=system_error', request.url), {
-      status: 302,
-    });
+    return NextResponse.redirect(
+      new URL("/error?reason=system_error", request.url),
+      {
+        status: 302,
+      }
+    );
   }
 }
 
@@ -331,13 +393,13 @@ export async function POST(request: NextRequest) {
  * OPTIONS /api/auth/line/callback
  * CORS対応
  */
-export async function OPTIONS() {
+export function OPTIONS() {
   return new NextResponse(null, {
-    status: 200,
+    status: HTTP_STATUS_OK,
     headers: {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type',
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type",
     },
   });
 }

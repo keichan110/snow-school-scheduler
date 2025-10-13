@@ -1,8 +1,8 @@
-export { NotificationProvider } from './NotificationProvider';
-export { useNotification } from './useNotification';
+export { NotificationProvider } from "./notification-provider";
 export type {
   Notification,
-  NotificationType,
   NotificationPriority,
   NotificationQueueConfig,
-} from './types';
+  NotificationType,
+} from "./types";
+export { useNotification } from "./use-notification";

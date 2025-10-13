@@ -1,8 +1,11 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { setAuthCookie as setSecureAuthCookie, clearAuthCookies } from '@/lib/utils/cookies';
-import { cookies } from 'next/headers';
-import { verifyJwt } from './jwt';
-import { prisma } from '@/lib/db';
+import { cookies } from "next/headers";
+import { type NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/db";
+import {
+  clearAuthCookies,
+  setAuthCookie as setSecureAuthCookie,
+} from "@/lib/utils/cookies";
+import { verifyJwt } from "./jwt";
 
 /**
  * 認証ミドルウェア
@@ -12,7 +15,7 @@ import { prisma } from '@/lib/db';
 /**
  * 認証ユーザー情報の型定義
  */
-export interface AuthenticatedUser {
+export type AuthenticatedUser = {
   /** ユーザーID */
   id: string;
   /** LINEユーザーID */
@@ -22,34 +25,34 @@ export interface AuthenticatedUser {
   /** LINEプロフィール画像URL */
   profileImageUrl?: string | null;
   /** ユーザー権限 */
-  role: 'ADMIN' | 'MANAGER' | 'MEMBER';
+  role: "ADMIN" | "MANAGER" | "MEMBER";
   /** アクティブフラグ */
   isActive: boolean;
   /** 作成日時 */
   createdAt: Date;
   /** 更新日時 */
   updatedAt: Date;
-}
+};
 
 /**
  * 認証結果の型定義
  */
-export interface AuthenticationResult {
+export type AuthenticationResult = {
   success: boolean;
   user?: AuthenticatedUser;
   error?: string;
   statusCode?: number;
-}
+};
 
 /**
  * 権限チェック結果の型定義
  */
-export interface AuthorizationResult {
+export type AuthorizationResult = {
   success: boolean;
   user?: AuthenticatedUser;
   error?: string;
   statusCode?: number;
-}
+};
 
 /**
  * Cookieから認証トークンを取得
@@ -59,7 +62,7 @@ export interface AuthorizationResult {
 export async function getAuthTokenFromCookies(): Promise<string | null> {
   try {
     const cookieStore = await cookies();
-    const token = cookieStore.get('auth-token')?.value;
+    const token = cookieStore.get("auth-token")?.value;
     return token || null;
   } catch {
     // Server Component外での呼び出し等でエラーが発生する場合
@@ -76,15 +79,16 @@ export async function getAuthTokenFromCookies(): Promise<string | null> {
  */
 export function getAuthTokenFromRequest(request: NextRequest): string | null {
   // Cookieからトークンを取得
-  const token = request.cookies.get('auth-token')?.value;
+  const token = request.cookies.get("auth-token")?.value;
 
   if (token) {
     return token;
   }
 
   // Authorization ヘッダーからもチェック（オプション）
-  const authHeader = request.headers.get('authorization');
-  if (authHeader?.startsWith('Bearer ')) {
+  const authHeader = request.headers.get("authorization");
+  if (authHeader?.startsWith("Bearer ")) {
+    // biome-ignore lint/style/noMagicNumbers: "Bearer "の文字列長
     return authHeader.substring(7);
   }
 
@@ -97,21 +101,23 @@ export function getAuthTokenFromRequest(request: NextRequest): string | null {
  * @param token - JWT トークン
  * @returns 認証結果
  */
-export async function authenticateToken(token: string | null): Promise<AuthenticationResult> {
+export async function authenticateToken(
+  token: string | null
+): Promise<AuthenticationResult> {
   if (!token) {
     return {
       success: false,
-      error: 'Authentication token not found',
+      error: "Authentication token not found",
       statusCode: 401,
     };
   }
 
   // JWT検証
   const jwtResult = verifyJwt(token);
-  if (!jwtResult.success || !jwtResult.payload) {
+  if (!(jwtResult.success && jwtResult.payload)) {
     return {
       success: false,
-      error: jwtResult.error || 'Invalid authentication token',
+      error: jwtResult.error || "Invalid authentication token",
       statusCode: 401,
     };
   }
@@ -127,7 +133,7 @@ export async function authenticateToken(token: string | null): Promise<Authentic
     if (!user) {
       return {
         success: false,
-        error: 'User not found',
+        error: "User not found",
         statusCode: 401,
       };
     }
@@ -136,7 +142,7 @@ export async function authenticateToken(token: string | null): Promise<Authentic
     if (!user.isActive) {
       return {
         success: false,
-        error: 'User account is inactive',
+        error: "User account is inactive",
         statusCode: 403,
       };
     }
@@ -145,7 +151,7 @@ export async function authenticateToken(token: string | null): Promise<Authentic
     if (user.lineUserId !== jwtResult.payload.lineUserId) {
       return {
         success: false,
-        error: 'Token user ID mismatch',
+        error: "Token user ID mismatch",
         statusCode: 401,
       };
     }
@@ -155,7 +161,7 @@ export async function authenticateToken(token: string | null): Promise<Authentic
       lineUserId: user.lineUserId,
       displayName: user.displayName,
       profileImageUrl: user.profileImageUrl,
-      role: user.role as 'ADMIN' | 'MANAGER' | 'MEMBER',
+      role: user.role as "ADMIN" | "MANAGER" | "MEMBER",
       isActive: user.isActive,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
@@ -168,7 +174,7 @@ export async function authenticateToken(token: string | null): Promise<Authentic
   } catch (error) {
     return {
       success: false,
-      error: `Database error: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      error: `Database error: ${error instanceof Error ? error.message : "Unknown error"}`,
       statusCode: 500,
     };
   }
@@ -192,7 +198,9 @@ export async function authenticateFromCookies(): Promise<AuthenticationResult> {
  * @param request - NextRequest オブジェクト
  * @returns 認証結果
  */
-export async function authenticateFromRequest(request: NextRequest): Promise<AuthenticationResult> {
+export async function authenticateFromRequest(
+  request: NextRequest
+): Promise<AuthenticationResult> {
   const token = getAuthTokenFromRequest(request);
   return await authenticateToken(token);
 }
@@ -207,7 +215,7 @@ export async function authenticateFromRequest(request: NextRequest): Promise<Aut
  */
 export function checkUserRole(
   user: AuthenticatedUser,
-  requiredRole: 'ADMIN' | 'MANAGER' | 'MEMBER'
+  requiredRole: "ADMIN" | "MANAGER" | "MEMBER"
 ): AuthorizationResult {
   const roleHierarchy = {
     ADMIN: 3,
@@ -242,11 +250,11 @@ export function checkUserRole(
  */
 export async function authenticateAndAuthorize(
   token: string | null,
-  requiredRole: 'ADMIN' | 'MANAGER' | 'MEMBER' = 'MEMBER'
+  requiredRole: "ADMIN" | "MANAGER" | "MEMBER" = "MEMBER"
 ): Promise<AuthorizationResult> {
   const authResult = await authenticateToken(token);
 
-  if (!authResult.success || !authResult.user) {
+  if (!(authResult.success && authResult.user)) {
     const result: AuthorizationResult = {
       success: false,
     };
@@ -272,7 +280,7 @@ export async function authenticateAndAuthorize(
  */
 export async function withAuth(
   request: NextRequest,
-  requiredRole: 'ADMIN' | 'MANAGER' | 'MEMBER' = 'MEMBER'
+  requiredRole: "ADMIN" | "MANAGER" | "MEMBER" = "MEMBER"
 ): Promise<{
   result: AuthorizationResult;
   errorResponse?: NextResponse;
@@ -284,8 +292,9 @@ export async function withAuth(
     const errorResponse = NextResponse.json(
       {
         success: false,
-        error: result.error || 'Authentication failed',
+        error: result.error || "Authentication failed",
       },
+      // biome-ignore lint/style/noMagicNumbers: 標準的なHTTPステータスコード
       { status: result.statusCode || 401 }
     );
 
@@ -333,8 +342,15 @@ export async function getAuthDebugInfo(request: NextRequest) {
   const token = getAuthTokenFromRequest(request);
   const hasToken = !!token;
 
-  let jwtInfo = null;
-  let dbUser = null;
+  let jwtInfo: {
+    valid: boolean;
+    payload: { userId: string; role: string; exp?: number | undefined } | null;
+    error?: string | undefined;
+  } | null = null;
+  let dbUser:
+    | { id: string; displayName: string; role: string; isActive: boolean }
+    | { error: string }
+    | null = null;
 
   if (token) {
     const jwtResult = verifyJwt(token);
@@ -362,13 +378,14 @@ export async function getAuthDebugInfo(request: NextRequest) {
           },
         });
       } catch {
-        dbUser = { error: 'Database query failed' };
+        dbUser = { error: "Database query failed" };
       }
     }
   }
 
   return {
     hasToken,
+    // biome-ignore lint/style/noMagicNumbers: デバッグ表示用の文字数制限
     token: token ? `${token.substring(0, 20)}...` : null, // 最初の20文字のみ表示
     jwt: jwtInfo,
     user: dbUser,

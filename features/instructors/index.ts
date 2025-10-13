@@ -1,2 +1,6 @@
 // クエリフック
-export * from './api/queries';
+export {
+  type InstructorsQueryKey,
+  instructorsQueryKeys,
+  useInstructorsQuery,
+} from "./api/queries";

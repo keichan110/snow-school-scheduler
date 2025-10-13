@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/db';
-import { authenticateFromRequest } from '@/lib/auth/middleware';
+import { type NextRequest, NextResponse } from "next/server";
+import { authenticateFromRequest } from "@/lib/auth/middleware";
+import { prisma } from "@/lib/db";
 
 export async function GET(request: NextRequest) {
   const authResult = await authenticateFromRequest(request);
@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(
       {
         success: false,
-        error: 'Authentication required',
+        error: "Authentication required",
         data: null,
         message: null,
       },
@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
   try {
     const departments = await prisma.department.findMany({
       orderBy: {
-        name: 'asc',
+        name: "asc",
       },
     });
 
@@ -29,14 +29,13 @@ export async function GET(request: NextRequest) {
       message: null,
       error: null,
     });
-  } catch (error) {
-    console.error('Departments API error:', error);
+  } catch (_error) {
     return NextResponse.json(
       {
         success: false,
         data: null,
         message: null,
-        error: 'Internal server error',
+        error: "Internal server error",
       },
       { status: 500 }
     );

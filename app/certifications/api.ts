@@ -1,45 +1,53 @@
-import type { CertificationWithDepartment, CertificationFormData, DepartmentData } from './types';
+import type {
+  CertificationFormData,
+  CertificationWithDepartment,
+  DepartmentData,
+} from "./types";
 
-export interface ApiResponse<T> {
+export type ApiResponse<T> = {
   success: boolean;
   data: T | null;
   message: string | null;
   error: string | null;
-}
+};
 
 export async function fetchDepartments(): Promise<DepartmentData[]> {
-  const response = await fetch('/api/departments');
+  const response = await fetch("/api/departments");
   const result: ApiResponse<DepartmentData[]> = await response.json();
 
-  if (!result.success || !result.data) {
-    throw new Error(result.error || 'Failed to fetch departments');
+  if (!(result.success && result.data)) {
+    throw new Error(result.error || "Failed to fetch departments");
   }
 
   return result.data;
 }
 
-export async function fetchCertifications(): Promise<CertificationWithDepartment[]> {
-  const response = await fetch('/api/certifications');
-  const result: ApiResponse<CertificationWithDepartment[]> = await response.json();
+export async function fetchCertifications(): Promise<
+  CertificationWithDepartment[]
+> {
+  const response = await fetch("/api/certifications");
+  const result: ApiResponse<CertificationWithDepartment[]> =
+    await response.json();
 
-  if (!result.success || !result.data) {
-    throw new Error(result.error || 'Failed to fetch certifications');
+  if (!(result.success && result.data)) {
+    throw new Error(result.error || "Failed to fetch certifications");
   }
 
   return result.data;
 }
 
 // Department名からIDを取得するヘルパー関数
-export async function getDepartmentIdByType(departmentType: 'ski' | 'snowboard'): Promise<number> {
+export async function getDepartmentIdByType(
+  departmentType: "ski" | "snowboard"
+): Promise<number> {
   const departments = await fetchDepartments();
 
   const targetDepartment = departments.find((dept) => {
     const name = dept.name.toLowerCase();
-    if (departmentType === 'ski') {
-      return name.includes('スキー') || name.includes('ski');
-    } else {
-      return name.includes('スノーボード') || name.includes('snowboard');
+    if (departmentType === "ski") {
+      return name.includes("スキー") || name.includes("ski");
     }
+    return name.includes("スノーボード") || name.includes("snowboard");
   });
 
   if (!targetDepartment) {
@@ -61,21 +69,22 @@ export async function createCertification(
     departmentId,
     organization: data.organization,
     description: data.description || null,
-    isActive: data.status === 'active',
+    isActive: data.status === "active",
   };
 
-  const response = await fetch('/api/certifications', {
-    method: 'POST',
+  const response = await fetch("/api/certifications", {
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     },
     body: JSON.stringify(requestData),
   });
 
-  const result: ApiResponse<CertificationWithDepartment> = await response.json();
+  const result: ApiResponse<CertificationWithDepartment> =
+    await response.json();
 
-  if (!result.success || !result.data) {
-    throw new Error(result.error || 'Failed to create certification');
+  if (!(result.success && result.data)) {
+    throw new Error(result.error || "Failed to create certification");
   }
 
   return result.data;
@@ -93,21 +102,22 @@ export async function updateCertification(
     departmentId,
     organization: data.organization,
     description: data.description || null,
-    isActive: data.status === 'active',
+    isActive: data.status === "active",
   };
 
   const response = await fetch(`/api/certifications/${id}`, {
-    method: 'PUT',
+    method: "PUT",
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     },
     body: JSON.stringify(requestData),
   });
 
-  const result: ApiResponse<CertificationWithDepartment> = await response.json();
+  const result: ApiResponse<CertificationWithDepartment> =
+    await response.json();
 
-  if (!result.success || !result.data) {
-    throw new Error(result.error || 'Failed to update certification');
+  if (!(result.success && result.data)) {
+    throw new Error(result.error || "Failed to update certification");
   }
 
   return result.data;

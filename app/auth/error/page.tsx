@@ -1,12 +1,17 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertTriangle, Home, RefreshCw, Shield, XCircle } from 'lucide-react';
-import { Suspense } from 'react';
+import { AlertTriangle, Home, RefreshCw, Shield, XCircle } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
 /**
  * 認証エラーページのメインコンポーネント
@@ -16,8 +21,8 @@ function AuthErrorContent() {
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
 
-  const error = searchParams?.get('error') || 'unknown';
-  const description = searchParams?.get('description') || '';
+  const error = searchParams?.get("error") || "unknown";
+  const description = searchParams?.get("description") || "";
 
   useEffect(() => {
     setMounted(true);
@@ -28,79 +33,85 @@ function AuthErrorContent() {
    */
   const getErrorInfo = () => {
     switch (error) {
-      case 'access_denied':
-      case 'cancelled':
+      case "access_denied":
+      case "cancelled":
         return {
-          title: 'ログインがキャンセルされました',
+          title: "ログインがキャンセルされました",
           message:
-            'LINEログインがキャンセルされました。ログインを継続するには、再度お試しください。',
+            "LINEログインがキャンセルされました。ログインを継続するには、再度お試しください。",
           icon: <XCircle className="h-8 w-8 text-orange-500" />,
           canRetry: true,
-          severity: 'warning' as const,
+          severity: "warning" as const,
         };
 
-      case 'invalid_request':
-      case 'invalid_callback':
+      case "invalid_request":
+      case "invalid_callback":
         return {
-          title: '認証エラーが発生しました',
-          message: '認証プロセスでエラーが発生しました。時間をおいて再度お試しください。',
+          title: "認証エラーが発生しました",
+          message:
+            "認証プロセスでエラーが発生しました。時間をおいて再度お試しください。",
           icon: <AlertTriangle className="h-8 w-8 text-red-500" />,
           canRetry: true,
-          severity: 'error' as const,
+          severity: "error" as const,
         };
 
-      case 'session_expired':
+      case "session_expired":
         return {
-          title: 'セッションが期限切れです',
-          message: 'ログインセッションが期限切れになりました。再度ログインしてください。',
+          title: "セッションが期限切れです",
+          message:
+            "ログインセッションが期限切れになりました。再度ログインしてください。",
           icon: <AlertTriangle className="h-8 w-8 text-yellow-500" />,
           canRetry: true,
-          severity: 'warning' as const,
+          severity: "warning" as const,
         };
 
-      case 'auth_failed':
+      case "auth_failed":
         return {
-          title: '認証に失敗しました',
-          message: 'LINEアカウントでの認証に失敗しました。アカウントの設定をご確認ください。',
+          title: "認証に失敗しました",
+          message:
+            "LINEアカウントでの認証に失敗しました。アカウントの設定をご確認ください。",
           icon: <Shield className="h-8 w-8 text-red-500" />,
           canRetry: true,
-          severity: 'error' as const,
+          severity: "error" as const,
         };
 
-      case 'inactive_user':
+      case "inactive_user":
         return {
-          title: 'アカウントが無効です',
-          message: 'このアカウントは現在無効化されています。管理者にお問い合わせください。',
+          title: "アカウントが無効です",
+          message:
+            "このアカウントは現在無効化されています。管理者にお問い合わせください。",
           icon: <XCircle className="h-8 w-8 text-red-500" />,
           canRetry: false,
-          severity: 'error' as const,
+          severity: "error" as const,
         };
 
-      case 'permission_denied':
+      case "permission_denied":
         return {
-          title: 'アクセス権限がありません',
-          message: 'このシステムへのアクセス権限がありません。管理者にお問い合わせください。',
+          title: "アクセス権限がありません",
+          message:
+            "このシステムへのアクセス権限がありません。管理者にお問い合わせください。",
           icon: <Shield className="h-8 w-8 text-red-500" />,
           canRetry: false,
-          severity: 'error' as const,
+          severity: "error" as const,
         };
 
-      case 'system_error':
+      case "system_error":
         return {
-          title: 'システムエラーが発生しました',
-          message: 'システムで問題が発生しています。しばらく時間をおいて再度お試しください。',
+          title: "システムエラーが発生しました",
+          message:
+            "システムで問題が発生しています。しばらく時間をおいて再度お試しください。",
           icon: <AlertTriangle className="h-8 w-8 text-red-500" />,
           canRetry: true,
-          severity: 'error' as const,
+          severity: "error" as const,
         };
 
       default:
         return {
-          title: '予期しないエラーが発生しました',
-          message: '不明なエラーが発生しました。管理者にお問い合わせください。',
+          title: "予期しないエラーが発生しました",
+          message: "不明なエラーが発生しました。管理者にお問い合わせください。",
           icon: <AlertTriangle className="h-8 w-8 text-gray-500" />,
           canRetry: true,
-          severity: 'error' as const,
+          severity: "error" as const,
         };
     }
   };
@@ -111,14 +122,14 @@ function AuthErrorContent() {
    * ログインページに戻る
    */
   const handleRetryLogin = () => {
-    router.push('/login');
+    router.push("/login");
   };
 
   /**
    * ホームページに戻る
    */
   const handleGoHome = () => {
-    router.push('/');
+    router.push("/");
   };
 
   /**
@@ -142,7 +153,9 @@ function AuthErrorContent() {
               {errorInfo.icon}
             </div>
             <div className="space-y-2">
-              <CardTitle className="text-xl font-bold text-foreground">{errorInfo.title}</CardTitle>
+              <CardTitle className="font-bold text-foreground text-xl">
+                {errorInfo.title}
+              </CardTitle>
               <CardDescription className="text-center">
                 スキー・スノーボードスクール
                 <br />
@@ -152,14 +165,20 @@ function AuthErrorContent() {
           </CardHeader>
           <CardContent className="space-y-6">
             {/* エラーメッセージ */}
-            <Alert variant={errorInfo.severity === 'error' ? 'destructive' : 'default'}>
+            <Alert
+              variant={
+                errorInfo.severity === "error" ? "destructive" : "default"
+              }
+            >
               <AlertDescription className="text-sm">
                 {errorInfo.message}
                 {description && (
                   <>
                     <br />
                     <br />
-                    <span className="text-xs text-muted-foreground">詳細: {description}</span>
+                    <span className="text-muted-foreground text-xs">
+                      詳細: {description}
+                    </span>
                   </>
                 )}
               </AlertDescription>
@@ -170,33 +189,43 @@ function AuthErrorContent() {
               {errorInfo.canRetry && (
                 <>
                   <Button
-                    onClick={handleRetryLogin}
                     className="w-full bg-[#06C755] text-white hover:bg-[#05B84C]"
+                    onClick={handleRetryLogin}
                     size="lg"
                   >
                     <RefreshCw className="mr-2 h-4 w-4" />
                     再度ログインする
                   </Button>
-                  <Button onClick={handleRefresh} variant="outline" className="w-full" size="lg">
+                  <Button
+                    className="w-full"
+                    onClick={handleRefresh}
+                    size="lg"
+                    variant="outline"
+                  >
                     <RefreshCw className="mr-2 h-4 w-4" />
                     ページを再読み込み
                   </Button>
                 </>
               )}
-              <Button onClick={handleGoHome} variant="ghost" className="w-full" size="lg">
+              <Button
+                className="w-full"
+                onClick={handleGoHome}
+                size="lg"
+                variant="ghost"
+              >
                 <Home className="mr-2 h-4 w-4" />
                 ホームに戻る
               </Button>
             </div>
 
             {/* 追加情報 */}
-            <div className="space-y-2 text-center text-xs text-muted-foreground">
+            <div className="space-y-2 text-center text-muted-foreground text-xs">
               <p>
                 問題が継続する場合は、
                 <br />
                 管理者にお問い合わせください。
               </p>
-              {error !== 'unknown' && <p>エラーコード: {error}</p>}
+              {error !== "unknown" && <p>エラーコード: {error}</p>}
             </div>
           </CardContent>
         </Card>
@@ -204,7 +233,7 @@ function AuthErrorContent() {
         {/* システム情報 */}
         <Card className="border-0 bg-card/30 backdrop-blur-sm">
           <CardContent className="p-4">
-            <div className="space-y-2 text-center text-xs text-muted-foreground">
+            <div className="space-y-2 text-center text-muted-foreground text-xs">
               <p>
                 このシステムはLINEアカウントでの認証が必要です。
                 <br />

@@ -1,2 +1,6 @@
 // クエリフック
-export * from './api/queries';
+export {
+  type CertificationsQueryKey,
+  certificationsQueryKeys,
+  useCertificationsQuery,
+} from "./api/queries";

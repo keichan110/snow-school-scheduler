@@ -2,14 +2,14 @@
  * @jest-environment node
  */
 
-import { NextRequest } from 'next/server';
+import { NextRequest } from "next/server";
 
-jest.mock('@/lib/auth/middleware', () => ({
+jest.mock("@/lib/auth/middleware", () => ({
   authenticateFromRequest: jest.fn(),
 }));
 
 // Prismaをモック化
-jest.mock('@/lib/db', () => ({
+jest.mock("@/lib/db", () => ({
   prisma: {
     department: {
       findUnique: jest.fn(),
@@ -17,29 +17,28 @@ jest.mock('@/lib/db', () => ({
   },
 }));
 
-import { GET } from './route';
-import { prisma } from '@/lib/db';
-import { authenticateFromRequest } from '@/lib/auth/middleware';
+import { authenticateFromRequest } from "@/lib/auth/middleware";
+import { prisma } from "@/lib/db";
+import { GET } from "./route";
 
 const mockFindUnique = prisma.department.findUnique as jest.MockedFunction<
   typeof prisma.department.findUnique
 >;
-const mockAuthenticateFromRequest = authenticateFromRequest as jest.MockedFunction<
-  typeof authenticateFromRequest
->;
+const mockAuthenticateFromRequest =
+  authenticateFromRequest as jest.MockedFunction<
+    typeof authenticateFromRequest
+  >;
 
-describe('/api/departments/[id] GET', () => {
+describe("/api/departments/[id] GET", () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    // console.errorをモック化してログ出力を抑制
-    jest.spyOn(console, 'error').mockImplementation(() => {});
     mockAuthenticateFromRequest.mockResolvedValue({
       success: true,
       user: {
-        id: '1',
-        lineUserId: 'test-user',
-        displayName: 'Test User',
-        role: 'ADMIN',
+        id: "1",
+        lineUserId: "test-user",
+        displayName: "Test User",
+        role: "ADMIN",
         isActive: true,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -47,19 +46,16 @@ describe('/api/departments/[id] GET', () => {
     });
   });
 
-  afterEach(() => {
-    // console.errorのモックを復元
-    jest.restoreAllMocks();
-  });
-
-  it('認証に失敗した場合、401エラーを返す', async () => {
+  it("認証に失敗した場合、401エラーを返す", async () => {
     mockAuthenticateFromRequest.mockResolvedValueOnce({
       success: false,
-      error: 'Authentication required',
+      error: "Authentication required",
     });
 
-    const request = new NextRequest('http://localhost:3000/api/departments/1');
-    const response = await GET(request, { params: Promise.resolve({ id: '1' }) });
+    const request = new NextRequest("http://localhost:3000/api/departments/1");
+    const response = await GET(request, {
+      params: Promise.resolve({ id: "1" }),
+    });
     const data = await response.json();
 
     expect(response.status).toBe(401);
@@ -67,28 +63,30 @@ describe('/api/departments/[id] GET', () => {
       success: false,
       data: null,
       message: null,
-      error: 'Authentication required',
+      error: "Authentication required",
     });
     expect(mockFindUnique).not.toHaveBeenCalled();
   });
 
-  it('部門が存在する場合、部門詳細を返す', async () => {
+  it("部門が存在する場合、部門詳細を返す", async () => {
     // テストデータを準備
     const mockDepartment = {
       id: 1,
-      code: 'ski',
-      name: 'スキー',
-      description: 'スキー部門',
+      code: "ski",
+      name: "スキー",
+      description: "スキー部門",
       isActive: true,
-      createdAt: new Date('2024-01-01'),
-      updatedAt: new Date('2024-01-01'),
+      createdAt: new Date("2024-01-01"),
+      updatedAt: new Date("2024-01-01"),
     };
 
     mockFindUnique.mockResolvedValue(mockDepartment);
 
     // リクエストを作成
-    const request = new NextRequest('http://localhost:3000/api/departments/1');
-    const response = await GET(request, { params: Promise.resolve({ id: '1' }) });
+    const request = new NextRequest("http://localhost:3000/api/departments/1");
+    const response = await GET(request, {
+      params: Promise.resolve({ id: "1" }),
+    });
     const data = await response.json();
 
     // レスポンスを検証
@@ -97,12 +95,12 @@ describe('/api/departments/[id] GET', () => {
       success: true,
       data: {
         id: 1,
-        code: 'ski',
-        name: 'スキー',
-        description: 'スキー部門',
+        code: "ski",
+        name: "スキー",
+        description: "スキー部門",
         isActive: true,
-        createdAt: '2024-01-01T00:00:00.000Z',
-        updatedAt: '2024-01-01T00:00:00.000Z',
+        createdAt: "2024-01-01T00:00:00.000Z",
+        updatedAt: "2024-01-01T00:00:00.000Z",
       },
       message: null,
       error: null,
@@ -114,11 +112,15 @@ describe('/api/departments/[id] GET', () => {
     });
   });
 
-  it('部門が存在しない場合、404エラーを返す', async () => {
+  it("部門が存在しない場合、404エラーを返す", async () => {
     mockFindUnique.mockResolvedValue(null);
 
-    const request = new NextRequest('http://localhost:3000/api/departments/999');
-    const response = await GET(request, { params: Promise.resolve({ id: '999' }) });
+    const request = new NextRequest(
+      "http://localhost:3000/api/departments/999"
+    );
+    const response = await GET(request, {
+      params: Promise.resolve({ id: "999" }),
+    });
     const data = await response.json();
 
     expect(response.status).toBe(404);
@@ -126,13 +128,17 @@ describe('/api/departments/[id] GET', () => {
       success: false,
       data: null,
       message: null,
-      error: 'Resource not found',
+      error: "Resource not found",
     });
   });
 
-  it('無効なIDパラメータの場合、404エラーを返す', async () => {
-    const request = new NextRequest('http://localhost:3000/api/departments/invalid');
-    const response = await GET(request, { params: Promise.resolve({ id: 'invalid' }) });
+  it("無効なIDパラメータの場合、404エラーを返す", async () => {
+    const request = new NextRequest(
+      "http://localhost:3000/api/departments/invalid"
+    );
+    const response = await GET(request, {
+      params: Promise.resolve({ id: "invalid" }),
+    });
     const data = await response.json();
 
     expect(response.status).toBe(404);
@@ -140,18 +146,20 @@ describe('/api/departments/[id] GET', () => {
       success: false,
       data: null,
       message: null,
-      error: 'Resource not found',
+      error: "Resource not found",
     });
 
     // 無効なIDの場合はPrismaクエリが呼ばれないことを確認
     expect(mockFindUnique).not.toHaveBeenCalled();
   });
 
-  it('データベースエラーが発生した場合、500エラーを返す', async () => {
-    mockFindUnique.mockRejectedValue(new Error('Database error'));
+  it("データベースエラーが発生した場合、500エラーを返す", async () => {
+    mockFindUnique.mockRejectedValue(new Error("Database error"));
 
-    const request = new NextRequest('http://localhost:3000/api/departments/1');
-    const response = await GET(request, { params: Promise.resolve({ id: '1' }) });
+    const request = new NextRequest("http://localhost:3000/api/departments/1");
+    const response = await GET(request, {
+      params: Promise.resolve({ id: "1" }),
+    });
     const data = await response.json();
 
     expect(response.status).toBe(500);
@@ -159,7 +167,7 @@ describe('/api/departments/[id] GET', () => {
       success: false,
       data: null,
       message: null,
-      error: 'Internal server error',
+      error: "Internal server error",
     });
   });
 });

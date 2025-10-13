@@ -3,32 +3,47 @@
  * メモリベースのRate Limiting（開発・小規模運用向け）
  */
 
-interface RateLimitEntry {
+// 時間定数（ミリ秒）
+// biome-ignore lint/style/noMagicNumbers: 時間計算は数式のままが可読性が高い
+const MS_PER_MINUTE = 60 * 1000;
+// biome-ignore lint/style/noMagicNumbers: 時間計算は数式のままが可読性が高い
+const MS_PER_15_MINUTES = 15 * 60 * 1000;
+
+// Rate Limit設定定数
+const MAX_REQUESTS_AUTH_VERIFY = 5;
+const MAX_REQUESTS_AUTH_LOGIN = 5;
+const MAX_REQUESTS_AUTH_GENERAL = 10;
+const MAX_REQUESTS_API_GENERAL = 100;
+
+// クリーンアップ実行確率
+const CLEANUP_PROBABILITY = 0.1;
+
+type RateLimitEntry = {
   count: number;
   resetTime: number;
-}
+};
 
-export interface RateLimitConfig {
+export type RateLimitConfig = {
   windowMs: number; // 時間窓（ミリ秒）
   maxRequests: number; // 最大リクエスト数
-}
+};
 
 type RateLimitRule =
   | {
       id: string;
-      type: 'regex';
+      type: "regex";
       pattern: RegExp;
       config: RateLimitConfig;
     }
   | {
       id: string;
-      type: 'exact';
+      type: "exact";
       path: string;
       config: RateLimitConfig;
     }
   | {
       id: string;
-      type: 'prefix';
+      type: "prefix";
       prefix: string;
       config: RateLimitConfig;
     };
@@ -39,60 +54,66 @@ const rateLimitStore = new Map<string, RateLimitEntry>();
 // ルール設定（上から順にマッチを評価）
 const RATE_LIMIT_RULES: RateLimitRule[] = [
   {
-    id: 'auth-invitation-verify',
-    type: 'regex',
+    id: "auth-invitation-verify",
+    type: "regex",
     pattern: /^\/api\/auth\/invitations\/[^/]+\/verify$/,
-    config: { windowMs: 60 * 1000, maxRequests: 5 }, // 1分に5回
+    config: { windowMs: MS_PER_MINUTE, maxRequests: MAX_REQUESTS_AUTH_VERIFY }, // 1分に5回
   },
   {
-    id: 'auth-line-login',
-    type: 'exact',
-    path: '/api/auth/line/login',
-    config: { windowMs: 60 * 1000, maxRequests: 5 }, // 1分に5回
+    id: "auth-line-login",
+    type: "exact",
+    path: "/api/auth/line/login",
+    config: { windowMs: MS_PER_MINUTE, maxRequests: MAX_REQUESTS_AUTH_LOGIN }, // 1分に5回
   },
   {
-    id: 'auth-general',
-    type: 'prefix',
-    prefix: '/api/auth/',
-    config: { windowMs: 15 * 60 * 1000, maxRequests: 10 }, // 15分に10回
+    id: "auth-general",
+    type: "prefix",
+    prefix: "/api/auth/",
+    config: {
+      windowMs: MS_PER_15_MINUTES,
+      maxRequests: MAX_REQUESTS_AUTH_GENERAL,
+    }, // 15分に10回
   },
   {
-    id: 'api-general',
-    type: 'prefix',
-    prefix: '/api/',
-    config: { windowMs: 60 * 1000, maxRequests: 100 }, // 1分に100回
+    id: "api-general",
+    type: "prefix",
+    prefix: "/api/",
+    config: { windowMs: MS_PER_MINUTE, maxRequests: MAX_REQUESTS_API_GENERAL }, // 1分に100回
   },
 ];
 
 function findRateLimitRule(pathname: string): RateLimitRule {
   if (RATE_LIMIT_RULES.length === 0) {
-    throw new Error('Rate limit rules are not configured');
+    throw new Error("Rate limit rules are not configured");
   }
 
   for (const rule of RATE_LIMIT_RULES) {
     switch (rule.type) {
-      case 'exact':
+      case "exact":
         if (pathname === rule.path) {
           return rule;
         }
         break;
-      case 'prefix':
+      case "prefix":
         if (pathname.startsWith(rule.prefix)) {
           return rule;
         }
         break;
-      case 'regex':
+      case "regex":
         if (rule.pattern.test(pathname)) {
           return rule;
         }
+        break;
+      default:
+        // 未知のルールタイプは無視
         break;
     }
   }
 
   // 最後のルールはフォールバック
-  const fallbackRule = RATE_LIMIT_RULES[RATE_LIMIT_RULES.length - 1];
+  const fallbackRule = RATE_LIMIT_RULES.at(-1);
   if (!fallbackRule) {
-    throw new Error('Rate limit fallback rule not found');
+    throw new Error("Rate limit fallback rule not found");
   }
   return fallbackRule;
 }
@@ -101,13 +122,13 @@ function findRateLimitRule(pathname: string): RateLimitRule {
  * IPアドレスとルールIDから識別子を生成
  */
 function generateIdentifier(ip: string, ruleId: string): string {
-  const sanitizedIp = ip || '127.0.0.1';
+  const sanitizedIp = ip || "127.0.0.1";
   return `${ruleId}|${sanitizedIp}`;
 }
 
 function extractRuleIdFromKey(key: string): string {
-  const [ruleId] = key.split('|');
-  return ruleId ?? 'unknown';
+  const [ruleId] = key.split("|");
+  return ruleId ?? "unknown";
 }
 
 /**
@@ -136,7 +157,7 @@ export function checkRateLimit(
   ruleId: string;
 } {
   // 定期的なクリーンアップ（10%の確率で実行）
-  if (Math.random() < 0.1) {
+  if (Math.random() < CLEANUP_PROBABILITY) {
     cleanupExpiredEntries();
   }
 

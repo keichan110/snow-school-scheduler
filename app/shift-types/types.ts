@@ -1,20 +1,20 @@
-import type { ShiftType } from '@prisma/client';
+import type { ShiftType as PrismaShiftType } from "@prisma/client";
 
-export interface ShiftTypeStats {
+export type ShiftType = PrismaShiftType;
+
+export type ShiftTypeStats = {
   total: number;
   active: number;
-}
+};
 
-export interface ShiftTypeFormData {
+export type ShiftTypeFormData = {
   name: string;
   isActive: boolean;
-}
+};
 
-export interface ShiftTypeModalProps {
+export type ShiftTypeModalProps = {
   isOpen: boolean;
   onClose: () => void;
-  shiftType?: ShiftType | null;
+  shiftType?: ShiftType | null | undefined;
   onSave: (data: ShiftTypeFormData) => Promise<void>;
-}
-
-export type { ShiftType };
+};

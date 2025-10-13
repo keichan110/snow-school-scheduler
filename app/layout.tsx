@@ -1,19 +1,24 @@
-import type { Metadata } from 'next';
-import './globals.css';
-import { ThemeProvider } from '@/components/theme-provider';
-import { QueryProvider } from '@/shared/providers/query-client';
-import { NotificationProvider } from '@/components/notifications';
-import { AuthProvider } from '@/contexts/AuthContext';
-import Background from '@/components/Background';
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
+import type { Metadata } from "next";
+import "./globals.css";
+import Background from "@/components/background";
+import Footer from "@/components/footer";
+import Header from "@/components/header";
+import { NotificationProvider } from "@/components/notifications";
+import { ThemeProvider } from "@/components/theme-provider";
+import { AuthProvider } from "@/contexts/auth-context";
+import { QueryProvider } from "@/shared/providers/query-client";
 
 export const metadata: Metadata = {
-  title: 'スキー・スノーボードスクール シフト管理システム',
-  description: 'スキー・スノーボードスクールのシフト管理を効率化するWebアプリケーション',
+  title: "スキー・スノーボードスクール シフト管理システム",
+  description:
+    "スキー・スノーボードスクールのシフト管理を効率化するWebアプリケーション",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="ja" suppressHydrationWarning>
       <body className="bg-background text-foreground antialiased">
@@ -24,9 +29,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             enableSystem
             storageKey="snow-school-theme"
             value={{
-              light: 'light',
-              dark: 'dark',
-              system: 'system',
+              light: "light",
+              dark: "dark",
+              system: "system",
             }}
           >
             <AuthProvider>

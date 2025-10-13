@@ -1,10 +1,9 @@
-import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/db';
-import { NextRequest } from 'next/server';
-import { authenticateFromRequest } from '@/lib/auth/middleware';
+import { type NextRequest, NextResponse } from "next/server";
+import { authenticateFromRequest } from "@/lib/auth/middleware";
+import { prisma } from "@/lib/db";
 
 // 既存シフトデータの型定義（レスポンス用）
-interface ExistingShiftData {
+type ExistingShiftData = {
   id: number;
   date: string;
   departmentId: number;
@@ -28,27 +27,27 @@ interface ExistingShiftData {
     };
   }>;
   assignedCount: number;
-}
+};
 
 // フォームデータの型定義
-interface FormData {
+type FormData = {
   date: string;
   departmentId: number;
   shiftTypeId: number;
   description: string | null;
   selectedInstructorIds: number[];
-}
+};
 
 // 統一レスポンスの型定義
-interface PrepareShiftResponse {
+type PrepareShiftResponse = {
   success: boolean;
   data: {
-    mode: 'create' | 'edit';
+    mode: "create" | "edit";
     shift: ExistingShiftData | null;
     formData: FormData;
   };
   error?: string;
-}
+};
 
 // Prismaの型定義
 type ShiftWithRelations = {
@@ -78,9 +77,10 @@ type ShiftWithRelations = {
 
 // 既存シフトデータをレスポンス形式にフォーマットするヘルパー関数
 function formatExistingShift(shift: ShiftWithRelations): ExistingShiftData {
+  const dateStr = shift.date.toISOString().split("T")[0];
   return {
     id: shift.id,
-    date: shift.date.toISOString().split('T')[0]!,
+    date: dateStr ?? "",
     departmentId: shift.departmentId,
     shiftTypeId: shift.shiftTypeId,
     description: shift.description,
@@ -111,7 +111,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(
       {
         success: false,
-        error: 'Authentication required',
+        error: "Authentication required",
       },
       { status: 401 }
     );
@@ -119,16 +119,16 @@ export async function GET(request: NextRequest) {
 
   try {
     const { searchParams } = request.nextUrl;
-    const date = searchParams.get('date');
-    const departmentId = searchParams.get('departmentId');
-    const shiftTypeId = searchParams.get('shiftTypeId');
+    const date = searchParams.get("date");
+    const departmentId = searchParams.get("departmentId");
+    const shiftTypeId = searchParams.get("shiftTypeId");
 
     // バリデーション
-    if (!date || !departmentId || !shiftTypeId) {
+    if (!(date && departmentId && shiftTypeId)) {
       return NextResponse.json(
         {
           success: false,
-          error: 'Required parameters: date, departmentId, shiftTypeId',
+          error: "Required parameters: date, departmentId, shiftTypeId",
         },
         { status: 400 }
       );
@@ -136,25 +136,25 @@ export async function GET(request: NextRequest) {
 
     // 日付フォーマットバリデーション
     const parsedDate = new Date(date);
-    if (isNaN(parsedDate.getTime())) {
+    if (Number.isNaN(parsedDate.getTime())) {
       return NextResponse.json(
         {
           success: false,
-          error: 'Invalid date format',
+          error: "Invalid date format",
         },
         { status: 400 }
       );
     }
 
     // 数値パラメータバリデーション
-    const parsedDepartmentId = parseInt(departmentId);
-    const parsedShiftTypeId = parseInt(shiftTypeId);
+    const parsedDepartmentId = Number.parseInt(departmentId, 10);
+    const parsedShiftTypeId = Number.parseInt(shiftTypeId, 10);
 
-    if (isNaN(parsedDepartmentId) || isNaN(parsedShiftTypeId)) {
+    if (Number.isNaN(parsedDepartmentId) || Number.isNaN(parsedShiftTypeId)) {
       return NextResponse.json(
         {
           success: false,
-          error: 'Invalid departmentId or shiftTypeId',
+          error: "Invalid departmentId or shiftTypeId",
         },
         { status: 400 }
       );
@@ -185,7 +185,7 @@ export async function GET(request: NextRequest) {
       const response: PrepareShiftResponse = {
         success: true,
         data: {
-          mode: 'edit',
+          mode: "edit",
           shift: formatExistingShift(existingShift),
           formData: {
             date,
@@ -200,31 +200,29 @@ export async function GET(request: NextRequest) {
       };
 
       return NextResponse.json(response);
-    } else {
-      // 新規作成モード：空フォーム
-      const response: PrepareShiftResponse = {
-        success: true,
-        data: {
-          mode: 'create',
-          shift: null,
-          formData: {
-            date,
-            departmentId: parsedDepartmentId,
-            shiftTypeId: parsedShiftTypeId,
-            description: null,
-            selectedInstructorIds: [],
-          },
-        },
-      };
-
-      return NextResponse.json(response);
     }
-  } catch (error) {
-    console.error('Prepare shift API error:', error);
+    // 新規作成モード：空フォーム
+    const response: PrepareShiftResponse = {
+      success: true,
+      data: {
+        mode: "create",
+        shift: null,
+        formData: {
+          date,
+          departmentId: parsedDepartmentId,
+          shiftTypeId: parsedShiftTypeId,
+          description: null,
+          selectedInstructorIds: [],
+        },
+      },
+    };
+
+    return NextResponse.json(response);
+  } catch (_error) {
     return NextResponse.json(
       {
         success: false,
-        error: 'Internal server error',
+        error: "Internal server error",
       },
       { status: 500 }
     );

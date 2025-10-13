@@ -1,28 +1,41 @@
-import { ValidationError } from './types';
+import type { ValidationError } from "./types";
+
+// 正規表現パターン（トップレベル定義）
+const DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
+
+// バリデーション定数
+const MAX_LENGTH_NAME = 50;
+const MAX_LENGTH_NOTES = 500;
 
 /**
  * バリデーション結果
  */
-export interface ValidationResult {
+export type ValidationResult = {
   readonly isValid: boolean;
   readonly errors: ValidationError[];
-}
+};
 
 /**
  * バリデーション関数の型
  */
-export type ValidatorFunction<T = unknown> = (value: T, field?: string) => ValidationError[];
+export type ValidatorFunction<T = unknown> = (
+  value: T,
+  field?: string
+) => ValidationError[];
 
 /**
  * 必須フィールドバリデーター
  */
-export const required: ValidatorFunction = (value: unknown, field = 'field') => {
-  if (value === null || value === undefined || value === '') {
+export const required: ValidatorFunction = (
+  value: unknown,
+  field = "field"
+) => {
+  if (value === null || value === undefined || value === "") {
     return [
       {
         field,
         message: `${field} is required`,
-        code: 'REQUIRED',
+        code: "REQUIRED",
       },
     ];
   }
@@ -33,14 +46,14 @@ export const required: ValidatorFunction = (value: unknown, field = 'field') => 
  * 文字列長バリデーター
  */
 export const minLength =
-  (min: number): ValidatorFunction<string> =>
-  (value, field = 'field') => {
-    if (typeof value === 'string' && value.length < min) {
+  (minLen: number): ValidatorFunction<string> =>
+  (value, field = "field") => {
+    if (typeof value === "string" && value.length < minLen) {
       return [
         {
           field,
-          message: `${field} must be at least ${min} characters long`,
-          code: 'MIN_LENGTH',
+          message: `${field} must be at least ${minLen} characters long`,
+          code: "MIN_LENGTH",
         },
       ];
     }
@@ -48,14 +61,14 @@ export const minLength =
   };
 
 export const maxLength =
-  (max: number): ValidatorFunction<string> =>
-  (value, field = 'field') => {
-    if (typeof value === 'string' && value.length > max) {
+  (maxLen: number): ValidatorFunction<string> =>
+  (value, field = "field") => {
+    if (typeof value === "string" && value.length > maxLen) {
       return [
         {
           field,
-          message: `${field} must be at most ${max} characters long`,
-          code: 'MAX_LENGTH',
+          message: `${field} must be at most ${maxLen} characters long`,
+          code: "MAX_LENGTH",
         },
       ];
     }
@@ -67,13 +80,13 @@ export const maxLength =
  */
 export const min =
   (minValue: number): ValidatorFunction<number> =>
-  (value, field = 'field') => {
-    if (typeof value === 'number' && value < minValue) {
+  (value, field = "field") => {
+    if (typeof value === "number" && value < minValue) {
       return [
         {
           field,
           message: `${field} must be at least ${minValue}`,
-          code: 'MIN_VALUE',
+          code: "MIN_VALUE",
         },
       ];
     }
@@ -82,13 +95,13 @@ export const min =
 
 export const max =
   (maxValue: number): ValidatorFunction<number> =>
-  (value, field = 'field') => {
-    if (typeof value === 'number' && value > maxValue) {
+  (value, field = "field") => {
+    if (typeof value === "number" && value > maxValue) {
       return [
         {
           field,
           message: `${field} must be at most ${maxValue}`,
-          code: 'MAX_VALUE',
+          code: "MAX_VALUE",
         },
       ];
     }
@@ -98,39 +111,39 @@ export const max =
 /**
  * 型バリデーター
  */
-export const isString: ValidatorFunction = (value, field = 'field') => {
-  if (typeof value !== 'string') {
+export const isString: ValidatorFunction = (value, field = "field") => {
+  if (typeof value !== "string") {
     return [
       {
         field,
         message: `${field} must be a string`,
-        code: 'INVALID_TYPE',
+        code: "INVALID_TYPE",
       },
     ];
   }
   return [];
 };
 
-export const isNumber: ValidatorFunction = (value, field = 'field') => {
-  if (typeof value !== 'number' || isNaN(value)) {
+export const isNumber: ValidatorFunction = (value, field = "field") => {
+  if (typeof value !== "number" || Number.isNaN(value)) {
     return [
       {
         field,
         message: `${field} must be a number`,
-        code: 'INVALID_TYPE',
+        code: "INVALID_TYPE",
       },
     ];
   }
   return [];
 };
 
-export const isBoolean: ValidatorFunction = (value, field = 'field') => {
-  if (typeof value !== 'boolean') {
+export const isBoolean: ValidatorFunction = (value, field = "field") => {
+  if (typeof value !== "boolean") {
     return [
       {
         field,
         message: `${field} must be a boolean`,
-        code: 'INVALID_TYPE',
+        code: "INVALID_TYPE",
       },
     ];
   }
@@ -140,25 +153,24 @@ export const isBoolean: ValidatorFunction = (value, field = 'field') => {
 /**
  * 日付バリデーター
  */
-export const isDate: ValidatorFunction = (value, field = 'field') => {
-  const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
-  if (typeof value !== 'string' || !dateRegex.test(value)) {
+export const isDate: ValidatorFunction = (value, field = "field") => {
+  if (typeof value !== "string" || !DATE_REGEX.test(value)) {
     return [
       {
         field,
         message: `${field} must be a valid date in YYYY-MM-DD format`,
-        code: 'INVALID_DATE',
+        code: "INVALID_DATE",
       },
     ];
   }
 
   const date = new Date(value);
-  if (isNaN(date.getTime())) {
+  if (Number.isNaN(date.getTime())) {
     return [
       {
         field,
         message: `${field} must be a valid date`,
-        code: 'INVALID_DATE',
+        code: "INVALID_DATE",
       },
     ];
   }
@@ -171,13 +183,13 @@ export const isDate: ValidatorFunction = (value, field = 'field') => {
  */
 export const isOneOf =
   <T>(validValues: T[]): ValidatorFunction<T> =>
-  (value, field = 'field') => {
+  (value, field = "field") => {
     if (!validValues.includes(value)) {
       return [
         {
           field,
-          message: `${field} must be one of: ${validValues.join(', ')}`,
-          code: 'INVALID_VALUE',
+          message: `${field} must be one of: ${validValues.join(", ")}`,
+          code: "INVALID_VALUE",
         },
       ];
     }
@@ -187,13 +199,13 @@ export const isOneOf =
 /**
  * 配列バリデーター
  */
-export const isArray: ValidatorFunction = (value, field = 'field') => {
+export const isArray: ValidatorFunction = (value, field = "field") => {
   if (!Array.isArray(value)) {
     return [
       {
         field,
         message: `${field} must be an array`,
-        code: 'INVALID_TYPE',
+        code: "INVALID_TYPE",
       },
     ];
   }
@@ -202,22 +214,22 @@ export const isArray: ValidatorFunction = (value, field = 'field') => {
 
 export const arrayOf =
   (itemValidator: ValidatorFunction): ValidatorFunction =>
-  (value, field = 'field') => {
+  (value, field = "field") => {
     if (!Array.isArray(value)) {
       return [
         {
           field,
           message: `${field} must be an array`,
-          code: 'INVALID_TYPE',
+          code: "INVALID_TYPE",
         },
       ];
     }
 
     const errors: ValidationError[] = [];
-    value.forEach((item, index) => {
+    for (const [index, item] of value.entries()) {
       const itemErrors = itemValidator(item, `${field}[${index}]`);
       errors.push(...itemErrors);
-    });
+    }
 
     return errors;
   };
@@ -226,7 +238,7 @@ export const arrayOf =
  * バリデーションスキーマ
  */
 export type ValidationSchema = {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // biome-ignore lint/suspicious/noExplicitAny: バリデーターは様々な型を受け入れる必要があるため
   [field: string]: ValidatorFunction<any>[];
 };
 
@@ -239,14 +251,14 @@ export function validate(
 ): ValidationResult {
   const errors: ValidationError[] = [];
 
-  Object.entries(schema).forEach(([field, validators]) => {
+  for (const [field, validators] of Object.entries(schema)) {
     const value = data[field];
 
-    validators.forEach((validator) => {
+    for (const validator of validators) {
       const fieldErrors = validator(value, field);
       errors.push(...fieldErrors);
-    });
-  });
+    }
+  }
 
   return {
     isValid: errors.length === 0,
@@ -263,16 +275,16 @@ export function checkRequiredFields(
 ): ValidationError[] {
   const errors: ValidationError[] = [];
 
-  requiredFields.forEach((field) => {
+  for (const field of requiredFields) {
     const value = data[field];
-    if (value === undefined || value === null || value === '') {
+    if (value === undefined || value === null || value === "") {
       errors.push({
         field,
         message: `${field} is required`,
-        code: 'REQUIRED',
+        code: "REQUIRED",
       });
     }
-  });
+  }
 
   return errors;
 }
@@ -283,12 +295,12 @@ export function checkRequiredFields(
 export const commonSchemas: { [key: string]: ValidationSchema } = {
   // インストラクター作成
   createInstructor: {
-    lastName: [required, isString, maxLength(50)],
-    firstName: [required, isString, maxLength(50)],
-    lastNameKana: [isString, maxLength(50)],
-    firstNameKana: [isString, maxLength(50)],
-    status: [isOneOf(['ACTIVE', 'INACTIVE', 'RETIRED'])],
-    notes: [isString, maxLength(500)],
+    lastName: [required, isString, maxLength(MAX_LENGTH_NAME)],
+    firstName: [required, isString, maxLength(MAX_LENGTH_NAME)],
+    lastNameKana: [isString, maxLength(MAX_LENGTH_NAME)],
+    firstNameKana: [isString, maxLength(MAX_LENGTH_NAME)],
+    status: [isOneOf(["ACTIVE", "INACTIVE", "RETIRED"])],
+    notes: [isString, maxLength(MAX_LENGTH_NOTES)],
     certificationIds: [isArray, arrayOf(isNumber)],
   },
 
@@ -297,7 +309,7 @@ export const commonSchemas: { [key: string]: ValidationSchema } = {
     date: [required, isDate],
     departmentId: [required, isNumber, min(1)],
     shiftTypeId: [required, isNumber, min(1)],
-    description: [isString, maxLength(500)],
+    description: [isString, maxLength(MAX_LENGTH_NOTES)],
     assignedInstructorIds: [isArray, arrayOf(isNumber)],
   },
 };

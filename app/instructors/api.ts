@@ -1,18 +1,21 @@
-import type { InstructorWithCertifications, InstructorFormData } from './types';
+import type { InstructorFormData, InstructorWithCertifications } from "./types";
 
-export interface ApiResponse<T> {
+export type ApiResponse<T> = {
   success: boolean;
   data: T | null;
   message: string | null;
   error: string | null;
-}
+};
 
-export async function fetchInstructors(): Promise<InstructorWithCertifications[]> {
-  const response = await fetch('/api/instructors');
-  const result: ApiResponse<InstructorWithCertifications[]> = await response.json();
+export async function fetchInstructors(): Promise<
+  InstructorWithCertifications[]
+> {
+  const response = await fetch("/api/instructors");
+  const result: ApiResponse<InstructorWithCertifications[]> =
+    await response.json();
 
-  if (!result.success || !result.data) {
-    throw new Error(result.error || 'Failed to fetch instructors');
+  if (!(result.success && result.data)) {
+    throw new Error(result.error || "Failed to fetch instructors");
   }
 
   return result.data;
@@ -31,18 +34,19 @@ export async function createInstructor(
     certificationIds: data.certificationIds || [],
   };
 
-  const response = await fetch('/api/instructors', {
-    method: 'POST',
+  const response = await fetch("/api/instructors", {
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     },
     body: JSON.stringify(requestData),
   });
 
-  const result: ApiResponse<InstructorWithCertifications> = await response.json();
+  const result: ApiResponse<InstructorWithCertifications> =
+    await response.json();
 
-  if (!result.success || !result.data) {
-    throw new Error(result.error || 'Failed to create instructor');
+  if (!(result.success && result.data)) {
+    throw new Error(result.error || "Failed to create instructor");
   }
 
   return result.data;
@@ -63,17 +67,18 @@ export async function updateInstructor(
   };
 
   const response = await fetch(`/api/instructors/${id}`, {
-    method: 'PUT',
+    method: "PUT",
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     },
     body: JSON.stringify(requestData),
   });
 
-  const result: ApiResponse<InstructorWithCertifications> = await response.json();
+  const result: ApiResponse<InstructorWithCertifications> =
+    await response.json();
 
-  if (!result.success || !result.data) {
-    throw new Error(result.error || 'Failed to update instructor');
+  if (!(result.success && result.data)) {
+    throw new Error(result.error || "Failed to update instructor");
   }
 
   return result.data;
@@ -81,16 +86,16 @@ export async function updateInstructor(
 
 // ステータスをAPIフォーマットにマッピング
 function mapStatusToApi(
-  status: 'active' | 'inactive' | 'retired'
-): 'ACTIVE' | 'INACTIVE' | 'RETIRED' {
+  status: "active" | "inactive" | "retired"
+): "ACTIVE" | "INACTIVE" | "RETIRED" {
   switch (status) {
-    case 'active':
-      return 'ACTIVE';
-    case 'inactive':
-      return 'INACTIVE';
-    case 'retired':
-      return 'RETIRED';
+    case "active":
+      return "ACTIVE";
+    case "inactive":
+      return "INACTIVE";
+    case "retired":
+      return "RETIRED";
     default:
-      return 'ACTIVE';
+      return "ACTIVE";
   }
 }

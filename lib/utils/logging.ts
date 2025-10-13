@@ -3,27 +3,32 @@
  * 機密情報をマスキングしてログ出力する
  */
 
-interface SensitiveData {
+// マスキング定数
+const MIN_MASK_LENGTH = 8;
+const PREFIX_LENGTH = 4;
+const SUFFIX_LENGTH = 4;
+
+type SensitiveData = {
   [key: string]: unknown;
-}
+};
 
 /**
  * 機密情報をマスクしてログ出力
  */
 export function maskSensitiveData(data: SensitiveData): SensitiveData {
   const sensitiveKeys = [
-    'token',
-    'accesstoken',
-    'secret',
-    'channelsecret',
-    'password',
-    'auth',
-    'authorization',
-    'jwt',
-    'code',
-    'state',
-    'clientsecret',
-    'apikey',
+    "token",
+    "accesstoken",
+    "secret",
+    "channelsecret",
+    "password",
+    "auth",
+    "authorization",
+    "jwt",
+    "code",
+    "state",
+    "clientsecret",
+    "apikey",
   ];
 
   const masked = { ...data };
@@ -34,11 +39,12 @@ export function maskSensitiveData(data: SensitiveData): SensitiveData {
       keyLower.includes(sensitive.toLowerCase())
     );
 
-    if (isSensitive && typeof value === 'string') {
-      if (value.length <= 8) {
-        masked[key] = '****';
+    if (isSensitive && typeof value === "string") {
+      if (value.length <= MIN_MASK_LENGTH) {
+        masked[key] = "****";
       } else {
-        masked[key] = `${value.substring(0, 4)}...${value.substring(value.length - 4)}`;
+        masked[key] =
+          `${value.substring(0, PREFIX_LENGTH)}...${value.substring(value.length - SUFFIX_LENGTH)}`;
       }
     }
   }
@@ -50,23 +56,34 @@ export function maskSensitiveData(data: SensitiveData): SensitiveData {
  * セキュアなログ出力関数
  * 開発環境でのみ機密情報をマスクしてログ出力
  */
-export function secureLog(level: 'info' | 'warn' | 'error', message: string, data?: SensitiveData) {
+export function secureLog(
+  level: "info" | "warn" | "error",
+  message: string,
+  data?: SensitiveData
+) {
   // Cloudflare Workers本番環境では絶対にログを出力しない
-  if (process.env.NODE_ENV !== 'development') {
+  if (process.env.NODE_ENV !== "development") {
     return;
   }
 
   const maskedData = data ? maskSensitiveData(data) : undefined;
 
   switch (level) {
-    case 'info':
+    case "info":
+      // biome-ignore lint/suspicious/noConsole: ロギングユーティリティの本質的機能
       console.info(`🛡️ ${message}`, maskedData);
       break;
-    case 'warn':
+    case "warn":
+      // biome-ignore lint/suspicious/noConsole: ロギングユーティリティの本質的機能
       console.warn(`⚠️ ${message}`, maskedData);
       break;
-    case 'error':
+    case "error":
+      // biome-ignore lint/suspicious/noConsole: ロギングユーティリティの本質的機能
       console.error(`❌ ${message}`, maskedData);
+      break;
+    default:
+      // biome-ignore lint/suspicious/noConsole: ロギングユーティリティの本質的機能
+      console.log(`${message}`, maskedData);
       break;
   }
 }
@@ -90,11 +107,13 @@ export function secureAuthLog(
     ? {
         ...data,
         // state は最初の8文字のみ表示
-        state: data.state ? `${data.state.substring(0, 8)}...` : undefined,
+        state: data.state
+          ? `${data.state.substring(0, MIN_MASK_LENGTH)}...`
+          : undefined,
       }
     : undefined;
 
-  secureLog('info', `🔐 ${message}`, safeData);
+  secureLog("info", `🔐 ${message}`, safeData);
 }
 
 /**
@@ -102,10 +121,10 @@ export function secureAuthLog(
  * 開発環境でのトラブルシューティング用
  */
 export function logDebugConfig(config: Record<string, unknown>) {
-  if (process.env.NODE_ENV !== 'development') {
+  if (process.env.NODE_ENV !== "development") {
     return;
   }
 
   const maskedConfig = maskSensitiveData(config);
-  secureLog('info', 'Debug configuration', maskedConfig);
+  secureLog("info", "Debug configuration", maskedConfig);
 }

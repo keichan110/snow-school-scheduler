@@ -3,17 +3,20 @@
 @tailwind utilities;
 
 @layer base {
+  * {
+    @apply border-border;
+  }
+
   html {
     font-family:
-      'Inter',
-      -apple-system,
-      BlinkMacSystemFont,
-      'Segoe UI',
-      Roboto,
-      'Helvetica Neue',
-      Arial,
-      sans-serif;
+      "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+      "Helvetica Neue", Arial, sans-serif;
   }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+
   :root {
     --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
@@ -45,6 +48,16 @@
     --sidebar-primary: 240 5.9% 10%;
     --sidebar-primary-foreground: 0 0% 98%;
     --sidebar-accent: 240 4.8% 95.9%;
+
+    /* Background gradient colors - Light theme */
+    --bg-base: #f6f9fc;
+    --color-1: rgba(179, 229, 252, 0.4); /* 澄んだ空の青 */
+    --color-2: rgba(129, 212, 250, 0.5); /* 氷河ブルー */
+    --color-3: rgba(168, 230, 207, 0.35); /* 樹氷グリーン */
+    --color-4: rgba(251, 194, 235, 0.45); /* 夕焼けピンク */
+    --color-5: rgba(255, 209, 148, 0.4); /* 薄オレンジ */
+    --color-6: rgba(240, 248, 255, 0.3); /* アクセント白 */
+    --color-7: rgba(230, 245, 255, 0.35); /* 薄青白 */
     --sidebar-accent-foreground: 240 5.9% 10%;
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
@@ -82,6 +95,16 @@
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+
+    /* Background gradient colors - Dark theme */
+    --bg-base: #0f2027;
+    --color-1: rgba(32, 58, 67, 0.6); /* 群青ブルー */
+    --color-2: rgba(44, 83, 100, 0.7); /* 冬の星空ネイビー */
+    --color-3: rgba(102, 252, 241, 0.4); /* オーロラミント */
+    --color-4: rgba(203, 166, 247, 0.5); /* 氷河パープル */
+    --color-5: rgba(255, 154, 158, 0.45); /* ウィンターピンク */
+    --color-6: rgba(15, 32, 39, 0.8); /* 深いベース */
+    --color-7: rgba(25, 42, 49, 0.6); /* ミッドトーン */
   }
 }
 
@@ -272,14 +295,5 @@
 
   .daily-shift-card {
     min-height: 100px !important;
-  }
-}
-
-@layer base {
-  * {
-    @apply border-border;
-  }
-  body {
-    @apply bg-background text-foreground;
   }
 }

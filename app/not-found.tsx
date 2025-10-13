@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import { Home } from 'lucide-react';
+import { Home } from "lucide-react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 /**
  * グローバル404ページ
@@ -14,8 +14,10 @@ export default function NotFound() {
       <div className="w-full max-w-md text-center">
         {/* 404アイコンとメッセージ */}
         <div className="mb-8">
-          <div className="mb-4 text-8xl font-bold text-primary">404</div>
-          <h1 className="mb-3 text-2xl font-semibold text-foreground">ページが見つかりません</h1>
+          <div className="mb-4 font-bold text-8xl text-primary">404</div>
+          <h1 className="mb-3 font-semibold text-2xl text-foreground">
+            ページが見つかりません
+          </h1>
           <p className="text-muted-foreground">
             お探しのページは存在しないか、移動した可能性があります。
           </p>
@@ -23,7 +25,7 @@ export default function NotFound() {
 
         {/* ナビゲーションボタン */}
         <div className="space-y-3">
-          <Button asChild variant="outline" className="w-full" size="lg">
+          <Button asChild className="w-full" size="lg" variant="outline">
             <Link href="/">
               <Home className="mr-2 h-4 w-4" />
               ホームに戻る

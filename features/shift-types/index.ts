@@ -1,2 +1,6 @@
 // クエリフック
-export * from './api/queries';
+export {
+  type ShiftTypesQueryKey,
+  shiftTypesQueryKeys,
+  useShiftTypesQuery,
+} from "./api/queries";
