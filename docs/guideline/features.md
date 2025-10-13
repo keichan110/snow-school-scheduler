@@ -18,6 +18,7 @@
 
 ## ルール
 - **Read（GET）**: `/app/api` → `/features/<feature>/api` → `/features/<feature>/queries`（UIは queries 経由）。
+  - RSC からの `fetch` は `next: { tags: ['<feature>.<resource>'] }` を必ず指定し、Server Action の `revalidateTag` と対応させる。
 - **Write（POST/PUT/PATCH/DELETE）**: **Server Actions** を `/features/<feature>/actions.ts` に共置。CSR では `useMutation` から直接呼ぶ or `<form action>`。
 - I/O は **zod** で検証。UI は安全な型のみ扱う。
 - `keys.ts` に `queryKey` を集中（`as const`）。
@@ -27,7 +28,7 @@
 // features/todos/actions.ts
 'use server';
 import { z } from 'zod';
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, revalidateTag } from 'next/cache';
 
 const Create = z.object({ title: z.string().min(1) });
 
@@ -35,6 +36,7 @@ export async function createTodoAction(input: unknown) {
   const { title } = Create.parse(input);
   // DB 書き込みなど…
   revalidatePath('/todos');
+  revalidateTag('todos.list');
   return { id: String(Date.now()), title, done: false };
 }
 ```
@@ -71,7 +73,9 @@ import { fetchJson } from '@/shared/lib/fetch';
 import { TodoList } from './schema';
 
 export async function fetchTodos() {
-  const res = await fetchJson<unknown>('/api/todos');
+  const res = await fetchJson<unknown>('/api/todos', {
+    next: { tags: ['todos.list'], revalidate: 60 },
+  });
   return TodoList.parse((res as any).data);
 }
 ```

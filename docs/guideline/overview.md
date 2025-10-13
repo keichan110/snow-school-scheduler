@@ -17,6 +17,7 @@
 
 ## データ取得の意思決定（超要約）
 1) **読み取り（GET）** → **`app/api` の GET** を用意 → **RSC で prefetch** → CSR で **`<Hydrate>`**（TanStack Query）。  
+   - RSC の `fetch` では `next: { tags: [...] }` を必ず付与し、Server Action で `revalidateTag` と対応させる。  
 2) **更新（POST/PUT/PATCH/DELETE）** → **Server Actions** を実装（zod 検証 + `revalidatePath`/`revalidateTag`）。  
 3) **頻繁更新/リアルタイム** → **CSR + Query**（`refetchInterval` / WS など）。  
 4) **URLで受ける必要があるもの（Webhook/OAuth callback 等）** → 例外的に **`app/api`** を使用。
@@ -60,22 +61,33 @@
 - `keys.ts` に **queryKey を集中**（`as const`）。`staleTime` は 30–60s を基準。
 - Prefetch は RSC のみ。CSR では `<Hydrate>` の後に必要なら再取得。
 
-### 3. ルーティング設計
+### 3. RSC fetch とタグ再検証
+- RSC や Route Handler からの `fetch` は `next: { tags: [...] }` を必ず付与し、タグ命名は `'<feature>.<resource>'` 形式で一意にする。
+- Server Action では `revalidateTag('<feature>.<resource>')` を呼び、再取得対象を明示。
+- 例：
+  ```ts
+  // app/(dashboard)/todos/page.tsx
+  const res = await fetch('https://example.com/api/todos', {
+    next: { tags: ['todos.list'], revalidate: 60 },
+  });
+  ```
+
+### 4. ルーティング設計
 - Route Groups（`(auth)`, `(dashboard)`）で責務分離。`(dashboard)` の `layout.tsx` で認証チェック。
 
-### 4. API レスポンス（GET） & エラー
+### 5. API レスポンス（GET） & エラー
 - 成功: `{ success: true, data }`。失敗: `{ success: false, error: { code, message } }`。
 - UI は Query の `retry`, `select`, `onError` で分岐。`notFound()` を適切に。
 
-### 5. Server Actions（Write）
+### 6. Server Actions（Write）
 - `features/<name>/actions.ts` に**共置**。`'use server'` + zodで**入力検証**。
 - 成功後は **`revalidatePath`/`revalidateTag`** で RSC を最新化、CSR は **`invalidateQueries`** で同期。
 - Client からは **`useMutation`** の `mutationFn` として **アクションを直接呼ぶ**か、**`<form action={action}>`** を利用。
 
-### 6. セキュリティ & 環境変数
+### 7. セキュリティ & 環境変数
 - `server-only` / `client-only` で境界を明示。シークレットはサーバー限定。`env.ts` を zod で検証。
 
-### 7. 命名・CI・アンチパターン
+### 8. 命名・CI・アンチパターン
 - kebab/Pascal/useXxx、CI: `typecheck, lint, test, build, e2e`。  
 - アンチパターン: UI からの直 `fetch`、`queryKey` 直書き、境界違反、Story/Tests の分離。
 
@@ -86,8 +98,8 @@
   1) `/app/api/<name>/route.ts` に **GET** を実装（zod 出力検証）  
   2) `/features/<name>/api` に fetcher + schema  
   3) `/features/<name>/queries` に `keys`/`useXxxQuery`/`prefetch`  
-  4) `/app/(dashboard)/<path>/page.tsx` で **RSC prefetch → `<Hydrate>`**
+  4) `/app/(dashboard)/<path>/page.tsx` で **RSC prefetch → `<Hydrate>`**（prefetch 内の `fetch` には `next: { tags: [...] }` を設定）
 - **作成/更新/削除（Write）**  
-  1) `/features/<name>/actions.ts` に **Server Action** を実装（zod 入力検証 + `revalidatePath`/`revalidateTag`）  
+  1) `/features/<name>/actions.ts` に **Server Action** を実装（zod 入力検証 + `revalidatePath`/`revalidateTag` 対象タグは RSC の `fetch` と揃える）  
   2) CSR では `useMutation({ mutationFn: action })` を使い、成功時 `invalidateQueries` で同期  
   3) もしくは `<form action={action}>` で Progressive Enhancement
