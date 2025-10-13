@@ -23,6 +23,7 @@
 - I/O は **zod** で検証。UI は安全な型のみ扱う。
 - GET レスポンスは `success` を discriminated union で検証し、`success: false` の場合は明示的に throw する。
 - `keys.ts` に `queryKey` を集中（`as const`）。
+- `prefetch` ヘルパーは RSC から呼び出し、`dehydrate` → `HydrateClient` の流れで初期キャッシュを渡す。
 
 ## サンプル（Server Actions: Write）
 ```ts
@@ -113,3 +114,5 @@ export async function prefetchTodos(qc: QueryClient, filter?: string) {
   });
 }
 ```
+
+> RSC では `const qc = getQueryClient(); await prefetchTodos(qc); const state = dehydrate(qc);` と順に呼び、`state` を `HydrateClient` に渡す。
