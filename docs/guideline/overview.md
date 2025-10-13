@@ -72,24 +72,75 @@
   });
   ```
 
-### 4. ルーティング設計
+### 4. Hydrate フロー（RSC → Client）
+- RSC で `getQueryClient()` を生成し、`prefetch` を実行 → `dehydrate(qc)` で状態を取得 → Client Component に `<Hydrate state={...}>` で渡す。
+- `Hydrate` は 1 セグメント内で 1 回を基準にし、引数は `dehydrate` 結果をそのまま渡す。
+- Client Component 側では通常通り `useQuery` を呼び、受け取った初期キャッシュを利用。
+- 例：
+  ```ts
+  // app/(dashboard)/todos/page.tsx (RSC)
+  import { dehydrate } from '@tanstack/react-query';
+  import { getQueryClient } from '@/shared/lib/query-client';
+  import { HydrateClient } from '@/shared/ui/hydrate-client';
+  import { prefetchTodos } from '@/features/todos/queries/prefetch';
+  import { TodosView } from './todos-view';
+
+  export default async function TodosPage() {
+    const qc = getQueryClient();
+    await prefetchTodos(qc);
+    const state = dehydrate(qc);
+
+    return (
+      <HydrateClient state={state}>
+        <TodosView />
+      </HydrateClient>
+    );
+  }
+  ```
+  ```tsx
+  // shared/ui/hydrate-client.tsx (Client Component)
+  'use client';
+  import { HydrationBoundary, type DehydratedState } from '@tanstack/react-query';
+
+  export function HydrateClient({
+    state,
+    children,
+  }: {
+    state: DehydratedState;
+    children: React.ReactNode;
+  }) {
+    return <HydrationBoundary state={state}>{children}</HydrationBoundary>;
+  }
+  ```
+  ```tsx
+  // app/(dashboard)/todos/todos-view.tsx (Client Component)
+  'use client';
+  import { useTodosQuery } from '@/features/todos/queries/useTodos';
+
+  export function TodosView() {
+    const { data } = useTodosQuery();
+    return <TodoList data={data} />;
+  }
+  ```
+
+### 5. ルーティング設計
 - Route Groups（`(auth)`, `(dashboard)`）で責務分離。`(dashboard)` の `layout.tsx` で認証チェック。
 
-### 5. API レスポンス（GET） & エラー
+### 6. API レスポンス（GET） & エラー
 - 成功: `{ success: true, data }`。失敗: `{ success: false, error: { code, message } }`。
 - Query/Server Components 側は `success` フラグを必ず判定し、失敗時はエラーを throw して UI の `error.tsx` や `onError` に委譲する。
 - レスポンス契約は zod の **discriminated union** で検証し、`data` にアクセスする前に型を確定させる。
 - UI は Query の `retry`, `select`, `onError` で分岐。`notFound()` を適切に。
 
-### 6. Server Actions（Write）
+### 7. Server Actions（Write）
 - `features/<name>/actions.ts` に**共置**。`'use server'` + zodで**入力検証**。
 - 成功後は **`revalidatePath`/`revalidateTag`** で RSC を最新化、CSR は **`invalidateQueries`** で同期。
 - Client からは **`useMutation`** の `mutationFn` として **アクションを直接呼ぶ**か、**`<form action={action}>`** を利用。
 
-### 7. セキュリティ & 環境変数
+### 8. セキュリティ & 環境変数
 - `server-only` / `client-only` で境界を明示。シークレットはサーバー限定。`env.ts` を zod で検証。
 
-### 8. 命名・CI・アンチパターン
+### 9. 命名・CI・アンチパターン
 - kebab/Pascal/useXxx、CI: `typecheck, lint, test, build, e2e`。  
 - アンチパターン: UI からの直 `fetch`、`queryKey` 直書き、境界違反、Story/Tests の分離。
 

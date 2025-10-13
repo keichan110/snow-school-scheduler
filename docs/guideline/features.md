@@ -25,6 +25,11 @@
 - `keys.ts` に `queryKey` を集中（`as const`）。
 - `prefetch` ヘルパーは RSC から呼び出し、`dehydrate` → `HydrateClient` の流れで初期キャッシュを渡す。
 
+## Server Actions の配置と命名
+- **基本**: `actions.ts` に集約（5個程度まで）
+- **複雑な場合**: `actions/` ディレクトリに分割し `index.ts` で再エクスポート
+- **命名**: `<動詞><名詞>Action` 形式（例: `createTodoAction`, `updateShiftAction`）
+
 ## サンプル（Server Actions: Write）
 ```ts
 // features/todos/actions.ts
