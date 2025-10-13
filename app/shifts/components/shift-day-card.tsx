@@ -13,6 +13,8 @@ type ShiftDayCardProps = {
   isSelected: boolean;
   onDateSelect: () => void;
   onShiftDetailSelect?: (shiftType: string, departmentType: string) => void;
+  /** 管理権限があるかどうか */
+  canManage?: boolean;
 };
 
 // 曜日インデックス定数
@@ -27,6 +29,7 @@ export const ShiftDayCard = React.memo<ShiftDayCardProps>(
     isSelected,
     onDateSelect,
     onShiftDetailSelect,
+    canManage = false,
   }: ShiftDayCardProps) {
     // 設計書に基づく日付情報のメモ化
     const dateInfo = useMemo(() => {
@@ -137,9 +140,11 @@ export const ShiftDayCard = React.memo<ShiftDayCardProps>(
               /* シフトなしの場合 */
               <div className="py-8 text-center text-muted-foreground">
                 <div className="mt-1 text-sm">シフトなし</div>
-                <div className="mt-2 text-blue-600 text-xs dark:text-blue-400">
-                  タップしてシフトを作成
-                </div>
+                {canManage && (
+                  <div className="mt-2 text-blue-600 text-xs dark:text-blue-400">
+                    タップしてシフトを作成
+                  </div>
+                )}
               </div>
             ) : (
               /* シフトがある場合 - 統合版関数を使用 */
@@ -155,20 +160,22 @@ export const ShiftDayCard = React.memo<ShiftDayCardProps>(
                     : undefined
                 )}
 
-                {/* 新規追加ボタン */}
-                <div className="mt-4 flex justify-center">
-                  <button
-                    className="flex items-center gap-2 rounded-md border border-gray-300 border-dashed px-3 py-2 text-muted-foreground text-sm transition-colors hover:border-blue-400 hover:text-blue-600 dark:border-gray-600 dark:hover:border-blue-500 dark:hover:text-blue-400"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onDateSelect();
-                    }}
-                    type="button"
-                  >
-                    <span className="text-lg">+</span>
-                    新規シフト追加
-                  </button>
-                </div>
+                {/* 新規追加ボタン（管理権限がある場合のみ表示） */}
+                {canManage && (
+                  <div className="mt-4 flex justify-center">
+                    <button
+                      className="flex items-center gap-2 rounded-md border border-gray-300 border-dashed px-3 py-2 text-muted-foreground text-sm transition-colors hover:border-blue-400 hover:text-blue-600 dark:border-gray-600 dark:hover:border-blue-500 dark:hover:text-blue-400"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onDateSelect();
+                      }}
+                      type="button"
+                    >
+                      <span className="text-lg">+</span>
+                      新規シフト追加
+                    </button>
+                  </div>
+                )}
               </>
             )}
           </div>

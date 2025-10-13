@@ -106,6 +106,16 @@ function AuthErrorContent() {
           severity: "error" as const,
         };
 
+      case "invitation_required":
+        return {
+          title: "招待が必要です",
+          message:
+            "このシステムを利用するには招待が必要です。管理者から招待URLを受け取ってください。",
+          icon: <Shield className="h-8 w-8 text-yellow-500" />,
+          canRetry: false,
+          severity: "warning" as const,
+        };
+
       default:
         return {
           title: "予期しないエラーが発生しました",

@@ -16,6 +16,8 @@ type WeeklyShiftListProps = {
     shiftType: string,
     departmentType: string
   ) => void;
+  /** 管理権限があるかどうか */
+  canManage?: boolean;
 };
 
 export function WeeklyShiftList({
@@ -25,6 +27,7 @@ export function WeeklyShiftList({
   selectedDate,
   onDateSelect,
   onShiftDetailSelect,
+  canManage = false,
 }: WeeklyShiftListProps) {
   // 週の日付データを計算
   const weekDays = useMemo(() => {
@@ -56,6 +59,7 @@ export function WeeklyShiftList({
       <div className="space-y-4">
         {weekDays.map(({ date, dateString, dayData }) => (
           <ShiftDayCard
+            canManage={canManage}
             date={date}
             dateString={dateString}
             dayData={dayData}

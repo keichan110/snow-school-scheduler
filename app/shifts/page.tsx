@@ -263,6 +263,7 @@ function PublicShiftsPageContent() {
                 <div className="px-4">
                   <WeeklyShiftList
                     baseDate={weeklyBaseDate}
+                    canManage={canManage}
                     isHoliday={isHoliday}
                     onDateSelect={handleWeeklyDateSelect}
                     onShiftDetailSelect={handleWeeklyShiftDetailSelect}

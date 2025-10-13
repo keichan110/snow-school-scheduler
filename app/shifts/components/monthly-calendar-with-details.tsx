@@ -239,6 +239,7 @@ export function MonthlyCalendarWithDetails({
                   <div className="slide-in-from-top-2 animate-in duration-300">
                     <div className="mx-auto max-w-4xl">
                       <ShiftDayCard
+                        canManage={canManage}
                         date={new Date(selectedDate)}
                         dateString={selectedDate}
                         dayData={selectedDateInfo.dayData as DayData}
