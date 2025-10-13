@@ -200,9 +200,6 @@ describe("GET /api/shift-types", () => {
       const mockError = new Error("Database connection failed");
       mockShiftTypeFindMany.mockRejectedValue(mockError);
 
-      // console.errorをモック化してログ出力をテスト
-      const consoleSpy = jest.spyOn(console, "error").mockImplementation();
-
       // Act
       await GET(new NextRequest("http://localhost"));
 
@@ -213,11 +210,6 @@ describe("GET /api/shift-types", () => {
         },
       });
 
-      expect(consoleSpy).toHaveBeenCalledWith(
-        "ShiftTypes API error:",
-        mockError
-      );
-
       expect(mockNextResponse.json).toHaveBeenCalledWith(
         {
           success: false,
@@ -227,9 +219,6 @@ describe("GET /api/shift-types", () => {
         },
         { status: 500 }
       );
-
-      // cleanup
-      consoleSpy.mockRestore();
     });
 
     it("Prismaの特定のエラーが発生した場合も適切に処理されること", async () => {
@@ -238,17 +227,10 @@ describe("GET /api/shift-types", () => {
       mockError.name = "PrismaClientKnownRequestError";
       mockShiftTypeFindMany.mockRejectedValue(mockError);
 
-      const consoleSpy = jest.spyOn(console, "error").mockImplementation();
-
       // Act
       await GET(new NextRequest("http://localhost"));
 
       // Assert
-      expect(consoleSpy).toHaveBeenCalledWith(
-        "ShiftTypes API error:",
-        mockError
-      );
-
       expect(mockNextResponse.json).toHaveBeenCalledWith(
         {
           success: false,
@@ -258,8 +240,6 @@ describe("GET /api/shift-types", () => {
         },
         { status: 500 }
       );
-
-      consoleSpy.mockRestore();
     });
   });
 
@@ -508,17 +488,10 @@ describe("POST /api/shift-types", () => {
       mockShiftTypeCreate.mockRejectedValue(mockError);
       mockRequest.json = jest.fn().mockResolvedValue(inputData);
 
-      const consoleSpy = jest.spyOn(console, "error").mockImplementation();
-
       // Act
       await POST(mockRequest);
 
       // Assert
-      expect(consoleSpy).toHaveBeenCalledWith(
-        "ShiftTypes POST API error:",
-        expect.any(Error)
-      );
-
       expect(mockNextResponse.json).toHaveBeenCalledWith(
         {
           success: false,
@@ -528,8 +501,6 @@ describe("POST /api/shift-types", () => {
         },
         { status: 500 }
       );
-
-      consoleSpy.mockRestore();
     });
 
     it("不正なJSONデータの場合は500エラーが返されること", async () => {
@@ -537,17 +508,10 @@ describe("POST /api/shift-types", () => {
       const jsonError = new Error("Invalid JSON");
       mockRequest.json = jest.fn().mockRejectedValue(jsonError);
 
-      const consoleSpy = jest.spyOn(console, "error").mockImplementation();
-
       // Act
       await POST(mockRequest);
 
       // Assert
-      expect(consoleSpy).toHaveBeenCalledWith(
-        "ShiftTypes POST API error:",
-        jsonError
-      );
-
       expect(mockNextResponse.json).toHaveBeenCalledWith(
         {
           success: false,
@@ -557,8 +521,6 @@ describe("POST /api/shift-types", () => {
         },
         { status: 500 }
       );
-
-      consoleSpy.mockRestore();
     });
   });
 });

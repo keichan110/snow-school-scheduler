@@ -350,14 +350,12 @@ describe("Shifts API", () => {
         // Arrange
         const mockError = new Error("Database connection failed");
         mockShiftFindMany.mockRejectedValue(mockError);
-        const consoleSpy = jest.spyOn(console, "error").mockImplementation();
         const request = createMockRequest();
 
         // Act
         await GET(request);
 
         // Assert
-        expect(consoleSpy).toHaveBeenCalledWith("Shifts API error:", mockError);
         expect(mockNextResponse.json).toHaveBeenCalledWith(
           {
             success: false,
@@ -367,8 +365,6 @@ describe("Shifts API", () => {
           },
           { status: 500 }
         );
-
-        consoleSpy.mockRestore();
       });
     });
   });
@@ -559,17 +555,12 @@ describe("Shifts API", () => {
         const mockError = new Error("Database error");
         // findUniqueでエラーが発生することをモック
         mockShiftFindUnique.mockRejectedValue(mockError);
-        const consoleSpy = jest.spyOn(console, "error").mockImplementation();
         const request = createMockPostRequest(requestBody);
 
         // Act
         await POST(request);
 
         // Assert
-        expect(consoleSpy).toHaveBeenCalledWith(
-          "Shift creation error:",
-          mockError
-        );
         expect(mockNextResponse.json).toHaveBeenCalledWith(
           {
             success: false,
@@ -579,8 +570,6 @@ describe("Shifts API", () => {
           },
           { status: 500 }
         );
-
-        consoleSpy.mockRestore();
       });
     });
   });

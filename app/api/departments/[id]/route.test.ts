@@ -32,10 +32,6 @@ const mockAuthenticateFromRequest =
 describe("/api/departments/[id] GET", () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    // console.errorをモック化してログ出力を抑制
-    jest.spyOn(console, "error").mockImplementation(() => {
-      // ログ出力を抑制
-    });
     mockAuthenticateFromRequest.mockResolvedValue({
       success: true,
       user: {
@@ -48,11 +44,6 @@ describe("/api/departments/[id] GET", () => {
         updatedAt: new Date(),
       },
     });
-  });
-
-  afterEach(() => {
-    // console.errorのモックを復元
-    jest.restoreAllMocks();
   });
 
   it("認証に失敗した場合、401エラーを返す", async () => {

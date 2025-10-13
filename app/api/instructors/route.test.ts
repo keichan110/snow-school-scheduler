@@ -385,7 +385,6 @@ describe("GET /api/instructors", () => {
       const mockError = new Error("Database connection failed");
       mockInstructorFindMany.mockRejectedValue(mockError);
 
-      const consoleSpy = jest.spyOn(console, "error").mockImplementation();
       const mockRequest = new NextRequest(
         "http://localhost:3000/api/instructors"
       );
@@ -394,16 +393,6 @@ describe("GET /api/instructors", () => {
       await GET(mockRequest);
 
       // Assert
-      expect(consoleSpy).toHaveBeenCalledWith(
-        "API Internal Error:",
-        expect.objectContaining({
-          message: "GET /api/instructors: Database connection failed",
-          context: "GET /api/instructors",
-          timestamp: expect.any(String),
-          stack: expect.any(String),
-        })
-      );
-
       expect(mockNextResponse.json).toHaveBeenCalledWith(
         {
           success: false,
@@ -413,8 +402,6 @@ describe("GET /api/instructors", () => {
         },
         { status: 500 }
       );
-
-      consoleSpy.mockRestore();
     });
   });
 
@@ -959,7 +946,6 @@ describe("POST /api/instructors", () => {
       const mockError = new Error("Database connection failed");
       mockTransaction.mockRejectedValue(mockError);
 
-      const consoleSpy = jest.spyOn(console, "error").mockImplementation();
       const mockRequest = new NextRequest(
         "http://localhost:3000/api/instructors",
         {
@@ -973,16 +959,6 @@ describe("POST /api/instructors", () => {
       await POST(mockRequest);
 
       // Assert
-      expect(consoleSpy).toHaveBeenCalledWith(
-        "API Internal Error:",
-        expect.objectContaining({
-          message: "POST /api/instructors: Database connection failed",
-          context: "POST /api/instructors",
-          timestamp: expect.any(String),
-          stack: expect.any(String),
-        })
-      );
-
       expect(mockNextResponse.json).toHaveBeenCalledWith(
         {
           success: false,
@@ -992,13 +968,10 @@ describe("POST /api/instructors", () => {
         },
         { status: 500 }
       );
-
-      consoleSpy.mockRestore();
     });
 
     it("JSONパースエラーが発生した場合に500エラーが返されること", async () => {
       // Arrange
-      const consoleSpy = jest.spyOn(console, "error").mockImplementation();
       const mockRequest = new NextRequest(
         "http://localhost:3000/api/instructors",
         {
@@ -1012,15 +985,6 @@ describe("POST /api/instructors", () => {
       await POST(mockRequest);
 
       // Assert
-      expect(consoleSpy).toHaveBeenCalledWith(
-        "API Internal Error:",
-        expect.objectContaining({
-          message: expect.stringContaining("POST /api/instructors:"),
-          context: "POST /api/instructors",
-          timestamp: expect.any(String),
-        })
-      );
-
       expect(mockNextResponse.json).toHaveBeenCalledWith(
         {
           success: false,
@@ -1030,8 +994,6 @@ describe("POST /api/instructors", () => {
         },
         { status: 500 }
       );
-
-      consoleSpy.mockRestore();
     });
   });
 

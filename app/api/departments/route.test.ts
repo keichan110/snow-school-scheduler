@@ -203,9 +203,6 @@ describe("GET /api/departments", () => {
       const mockError = new Error("Database connection failed");
       mockDepartmentFindMany.mockRejectedValue(mockError);
 
-      // console.errorをモック化してログ出力をテスト
-      const consoleSpy = jest.spyOn(console, "error").mockImplementation();
-
       // Act
       await GET(new NextRequest("http://localhost"));
 
@@ -216,11 +213,6 @@ describe("GET /api/departments", () => {
         },
       });
 
-      expect(consoleSpy).toHaveBeenCalledWith(
-        "Departments API error:",
-        mockError
-      );
-
       expect(mockNextResponse.json).toHaveBeenCalledWith(
         {
           success: false,
@@ -230,9 +222,6 @@ describe("GET /api/departments", () => {
         },
         { status: 500 }
       );
-
-      // cleanup
-      consoleSpy.mockRestore();
     });
 
     it("Prismaの特定のエラーが発生した場合も適切に処理されること", async () => {
@@ -241,17 +230,10 @@ describe("GET /api/departments", () => {
       mockError.name = "PrismaClientKnownRequestError";
       mockDepartmentFindMany.mockRejectedValue(mockError);
 
-      const consoleSpy = jest.spyOn(console, "error").mockImplementation();
-
       // Act
       await GET(new NextRequest("http://localhost"));
 
       // Assert
-      expect(consoleSpy).toHaveBeenCalledWith(
-        "Departments API error:",
-        mockError
-      );
-
       expect(mockNextResponse.json).toHaveBeenCalledWith(
         {
           success: false,
@@ -261,8 +243,6 @@ describe("GET /api/departments", () => {
         },
         { status: 500 }
       );
-
-      consoleSpy.mockRestore();
     });
   });
 

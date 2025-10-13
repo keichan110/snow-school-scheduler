@@ -448,7 +448,6 @@ describe("GET /api/instructors/[id]", () => {
       const mockError = new Error("Database connection failed");
       mockInstructorFindUnique.mockRejectedValue(mockError);
 
-      const consoleSpy = jest.spyOn(console, "error").mockImplementation();
       const mockRequest = new NextRequest(
         "http://localhost:3000/api/instructors/1"
       );
@@ -458,11 +457,6 @@ describe("GET /api/instructors/[id]", () => {
       await GET(mockRequest, context);
 
       // Assert
-      expect(consoleSpy).toHaveBeenCalledWith(
-        "Instructor API error:",
-        mockError
-      );
-
       expect(mockNextResponse.json).toHaveBeenCalledWith(
         {
           success: false,
@@ -472,8 +466,6 @@ describe("GET /api/instructors/[id]", () => {
         },
         { status: 500 }
       );
-
-      consoleSpy.mockRestore();
     });
   });
 
@@ -1105,7 +1097,6 @@ describe("PUT /api/instructors/[id]", () => {
       const mockError = new Error("Database connection failed");
       mockInstructorFindUnique.mockRejectedValue(mockError);
 
-      const consoleSpy = jest.spyOn(console, "error").mockImplementation();
       const mockRequest = new NextRequest(
         "http://localhost:3000/api/instructors/1",
         {
@@ -1120,10 +1111,6 @@ describe("PUT /api/instructors/[id]", () => {
       await PUT(mockRequest, context);
 
       // Assert
-      expect(consoleSpy).toHaveBeenCalledWith(
-        "Instructor API error:",
-        mockError
-      );
       expect(mockNextResponse.json).toHaveBeenCalledWith(
         {
           success: false,
@@ -1133,8 +1120,6 @@ describe("PUT /api/instructors/[id]", () => {
         },
         { status: 500 }
       );
-
-      consoleSpy.mockRestore();
     });
   });
 

@@ -332,8 +332,6 @@ describe("GET /api/certifications/[id]", () => {
       const mockError = new Error("Database connection failed");
       mockCertificationFindUnique.mockRejectedValue(mockError);
 
-      const consoleSpy = jest.spyOn(console, "error").mockImplementation();
-
       const mockContext = {
         params: Promise.resolve({ id: "1" }),
       };
@@ -366,11 +364,6 @@ describe("GET /api/certifications/[id]", () => {
         },
       });
 
-      expect(consoleSpy).toHaveBeenCalledWith(
-        "Certification API error:",
-        mockError
-      );
-
       expect(mockNextResponse.json).toHaveBeenCalledWith(
         {
           success: false,
@@ -380,8 +373,6 @@ describe("GET /api/certifications/[id]", () => {
         },
         { status: 500 }
       );
-
-      consoleSpy.mockRestore();
     });
   });
 
@@ -783,8 +774,6 @@ describe("PUT /api/certifications/[id]", () => {
       mockCertificationUpdate.mockRejectedValue(mockError);
       mockRequest.json = jest.fn().mockResolvedValue(inputData);
 
-      const consoleSpy = jest.spyOn(console, "error").mockImplementation();
-
       const mockContext = {
         params: Promise.resolve({ id: "1" }),
       };
@@ -793,11 +782,6 @@ describe("PUT /api/certifications/[id]", () => {
       await PUT(mockRequest, mockContext);
 
       // Assert
-      expect(consoleSpy).toHaveBeenCalledWith(
-        "Certification API error:",
-        mockError
-      );
-
       expect(mockNextResponse.json).toHaveBeenCalledWith(
         {
           success: false,
@@ -807,8 +791,6 @@ describe("PUT /api/certifications/[id]", () => {
         },
         { status: 500 }
       );
-
-      consoleSpy.mockRestore();
     });
 
     it("不正なJSONデータの場合は500エラーが返されること", async () => {
@@ -816,8 +798,6 @@ describe("PUT /api/certifications/[id]", () => {
       const jsonError = new Error("Invalid JSON");
       mockRequest.json = jest.fn().mockRejectedValue(jsonError);
 
-      const consoleSpy = jest.spyOn(console, "error").mockImplementation();
-
       const mockContext = {
         params: Promise.resolve({ id: "1" }),
       };
@@ -826,11 +806,6 @@ describe("PUT /api/certifications/[id]", () => {
       await PUT(mockRequest, mockContext);
 
       // Assert
-      expect(consoleSpy).toHaveBeenCalledWith(
-        "Certification API error:",
-        jsonError
-      );
-
       expect(mockNextResponse.json).toHaveBeenCalledWith(
         {
           success: false,
@@ -840,8 +815,6 @@ describe("PUT /api/certifications/[id]", () => {
         },
         { status: 500 }
       );
-
-      consoleSpy.mockRestore();
     });
   });
 

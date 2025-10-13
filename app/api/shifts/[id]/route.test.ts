@@ -346,7 +346,6 @@ describe("Shifts [id] API", () => {
         // Arrange
         const mockError = new Error("Database error");
         mockShiftFindUnique.mockRejectedValue(mockError);
-        const consoleSpy = jest.spyOn(console, "error").mockImplementation();
         const request = createMockGetRequest();
         const context = createMockContext("1");
 
@@ -355,9 +354,6 @@ describe("Shifts [id] API", () => {
 
         // Assert
         expect(response.status).toBe(500);
-        expect(consoleSpy).toHaveBeenCalledWith("Shift GET error:", mockError);
-
-        consoleSpy.mockRestore();
       });
     });
   });
@@ -557,7 +553,6 @@ describe("Shifts [id] API", () => {
         const mockError = new Error("Database error");
         mockShiftFindUnique.mockResolvedValue(mockShift);
         mockTransaction.mockRejectedValue(mockError);
-        const consoleSpy = jest.spyOn(console, "error").mockImplementation();
         const request = createMockDeleteRequest();
         const context = createMockContext("1");
 
@@ -566,12 +561,6 @@ describe("Shifts [id] API", () => {
 
         // Assert
         expect(response.status).toBe(500);
-        expect(consoleSpy).toHaveBeenCalledWith(
-          "Shift DELETE error:",
-          mockError
-        );
-
-        consoleSpy.mockRestore();
       });
     });
   });

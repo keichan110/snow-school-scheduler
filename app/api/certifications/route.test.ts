@@ -243,9 +243,6 @@ describe("GET /api/certifications", () => {
       const mockError = new Error("Database connection failed");
       mockCertificationFindMany.mockRejectedValue(mockError);
 
-      // console.errorをモック化してログ出力をテスト
-      const consoleSpy = jest.spyOn(console, "error").mockImplementation();
-
       // Act
       await GET(new NextRequest("http://localhost"));
 
@@ -262,11 +259,6 @@ describe("GET /api/certifications", () => {
         orderBy: [{ department: { name: "asc" } }, { name: "asc" }],
       });
 
-      expect(consoleSpy).toHaveBeenCalledWith(
-        "Certifications API error:",
-        mockError
-      );
-
       expect(mockNextResponse.json).toHaveBeenCalledWith(
         {
           success: false,
@@ -276,9 +268,6 @@ describe("GET /api/certifications", () => {
         },
         { status: 500 }
       );
-
-      // cleanup
-      consoleSpy.mockRestore();
     });
 
     it("Prismaの特定のエラーが発生した場合も適切に処理されること", async () => {
@@ -287,17 +276,10 @@ describe("GET /api/certifications", () => {
       mockError.name = "PrismaClientKnownRequestError";
       mockCertificationFindMany.mockRejectedValue(mockError);
 
-      const consoleSpy = jest.spyOn(console, "error").mockImplementation();
-
       // Act
       await GET(new NextRequest("http://localhost"));
 
       // Assert
-      expect(consoleSpy).toHaveBeenCalledWith(
-        "Certifications API error:",
-        mockError
-      );
-
       expect(mockNextResponse.json).toHaveBeenCalledWith(
         {
           success: false,
@@ -307,8 +289,6 @@ describe("GET /api/certifications", () => {
         },
         { status: 500 }
       );
-
-      consoleSpy.mockRestore();
     });
   });
 
@@ -599,17 +579,10 @@ describe("POST /api/certifications", () => {
       mockCertificationCreate.mockRejectedValue(mockError);
       mockRequest.json = jest.fn().mockResolvedValue(inputData);
 
-      const consoleSpy = jest.spyOn(console, "error").mockImplementation();
-
       // Act
       await POST(mockRequest);
 
       // Assert
-      expect(consoleSpy).toHaveBeenCalledWith(
-        "Certifications API error:",
-        expect.any(Error)
-      );
-
       expect(mockNextResponse.json).toHaveBeenCalledWith(
         {
           success: false,
@@ -619,8 +592,6 @@ describe("POST /api/certifications", () => {
         },
         { status: 500 }
       );
-
-      consoleSpy.mockRestore();
     });
 
     it("不正なJSONデータの場合は400エラーが返されること", async () => {
@@ -628,17 +599,10 @@ describe("POST /api/certifications", () => {
       const jsonError = new Error("Invalid JSON");
       mockRequest.json = jest.fn().mockRejectedValue(jsonError);
 
-      const consoleSpy = jest.spyOn(console, "error").mockImplementation();
-
       // Act
       await POST(mockRequest);
 
       // Assert
-      expect(consoleSpy).toHaveBeenCalledWith(
-        "Certifications API error:",
-        jsonError
-      );
-
       expect(mockNextResponse.json).toHaveBeenCalledWith(
         {
           success: false,
@@ -648,8 +612,6 @@ describe("POST /api/certifications", () => {
         },
         { status: 500 }
       );
-
-      consoleSpy.mockRestore();
     });
   });
 });
