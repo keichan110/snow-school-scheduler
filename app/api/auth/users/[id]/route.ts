@@ -52,7 +52,7 @@ export async function GET(
       return NextResponse.json(
         {
           success: false,
-          error: "$1",
+          error: "Unauthorized",
         },
         { status: 401 }
       );
@@ -68,7 +68,7 @@ export async function GET(
       return NextResponse.json(
         {
           success: false,
-          error: "$1",
+          error: "Forbidden: Insufficient permissions",
         },
         { status: 403 }
       );
@@ -94,7 +94,7 @@ export async function GET(
       return NextResponse.json(
         {
           success: false,
-          error: "$1",
+          error: "User not found",
         },
         { status: 404 }
       );
@@ -152,7 +152,7 @@ export async function PUT(
       return NextResponse.json(
         {
           success: false,
-          error: "$1",
+          error: "Unauthorized",
         },
         { status: 401 }
       );
@@ -163,7 +163,7 @@ export async function PUT(
       return NextResponse.json(
         {
           success: false,
-          error: "$1",
+          error: "Forbidden: Admin access required",
         },
         { status: 403 }
       );
@@ -174,7 +174,7 @@ export async function PUT(
       return NextResponse.json(
         {
           success: false,
-          error: "$1",
+          error: "Cannot modify your own user account",
         },
         { status: 400 }
       );
@@ -188,7 +188,7 @@ export async function PUT(
       return NextResponse.json(
         {
           success: false,
-          error: "$1",
+          error: "Invalid JSON request body",
         },
         { status: 400 }
       );
@@ -200,7 +200,8 @@ export async function PUT(
       return NextResponse.json(
         {
           success: false,
-          error: "$1",
+          error:
+            "Validation failed: At least one field (role or isActive) must be provided",
         },
         { status: 400 }
       );
@@ -218,7 +219,7 @@ export async function PUT(
       return NextResponse.json(
         {
           success: false,
-          error: "$1",
+          error: "User not found",
         },
         { status: 404 }
       );
@@ -294,7 +295,7 @@ export async function DELETE(
       return NextResponse.json(
         {
           success: false,
-          error: "$1",
+          error: "Unauthorized",
         },
         { status: 401 }
       );
@@ -305,7 +306,7 @@ export async function DELETE(
       return NextResponse.json(
         {
           success: false,
-          error: "$1",
+          error: "Forbidden: Admin access required",
         },
         { status: 403 }
       );
@@ -316,7 +317,7 @@ export async function DELETE(
       return NextResponse.json(
         {
           success: false,
-          error: "$1",
+          error: "Cannot delete your own user account",
         },
         { status: 400 }
       );
@@ -332,7 +333,7 @@ export async function DELETE(
       return NextResponse.json(
         {
           success: false,
-          error: "$1",
+          error: "User not found",
         },
         { status: 404 }
       );
@@ -343,7 +344,7 @@ export async function DELETE(
       return NextResponse.json(
         {
           success: false,
-          error: "$1",
+          error: "User is already inactive",
         },
         { status: 400 }
       );
