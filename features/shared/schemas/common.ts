@@ -44,11 +44,13 @@ export const idSchema = z.number().int().positive();
  * });
  * schema.parse({ description: 'text' }); // { description: 'text' }
  * schema.parse({ description: '' }); // { description: null }
+ * schema.parse({ description: null }); // { description: null }
  * schema.parse({}); // { description: null }
  * ```
  */
 export const optionalStringSchema = z
   .string()
+  .nullable()
   .optional()
   .transform((val) => val || null);
 

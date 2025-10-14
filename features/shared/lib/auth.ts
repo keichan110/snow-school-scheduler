@@ -23,7 +23,7 @@ import type { AuthenticatedUser } from "../types/actions";
 export async function authenticate(): Promise<AuthenticatedUser | null> {
   try {
     const cookieStore = await cookies();
-    const token = cookieStore.get("auth_token")?.value;
+    const token = cookieStore.get("auth-token")?.value;
 
     if (!token) {
       return null;
