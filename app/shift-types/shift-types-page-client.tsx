@@ -1,7 +1,6 @@
 "use client";
 
 import { Plus, SealCheck, Tag } from "@phosphor-icons/react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -16,10 +15,10 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
-  shiftTypesQueryKeys,
+  useCreateShiftType,
   useShiftTypesQuery,
+  useUpdateShiftType,
 } from "@/features/shift-types";
-import { createShiftType, updateShiftType } from "./api";
 import ShiftTypeModal from "./shift-type-modal";
 import type { ShiftType, ShiftTypeFormData, ShiftTypeStats } from "./types";
 
@@ -62,7 +61,6 @@ export default function ShiftTypesPageClient() {
     null
   );
 
-  const queryClient = useQueryClient();
   const { data: shiftTypes } = useShiftTypesQuery({
     select: sortShiftTypes,
   });
@@ -77,55 +75,8 @@ export default function ShiftTypesPageClient() {
     [shiftTypes]
   );
 
-  const createShiftTypeMutation = useMutation<
-    ShiftType,
-    Error,
-    ShiftTypeFormData
-  >({
-    mutationFn: (formData) => createShiftType(formData),
-    onSuccess: (created) => {
-      queryClient.setQueryData<ShiftType[]>(
-        shiftTypesQueryKeys.list(),
-        (previous) => {
-          if (!previous) {
-            return [created];
-          }
-
-          return sortShiftTypes([...previous, created]);
-        }
-      );
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: shiftTypesQueryKeys.list() });
-    },
-  });
-
-  const updateShiftTypeMutation = useMutation<
-    ShiftType,
-    Error,
-    { id: number; data: ShiftTypeFormData }
-  >({
-    mutationFn: ({ id, data }) => updateShiftType(id, data),
-    onSuccess: (updated) => {
-      queryClient.setQueryData<ShiftType[]>(
-        shiftTypesQueryKeys.list(),
-        (previous) => {
-          if (!previous) {
-            return [updated];
-          }
-
-          const next = previous.map((shiftType) =>
-            shiftType.id === updated.id ? updated : shiftType
-          );
-
-          return sortShiftTypes(next);
-        }
-      );
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: shiftTypesQueryKeys.list() });
-    },
-  });
+  const createShiftTypeMutation = useCreateShiftType();
+  const updateShiftTypeMutation = useUpdateShiftType();
 
   const handleActiveFilterChange = useCallback((checked: boolean) => {
     setShowActiveOnly(checked);

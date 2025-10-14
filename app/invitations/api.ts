@@ -1,13 +1,10 @@
 /**
- * 招待管理API クライアント
+ * 招待管理API クライアント（READ専用）
+ * Write操作はServer Actionsを使用してください
  */
 
 import { HTTP_STATUS_NOT_FOUND } from "@/shared/constants/http-status";
-import type {
-  CreateInvitationRequest,
-  InvitationApiResponse,
-  InvitationTokenWithStats,
-} from "./types";
+import type { InvitationApiResponse, InvitationTokenWithStats } from "./types";
 
 const API_BASE_URL = "/api/auth/invitations";
 
@@ -85,71 +82,4 @@ export async function fetchInvitations(): Promise<InvitationTokenWithStats[]> {
   }));
 
   return convertedData;
-}
-
-export async function createInvitation(
-  data: CreateInvitationRequest
-): Promise<InvitationTokenWithStats> {
-  const response = await fetch(API_BASE_URL, {
-    method: "POST",
-    credentials: "include", // Cookieベースの認証
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(data),
-  });
-
-  if (!response.ok) {
-    throw new Error(`招待の作成に失敗しました: ${response.status}`);
-  }
-
-  // APIレスポンスをフロントエンド用の型に変換
-  const result: InvitationApiResponse<{
-    token: string;
-    invitationUrl: string;
-    expiresAt: string;
-    maxUses: number | null;
-    createdBy: string;
-  }> = await response.json();
-
-  if (!(result.success && result.data)) {
-    throw new Error(result.error || "招待の作成に失敗しました");
-  }
-
-  // APIレスポンスをフロントエンド用の型に変換
-  const apiData = result.data;
-  const convertedData: InvitationTokenWithStats = {
-    token: apiData.token,
-    description: data.description || "",
-    expiresAt: new Date(apiData.expiresAt),
-    isActive: true,
-    maxUses: apiData.maxUses,
-    usageCount: 0,
-    remainingUses: apiData.maxUses || 0, // null を 0 に変換
-    createdAt: new Date(),
-    createdBy: apiData.createdBy,
-    invitationUrl: apiData.invitationUrl,
-  };
-
-  return convertedData;
-}
-
-export async function deactivateInvitation(token: string): Promise<void> {
-  const response = await fetch(`${API_BASE_URL}/${token}`, {
-    method: "DELETE",
-    credentials: "include", // Cookieベースの認証
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
-
-  if (!response.ok) {
-    throw new Error(`招待の無効化に失敗しました: ${response.status}`);
-  }
-
-  const result: InvitationApiResponse<void> = await response.json();
-
-  if (!result.success) {
-    throw new Error(result.error || "招待の無効化に失敗しました");
-  }
 }

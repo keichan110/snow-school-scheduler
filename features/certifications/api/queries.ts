@@ -4,8 +4,31 @@ import {
   useSuspenseQuery,
 } from "@tanstack/react-query";
 
-import { fetchCertifications } from "@/app/certifications/api";
 import type { CertificationWithDepartment } from "@/app/certifications/types";
+
+type ApiResponse<T> = {
+  success: boolean;
+  data: T | null;
+  message: string | null;
+  error: string | null;
+};
+
+/**
+ * 資格一覧を取得
+ */
+export async function fetchCertifications(): Promise<
+  CertificationWithDepartment[]
+> {
+  const response = await fetch("/api/certifications");
+  const result: ApiResponse<CertificationWithDepartment[]> =
+    await response.json();
+
+  if (!(result.success && result.data)) {
+    throw new Error(result.error || "Failed to fetch certifications");
+  }
+
+  return result.data;
+}
 
 /**
  * 資格一覧向けのクエリキー

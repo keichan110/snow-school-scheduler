@@ -4,8 +4,31 @@ import {
   useSuspenseQuery,
 } from "@tanstack/react-query";
 
-import { fetchInstructors } from "@/app/instructors/api";
 import type { InstructorWithCertifications } from "@/app/instructors/types";
+
+type ApiResponse<T> = {
+  success: boolean;
+  data: T | null;
+  message: string | null;
+  error: string | null;
+};
+
+/**
+ * インストラクター一覧を取得
+ */
+export async function fetchInstructors(): Promise<
+  InstructorWithCertifications[]
+> {
+  const response = await fetch("/api/instructors");
+  const result: ApiResponse<InstructorWithCertifications[]> =
+    await response.json();
+
+  if (!(result.success && result.data)) {
+    throw new Error(result.error || "Failed to fetch instructors");
+  }
+
+  return result.data;
+}
 
 /**
  * 管理画面向けインストラクター一覧クエリキー定義

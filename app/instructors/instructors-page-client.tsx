@@ -6,7 +6,6 @@ import {
   Plus,
   SealCheck,
 } from "@phosphor-icons/react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -23,10 +22,11 @@ import {
 } from "@/components/ui/table";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  instructorsQueryKeys,
+  useCreateInstructor,
   useInstructorsQuery,
+  useUpdateInstructor,
 } from "@/features/instructors";
-import { createInstructor, updateInstructor } from "./api";
+import { mapStatusToApi } from "./api";
 import InstructorModal from "./instructor-modal";
 import type {
   CategoryFilterType,
@@ -247,7 +247,6 @@ export default function InstructorsPageClient() {
   const [editingInstructor, setEditingInstructor] =
     useState<InstructorWithCertifications | null>(null);
 
-  const queryClient = useQueryClient();
   const { data: instructors } = useInstructorsQuery();
 
   const filteredInstructors = useMemo(
@@ -260,48 +259,8 @@ export default function InstructorsPageClient() {
     [instructors]
   );
 
-  const createInstructorMutation = useMutation<
-    InstructorWithCertifications,
-    Error,
-    InstructorFormData
-  >({
-    mutationFn: (formData) => createInstructor(formData),
-    onSuccess: (created) => {
-      queryClient.setQueryData<InstructorWithCertifications[]>(
-        instructorsQueryKeys.list(),
-        (previous) => {
-          if (!previous) {
-            return [created];
-          }
-
-          return sortInstructorsByStatusAndName([...previous, created]);
-        }
-      );
-    },
-  });
-
-  const updateInstructorMutation = useMutation<
-    InstructorWithCertifications,
-    Error,
-    { id: number; data: InstructorFormData }
-  >({
-    mutationFn: ({ id, data }) => updateInstructor(id, data),
-    onSuccess: (updated) => {
-      queryClient.setQueryData<InstructorWithCertifications[]>(
-        instructorsQueryKeys.list(),
-        (previous) => {
-          if (!previous) {
-            return [updated];
-          }
-
-          const next = previous.map((instructor) =>
-            instructor.id === updated.id ? updated : instructor
-          );
-          return sortInstructorsByStatusAndName(next);
-        }
-      );
-    },
-  });
+  const createInstructorMutation = useCreateInstructor();
+  const updateInstructorMutation = useUpdateInstructor();
 
   const handleCategoryChange = useCallback((category: string) => {
     setCurrentCategory(category as CategoryFilterType);
@@ -326,13 +285,24 @@ export default function InstructorsPageClient() {
 
   const handleSave = useCallback(
     async (formData: InstructorFormData) => {
+      // InstructorFormDataをServer Actionsの入力形式に変換
+      const input = {
+        lastName: formData.lastName,
+        firstName: formData.firstName,
+        lastNameKana: formData.lastNameKana || null,
+        firstNameKana: formData.firstNameKana || null,
+        status: mapStatusToApi(formData.status),
+        notes: formData.notes || null,
+        certificationIds: formData.certificationIds || [],
+      };
+
       if (editingInstructor) {
         await updateInstructorMutation.mutateAsync({
           id: editingInstructor.id,
-          data: formData,
+          data: input,
         });
       } else {
-        await createInstructorMutation.mutateAsync(formData);
+        await createInstructorMutation.mutateAsync(input);
       }
 
       handleCloseModal();
