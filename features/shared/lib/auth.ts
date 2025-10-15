@@ -23,20 +23,25 @@ import type { AuthenticatedUser } from "../types/actions";
  * ```
  */
 export async function authenticate(): Promise<AuthenticatedUser | null> {
-  const result = await authenticateFromCookies();
+  try {
+    const result = await authenticateFromCookies();
 
-  if (!(result.success && result.user)) {
+    if (!(result.success && result.user)) {
+      return null;
+    }
+
+    // データベースから取得した最新のユーザー情報を返す
+    return {
+      id: result.user.id,
+      lineUserId: result.user.lineUserId,
+      displayName: result.user.displayName,
+      profileImageUrl: result.user.profileImageUrl ?? null,
+      role: result.user.role,
+    };
+  } catch {
+    // 認証フロー内での例外は認証失敗として扱う
     return null;
   }
-
-  // データベースから取得した最新のユーザー情報を返す
-  return {
-    id: result.user.id,
-    lineUserId: result.user.lineUserId,
-    displayName: result.user.displayName,
-    profileImageUrl: result.user.profileImageUrl ?? null,
-    role: result.user.role,
-  };
 }
 
 /**

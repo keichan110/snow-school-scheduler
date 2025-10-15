@@ -211,13 +211,24 @@ export async function acceptInvitationAction(
         data: userData,
       });
 
-      // 使用回数を更新
-      await tx.invitationToken.update({
-        where: { token },
+      // 使用回数を原子的にインクリメント
+      const updateResult = await tx.invitationToken.updateMany({
+        where: {
+          token,
+          ...(invitationToken.maxUses !== null
+            ? { usedCount: { lt: invitationToken.maxUses } }
+            : {}),
+        },
         data: {
-          usedCount: invitationToken.usedCount + 1,
+          usedCount: {
+            increment: 1,
+          },
         },
       });
+
+      if (updateResult.count === 0) {
+        throw new Error("Invitation token has reached maximum uses");
+      }
 
       return user;
     });
