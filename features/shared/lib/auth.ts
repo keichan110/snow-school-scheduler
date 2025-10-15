@@ -1,11 +1,13 @@
 "use server";
-import { cookies } from "next/headers";
-import { verifyJwt } from "@/lib/auth/jwt";
+import { authenticateFromCookies } from "@/lib/auth/middleware";
 import type { AuthenticatedUser } from "../types/actions";
 
 /**
  * Server Actions 用の認証ヘルパー
- * Cookie から JWT トークンを取得して検証し、ユーザー情報を返す
+ * Cookie から JWT トークンを取得して検証し、データベースから最新のユーザー情報を返す
+ *
+ * セキュリティ重要: JWT ペイロードだけでなく、必ずデータベースで最新の isActive と role を確認します
+ * これにより、無効化されたユーザーや権限変更後のユーザーが古いトークンで操作を継続できないようにします
  *
  * @returns 認証済みユーザー情報、または null（未認証の場合）
  *
@@ -21,29 +23,20 @@ import type { AuthenticatedUser } from "../types/actions";
  * ```
  */
 export async function authenticate(): Promise<AuthenticatedUser | null> {
-  try {
-    const cookieStore = await cookies();
-    const token = cookieStore.get("auth-token")?.value;
+  const result = await authenticateFromCookies();
 
-    if (!token) {
-      return null;
-    }
-
-    const result = verifyJwt(token);
-    if (!(result.success && result.payload)) {
-      return null;
-    }
-
-    return {
-      id: result.payload.userId,
-      lineUserId: result.payload.lineUserId,
-      displayName: result.payload.displayName,
-      profileImageUrl: null, // JWT には pictureUrl が含まれていない場合があるため null
-      role: result.payload.role,
-    };
-  } catch {
+  if (!(result.success && result.user)) {
     return null;
   }
+
+  // データベースから取得した最新のユーザー情報を返す
+  return {
+    id: result.user.id,
+    lineUserId: result.user.lineUserId,
+    displayName: result.user.displayName,
+    profileImageUrl: result.user.profileImageUrl ?? null,
+    role: result.user.role,
+  };
 }
 
 /**
