@@ -28,6 +28,7 @@ import {
   Sheet,
   SheetClose,
   SheetContent,
+  SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { useAuth } from "@/contexts/auth-context";
@@ -148,6 +149,9 @@ export default function Header() {
                     side="left"
                   >
                     <div className="p-6">
+                      <SheetTitle className="mb-4 font-bold text-lg">
+                        管理メニュー
+                      </SheetTitle>
                       <div className="grid gap-3">
                         {visibleMenuItems.map((item) => {
                           const IconComponent = item.icon;
