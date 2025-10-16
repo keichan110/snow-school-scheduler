@@ -21,6 +21,43 @@ import {
 const DEFAULT_INVITATION_EXPIRY_DAYS = 7;
 
 /**
+ * トランザクション内でのトークン検証とユーザー存在チェック
+ */
+async function validateTokenAndCheckUser(
+  token: string,
+  lineUserId: string,
+  tx: Parameters<Parameters<typeof prisma.$transaction>[0]>[0]
+) {
+  const validation = await validateInvitationToken(token);
+
+  if (!validation.isValid) {
+    throw new Error(validation.error || "Invalid invitation token");
+  }
+
+  const invitationToken = validation.token;
+  if (!invitationToken) {
+    throw new Error("Invitation token not found");
+  }
+
+  if (
+    invitationToken.maxUses !== null &&
+    invitationToken.usedCount >= invitationToken.maxUses
+  ) {
+    throw new Error("Invitation token has reached maximum uses");
+  }
+
+  const existingUser = await tx.user.findUnique({
+    where: { lineUserId },
+  });
+
+  if (existingUser) {
+    throw new Error("User already exists");
+  }
+
+  return invitationToken;
+}
+
+/**
  * 招待作成アクション（管理者・マネージャー専用）
  *
  * 新規ユーザーを招待するためのトークンとURLを生成します。
@@ -156,42 +193,16 @@ export async function acceptInvitationAction(
   input: AcceptInvitationInput
 ): Promise<ActionResult<unknown>> {
   try {
-    // バリデーション
     const validated = acceptInvitationSchema.parse(input);
     const { token, lineUserId, displayName, pictureUrl } = validated;
 
-    // トランザクション: トークン検証 + ユーザー作成 + 使用回数更新
     const result = await prisma.$transaction(async (tx) => {
-      // トークン検証
-      const validation = await validateInvitationToken(token);
+      const invitationToken = await validateTokenAndCheckUser(
+        token,
+        lineUserId,
+        tx
+      );
 
-      if (!validation.isValid) {
-        throw new Error(validation.error || "Invalid invitation token");
-      }
-
-      const invitationToken = validation.token;
-      if (!invitationToken) {
-        throw new Error("Invitation token not found");
-      }
-
-      // 使用回数チェック
-      if (
-        invitationToken.maxUses !== null &&
-        invitationToken.usedCount >= invitationToken.maxUses
-      ) {
-        throw new Error("Invitation token has reached maximum uses");
-      }
-
-      // 既存ユーザーチェック
-      const existingUser = await tx.user.findUnique({
-        where: { lineUserId },
-      });
-
-      if (existingUser) {
-        throw new Error("User already exists");
-      }
-
-      // ユーザー作成（デフォルトroleは MEMBER）
       const userData: {
         lineUserId: string;
         displayName: string;
@@ -200,7 +211,7 @@ export async function acceptInvitationAction(
       } = {
         lineUserId,
         displayName,
-        role: "MEMBER", // InvitationTokenにroleフィールドがないため、デフォルトを使用
+        role: "MEMBER",
       };
 
       if (pictureUrl) {
@@ -211,7 +222,6 @@ export async function acceptInvitationAction(
         data: userData,
       });
 
-      // 使用回数を原子的にインクリメント
       const updateResult = await tx.invitationToken.updateMany({
         where: {
           token,
@@ -233,7 +243,6 @@ export async function acceptInvitationAction(
       return user;
     });
 
-    // キャッシュ再検証
     revalidatePath("/users");
     revalidateTag("users.list");
 
