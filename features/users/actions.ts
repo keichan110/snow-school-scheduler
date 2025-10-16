@@ -53,9 +53,24 @@ export async function createUserAction(
       return { success: false, error: "User with this LINE ID already exists" };
     }
 
-    // ユーザー作成
+    // ユーザー作成（exactOptionalPropertyTypes対応）
+    const userData: {
+      lineUserId: string;
+      displayName: string;
+      pictureUrl?: string | null;
+      role: "ADMIN" | "MANAGER" | "MEMBER";
+    } = {
+      lineUserId: validated.lineUserId,
+      displayName: validated.displayName,
+      role: validated.role,
+    };
+
+    if (validated.pictureUrl !== undefined) {
+      userData.pictureUrl = validated.pictureUrl;
+    }
+
     const user = await prisma.user.create({
-      data: validated,
+      data: userData,
     });
 
     // キャッシュ再検証

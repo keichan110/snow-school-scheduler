@@ -23,7 +23,7 @@ export type AuthenticatedUser = {
   /** 表示名 */
   displayName: string;
   /** LINEプロフィール画像URL */
-  profileImageUrl?: string | null;
+  pictureUrl?: string | null;
   /** ユーザー権限 */
   role: "ADMIN" | "MANAGER" | "MEMBER";
   /** アクティブフラグ */
@@ -160,7 +160,7 @@ export async function authenticateToken(
       id: user.id,
       lineUserId: user.lineUserId,
       displayName: user.displayName,
-      profileImageUrl: user.profileImageUrl,
+      pictureUrl: user.pictureUrl,
       role: user.role as "ADMIN" | "MANAGER" | "MEMBER",
       isActive: user.isActive,
       createdAt: user.createdAt,

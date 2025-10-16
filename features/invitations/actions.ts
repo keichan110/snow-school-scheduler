@@ -158,7 +158,7 @@ export async function acceptInvitationAction(
   try {
     // バリデーション
     const validated = acceptInvitationSchema.parse(input);
-    const { token, lineUserId, displayName, profileImageUrl } = validated;
+    const { token, lineUserId, displayName, pictureUrl } = validated;
 
     // トランザクション: トークン検証 + ユーザー作成 + 使用回数更新
     const result = await prisma.$transaction(async (tx) => {
@@ -195,7 +195,7 @@ export async function acceptInvitationAction(
       const userData: {
         lineUserId: string;
         displayName: string;
-        profileImageUrl?: string | null;
+        pictureUrl?: string | null;
         role: string;
       } = {
         lineUserId,
@@ -203,8 +203,8 @@ export async function acceptInvitationAction(
         role: "MEMBER", // InvitationTokenにroleフィールドがないため、デフォルトを使用
       };
 
-      if (profileImageUrl) {
-        userData.profileImageUrl = profileImageUrl;
+      if (pictureUrl) {
+        userData.pictureUrl = pictureUrl;
       }
 
       const user = await tx.user.create({

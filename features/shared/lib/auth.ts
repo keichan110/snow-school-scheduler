@@ -35,7 +35,7 @@ export async function authenticate(): Promise<AuthenticatedUser | null> {
       id: result.user.id,
       lineUserId: result.user.lineUserId,
       displayName: result.user.displayName,
-      profileImageUrl: result.user.profileImageUrl ?? null,
+      pictureUrl: result.user.pictureUrl ?? null,
       role: result.user.role,
     };
   } catch {

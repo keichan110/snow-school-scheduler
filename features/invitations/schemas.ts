@@ -57,7 +57,7 @@ export const acceptInvitationSchema = z.object({
   /**
    * プロフィール画像URL（LINE認証から取得、任意）
    */
-  profileImageUrl: z.string().url().optional().nullable(),
+  pictureUrl: z.string().url().optional().nullable(),
 });
 
 export type CreateInvitationInput = z.infer<typeof createInvitationSchema>;

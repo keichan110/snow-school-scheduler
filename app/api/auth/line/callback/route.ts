@@ -134,7 +134,7 @@ async function getOrCreateUser(
         id: string;
         lineUserId: string;
         displayName: string;
-        profileImageUrl: string | null;
+        pictureUrl: string | null;
         role: string;
         isActive: boolean;
         createdAt: Date;

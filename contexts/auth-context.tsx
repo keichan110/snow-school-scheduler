@@ -29,7 +29,7 @@ export type User = {
   /** 表示名 */
   displayName: string;
   /** LINEプロフィール画像URL */
-  profileImageUrl?: string | null;
+  pictureUrl?: string | null;
   /** ユーザー権限 */
   role: "ADMIN" | "MANAGER" | "MEMBER";
   /** アクティブフラグ */

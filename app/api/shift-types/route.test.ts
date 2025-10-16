@@ -66,7 +66,7 @@ describe("GET /api/shift-types", () => {
         id: "1",
         lineUserId: "test-line-user",
         displayName: "Test User",
-        profileImageUrl: null,
+        pictureUrl: null,
         role: "ADMIN",
         isActive: true,
         createdAt: new Date(),

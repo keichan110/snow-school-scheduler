@@ -223,7 +223,7 @@ export default function Header() {
                       <Avatar className="h-8 w-8 cursor-pointer transition-all hover:ring-2 hover:ring-primary/20">
                         <AvatarImage
                           alt={user.displayName}
-                          src={user.profileImageUrl || ""}
+                          src={user.pictureUrl || ""}
                         />
                         <AvatarFallback className="bg-gradient-to-br from-blue-100 via-blue-300 to-indigo-400 font-semibold text-sm text-white">
                           {user.displayName.charAt(0).toUpperCase()}
@@ -238,7 +238,7 @@ export default function Header() {
                         <Avatar className="h-12 w-12">
                           <AvatarImage
                             alt={user.displayName}
-                            src={user.profileImageUrl || ""}
+                            src={user.pictureUrl || ""}
                           />
                           <AvatarFallback className="bg-gradient-to-br from-blue-100 via-blue-300 to-indigo-400 font-semibold text-white">
                             {user.displayName.charAt(0).toUpperCase()}
