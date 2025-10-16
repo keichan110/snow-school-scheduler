@@ -71,6 +71,32 @@ export async function requireAdmin(): Promise<AuthenticatedUser> {
 }
 
 /**
+ * マネージャー権限チェック
+ * Server Action 内でマネージャー以上（ADMIN または MANAGER）に操作を許可する場合に使用
+ *
+ * @returns 認証済みマネージャー以上のユーザー情報
+ * @throws {Error} 未認証またはマネージャー権限がない場合
+ *
+ * @example
+ * ```typescript
+ * export async function createDepartmentAction(input: unknown) {
+ *   const user = await requireManagerAuth();
+ *   // マネージャー以上専用処理...
+ * }
+ * ```
+ */
+export async function requireManagerAuth(): Promise<AuthenticatedUser> {
+  const user = await authenticate();
+  if (!user) {
+    throw new Error("Unauthorized");
+  }
+  if (user.role !== "ADMIN" && user.role !== "MANAGER") {
+    throw new Error("Forbidden: Manager or Admin access required");
+  }
+  return user;
+}
+
+/**
  * 認証必須チェック
  * Server Action 内で認証済みユーザーのみに操作を許可する場合に使用
  *

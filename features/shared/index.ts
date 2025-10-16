@@ -4,7 +4,12 @@
  */
 
 // Auth utilities
-export { authenticate, requireAdmin, requireAuth } from "./lib/auth";
+export {
+  authenticate,
+  requireAdmin,
+  requireAuth,
+  requireManagerAuth,
+} from "./lib/auth";
 // Validation utilities
 export { toActionError, validateInput } from "./lib/validation";
 // Common schemas

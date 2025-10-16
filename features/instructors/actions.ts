@@ -1,6 +1,6 @@
 "use server";
 import { revalidatePath, revalidateTag } from "next/cache";
-import { type ActionResult, requireAuth } from "@/features/shared";
+import { type ActionResult, requireManagerAuth } from "@/features/shared";
 import { prisma } from "@/lib/db";
 import {
   type CreateInstructorInput,
@@ -16,8 +16,8 @@ export async function createInstructorAction(
   input: CreateInstructorInput
 ): Promise<ActionResult<unknown>> {
   try {
-    // 認証チェック
-    await requireAuth();
+    // 認証・権限チェック（マネージャー以上）
+    await requireManagerAuth();
 
     // バリデーション
     const validated = createInstructorSchema.parse(input);
@@ -78,7 +78,8 @@ export async function updateInstructorAction(
   input: UpdateInstructorInput
 ): Promise<ActionResult<unknown>> {
   try {
-    await requireAuth();
+    // 認証・権限チェック（マネージャー以上）
+    await requireManagerAuth();
 
     const validated = updateInstructorSchema.parse(input);
     const { certificationIds, ...instructorData } = validated;
@@ -143,7 +144,8 @@ export async function deleteInstructorAction(
   id: number
 ): Promise<ActionResult<void>> {
   try {
-    await requireAuth();
+    // 認証・権限チェック（マネージャー以上）
+    await requireManagerAuth();
 
     // 論理削除（status = INACTIVE）
     await prisma.instructor.update({

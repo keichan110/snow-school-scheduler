@@ -1,6 +1,6 @@
 "use server";
 import { revalidatePath, revalidateTag } from "next/cache";
-import { type ActionResult, requireAuth } from "@/features/shared";
+import { type ActionResult, requireManagerAuth } from "@/features/shared";
 import { prisma } from "@/lib/db";
 import {
   type CreateCertificationInput,
@@ -16,8 +16,8 @@ export async function createCertificationAction(
   input: CreateCertificationInput
 ): Promise<ActionResult<unknown>> {
   try {
-    // 認証チェック
-    await requireAuth();
+    // 認証・権限チェック（マネージャー以上）
+    await requireManagerAuth();
 
     // バリデーション
     const validated = createCertificationSchema.parse(input);
@@ -53,7 +53,8 @@ export async function updateCertificationAction(
   input: UpdateCertificationInput
 ): Promise<ActionResult<unknown>> {
   try {
-    await requireAuth();
+    // 認証・権限チェック（マネージャー以上）
+    await requireManagerAuth();
 
     const validated = updateCertificationSchema.parse(input);
 
@@ -87,7 +88,8 @@ export async function deleteCertificationAction(
   id: number
 ): Promise<ActionResult<void>> {
   try {
-    await requireAuth();
+    // 認証・権限チェック（マネージャー以上）
+    await requireManagerAuth();
 
     // 論理削除（isActive = false）
     await prisma.certification.update({

@@ -1,6 +1,6 @@
 "use server";
 import { revalidatePath, revalidateTag } from "next/cache";
-import { type ActionResult, requireAuth } from "@/features/shared";
+import { type ActionResult, requireManagerAuth } from "@/features/shared";
 import { prisma } from "@/lib/db";
 import {
   type CreateDepartmentInput,
@@ -16,8 +16,8 @@ export async function createDepartmentAction(
   input: CreateDepartmentInput
 ): Promise<ActionResult<unknown>> {
   try {
-    // 認証チェック
-    await requireAuth();
+    // 認証・権限チェック（マネージャー以上）
+    await requireManagerAuth();
 
     // バリデーション
     const validated = createDepartmentSchema.parse(input);
@@ -48,7 +48,8 @@ export async function updateDepartmentAction(
   input: UpdateDepartmentInput
 ): Promise<ActionResult<unknown>> {
   try {
-    await requireAuth();
+    // 認証・権限チェック（マネージャー以上）
+    await requireManagerAuth();
 
     const validated = updateDepartmentSchema.parse(input);
 
@@ -77,7 +78,8 @@ export async function deleteDepartmentAction(
   id: number
 ): Promise<ActionResult<void>> {
   try {
-    await requireAuth();
+    // 認証・権限チェック（マネージャー以上）
+    await requireManagerAuth();
 
     // 論理削除（isActive = false）
     await prisma.department.update({

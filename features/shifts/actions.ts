@@ -1,6 +1,6 @@
 "use server";
 import { revalidatePath, revalidateTag } from "next/cache";
-import { type ActionResult, requireAuth } from "@/features/shared";
+import { type ActionResult, requireManagerAuth } from "@/features/shared";
 import { prisma } from "@/lib/db";
 import {
   type CreateShiftInput,
@@ -16,8 +16,8 @@ export async function createShiftAction(
   input: CreateShiftInput
 ): Promise<ActionResult<unknown>> {
   try {
-    // 認証チェック
-    await requireAuth();
+    // 認証・権限チェック（マネージャー以上）
+    await requireManagerAuth();
 
     // バリデーション
     const validated = createShiftSchema.parse(input);
@@ -133,7 +133,8 @@ export async function updateShiftAction(
   input: UpdateShiftInput
 ): Promise<ActionResult<unknown>> {
   try {
-    await requireAuth();
+    // 認証・権限チェック（マネージャー以上）
+    await requireManagerAuth();
 
     const validated = updateShiftSchema.parse(input);
     const { description, assignedInstructorIds } = validated;
@@ -195,7 +196,8 @@ export async function deleteShiftAction(
   id: number
 ): Promise<ActionResult<void>> {
   try {
-    await requireAuth();
+    // 認証・権限チェック（マネージャー以上）
+    await requireManagerAuth();
 
     // トランザクション: 割り当て削除 → シフト削除
     await prisma.$transaction(async (tx) => {
