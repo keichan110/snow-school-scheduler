@@ -1,17 +1,27 @@
+import { redirect } from "next/navigation";
 import { Suspense } from "react";
 
-import { ProtectedRoute } from "@/components/auth/protected-route";
+import { requireManagerAuth, UnauthorizedError } from "@/features/shared";
 
 import InstructorsPageClient from "./instructors-page-client";
 import Loading from "./loading";
 
 export const dynamic = "force-dynamic";
-export default function InstructorsPage() {
+
+export default async function InstructorsPage() {
+  try {
+    await requireManagerAuth();
+  } catch (error) {
+    if (error instanceof UnauthorizedError) {
+      redirect(`/login?redirect=${encodeURIComponent("/instructors")}`);
+    }
+    // ForbiddenError or その他のエラー
+    redirect("/");
+  }
+
   return (
-    <ProtectedRoute requiredRole="MANAGER">
-      <Suspense fallback={<Loading />}>
-        <InstructorsPageClient />
-      </Suspense>
-    </ProtectedRoute>
+    <Suspense fallback={<Loading />}>
+      <InstructorsPageClient />
+    </Suspense>
   );
 }
