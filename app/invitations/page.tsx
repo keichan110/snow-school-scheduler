@@ -1,17 +1,25 @@
+import { redirect } from "next/navigation";
 import { Suspense } from "react";
 
-import { ProtectedRoute } from "@/components/auth/protected-route";
+import { requireAdmin, UnauthorizedError } from "@/features/shared";
 
 import InvitationsPageClient from "./invitations-page-client";
 import Loading from "./loading";
 
-export const dynamic = "force-dynamic";
-export default function InvitationsPage() {
+export default async function InvitationsPage() {
+  try {
+    await requireAdmin();
+  } catch (error) {
+    if (error instanceof UnauthorizedError) {
+      redirect(`/login?redirect=${encodeURIComponent("/invitations")}`);
+    }
+    // ForbiddenError or その他のエラー
+    redirect("/");
+  }
+
   return (
-    <ProtectedRoute requiredRole="ADMIN">
-      <Suspense fallback={<Loading />}>
-        <InvitationsPageClient />
-      </Suspense>
-    </ProtectedRoute>
+    <Suspense fallback={<Loading />}>
+      <InvitationsPageClient />
+    </Suspense>
   );
 }

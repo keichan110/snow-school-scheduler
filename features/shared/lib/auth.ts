@@ -1,6 +1,7 @@
 "use server";
 import { authenticateFromCookies } from "@/lib/auth/middleware";
 import type { AuthenticatedUser } from "../types/actions";
+import { ForbiddenError, UnauthorizedError } from "./auth-errors";
 
 /**
  * Server Actions 用の認証ヘルパー
@@ -49,7 +50,8 @@ export async function authenticate(): Promise<AuthenticatedUser | null> {
  * Server Action 内で管理者のみに操作を許可する場合に使用
  *
  * @returns 認証済み管理者ユーザー情報
- * @throws {Error} 未認証または管理者権限がない場合
+ * @throws {UnauthorizedError} 未認証の場合
+ * @throws {ForbiddenError} 管理者権限がない場合
  *
  * @example
  * ```typescript
@@ -62,10 +64,10 @@ export async function authenticate(): Promise<AuthenticatedUser | null> {
 export async function requireAdmin(): Promise<AuthenticatedUser> {
   const user = await authenticate();
   if (!user) {
-    throw new Error("Unauthorized");
+    throw new UnauthorizedError();
   }
   if (user.role !== "ADMIN") {
-    throw new Error("Forbidden: Admin access required");
+    throw new ForbiddenError("Forbidden: Admin access required");
   }
   return user;
 }
@@ -75,7 +77,8 @@ export async function requireAdmin(): Promise<AuthenticatedUser> {
  * Server Action 内でマネージャー以上（ADMIN または MANAGER）に操作を許可する場合に使用
  *
  * @returns 認証済みマネージャー以上のユーザー情報
- * @throws {Error} 未認証またはマネージャー権限がない場合
+ * @throws {UnauthorizedError} 未認証の場合
+ * @throws {ForbiddenError} マネージャー権限がない場合
  *
  * @example
  * ```typescript
@@ -88,10 +91,10 @@ export async function requireAdmin(): Promise<AuthenticatedUser> {
 export async function requireManagerAuth(): Promise<AuthenticatedUser> {
   const user = await authenticate();
   if (!user) {
-    throw new Error("Unauthorized");
+    throw new UnauthorizedError();
   }
   if (user.role !== "ADMIN" && user.role !== "MANAGER") {
-    throw new Error("Forbidden: Manager or Admin access required");
+    throw new ForbiddenError("Forbidden: Manager or Admin access required");
   }
   return user;
 }
@@ -101,7 +104,7 @@ export async function requireManagerAuth(): Promise<AuthenticatedUser> {
  * Server Action 内で認証済みユーザーのみに操作を許可する場合に使用
  *
  * @returns 認証済みユーザー情報
- * @throws {Error} 未認証の場合
+ * @throws {UnauthorizedError} 未認証の場合
  *
  * @example
  * ```typescript
@@ -114,7 +117,7 @@ export async function requireManagerAuth(): Promise<AuthenticatedUser> {
 export async function requireAuth(): Promise<AuthenticatedUser> {
   const user = await authenticate();
   if (!user) {
-    throw new Error("Unauthorized");
+    throw new UnauthorizedError();
   }
   return user;
 }
