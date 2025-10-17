@@ -1,26 +1,31 @@
-"use client";
+import { redirect } from "next/navigation";
+import { authenticateFromCookies } from "@/lib/auth/middleware";
 
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
-import { useAuth } from "@/contexts/auth-context";
+export const dynamic = "force-dynamic";
 
-const Page = () => {
-  const { user, status } = useAuth();
-  const router = useRouter();
+/**
+ * ルートページ
+ *
+ * このページの役割：
+ * 1. 認証済みユーザーを `/shifts` へリダイレクト
+ * 2. 未認証ユーザーを `/login` へリダイレクト
+ * 3. サーバーサイドでリダイレクト判定を完結させることで、
+ *    クライアント側のローディング中チラつきを防ぐ
+ *
+ * サーバーコンポーネントとして実装：
+ * - `authenticateFromCookies()` でサーバー側認証チェック
+ * - `redirect()` による即座のサーバーサイドリダイレクト
+ * - `dynamic = "force-dynamic"` で認証状態の変化を即座に反映
+ */
+export default async function Page() {
+  // サーバー側で認証状態をチェック
+  const authResult = await authenticateFromCookies();
 
-  // 認証済みユーザーは/shiftsにリダイレクト
-  useEffect(() => {
-    if (status === "authenticated" && user) {
-      router.push("/shifts");
-    }
-  }, [status, user, router]);
-
-  // ローディング中または認証済みの場合は何も表示しない
-  if (status === "loading" || (status === "authenticated" && user)) {
-    return null;
+  // 認証済みユーザーは `/shifts` へリダイレクト
+  if (authResult.success && authResult.user) {
+    redirect("/shifts");
   }
 
-  return <div />;
-};
-
-export default Page;
+  // 未認証ユーザーは `/login` へリダイレクト
+  redirect("/login");
+}
