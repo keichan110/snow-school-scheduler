@@ -5,7 +5,7 @@ import {
   createInvitationToken,
   deactivateInvitationToken,
   generateInvitationUrl,
-  validateInvitationToken,
+  invitationConfig,
 } from "@/lib/auth/invitations";
 import { prisma } from "@/lib/db";
 import {
@@ -22,23 +22,55 @@ const DEFAULT_INVITATION_EXPIRY_DAYS = 7;
 
 /**
  * トランザクション内でのトークン検証とユーザー存在チェック
+ *
+ * トークンの取得から検証までトランザクション内で実行することで、
+ * TOCTTOU（Time-of-Check-Time-of-Use）競合状態を防止します。
  */
 async function validateTokenAndCheckUser(
   token: string,
   lineUserId: string,
   tx: Parameters<Parameters<typeof prisma.$transaction>[0]>[0]
 ) {
-  const validation = await validateInvitationToken(token);
-
-  if (!validation.isValid) {
-    throw new Error(validation.error || "Invalid invitation token");
+  // トークン形式の基本チェック
+  if (!token || typeof token !== "string") {
+    throw new Error("Invalid token format");
   }
 
-  const invitationToken = validation.token;
+  // プレフィックスチェック
+  if (!token.startsWith(invitationConfig.tokenPrefix)) {
+    throw new Error("Invalid token prefix");
+  }
+
+  // トランザクション内でトークンを取得（race condition対策）
+  const invitationToken = await tx.invitationToken.findUnique({
+    where: { token },
+    include: {
+      creator: {
+        select: {
+          id: true,
+          displayName: true,
+          role: true,
+        },
+      },
+    },
+  });
+
   if (!invitationToken) {
     throw new Error("Invitation token not found");
   }
 
+  // アクティブ状態チェック
+  if (!invitationToken.isActive) {
+    throw new Error("Invitation token is disabled");
+  }
+
+  // 有効期限チェック
+  const now = new Date();
+  if (invitationToken.expiresAt <= now) {
+    throw new Error("Invitation token has expired");
+  }
+
+  // 使用回数制限チェック
   if (
     invitationToken.maxUses !== null &&
     invitationToken.usedCount >= invitationToken.maxUses
@@ -46,6 +78,7 @@ async function validateTokenAndCheckUser(
     throw new Error("Invitation token has reached maximum uses");
   }
 
+  // ユーザー存在チェック
   const existingUser = await tx.user.findUnique({
     where: { lineUserId },
   });
