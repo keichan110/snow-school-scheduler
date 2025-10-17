@@ -1,5 +1,4 @@
 import { redirect } from "next/navigation";
-import type { ReadonlyURLSearchParams } from "next/navigation";
 import { Suspense } from "react";
 
 import { authenticateFromCookies } from "@/lib/auth/middleware";
@@ -9,53 +8,30 @@ import PublicShiftsPageClient from "./public-shifts-page-client";
 
 export const dynamic = "force-dynamic";
 
-type SearchParamsType =
-  | Record<string, string | string[] | undefined>
-  | ReadonlyURLSearchParams
-  | null
-  | undefined;
-
 type ShiftsPageProps = {
-  searchParams: SearchParamsType | Promise<SearchParamsType>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
-
-function isReadonlyURLSearchParams(
-  params: SearchParamsType
-): params is ReadonlyURLSearchParams {
-  return (
-    typeof params?.forEach === "function" &&
-    typeof params?.[Symbol.iterator] === "function"
-  );
-}
 
 /**
  * searchParams からクエリパラメータ付きの完全なパスを構築
  */
-function buildFullPath(params: SearchParamsType, basePath: string): string {
-  if (!params) {
-    return basePath;
-  }
-
-  if (isReadonlyURLSearchParams(params)) {
-    const query = new URLSearchParams(Array.from(params)).toString();
-    return query === "" ? basePath : `${basePath}?${query}`;
-  }
-
+function buildFullPath(
+  params: Record<string, string | string[] | undefined>,
+  basePath: string
+): string {
   const queryString = new URLSearchParams();
 
-  for (const [key, value] of Object.entries(
-    params as Record<string, string | string[] | undefined>
-  )) {
+  for (const [key, value] of Object.entries(params)) {
     if (value === undefined) {
       continue;
     }
 
     if (Array.isArray(value)) {
-      value.forEach((item) => {
+      for (const item of value) {
         if (item !== undefined) {
           queryString.append(key, item);
         }
-      });
+      }
     } else {
       queryString.append(key, value);
     }
