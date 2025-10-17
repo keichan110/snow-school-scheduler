@@ -1,317 +1,82 @@
-"use client";
+import { redirect } from "next/navigation";
+import type { ReadonlyURLSearchParams } from "next/navigation";
+import { Suspense } from "react";
 
-import { QueryErrorResetBoundary, useQueryClient } from "@tanstack/react-query";
-import { ChevronLeft, ChevronRight } from "lucide-react";
-import { useRouter, useSearchParams } from "next/navigation";
-import {
-  Suspense,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-  useTransition,
-} from "react";
-import { ErrorBoundary } from "react-error-boundary";
-import { ProtectedRoute } from "@/components/auth/protected-route";
-import Header from "@/components/header";
-import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { useAuth } from "@/contexts/auth-context";
-import {
-  publicShiftsDepartmentsQueryKeys,
-  publicShiftsQueryKeys,
-  useDepartmentsQuery,
-  usePublicShiftsQuery,
-} from "@/features/shifts";
-import { hasManagePermission } from "@/lib/auth/permissions";
-import type { AuthenticatedUser } from "@/lib/auth/types";
-import { MonthlyCalendarWithDetails } from "./components/monthly-calendar-with-details";
-import { PublicShiftsErrorState } from "./components/public-shifts-error-state";
-import { PublicShiftsSuspenseFallback } from "./components/public-shifts-suspense-fallback";
-import { ShiftMobileList } from "./components/shift-mobile-list";
-import { UnifiedShiftBottomModal } from "./components/unified-shift-bottom-modal";
-import { ViewToggle } from "./components/view-toggle";
-import { WeekNavigation } from "./components/week-navigation";
-import { WeeklyShiftList } from "./components/weekly-shift-list";
-import { isHoliday } from "./constants/shift-constants";
-import { useMonthNavigation } from "./hooks/use-month-navigation";
-import { useShiftDataTransformation } from "./hooks/use-shift-data-transformation";
-import { useWeekNavigation } from "./hooks/use-week-navigation";
-import type { DayData, ShiftQueryParams, ShiftStats } from "./types";
+import { authenticateFromCookies } from "@/lib/auth/middleware";
 
-type ViewMode = "monthly" | "weekly";
+import Loading from "./loading";
+import PublicShiftsPageClient from "./public-shifts-page-client";
 
-function PublicShiftsPageContent() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const queryClient = useQueryClient();
-  const { user } = useAuth();
+export const dynamic = "force-dynamic";
 
-  const [viewMode, setViewMode] = useState<ViewMode>("monthly");
-  const [pendingView, setPendingView] = useState<ViewMode | null>(null);
-  const [selectedDate, setSelectedDate] = useState<string | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [modalInitialStep, setModalInitialStep] = useState<
-    "create-step1" | "create-step2"
-  >("create-step1");
-  const [isPending, startTransition] = useTransition();
+type SearchParamsType =
+  | Record<string, string | string[] | undefined>
+  | ReadonlyURLSearchParams
+  | null
+  | undefined;
 
-  const canManage = user
-    ? hasManagePermission(user as AuthenticatedUser, "shifts")
-    : false;
+type ShiftsPageProps = {
+  searchParams: SearchParamsType | Promise<SearchParamsType>;
+};
 
-  const { currentYear, currentMonth, monthlyQueryParams, navigateMonth } =
-    useMonthNavigation();
-  const { weeklyBaseDate, weeklyQueryParams, navigateWeek, handleDateSelect } =
-    useWeekNavigation();
-  const { transformShiftsToStats } = useShiftDataTransformation();
-
-  useEffect(() => {
-    const view = searchParams.get("view") as ViewMode;
-    if (view === "weekly" || view === "monthly") {
-      setViewMode(view);
-    }
-  }, [searchParams]);
-
-  const queryParams = useMemo<ShiftQueryParams>(
-    () => (viewMode === "weekly" ? weeklyQueryParams : monthlyQueryParams),
-    [viewMode, weeklyQueryParams, monthlyQueryParams]
-  );
-
-  const { data: shifts } = usePublicShiftsQuery({ params: queryParams });
-  const { data: departments } = useDepartmentsQuery();
-
-  const shiftStats = useMemo<ShiftStats>(
-    () => transformShiftsToStats(shifts, departments),
-    [shifts, departments, transformShiftsToStats]
-  );
-
-  const handleViewChange = useCallback(
-    (newView: ViewMode) => {
-      if (newView === viewMode) {
-        return;
-      }
-      setPendingView(newView);
-      startTransition(() => {
-        setViewMode(newView);
-        router.push(`/shifts?view=${newView}`, { scroll: false });
-      });
-    },
-    [router, viewMode]
-  );
-
-  const handleMonthlyDateSelect = useCallback((date: string) => {
-    setSelectedDate(date);
-  }, []);
-
-  const handleWeeklyDateSelect = useCallback((date: string) => {
-    setSelectedDate(date);
-    setModalInitialStep("create-step1");
-    setIsModalOpen(true);
-  }, []);
-
-  const handleWeeklyShiftDetailSelect = useCallback((date: string) => {
-    setSelectedDate(date);
-    setModalInitialStep("create-step2");
-    setIsModalOpen(true);
-  }, []);
-
-  const handleCreateShift = useCallback(() => {
-    if (!(canManage && selectedDate)) {
-      return;
-    }
-    setModalInitialStep("create-step1");
-    setIsModalOpen(true);
-  }, [canManage, selectedDate]);
-
-  const handleShiftDetailClick = useCallback(() => {
-    if (!(canManage && selectedDate)) {
-      return;
-    }
-    setModalInitialStep("create-step2");
-    setIsModalOpen(true);
-  }, [canManage, selectedDate]);
-
-  const handleModalOpenChange = useCallback((open: boolean) => {
-    setIsModalOpen(open);
-    if (!open) {
-      setModalInitialStep("create-step1");
-    }
-  }, []);
-
-  const handleShiftUpdated = useCallback(async () => {
-    await Promise.all([
-      queryClient.invalidateQueries({ queryKey: publicShiftsQueryKeys.all }),
-      queryClient.invalidateQueries({
-        queryKey: publicShiftsDepartmentsQueryKeys.all,
-      }),
-    ]);
-  }, [queryClient]);
-
-  const dayData = useMemo<DayData | null>(() => {
-    if (!selectedDate) {
-      return null;
-    }
-
-    const shiftsForDate = shiftStats[selectedDate]?.shifts || [];
-
-    return {
-      date: selectedDate,
-      shifts: shiftsForDate,
-      isHoliday: isHoliday(selectedDate),
-    };
-  }, [selectedDate, shiftStats]);
-
-  useEffect(() => {
-    if (!isPending) {
-      setPendingView(null);
-    }
-  }, [isPending]);
-
+function isReadonlyURLSearchParams(
+  params: SearchParamsType
+): params is ReadonlyURLSearchParams {
   return (
-    <div className="min-h-screen">
-      <Header />
-
-      <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 md:py-8 lg:px-8">
-        <div className="mb-6 text-center md:mb-8">
-          <h1 className="mb-2 font-bold text-2xl text-foreground md:text-3xl">
-            シフト状況確認
-          </h1>
-          <p className="px-2 text-muted-foreground text-sm md:text-base">
-            現在のシフト状況をご確認いただけます
-          </p>
-        </div>
-
-        <div className="mb-6 flex justify-center">
-          <ViewToggle
-            currentView={viewMode}
-            isPending={isPending}
-            onViewChange={handleViewChange}
-            pendingView={pendingView}
-          />
-        </div>
-
-        <div className="mb-8">
-          {viewMode === "monthly" ? (
-            <div className="-mx-4 sticky top-20 z-40 mb-4 border-border/30 border-b px-4 backdrop-blur-sm">
-              <div className="flex items-center justify-between py-3">
-                <Button
-                  className="flex touch-manipulation items-center gap-1 px-2 py-2 hover:shadow-md md:gap-2 md:px-4"
-                  onClick={() => navigateMonth(-1)}
-                  variant="outline"
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                  <span className="hidden font-medium text-sm sm:inline">
-                    前月
-                  </span>
-                </Button>
-
-                <h2 className="font-bold text-foreground text-lg md:text-xl">
-                  {currentYear}年{currentMonth}月
-                </h2>
-
-                <Button
-                  className="flex touch-manipulation items-center gap-1 px-2 py-2 hover:shadow-md md:gap-2 md:px-4"
-                  onClick={() => navigateMonth(1)}
-                  variant="outline"
-                >
-                  <span className="hidden font-medium text-sm sm:inline">
-                    翌月
-                  </span>
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-          ) : (
-            <WeekNavigation
-              baseDate={weeklyBaseDate}
-              onDateSelect={handleDateSelect}
-              onNavigate={navigateWeek}
-            />
-          )}
-
-          <ScrollArea className="h-[calc(100vh-20rem)]">
-            <div className="pb-8">
-              {viewMode === "monthly" ? (
-                <>
-                  <div className="hidden sm:block">
-                    <MonthlyCalendarWithDetails
-                      canManage={canManage}
-                      isHoliday={isHoliday}
-                      month={currentMonth}
-                      onCreateShift={handleCreateShift}
-                      onDateSelect={handleMonthlyDateSelect}
-                      onShiftDetailClick={handleShiftDetailClick}
-                      selectedDate={selectedDate}
-                      shiftStats={shiftStats}
-                      year={currentYear}
-                    />
-                  </div>
-
-                  <div className="block px-4 sm:hidden">
-                    <ShiftMobileList
-                      isHoliday={isHoliday}
-                      month={currentMonth}
-                      onDateSelect={handleMonthlyDateSelect}
-                      selectedDate={selectedDate}
-                      shiftStats={shiftStats}
-                      year={currentYear}
-                    />
-                  </div>
-                </>
-              ) : (
-                <div className="px-4">
-                  <WeeklyShiftList
-                    baseDate={weeklyBaseDate}
-                    canManage={canManage}
-                    isHoliday={isHoliday}
-                    onDateSelect={handleWeeklyDateSelect}
-                    onShiftDetailSelect={handleWeeklyShiftDetailSelect}
-                    selectedDate={selectedDate}
-                    shiftStats={shiftStats}
-                  />
-                </div>
-              )}
-            </div>
-          </ScrollArea>
-        </div>
-      </div>
-
-      <UnifiedShiftBottomModal
-        dayData={dayData}
-        initialStep={modalInitialStep}
-        isOpen={isModalOpen}
-        onOpenChange={handleModalOpenChange}
-        onShiftUpdated={handleShiftUpdated}
-        selectedDate={selectedDate}
-      />
-    </div>
+    typeof params?.forEach === "function" &&
+    typeof params?.[Symbol.iterator] === "function"
   );
 }
 
-export default function PublicShiftsPage() {
+/**
+ * searchParams からクエリパラメータ付きの完全なパスを構築
+ */
+function buildFullPath(params: SearchParamsType, basePath: string): string {
+  if (!params) {
+    return basePath;
+  }
+
+  if (isReadonlyURLSearchParams(params)) {
+    const query = new URLSearchParams(Array.from(params)).toString();
+    return query === "" ? basePath : `${basePath}?${query}`;
+  }
+
+  const queryString = new URLSearchParams();
+
+  for (const [key, value] of Object.entries(
+    params as Record<string, string | string[] | undefined>
+  )) {
+    if (value === undefined) {
+      continue;
+    }
+
+    if (Array.isArray(value)) {
+      value.forEach((item) => {
+        if (item !== undefined) {
+          queryString.append(key, item);
+        }
+      });
+    } else {
+      queryString.append(key, value);
+    }
+  }
+
+  const query = queryString.toString();
+  return query === "" ? basePath : `${basePath}?${query}`;
+}
+
+export default async function ShiftsPage({ searchParams }: ShiftsPageProps) {
+  const result = await authenticateFromCookies();
+
+  if (!(result.success && result.user)) {
+    const params = await searchParams;
+    const fullPath = buildFullPath(params, "/shifts");
+    redirect(`/login?redirect=${encodeURIComponent(fullPath)}`);
+  }
+
   return (
-    <ProtectedRoute>
-      <QueryErrorResetBoundary>
-        {({ reset }) => (
-          <ErrorBoundary
-            fallbackRender={({ error, resetErrorBoundary }) => (
-              <PublicShiftsErrorState
-                error={error}
-                onRetry={() => {
-                  reset();
-                  resetErrorBoundary();
-                }}
-              />
-            )}
-            onReset={reset}
-          >
-            <Suspense fallback={<PublicShiftsSuspenseFallback />}>
-              <PublicShiftsPageContent />
-            </Suspense>
-          </ErrorBoundary>
-        )}
-      </QueryErrorResetBoundary>
-    </ProtectedRoute>
+    <Suspense fallback={<Loading />}>
+      <PublicShiftsPageClient user={result.user} />
+    </Suspense>
   );
 }
