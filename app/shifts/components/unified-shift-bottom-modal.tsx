@@ -7,6 +7,7 @@ import { AdminShiftModal } from "@/components/shared/modals/base-shift-modal";
 import { Button } from "@/components/ui/button";
 import { DrawerFooter } from "@/components/ui/drawer";
 import { useAuth } from "@/contexts/auth-context";
+import { useCreateShift } from "@/features/shifts";
 import { hasManagePermission } from "@/lib/auth/permissions";
 import type { AuthenticatedUser } from "@/lib/auth/types";
 import { cn } from "@/lib/utils";
@@ -84,12 +85,14 @@ export function UnifiedShiftBottomModal({
   const [shiftTypes, setShiftTypes] = useState<ShiftType[]>([]);
   const [instructors, setInstructors] = useState<Instructor[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [isCreatingShift, setIsCreatingShift] = useState(false);
   const [editMode, setEditMode] = useState<{
     isEdit: boolean;
     existingShift?: ExistingShiftData;
   }>({ isEdit: false });
   const [localDayData, setLocalDayData] = useState<DayData | null>(dayData);
+
+  // Server Actions
+  const createShiftMutation = useCreateShift();
 
   // dayDataが変更された時にlocalDayDataを更新
   useEffect(() => {
@@ -289,36 +292,26 @@ export function UnifiedShiftBottomModal({
       return;
     }
 
-    setIsCreatingShift(true);
+    if (!selectedDate) {
+      setErrors({ submit: "日付が選択されていません" });
+      return;
+    }
+
     setErrors({});
 
-    try {
-      const response = await fetch("/api/shifts", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          date: selectedDate,
-          departmentId: formData.departmentId,
-          shiftTypeId: formData.shiftTypeId,
-          description: formData.notes || null,
-          assignedInstructorIds: formData.selectedInstructorIds,
-          force: editMode.isEdit,
-        }),
-      });
+    const result = await createShiftMutation.mutateAsync({
+      date: selectedDate,
+      departmentId: formData.departmentId,
+      shiftTypeId: formData.shiftTypeId,
+      description: formData.notes || null,
+      assignedInstructorIds: formData.selectedInstructorIds,
+      force: editMode.isEdit,
+    });
 
-      const result = await response.json();
-
-      if (result.success) {
-        await handleShiftSuccess();
-      } else {
-        setErrors({ submit: result.error || "シフトの処理に失敗しました" });
-      }
-    } catch (_error) {
-      setErrors({ submit: "シフトの処理中にエラーが発生しました" });
-    } finally {
-      setIsCreatingShift(false);
+    if (result.success) {
+      await handleShiftSuccess();
+    } else {
+      setErrors({ submit: result.error || "シフトの処理に失敗しました" });
     }
   };
 
@@ -429,7 +422,7 @@ export function UnifiedShiftBottomModal({
   // フッター（ステップ2）
   const renderStep2Footer = () => {
     const getSubmitButtonLabel = () => {
-      if (isCreatingShift) {
+      if (createShiftMutation.isPending) {
         return "処理中...";
       }
       if (editMode.isEdit) {
@@ -450,7 +443,7 @@ export function UnifiedShiftBottomModal({
         </Button>
         <Button
           className="gap-2 md:flex-1"
-          disabled={isCreatingShift}
+          disabled={createShiftMutation.isPending}
           onClick={handleCreateShift}
           size="lg"
         >

@@ -1,18 +1,14 @@
 /**
- * ユーザー管理API クライアント
+ * ユーザー管理API クライアント（READ専用）
+ * Write操作はServer Actionsを使用してください
  */
 
-import type {
-  UpdateUserRequest,
-  UserApiResponse,
-  UserFilters,
-  UserWithDetails,
-} from "./types";
+import type { UserApiResponse, UserFilters, UserWithDetails } from "./types";
 
 const API_BASE_URL = "/api/auth/users";
 
 /**
- * ユーザー一覧取得
+ * ユーザー一覧取得（READ専用）
  */
 export async function fetchUsers(
   filters?: Partial<UserFilters>
@@ -61,7 +57,7 @@ export async function fetchUsers(
 }
 
 /**
- * ユーザー詳細取得
+ * ユーザー詳細取得（READ専用）
  */
 export async function fetchUser(id: string): Promise<UserWithDetails> {
   const response = await fetch(`${API_BASE_URL}/${id}`, {
@@ -86,59 +82,7 @@ export async function fetchUser(id: string): Promise<UserWithDetails> {
 }
 
 /**
- * ユーザー情報更新
- */
-export async function updateUser(
-  id: string,
-  data: UpdateUserRequest
-): Promise<UserWithDetails> {
-  const response = await fetch(`${API_BASE_URL}/${id}`, {
-    method: "PUT",
-    credentials: "include", // Cookieベースの認証
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(data),
-  });
-
-  if (!response.ok) {
-    throw new Error(`ユーザー情報の更新に失敗しました: ${response.status}`);
-  }
-
-  const result: UserApiResponse<UserWithDetails> = await response.json();
-
-  if (!(result.success && result.data)) {
-    throw new Error(result.error || "ユーザー情報の更新に失敗しました");
-  }
-
-  return result.data;
-}
-
-/**
- * ユーザー無効化
- */
-export async function deactivateUser(id: string): Promise<void> {
-  const response = await fetch(`${API_BASE_URL}/${id}`, {
-    method: "DELETE",
-    credentials: "include", // Cookieベースの認証
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
-
-  if (!response.ok) {
-    throw new Error(`ユーザーの無効化に失敗しました: ${response.status}`);
-  }
-
-  const result: UserApiResponse<void> = await response.json();
-
-  if (!result.success) {
-    throw new Error(result.error || "ユーザーの無効化に失敗しました");
-  }
-}
-
-/**
- * ロール表示名取得
+ * ロール表示名取得（UIヘルパー）
  */
 export function getRoleDisplayName(
   role: "ADMIN" | "MANAGER" | "MEMBER"
@@ -152,7 +96,7 @@ export function getRoleDisplayName(
 }
 
 /**
- * ロール色取得
+ * ロール色取得（UIヘルパー）
  */
 export function getRoleColor(role: "ADMIN" | "MANAGER" | "MEMBER"): string {
   const roleColors = {

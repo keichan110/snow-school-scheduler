@@ -12,7 +12,7 @@ import {
   type ApiSuccessResponse,
   HttpStatus,
 } from "@/lib/api/types";
-import { commonSchemas, isOneOf, validate } from "@/lib/api/validation";
+import { isOneOf } from "@/lib/api/validation";
 import { authenticateFromRequest } from "@/lib/auth/middleware";
 import { prisma } from "@/lib/db";
 import type { InstructorStatus } from "@/shared/types/common";
@@ -120,128 +120,5 @@ export async function GET(request: NextRequest) {
       });
     },
     "GET /api/instructors"
-  );
-}
-
-export async function POST(request: NextRequest) {
-  const authResult = await authenticateFromRequest(request);
-  if (!authResult.success) {
-    return createErrorResponse("Authentication required", {
-      type: ApiErrorType.UNAUTHORIZED,
-      status: HttpStatus.UNAUTHORIZED,
-    });
-  }
-  return withApiErrorHandling<ApiSuccessResponse<unknown> | ApiErrorResponse>(
-    async () => {
-      const body = await request.json();
-
-      // スキーマベースバリデーション
-      const schema = commonSchemas.createInstructor;
-      if (!schema) {
-        return createErrorResponse("Validation schema not found", {
-          type: ApiErrorType.INTERNAL_ERROR,
-          status: HttpStatus.INTERNAL_SERVER_ERROR,
-        });
-      }
-      const validationResult = validate(body, schema);
-      if (!validationResult.isValid) {
-        return createValidationErrorResponse(validationResult.errors);
-      }
-
-      // 資格IDの存在確認（指定されている場合）
-      if (body.certificationIds && Array.isArray(body.certificationIds)) {
-        const existingCertifications = await prisma.certification.findMany({
-          where: {
-            id: { in: body.certificationIds || [] },
-            isActive: true,
-          },
-        });
-
-        const certificationIdsLength = body?.certificationIds?.length ?? 0;
-        if ((existingCertifications?.length ?? 0) !== certificationIdsLength) {
-          return createErrorResponse(
-            "Some certification IDs are invalid or inactive",
-            {
-              type: ApiErrorType.VALIDATION_ERROR,
-              status: HttpStatus.BAD_REQUEST,
-            }
-          );
-        }
-      }
-
-      // トランザクション処理でインストラクターと資格の関連付けを作成
-      const result = await prisma.$transaction(async (tx) => {
-        // インストラクター作成
-        const newInstructor = await tx.instructor.create({
-          data: {
-            lastName: body.lastName,
-            firstName: body.firstName,
-            lastNameKana: body.lastNameKana,
-            firstNameKana: body.firstNameKana,
-            status: body.status || "ACTIVE",
-            notes: body.notes,
-          },
-        });
-
-        // 資格の関連付け（指定されている場合）
-        if (body.certificationIds && Array.isArray(body.certificationIds)) {
-          await tx.instructorCertification.createMany({
-            data: body.certificationIds.map((certId: number) => ({
-              instructorId: newInstructor.id,
-              certificationId: certId,
-            })),
-          });
-        }
-
-        // 関連データ付きでインストラクターを取得
-        const instructorWithCertifications = await tx.instructor.findUnique({
-          where: { id: newInstructor.id },
-          include: {
-            certifications: {
-              include: {
-                certification: {
-                  include: {
-                    department: {
-                      select: {
-                        id: true,
-                        name: true,
-                      },
-                    },
-                  },
-                },
-              },
-            },
-          },
-        });
-
-        return instructorWithCertifications;
-      });
-
-      // レスポンス形式をOpenAPI仕様に合わせて変換
-      const formattedInstructor = {
-        id: result?.id,
-        lastName: result?.lastName,
-        firstName: result?.firstName,
-        lastNameKana: result?.lastNameKana,
-        firstNameKana: result?.firstNameKana,
-        status: result?.status,
-        notes: result?.notes,
-        createdAt: result?.createdAt,
-        updatedAt: result?.updatedAt,
-        certifications: result?.certifications.map((ic) => ({
-          id: ic.certification.id,
-          name: ic.certification.name,
-          shortName: ic.certification.shortName,
-          organization: ic.certification.organization,
-          department: ic.certification.department,
-        })),
-      };
-
-      return createSuccessResponse(formattedInstructor, {
-        status: HttpStatus.CREATED,
-        message: "Instructor operation completed successfully",
-      });
-    },
-    "POST /api/instructors"
   );
 }

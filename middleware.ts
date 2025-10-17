@@ -246,8 +246,8 @@ export const config = {
      * - _next/static (静的ファイル)
      * - _next/image (画像最適化)
      * - favicon.ico (ファビコン)
-     * - 公開ファイル (.svg, .png, .jpg, .jpeg, .gif, .webp)
+     * - 公開ファイル (.svg, .png, .jpg, .jpeg, .gif, .webp, .webmanifest)
      */
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|webmanifest)$).*)",
   ],
 };

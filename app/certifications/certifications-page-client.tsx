@@ -6,7 +6,6 @@ import {
   Plus,
   SealCheck,
 } from "@phosphor-icons/react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -22,10 +21,11 @@ import {
 } from "@/components/ui/table";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  certificationsQueryKeys,
   useCertificationsQuery,
+  useCreateCertification,
+  useUpdateCertification,
 } from "@/features/certifications";
-import { createCertification, updateCertification } from "./api";
+import { getDepartmentIdByType } from "./api";
 import CertificationModal from "./certification-modal";
 import type {
   CertificationFormData,
@@ -183,7 +183,6 @@ export default function CertificationsPageClient() {
   const [editingCertification, setEditingCertification] =
     useState<CertificationWithDepartment | null>(null);
 
-  const queryClient = useQueryClient();
   const { data: certifications } = useCertificationsQuery();
 
   const filteredCertifications = useMemo(
@@ -201,49 +200,8 @@ export default function CertificationsPageClient() {
     [certifications]
   );
 
-  const createCertificationMutation = useMutation<
-    CertificationWithDepartment,
-    Error,
-    CertificationFormData
-  >({
-    mutationFn: (formData) => createCertification(formData),
-    onSuccess: (created) => {
-      queryClient.setQueryData<CertificationWithDepartment[]>(
-        certificationsQueryKeys.list(),
-        (previous) => {
-          if (!previous) {
-            return [created];
-          }
-
-          return sortCertifications([...previous, created]);
-        }
-      );
-    },
-  });
-
-  const updateCertificationMutation = useMutation<
-    CertificationWithDepartment,
-    Error,
-    { id: number; data: CertificationFormData }
-  >({
-    mutationFn: ({ id, data }) => updateCertification(id, data),
-    onSuccess: (updated) => {
-      queryClient.setQueryData<CertificationWithDepartment[]>(
-        certificationsQueryKeys.list(),
-        (previous) => {
-          if (!previous) {
-            return [updated];
-          }
-
-          const next = previous.map((certification) =>
-            certification.id === updated.id ? updated : certification
-          );
-
-          return sortCertifications(next);
-        }
-      );
-    },
-  });
+  const createCertificationMutation = useCreateCertification();
+  const updateCertificationMutation = useUpdateCertification();
 
   const handleDepartmentChange = useCallback((department: string) => {
     setCurrentDepartment(department as "all" | "ski" | "snowboard");
@@ -268,13 +226,24 @@ export default function CertificationsPageClient() {
 
   const handleSave = useCallback(
     async (data: CertificationFormData) => {
+      // CertificationFormDataをServer Actionsの入力形式に変換
+      const departmentId = await getDepartmentIdByType(data.department);
+      const input = {
+        departmentId,
+        name: data.name,
+        shortName: data.shortName,
+        organization: data.organization,
+        description: data.description || null,
+        isActive: data.status === "active",
+      };
+
       if (editingCertification) {
         await updateCertificationMutation.mutateAsync({
           id: editingCertification.id,
-          data,
+          data: input,
         });
       } else {
-        await createCertificationMutation.mutateAsync(data);
+        await createCertificationMutation.mutateAsync(input);
       }
 
       handleCloseModal();

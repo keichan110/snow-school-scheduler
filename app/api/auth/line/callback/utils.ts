@@ -91,7 +91,7 @@ export async function updateUserProfileIfNeeded(
   user: {
     id: string;
     displayName: string;
-    profileImageUrl: string | null;
+    pictureUrl: string | null;
     lineUserId: string;
     role: string;
     isActive: boolean;
@@ -102,7 +102,7 @@ export async function updateUserProfileIfNeeded(
 ) {
   const needsUpdate =
     user.displayName !== profile.displayName ||
-    user.profileImageUrl !== (profile.pictureUrl || null);
+    user.pictureUrl !== (profile.pictureUrl || null);
 
   if (!needsUpdate) {
     return user;
@@ -112,7 +112,7 @@ export async function updateUserProfileIfNeeded(
     where: { id: user.id },
     data: {
       displayName: profile.displayName,
-      profileImageUrl: profile.pictureUrl || null,
+      pictureUrl: profile.pictureUrl || null,
     },
   });
 
@@ -158,7 +158,7 @@ export async function createNewUser(profile: LineProfile, inviteToken: string) {
     data: {
       lineUserId: profile.userId,
       displayName: profile.displayName,
-      profileImageUrl: profile.pictureUrl || null,
+      pictureUrl: profile.pictureUrl || null,
       role: "MEMBER",
       isActive: true,
     },

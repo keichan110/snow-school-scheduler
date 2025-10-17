@@ -8,7 +8,7 @@ import {
   User,
   UserCheck,
 } from "@phosphor-icons/react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { ja } from "date-fns/locale";
 import { useCallback, useMemo, useState } from "react";
@@ -25,13 +25,13 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { usersQueryKeys, useUsersQuery } from "@/features/users";
 import {
-  deactivateUser,
-  getRoleColor,
-  getRoleDisplayName,
-  updateUser,
-} from "./api";
+  useDeleteUser,
+  usersQueryKeys,
+  useUpdateUser,
+  useUsersQuery,
+} from "@/features/users";
+import { getRoleColor, getRoleDisplayName } from "./api";
 import type {
   UserFilters,
   UserFormData,
@@ -249,14 +249,8 @@ export default function UsersPageClient() {
     [filters]
   );
 
-  const { mutateAsync: updateUserMutateAsync } = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: UserFormData }) =>
-      updateUser(id, data),
-  });
-
-  const { mutateAsync: deactivateUserMutateAsync } = useMutation({
-    mutationFn: (id: string) => deactivateUser(id),
-  });
+  const updateUserMutation = useUpdateUser();
+  const deleteUserMutation = useDeleteUser();
 
   const handleRoleFilterChange = useCallback((role: string) => {
     setFilters((prev) => {
@@ -296,36 +290,42 @@ export default function UsersPageClient() {
         throw new Error("編集対象のユーザーが設定されていません");
       }
 
-      const updated = await updateUserMutateAsync({
+      const result = await updateUserMutation.mutateAsync({
         id: editingUser.id,
-        data: formData,
+        data: {
+          role: formData.role,
+          isActive: formData.isActive,
+        },
       });
 
-      queryClient.setQueryData<UserWithDetails[]>(
-        usersQueryKeys.list(filters),
-        (previous) => {
-          const snapshot = previous ? [...previous] : [];
-          const withoutUpdated = snapshot.filter(
-            (user) => user.id !== updated.id
-          );
+      if (result.success && result.data) {
+        const updated = result.data as UserWithDetails;
+        queryClient.setQueryData<UserWithDetails[]>(
+          usersQueryKeys.list(filters),
+          (previous) => {
+            const snapshot = previous ? [...previous] : [];
+            const withoutUpdated = snapshot.filter(
+              (user) => user.id !== updated.id
+            );
 
-          if (matchesFilters(updated, filters)) {
-            withoutUpdated.push(updated);
+            if (matchesFilters(updated, filters)) {
+              withoutUpdated.push(updated);
+            }
+
+            return sortUsers(withoutUpdated);
           }
-
-          return sortUsers(withoutUpdated);
-        }
-      );
+        );
+      }
 
       await queryClient.invalidateQueries({ queryKey: usersQueryKeys.all });
       handleCloseModal();
     },
-    [editingUser, updateUserMutateAsync, queryClient, filters, handleCloseModal]
+    [editingUser, updateUserMutation, queryClient, filters, handleCloseModal]
   );
 
   const handleDeactivate = useCallback(
     async (user: UserWithDetails) => {
-      await deactivateUserMutateAsync(user.id);
+      await deleteUserMutation.mutateAsync(user.id);
 
       const deactivatedUser: UserWithDetails = { ...user, isActive: false };
 
@@ -345,7 +345,7 @@ export default function UsersPageClient() {
 
       await queryClient.invalidateQueries({ queryKey: usersQueryKeys.all });
     },
-    [deactivateUserMutateAsync, queryClient, filters]
+    [deleteUserMutation, queryClient, filters]
   );
 
   return (

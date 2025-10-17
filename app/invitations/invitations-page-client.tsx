@@ -9,7 +9,7 @@ import {
   Plus,
   UserCheck,
 } from "@phosphor-icons/react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { ja } from "date-fns/locale";
 import { useCallback, useMemo, useState } from "react";
@@ -27,17 +27,14 @@ import {
 } from "@/components/ui/table";
 import {
   invitationsQueryKeys,
+  useCreateInvitation,
+  useDeleteInvitation,
   useInvitationsQuery,
 } from "@/features/invitations";
-import {
-  checkActiveInvitation,
-  createInvitation,
-  deactivateInvitation,
-} from "./api";
+import { checkActiveInvitation } from "./api";
 import InvitationModal from "./invitation-modal";
 import InvitationWarningModal from "./invitation-warning-modal";
 import type {
-  CreateInvitationRequest,
   InvitationFormData,
   InvitationStats,
   InvitationTokenWithStats,
@@ -295,16 +292,8 @@ export default function InvitationsPageClient() {
 
   const stats = useMemo(() => calculateStats(invitations), [invitations]);
 
-  const {
-    mutateAsync: createInvitationMutateAsync,
-    isPending: isCreatingInvitation,
-  } = useMutation({
-    mutationFn: (data: CreateInvitationRequest) => createInvitation(data),
-  });
-
-  const { mutateAsync: deactivateInvitationMutateAsync } = useMutation({
-    mutationFn: (token: string) => deactivateInvitation(token),
-  });
+  const createInvitationMutation = useCreateInvitation();
+  const deleteInvitationMutation = useDeleteInvitation();
 
   const handleOpenModal = useCallback(
     (invitation?: InvitationTokenWithStats) => {
@@ -342,35 +331,23 @@ export default function InvitationsPageClient() {
   );
 
   const executeInvitationCreation = useCallback(
-    async (
-      formData: InvitationFormData,
-      activeInvitation: InvitationTokenWithStats | null
-    ) => {
-      const requestData: CreateInvitationRequest = {
+    async (formData: InvitationFormData) => {
+      const requestData = {
         description: formData.description,
         expiresAt: formData.expiresAt.toISOString(),
+        role: "MEMBER" as const,
       };
 
-      const created = await createInvitationMutateAsync(requestData);
+      const result = await createInvitationMutation.mutateAsync(requestData);
 
-      updateInvitationCache((items) => {
-        const withoutDuplicate = items
-          .map((invitation) =>
-            activeInvitation && invitation.token === activeInvitation.token
-              ? { ...invitation, isActive: false }
-              : invitation
-          )
-          .filter((invitation) => invitation.token !== created.token);
-
-        withoutDuplicate.push(created);
-        return sortInvitations(withoutDuplicate);
-      });
-
-      await queryClient.invalidateQueries({
-        queryKey: invitationsQueryKeys.all,
-      });
+      if (result.success) {
+        // キャッシュを無効化して再フェッチ
+        await queryClient.invalidateQueries({
+          queryKey: invitationsQueryKeys.all,
+        });
+      }
     },
-    [createInvitationMutateAsync, updateInvitationCache, queryClient]
+    [createInvitationMutation, queryClient]
   );
 
   const handleSave = useCallback(
@@ -384,7 +361,7 @@ export default function InvitationsPageClient() {
         return;
       }
 
-      await executeInvitationCreation(data, null);
+      await executeInvitationCreation(data);
     },
     [executeInvitationCreation]
   );
@@ -394,14 +371,12 @@ export default function InvitationsPageClient() {
       return;
     }
 
-    const activeInvitation = existingActiveInvitation ?? null;
-
-    await executeInvitationCreation(pendingFormData, activeInvitation);
+    await executeInvitationCreation(pendingFormData);
 
     setWarningModalOpen(false);
     setPendingFormData(null);
     setExistingActiveInvitation(null);
-  }, [executeInvitationCreation, pendingFormData, existingActiveInvitation]);
+  }, [executeInvitationCreation, pendingFormData]);
 
   const handleCancelReplacement = useCallback(() => {
     setWarningModalOpen(false);
@@ -411,7 +386,7 @@ export default function InvitationsPageClient() {
 
   const handleDeactivate = useCallback(
     async (token: string) => {
-      await deactivateInvitationMutateAsync(token);
+      await deleteInvitationMutation.mutateAsync(token);
 
       updateInvitationCache((items) =>
         items.map((invitation) =>
@@ -425,7 +400,7 @@ export default function InvitationsPageClient() {
         queryKey: invitationsQueryKeys.all,
       });
     },
-    [deactivateInvitationMutateAsync, updateInvitationCache, queryClient]
+    [deleteInvitationMutation, updateInvitationCache, queryClient]
   );
 
   const handleCopyInvitationUrl = useCallback(async (token: string) => {
@@ -447,12 +422,12 @@ export default function InvitationsPageClient() {
   }, []);
 
   const handleCloseWarningModal = useCallback(() => {
-    if (isCreatingInvitation) {
+    if (createInvitationMutation.isPending) {
       return;
     }
 
     handleCancelReplacement();
-  }, [handleCancelReplacement, isCreatingInvitation]);
+  }, [handleCancelReplacement, createInvitationMutation.isPending]);
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 md:py-8 lg:px-8">
@@ -592,7 +567,7 @@ export default function InvitationsPageClient() {
         <InvitationWarningModal
           existingInvitation={existingActiveInvitation}
           isOpen={warningModalOpen}
-          isSubmitting={isCreatingInvitation}
+          isSubmitting={createInvitationMutation.isPending}
           onClose={handleCloseWarningModal}
           onConfirm={handleConfirmReplacement}
         />
