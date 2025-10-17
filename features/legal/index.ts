@@ -3,6 +3,7 @@
  * 利用規約、プライバシーポリシーなどの法務関連ドキュメントを管理
  */
 
+export { privacyDocument } from "./content/privacy";
 // Content
 export { termsDocument } from "./content/terms";
 // Types
