@@ -99,6 +99,26 @@ export function authErrorMap(error: string): AuthErrorInfo {
         severity: "warning",
       };
 
+    case "invitation_expired":
+      return {
+        title: "招待の有効期限が切れています",
+        message:
+          "この招待URLの有効期限が切れています。管理者に新しい招待URLの発行をご依頼ください。",
+        iconName: "alert-triangle",
+        canRetry: false,
+        severity: "warning",
+      };
+
+    case "invitation_inactive":
+      return {
+        title: "招待が無効です",
+        message:
+          "この招待URLは無効化されています。管理者にお問い合わせください。",
+        iconName: "x-circle",
+        canRetry: false,
+        severity: "warning",
+      };
+
     default:
       return {
         title: "予期しないエラーが発生しました",
