@@ -7,7 +7,7 @@ import { AuthErrorClient } from "@/features/auth/ui/auth-error-client";
 type AuthErrorPageProps = {
   searchParams: Promise<{
     error?: string;
-    description?: string;
+    description?: string | string[];
     reason?: string;
   }>;
 };
@@ -23,7 +23,11 @@ export default async function AuthErrorPage({
 }: AuthErrorPageProps) {
   const params = await searchParams;
   const error = params.error || params.reason || "unknown";
-  const description = sanitizeDescription(params.description || "");
+  const rawDescription = params.description;
+  const normalizedDescription = Array.isArray(rawDescription)
+    ? rawDescription[0] || ""
+    : rawDescription || "";
+  const description = sanitizeDescription(normalizedDescription);
 
   const errorInfo = authErrorMap(error);
 
