@@ -28,9 +28,7 @@ function buildFullPath(
 
     if (Array.isArray(value)) {
       for (const item of value) {
-        if (item !== undefined) {
-          queryString.append(key, item);
-        }
+        queryString.append(key, item);
       }
     } else {
       queryString.append(key, value);
