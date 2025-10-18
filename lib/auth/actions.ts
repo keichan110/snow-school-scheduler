@@ -16,7 +16,7 @@ import { redirect } from "next/navigation";
  */
 export async function logoutAction() {
   try {
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
 
     // 認証関連のCookieを削除
     cookieStore.delete("auth-token");
