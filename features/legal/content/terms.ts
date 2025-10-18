@@ -3,7 +3,9 @@
  * 規約の変更履歴を独立して管理するため、このファイルで内容を管理
  */
 
-export const TERMS_CONTENT = `## 第1条（適用）
+import type { LegalDocument } from "../types";
+
+const TERMS_CONTENT = `## 第1条（適用）
 
 本利用規約（以下「本規約」といいます。）は、スキー・スノーボードスクール
 シフト管理システム（以下「本サービス」といいます。）の利用に関して、
@@ -79,9 +81,15 @@ export const TERMS_CONTENT = `## 第1条（適用）
 
 本規約の解釈にあたっては、日本法を準拠法とします。`;
 
-export const TERMS_TITLE = "利用規約";
+const TERMS_TITLE = "利用規約";
 
-export const TERMS_METADATA = {
+const TERMS_METADATA = {
   制定日: "2025年9月12日",
   最終更新日: "2025年9月12日",
+};
+
+export const termsDocument: LegalDocument = {
+  title: TERMS_TITLE,
+  metadata: TERMS_METADATA,
+  content: TERMS_CONTENT,
 };
