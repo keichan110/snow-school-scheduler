@@ -75,6 +75,18 @@ type AuthContextValue = {
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 /**
+ * 簡易ユーザー情報型（レイアウトからの初期化用）
+ * Server Components の ensureRole から得られる最小限のユーザー情報
+ */
+type InitialUser = {
+  id: string;
+  lineUserId: string;
+  displayName: string;
+  pictureUrl?: string | null;
+  role: "ADMIN" | "MANAGER" | "MEMBER";
+};
+
+/**
  * AuthProviderのProps
  */
 type AuthProviderProps = {
@@ -83,8 +95,10 @@ type AuthProviderProps = {
    * 初期ユーザー情報（サーバーサイドで取得済みの場合）
    * レイアウトで ensureRole を使って取得したユーザー情報を渡すことで、
    * クライアント側での追加フェッチを回避できる
+   *
+   * InitialUser（最小限の情報）または User（完全な情報）を受け入れる
    */
-  initialUser?: User | null;
+  initialUser?: InitialUser | User | null;
   /**
    * 初期認証状態（サーバーサイドで判定済みの場合）
    * レイアウトでの認証結果を渡すことで、クライアント側の初期状態を制御できる
@@ -221,12 +235,39 @@ async function updateUserDisplayName(newDisplayName: string): Promise<User> {
  * }
  * ```
  */
+/**
+ * InitialUser を User 型に変換する
+ * 不足しているフィールドには仮の値を設定する
+ */
+function convertInitialUser(initial: InitialUser | User | null): User | null {
+  if (!initial) {
+    return null;
+  }
+
+  // すでに User 型の場合（isActive フィールドの存在で判定）
+  if ("isActive" in initial) {
+    return initial as User;
+  }
+
+  // InitialUser から User へ変換（不足フィールドに仮の値を設定）
+  const now = new Date();
+  return {
+    ...initial,
+    pictureUrl: initial.pictureUrl ?? null,
+    isActive: true, // レイアウトで認証済みなので true
+    createdAt: now, // 仮の値（クライアント側では使用しない想定）
+    updatedAt: now, // 仮の値（クライアント側では使用しない想定）
+  };
+}
+
 export function AuthProvider({
   children,
   initialUser,
   initialStatus,
 }: AuthProviderProps) {
-  const [user, setUser] = useState<User | null>(initialUser ?? null);
+  const [user, setUser] = useState<User | null>(
+    convertInitialUser(initialUser ?? null)
+  );
   // initialStatus が未指定の場合、initialUser から推論
   // initialUser が存在する場合は "authenticated"、そうでなければ "loading"
   const [status, setStatus] = useState<AuthStatus>(

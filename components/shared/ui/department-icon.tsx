@@ -5,7 +5,7 @@ import {
   PersonSimpleSki,
   PersonSimpleSnowboard,
 } from "@phosphor-icons/react";
-import type { DepartmentType } from "@/app/shifts/components/types";
+import type { DepartmentType } from "@/app/(member)/shifts/components/types";
 
 type DepartmentIconProps = {
   department: DepartmentType;

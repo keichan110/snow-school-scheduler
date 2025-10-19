@@ -15,6 +15,7 @@ import { ErrorBoundary } from "react-error-boundary";
 import Header from "@/components/header";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useRequireAuth } from "@/contexts/auth-context";
 import {
   publicShiftsDepartmentsQueryKeys,
   publicShiftsQueryKeys,
@@ -22,7 +23,6 @@ import {
   usePublicShiftsQuery,
 } from "@/features/shifts";
 import { hasManagePermission } from "@/lib/auth/permissions";
-import type { AuthenticatedUser } from "@/lib/auth/types";
 import { MonthlyCalendarWithDetails } from "./components/monthly-calendar-with-details";
 import { PublicShiftsErrorState } from "./components/public-shifts-error-state";
 import { PublicShiftsSuspenseFallback } from "./components/public-shifts-suspense-fallback";
@@ -39,11 +39,8 @@ import type { DayData, ShiftQueryParams, ShiftStats } from "./types";
 
 type ViewMode = "monthly" | "weekly";
 
-type PublicShiftsPageClientProps = {
-  user: AuthenticatedUser;
-};
-
-function PublicShiftsPageContent({ user }: PublicShiftsPageClientProps) {
+function PublicShiftsPageContent() {
+  const user = useRequireAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
   const queryClient = useQueryClient();
@@ -288,9 +285,7 @@ function PublicShiftsPageContent({ user }: PublicShiftsPageClientProps) {
   );
 }
 
-export default function PublicShiftsPageClient({
-  user,
-}: PublicShiftsPageClientProps) {
+export default function PublicShiftsPageClient() {
   return (
     <QueryErrorResetBoundary>
       {({ reset }) => (
@@ -307,7 +302,7 @@ export default function PublicShiftsPageClient({
           onReset={reset}
         >
           <Suspense fallback={<PublicShiftsSuspenseFallback />}>
-            <PublicShiftsPageContent user={user} />
+            <PublicShiftsPageContent />
           </Suspense>
         </ErrorBoundary>
       )}

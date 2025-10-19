@@ -1,6 +1,6 @@
 "use client";
 
-import { getDepartmentType } from "@/app/certifications/utils";
+import { getDepartmentType } from "@/app/(member)/(manager)/certifications/utils";
 import { cn } from "@/lib/utils";
 
 export type CertificationBadgeProps = {

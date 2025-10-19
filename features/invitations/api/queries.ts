@@ -4,8 +4,8 @@ import {
   useSuspenseQuery,
 } from "@tanstack/react-query";
 
-import { fetchInvitations } from "@/app/invitations/api";
-import type { InvitationTokenWithStats } from "@/app/invitations/types";
+import { fetchInvitations } from "@/app/(member)/(manager)/(admin)/invitations/api";
+import type { InvitationTokenWithStats } from "@/app/(member)/(manager)/(admin)/invitations/types";
 
 /**
  * 招待一覧取得用のクエリキー定義

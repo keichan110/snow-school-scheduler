@@ -1,4 +1,4 @@
-import type { ShiftStats } from "@/app/shifts/types";
+import type { ShiftStats } from "@/app/(member)/shifts/types";
 import type {
   BaseShiftDisplayProps,
   ShiftCalendarGridProps,

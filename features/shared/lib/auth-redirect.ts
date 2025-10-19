@@ -10,10 +10,12 @@ export const ACCESS_DENIED_REDIRECT = "/";
  * 現在のパスを取得
  * Next.js App Router の Server Components から現在のパスを取得する
  *
- * TODO: デプロイ環境でヘッダー実測を行い、最適なキーを確定する
- * - 開発環境と本番環境でヘッダーが異なる可能性がある
- * - `x-url`, `x-forwarded-url`, `x-original-uri` などを試す
- * - ステージング環境での動作確認が必要
+ * ヘッダー確認の優先順位（環境によって異なるヘッダーが利用可能）：
+ * 1. `next-url` - Next.js 15 dev/Node runtime で主に使用される
+ * 2. `x-url` - カスタムプロキシやミドルウェアが設定する場合がある
+ * 3. `x-forwarded-url` - リバースプロキシ（nginx等）が設定する場合がある
+ * 4. `x-forwarded-proto` + `x-forwarded-host` + `x-original-uri` - 個別ヘッダーから構築
+ * 5. `x-original-uri` または `/` - 最終フォールバック
  *
  * @returns 現在のパス（pathname + search）
  *
@@ -26,7 +28,18 @@ export const ACCESS_DENIED_REDIRECT = "/";
 export async function resolveCurrentPath(): Promise<string> {
   const headersList = await headers();
 
-  // 環境によって異なるヘッダーを試行
+  // 1. Next.js 15 の next-url ヘッダーを最優先で確認（開発環境で主に使用される）
+  const nextUrl = headersList.get("next-url");
+  if (nextUrl) {
+    try {
+      const parsed = new URL(nextUrl);
+      return parsed.pathname + parsed.search;
+    } catch {
+      // URL パースに失敗した場合はフォールバック
+    }
+  }
+
+  // 2. x-url または x-forwarded-url を確認
   const url = headersList.get("x-url") ?? headersList.get("x-forwarded-url");
   if (url) {
     try {
@@ -37,7 +50,7 @@ export async function resolveCurrentPath(): Promise<string> {
     }
   }
 
-  // x-forwarded-proto と x-forwarded-host から構築を試みる
+  // 3. x-forwarded-proto と x-forwarded-host から構築を試みる
   const proto = headersList.get("x-forwarded-proto");
   const host = headersList.get("x-forwarded-host");
   const path = headersList.get("x-original-uri") ?? "/";

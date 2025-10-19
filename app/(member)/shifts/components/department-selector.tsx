@@ -1,6 +1,6 @@
 "use client";
 
-import { getDepartmentIcon } from "@/app/shifts/utils/shift-components";
+import { getDepartmentIcon } from "@/app/(member)/shifts/utils/shift-components";
 import { cn } from "@/lib/utils";
 import { DEPARTMENT_STYLES } from "../constants/shift-constants";
 import type { Department, DepartmentType } from "../types";
