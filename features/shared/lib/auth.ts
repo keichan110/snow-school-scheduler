@@ -1,7 +1,6 @@
 "use server";
 import { authenticateFromCookies } from "@/lib/auth/middleware";
 import type { AuthenticatedUser } from "../types/actions";
-import { ForbiddenError, UnauthorizedError } from "./auth-errors";
 
 /**
  * Server Actions 用の認証ヘルパー
@@ -46,78 +45,11 @@ export async function authenticate(): Promise<AuthenticatedUser | null> {
 }
 
 /**
- * 管理者権限チェック
- * Server Action 内で管理者のみに操作を許可する場合に使用
- *
- * @returns 認証済み管理者ユーザー情報
- * @throws {UnauthorizedError} 未認証の場合
- * @throws {ForbiddenError} 管理者権限がない場合
- *
- * @example
- * ```typescript
- * export async function deleteUserAction(id: string) {
- *   const admin = await requireAdmin();
- *   // 管理者専用処理...
- * }
- * ```
+ * 権限チェックユーティリティを role-guard.ts から再エクスポート
+ * 既存コードとの互換性を維持しつつ、実装は role-guard.ts に委譲
  */
-export async function requireAdmin(): Promise<AuthenticatedUser> {
-  const user = await authenticate();
-  if (!user) {
-    throw new UnauthorizedError();
-  }
-  if (user.role !== "ADMIN") {
-    throw new ForbiddenError("Forbidden: Admin access required");
-  }
-  return user;
-}
-
-/**
- * マネージャー権限チェック
- * Server Action 内でマネージャー以上（ADMIN または MANAGER）に操作を許可する場合に使用
- *
- * @returns 認証済みマネージャー以上のユーザー情報
- * @throws {UnauthorizedError} 未認証の場合
- * @throws {ForbiddenError} マネージャー権限がない場合
- *
- * @example
- * ```typescript
- * export async function createDepartmentAction(input: unknown) {
- *   const user = await requireManagerAuth();
- *   // マネージャー以上専用処理...
- * }
- * ```
- */
-export async function requireManagerAuth(): Promise<AuthenticatedUser> {
-  const user = await authenticate();
-  if (!user) {
-    throw new UnauthorizedError();
-  }
-  if (user.role !== "ADMIN" && user.role !== "MANAGER") {
-    throw new ForbiddenError("Forbidden: Manager or Admin access required");
-  }
-  return user;
-}
-
-/**
- * 認証必須チェック
- * Server Action 内で認証済みユーザーのみに操作を許可する場合に使用
- *
- * @returns 認証済みユーザー情報
- * @throws {UnauthorizedError} 未認証の場合
- *
- * @example
- * ```typescript
- * export async function createResourceAction(input: unknown) {
- *   const user = await requireAuth();
- *   // 認証済みユーザー向け処理...
- * }
- * ```
- */
-export async function requireAuth(): Promise<AuthenticatedUser> {
-  const user = await authenticate();
-  if (!user) {
-    throw new UnauthorizedError();
-  }
-  return user;
-}
+export {
+  requireAdmin,
+  requireAuth,
+  requireManagerAuth,
+} from "./role-guard";

@@ -79,6 +79,17 @@ const AuthContext = createContext<AuthContextValue | undefined>(undefined);
  */
 type AuthProviderProps = {
   children: ReactNode;
+  /**
+   * 初期ユーザー情報（サーバーサイドで取得済みの場合）
+   * レイアウトで ensureRole を使って取得したユーザー情報を渡すことで、
+   * クライアント側での追加フェッチを回避できる
+   */
+  initialUser?: User | null;
+  /**
+   * 初期認証状態（サーバーサイドで判定済みの場合）
+   * レイアウトでの認証結果を渡すことで、クライアント側の初期状態を制御できる
+   */
+  initialStatus?: "authenticated" | "unauthenticated" | "loading";
 };
 
 /**
@@ -188,10 +199,39 @@ async function updateUserDisplayName(newDisplayName: string): Promise<User> {
 /**
  * AuthProvider コンポーネント
  * アプリケーション全体に認証状態を提供
+ *
+ * @param children - 子コンポーネント
+ * @param initialUser - 初期ユーザー情報（サーバーサイドから渡される場合）
+ * @param initialStatus - 初期認証状態（サーバーサイドから渡される場合）
+ *
+ * @example
+ * ```tsx
+ * // レイアウトでサーバー判定結果を渡す場合
+ * export default async function MemberLayout({ children }: Props) {
+ *   const result = await ensureRole({ atLeast: "MEMBER" });
+ *   if (result.status === "unauthenticated") redirect(buildLoginRedirectUrl());
+ *   if (result.status === "forbidden") redirect(ACCESS_DENIED_REDIRECT);
+ *
+ *   const { user } = result; // status === "authorized"
+ *   return (
+ *     <AuthProvider initialStatus="authenticated" initialUser={user}>
+ *       {children}
+ *     </AuthProvider>
+ *   );
+ * }
+ * ```
  */
-export function AuthProvider({ children }: AuthProviderProps) {
-  const [user, setUser] = useState<User | null>(null);
-  const [status, setStatus] = useState<AuthStatus>("loading");
+export function AuthProvider({
+  children,
+  initialUser,
+  initialStatus,
+}: AuthProviderProps) {
+  const [user, setUser] = useState<User | null>(initialUser ?? null);
+  // initialStatus が未指定の場合、initialUser から推論
+  // initialUser が存在する場合は "authenticated"、そうでなければ "loading"
+  const [status, setStatus] = useState<AuthStatus>(
+    initialStatus ?? (initialUser ? "authenticated" : "loading")
+  );
   const [error, setError] = useState<string | null>(null);
 
   /**
@@ -261,10 +301,19 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   /**
    * 初回マウント時に認証状態をチェック
+   * initialUser/initialStatus が提供されている場合は追加フェッチをスキップ
    */
   useEffect(() => {
-    fetchAndSetUser();
-  }, [fetchAndSetUser]);
+    // 両方が明示的に提供されている場合はスキップ
+    if (initialStatus !== undefined && initialUser !== undefined) {
+      return;
+    }
+
+    // initialUser が提供されていない（undefined または null）場合のみフェッチ
+    if (!initialUser) {
+      fetchAndSetUser();
+    }
+  }, [fetchAndSetUser, initialUser, initialStatus]);
 
   /**
    * Context値
