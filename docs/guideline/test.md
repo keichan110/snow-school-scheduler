@@ -19,7 +19,28 @@
 - `e2e/` … E2E スイート（必要なら）
 - `.storybook/` … Storybook（QueryClient decorator + MSW）
 
+## 認証・認可のテスト戦略
+
+### Role-based Guards のテスト
+- `ensureRole` の各パターン（authorized, unauthenticated, forbidden）を検証
+- 各ルートグループの layout.tsx で適切なリダイレクトが行われることを確認
+- テスト例: `app/(member)/__tests__/layout.test.tsx`
+
+### AuthProvider のテスト
+- 初期状態の設定（authenticated/unauthenticated）
+- ユーザー情報の管理（login, logout, updateDisplayName）
+- Context の提供と useAuth() フックの動作
+- テスト例: `contexts/__tests__/auth-context.test.tsx`
+
+### Server Actions のテスト
+- 権限チェックの実装確認
+- 適切なエラーレスポンスの返却
+- revalidatePath/revalidateTag の呼び出し確認
+
 ## チェックリスト
 - [ ] 主要コンポーネントの Story があり、loading/error/empty/filled を再現
 - [ ] MSW でネットワークをモック（デフォルトで外部通信しない）
-- [ ] Playwright で主要フローがカバーされている
+- [ ] role-based guards と layouts のテストが実装されている
+- [ ] AuthProvider の主要機能（login, logout, 状態管理）がテストされている
+- [ ] 権限チェックが必要な Server Actions にテストがある
+- [ ] Playwright で主要フロー（認証→権限別アクセス）がカバーされている
