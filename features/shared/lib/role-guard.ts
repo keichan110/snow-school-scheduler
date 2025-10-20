@@ -119,7 +119,7 @@ export async function assertRole(
  * ```
  */
 export async function requireAdmin(): Promise<AuthenticatedUser> {
-  return assertRole({ atLeast: "ADMIN" });
+  return await assertRole({ atLeast: "ADMIN" });
 }
 
 /**
@@ -139,7 +139,7 @@ export async function requireAdmin(): Promise<AuthenticatedUser> {
  * ```
  */
 export async function requireManagerAuth(): Promise<AuthenticatedUser> {
-  return assertRole({ atLeast: "MANAGER" });
+  return await assertRole({ atLeast: "MANAGER" });
 }
 
 /**
@@ -158,5 +158,5 @@ export async function requireManagerAuth(): Promise<AuthenticatedUser> {
  * ```
  */
 export async function requireAuth(): Promise<AuthenticatedUser> {
-  return assertRole({ atLeast: "MEMBER" });
+  return await assertRole({ atLeast: "MEMBER" });
 }
