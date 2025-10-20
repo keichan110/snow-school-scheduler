@@ -118,7 +118,9 @@ export async function assertRole(
  * }
  * ```
  */
-export const requireAdmin = () => assertRole({ atLeast: "ADMIN" });
+export async function requireAdmin(): Promise<AuthenticatedUser> {
+  return assertRole({ atLeast: "ADMIN" });
+}
 
 /**
  * マネージャー権限チェック
@@ -136,7 +138,9 @@ export const requireAdmin = () => assertRole({ atLeast: "ADMIN" });
  * }
  * ```
  */
-export const requireManagerAuth = () => assertRole({ atLeast: "MANAGER" });
+export async function requireManagerAuth(): Promise<AuthenticatedUser> {
+  return assertRole({ atLeast: "MANAGER" });
+}
 
 /**
  * 認証必須チェック
@@ -153,4 +157,6 @@ export const requireManagerAuth = () => assertRole({ atLeast: "MANAGER" });
  * }
  * ```
  */
-export const requireAuth = () => assertRole({ atLeast: "MEMBER" });
+export async function requireAuth(): Promise<AuthenticatedUser> {
+  return assertRole({ atLeast: "MEMBER" });
+}

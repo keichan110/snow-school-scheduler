@@ -1,4 +1,3 @@
-"use server";
 import { authenticateFromCookies } from "@/lib/auth/middleware";
 import type { AuthenticatedUser } from "../types/actions";
 
