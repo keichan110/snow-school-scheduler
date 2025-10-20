@@ -1,3 +1,4 @@
+"use server";
 import { authenticateFromCookies } from "@/lib/auth/middleware";
 import type { AuthenticatedUser } from "../types/actions";
 
@@ -42,13 +43,3 @@ export async function authenticate(): Promise<AuthenticatedUser | null> {
     return null;
   }
 }
-
-/**
- * 権限チェックユーティリティを role-guard.ts から再エクスポート
- * 既存コードとの互換性を維持しつつ、実装は role-guard.ts に委譲
- */
-export {
-  requireAdmin,
-  requireAuth,
-  requireManagerAuth,
-} from "./role-guard";

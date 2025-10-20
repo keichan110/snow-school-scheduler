@@ -4,12 +4,7 @@
  */
 
 // Auth utilities
-export {
-  authenticate,
-  requireAdmin,
-  requireAuth,
-  requireManagerAuth,
-} from "./lib/auth";
+export { authenticate } from "./lib/auth";
 export { ForbiddenError, UnauthorizedError } from "./lib/auth-errors";
 // Auth redirect utilities
 export {
@@ -22,6 +17,9 @@ export {
   assertRole,
   ensureRole,
   type RoleCheckResult,
+  requireAdmin,
+  requireAuth,
+  requireManagerAuth,
 } from "./lib/role-guard";
 // Validation utilities
 export { toActionError, validateInput } from "./lib/validation";
