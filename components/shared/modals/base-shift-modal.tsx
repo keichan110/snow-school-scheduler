@@ -2,7 +2,7 @@
 
 import { Calendar } from "@phosphor-icons/react";
 import type React from "react";
-import type { DayData } from "@/app/shifts/types";
+import type { DayData } from "@/app/(member)/shifts/types";
 import { Button } from "@/components/ui/button";
 import {
   Drawer,

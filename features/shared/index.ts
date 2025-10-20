@@ -4,13 +4,23 @@
  */
 
 // Auth utilities
+export { authenticate } from "./lib/auth";
+export { ForbiddenError, UnauthorizedError } from "./lib/auth-errors";
+// Auth redirect utilities
 export {
-  authenticate,
+  ACCESS_DENIED_REDIRECT,
+  buildLoginRedirectUrl,
+  resolveCurrentPath,
+} from "./lib/auth-redirect";
+// Role guard utilities
+export {
+  assertRole,
+  ensureRole,
+  type RoleCheckResult,
   requireAdmin,
   requireAuth,
   requireManagerAuth,
-} from "./lib/auth";
-export { ForbiddenError, UnauthorizedError } from "./lib/auth-errors";
+} from "./lib/role-guard";
 // Validation utilities
 export { toActionError, validateInput } from "./lib/validation";
 // Common schemas

@@ -3,8 +3,16 @@ import {
   type UseSuspenseQueryResult,
   useSuspenseQuery,
 } from "@tanstack/react-query";
-import { type ApiError, fetchDepartments, fetchShifts } from "@/app/shifts/api";
-import type { Department, Shift, ShiftQueryParams } from "@/app/shifts/types";
+import {
+  type ApiError,
+  fetchDepartments,
+  fetchShifts,
+} from "@/app/(member)/shifts/api";
+import type {
+  Department,
+  Shift,
+  ShiftQueryParams,
+} from "@/app/(member)/shifts/types";
 
 /**
  * 公開シフト一覧クエリのフィルタ型

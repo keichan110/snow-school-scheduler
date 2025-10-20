@@ -1,5 +1,5 @@
 import { render, screen } from "@testing-library/react";
-import type { DayData, DepartmentType } from "@/app/shifts/types";
+import type { DayData, DepartmentType } from "@/app/(member)/shifts/types";
 import {
   AdminShiftModal,
   BaseShiftModal,

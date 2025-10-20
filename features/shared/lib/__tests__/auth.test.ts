@@ -1,4 +1,10 @@
-import { requireAdmin, requireManagerAuth } from "@/features/shared/lib/auth";
+import {
+  assertRole,
+  ensureRole,
+  requireAdmin,
+  requireAuth,
+  requireManagerAuth,
+} from "@/features/shared/lib/role-guard";
 import { authenticateFromCookies } from "@/lib/auth/middleware";
 
 type MockedAuthenticateFromCookies = jest.MockedFunction<
@@ -58,7 +64,7 @@ describe("auth helpers", () => {
       });
 
       await expect(requireManagerAuth()).rejects.toThrow(
-        "Forbidden: Manager or Admin access required"
+        "Forbidden: insufficient role"
       );
     });
 
@@ -88,7 +94,7 @@ describe("auth helpers", () => {
       });
 
       await expect(requireAdmin()).rejects.toThrow(
-        "Forbidden: Admin access required"
+        "Forbidden: insufficient role"
       );
     });
 
@@ -96,6 +102,145 @@ describe("auth helpers", () => {
       mockAuthenticateFromCookies.mockResolvedValue({ success: false });
 
       await expect(requireAdmin()).rejects.toThrow("Unauthorized");
+    });
+  });
+
+  describe("requireAuth", () => {
+    it("returns user information for MEMBER", async () => {
+      mockAuthenticateFromCookies.mockResolvedValue({
+        success: true,
+        user: { ...baseUser, role: "MEMBER" },
+      });
+
+      const user = await requireAuth();
+
+      expect(user.role).toBe("MEMBER");
+    });
+
+    it("returns user information for MANAGER", async () => {
+      mockAuthenticateFromCookies.mockResolvedValue({
+        success: true,
+        user: { ...baseUser, role: "MANAGER" },
+      });
+
+      const user = await requireAuth();
+
+      expect(user.role).toBe("MANAGER");
+    });
+
+    it("returns user information for ADMIN", async () => {
+      mockAuthenticateFromCookies.mockResolvedValue({
+        success: true,
+        user: { ...baseUser, role: "ADMIN" },
+      });
+
+      const user = await requireAuth();
+
+      expect(user.role).toBe("ADMIN");
+    });
+
+    it("throws when authentication fails", async () => {
+      mockAuthenticateFromCookies.mockResolvedValue({ success: false });
+
+      await expect(requireAuth()).rejects.toThrow("Unauthorized");
+    });
+  });
+
+  describe("ensureRole", () => {
+    it("returns authorized status for ADMIN when atLeast is ADMIN", async () => {
+      mockAuthenticateFromCookies.mockResolvedValue({
+        success: true,
+        user: { ...baseUser, role: "ADMIN" },
+      });
+
+      const result = await ensureRole({ atLeast: "ADMIN" });
+
+      expect(result.status).toBe("authorized");
+      if (result.status === "authorized") {
+        expect(result.user.role).toBe("ADMIN");
+      }
+    });
+
+    it("returns authorized status for ADMIN when atLeast is MANAGER", async () => {
+      mockAuthenticateFromCookies.mockResolvedValue({
+        success: true,
+        user: { ...baseUser, role: "ADMIN" },
+      });
+
+      const result = await ensureRole({ atLeast: "MANAGER" });
+
+      expect(result.status).toBe("authorized");
+      if (result.status === "authorized") {
+        expect(result.user.role).toBe("ADMIN");
+      }
+    });
+
+    it("returns authorized status for MANAGER when atLeast is MANAGER", async () => {
+      mockAuthenticateFromCookies.mockResolvedValue({
+        success: true,
+        user: { ...baseUser, role: "MANAGER" },
+      });
+
+      const result = await ensureRole({ atLeast: "MANAGER" });
+
+      expect(result.status).toBe("authorized");
+      if (result.status === "authorized") {
+        expect(result.user.role).toBe("MANAGER");
+      }
+    });
+
+    it("returns forbidden status for MEMBER when atLeast is MANAGER", async () => {
+      mockAuthenticateFromCookies.mockResolvedValue({
+        success: true,
+        user: { ...baseUser, role: "MEMBER" },
+      });
+
+      const result = await ensureRole({ atLeast: "MANAGER" });
+
+      expect(result.status).toBe("forbidden");
+      if (result.status === "forbidden") {
+        expect(result.user.role).toBe("MEMBER");
+      }
+    });
+
+    it("returns unauthenticated status when authentication fails", async () => {
+      mockAuthenticateFromCookies.mockResolvedValue({ success: false });
+
+      const result = await ensureRole({ atLeast: "MEMBER" });
+
+      expect(result.status).toBe("unauthenticated");
+    });
+  });
+
+  describe("assertRole", () => {
+    it("returns user for ADMIN when atLeast is ADMIN", async () => {
+      mockAuthenticateFromCookies.mockResolvedValue({
+        success: true,
+        user: { ...baseUser, role: "ADMIN" },
+      });
+
+      const user = await assertRole({ atLeast: "ADMIN" });
+
+      expect(user.role).toBe("ADMIN");
+    });
+
+    it("throws UnauthorizedError when authentication fails", async () => {
+      mockAuthenticateFromCookies.mockResolvedValue({ success: false });
+
+      await expect(assertRole({ atLeast: "MEMBER" })).rejects.toThrow(
+        "Unauthorized"
+      );
+    });
+
+    it("throws ForbiddenError when role is insufficient", async () => {
+      mockAuthenticateFromCookies.mockResolvedValue({
+        success: true,
+        user: { ...baseUser, role: "MEMBER" },
+      });
+
+      await expect(assertRole({ atLeast: "ADMIN" })).rejects.toThrow(
+        "Forbidden: insufficient role"
+      );
     });
   });
 });

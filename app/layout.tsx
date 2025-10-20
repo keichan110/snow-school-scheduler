@@ -1,11 +1,8 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import Background from "@/components/background";
-import Footer from "@/components/footer";
-import Header from "@/components/header";
 import { NotificationProvider } from "@/components/notifications";
 import { ThemeProvider } from "@/components/theme-provider";
-import { AuthProvider } from "@/contexts/auth-context";
 import { QueryProvider } from "@/shared/providers/query-client";
 
 export const metadata: Metadata = {
@@ -14,6 +11,15 @@ export const metadata: Metadata = {
     "スキー・スノーボードスクールのシフト管理を効率化するWebアプリケーション",
 };
 
+/**
+ * ルートレイアウト
+ *
+ * グローバルプロバイダーのみを提供し、認証状態管理とUIレイアウトは
+ * 各ルートグループ（(public), (member)）に委譲する設計。
+ *
+ * - AuthProvider: 各ルートグループで個別に配置
+ * - Header/Footer: 各ルートグループで必要に応じて配置
+ */
 export default function RootLayout({
   children,
 }: {
@@ -34,18 +40,10 @@ export default function RootLayout({
               system: "system",
             }}
           >
-            <AuthProvider>
-              <NotificationProvider>
-                <Background />
-                <div className="flex min-h-screen flex-col">
-                  <Header />
-                  <main className="mx-auto w-full max-w-7xl flex-1 px-4 pt-32 sm:px-6 lg:px-8">
-                    {children}
-                  </main>
-                  <Footer />
-                </div>
-              </NotificationProvider>
-            </AuthProvider>
+            <NotificationProvider>
+              <Background />
+              {children}
+            </NotificationProvider>
           </ThemeProvider>
         </QueryProvider>
       </body>

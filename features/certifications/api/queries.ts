@@ -4,7 +4,7 @@ import {
   useSuspenseQuery,
 } from "@tanstack/react-query";
 
-import type { CertificationWithDepartment } from "@/app/certifications/types";
+import type { CertificationWithDepartment } from "@/app/(member)/(manager)/certifications/types";
 
 type ApiResponse<T> = {
   success: boolean;

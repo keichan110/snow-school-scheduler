@@ -20,11 +20,3 @@ export {
   MemberGuard,
   withAuth,
 } from "./auth-guard";
-// ページレベル保護コンポーネント
-export {
-  type AuthCheckResult,
-  ConditionalProtection,
-  getServerAuthCheck,
-  ProtectedLayout,
-  ProtectedRoute,
-} from "./protected-route";

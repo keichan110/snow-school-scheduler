@@ -36,9 +36,9 @@
 ## ディレクトリ別ガイド（要点つき）
 
 ### 📁 /app — ルーティング/RSCの起点 → [ガイド](./app.md)
-- **何をする場所？** App Router の中心。`layout.tsx` でセクション境界を作り、**RSCでデータ取得**。`providers.tsx` で QueryClient を注入。
-- **使うタイミング**：新規ページ/レイアウトの作成、(auth)/(dashboard) の保護導線、RSC の並列 `fetch` 設計。
-- **即ルール**：Read は GET API + RSC prefetch、Write は Server Actions。`(dashboard)` の `layout.tsx` で**認証チェック**。
+- **何をする場所？** App Router の中心。`layout.tsx` でセクション境界を作り、**RSCでデータ取得**。ルートレイアウトで QueryClient を注入。
+- **使うタイミング**：新規ページ/レイアウトの作成、権限ベースのルートグループ設計、RSC の並列 `fetch` 設計。
+- **即ルール**：Read は GET API + RSC prefetch、Write は Server Actions。各ルートグループの `layout.tsx` で **`ensureRole` による権限チェック**と **AuthProvider 配置**。
 
 ### 📁 /app/api — **GET 専用**の内部API → [ガイド](./app-api.md)
 - **何をする場所？** 外部公開しない**内部 GET API**。出力は zod で検証、統一レスポンスを返す。
@@ -132,8 +132,20 @@
   }
   ```
 
-### 5. ルーティング設計
-- Route Groups（`(auth)`, `(dashboard)`）で責務分離。`(dashboard)` の `layout.tsx` で認証チェック。
+### 5. ルーティング設計と認証
+- **Route Groups による権限ベースのルート分離**:
+  - `(public)`: 未認証ユーザーもアクセス可能（login, logout, privacy, terms）。基本的に AuthProvider を持たず、必要なページのみサブルートのレイアウトで包む。
+  - `(member)`: MEMBER 以上の権限が必要（shifts 閲覧など）
+  - `(manager)`: MANAGER 以上の権限が必要（instructors, certifications, shift-types 管理）
+  - `(admin)`: ADMIN 権限が必要（users, invitations 管理）
+- **各ルートグループのレイアウトで権限チェック**:
+  - `ensureRole({ atLeast: "ROLE" })` を使用してサーバー側で権限を検証
+  - 未認証・権限不足時は適切にリダイレクト（login または access-denied）
+- **AuthProvider の配置**:
+  - `(public)` グループ: 基本的に AuthProvider を配置しない（認証状態管理が不要）
+    - 例外: `/logout` ページのみ専用レイアウトで AuthProvider を配置（ログアウト処理のため）
+  - `(member)` 以降: `ensureRole` で取得した初期ユーザー情報を AuthProvider に渡す
+  - 二重ラップを防ぐため、ルートレイアウト（app/layout.tsx）には AuthProvider を配置しない
 
 ### 6. API レスポンス（GET） & エラー
 - 成功: `{ success: true, data }`。失敗: `{ success: false, error: { code, message } }`。
