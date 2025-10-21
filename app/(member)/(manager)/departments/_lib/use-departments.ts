@@ -4,8 +4,8 @@ import {
   createDepartmentAction,
   deleteDepartmentAction,
   updateDepartmentAction,
-} from "../actions";
-import type { CreateDepartmentInput, UpdateDepartmentInput } from "../schemas";
+} from "./actions";
+import type { CreateDepartmentInput, UpdateDepartmentInput } from "./schemas";
 
 export const departmentKeys = {
   all: ["departments"] as const,

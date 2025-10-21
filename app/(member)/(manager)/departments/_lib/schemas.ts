@@ -1,5 +1,8 @@
 import { z } from "zod";
-import { isActiveSchema, optionalStringSchema } from "@/features/shared";
+import {
+  isActiveSchema,
+  optionalStringSchema,
+} from "@/features/shared/schemas/common";
 
 /**
  * 部門作成スキーマ
