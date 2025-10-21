@@ -3,7 +3,7 @@
  * 規約の変更履歴を独立して管理するため、このファイルで内容を管理
  */
 
-import type { LegalDocument } from "../types";
+import type { LegalDocument } from "./types";
 
 const PRIVACY_CONTENT = `## 第1条(目的)
 

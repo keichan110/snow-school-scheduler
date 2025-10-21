@@ -1,6 +1,6 @@
 import { MarkdownContent } from "@/components/markdown-content";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import type { LegalDocument } from "../types";
+import type { LegalDocument } from "./types";
 
 type LegalDocumentPageProps = {
   document: LegalDocument;
