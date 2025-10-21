@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
-import { resolveInviteToken } from "@/features/auth/server/resolve-invite-token";
-import { SignupPageClient } from "@/features/auth/ui/signup-page-client";
 import { authenticateFromCookies } from "@/lib/auth/middleware";
+import { SignupPageClient } from "../_components/signup-page-client";
+import { resolveInviteToken } from "../_lib/resolve-invite-token";
 
 export const dynamic = "force-dynamic";
 

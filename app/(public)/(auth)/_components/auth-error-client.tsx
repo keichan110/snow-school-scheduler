@@ -12,7 +12,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import type { AuthErrorInfo } from "../lib/auth-error-map";
+import type { AuthErrorInfo } from "../_lib/auth-error-map";
 
 /**
  * アイコン名からLucideアイコンコンポーネントへのマッピング
