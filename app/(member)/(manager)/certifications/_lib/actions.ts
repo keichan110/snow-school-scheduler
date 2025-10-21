@@ -1,6 +1,7 @@
 "use server";
 import { revalidatePath, revalidateTag } from "next/cache";
-import { type ActionResult, requireManagerAuth } from "@/features/shared";
+import { requireManagerAuth } from "@/features/shared/lib/role-guard";
+import type { ActionResult } from "@/features/shared/types/actions";
 import { prisma } from "@/lib/db";
 import {
   type CreateCertificationInput,

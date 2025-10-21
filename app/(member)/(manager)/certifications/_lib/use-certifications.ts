@@ -4,11 +4,18 @@ import {
   createCertificationAction,
   deleteCertificationAction,
   updateCertificationAction,
-} from "../actions";
+} from "./actions";
 import type {
   CreateCertificationInput,
   UpdateCertificationInput,
-} from "../schemas";
+} from "./schemas";
+
+// Re-export queries
+export {
+  type CertificationsQueryKey,
+  certificationsQueryKeys,
+  useCertificationsQuery,
+} from "./queries";
 
 export const certificationKeys = {
   all: ["certifications"] as const,

@@ -24,7 +24,7 @@ import {
   useCertificationsQuery,
   useCreateCertification,
   useUpdateCertification,
-} from "@/features/certifications";
+} from "./_lib/use-certifications";
 import { getDepartmentIdByType } from "./api";
 import CertificationModal from "./certification-modal";
 import type {
