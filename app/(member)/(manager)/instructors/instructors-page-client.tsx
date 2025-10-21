@@ -25,7 +25,7 @@ import {
   useCreateInstructor,
   useInstructorsQuery,
   useUpdateInstructor,
-} from "@/features/instructors";
+} from "./_lib/use-instructors";
 import { mapStatusToApi } from "./api";
 import InstructorModal from "./instructor-modal";
 import type {

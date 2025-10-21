@@ -4,8 +4,15 @@ import {
   createInstructorAction,
   deleteInstructorAction,
   updateInstructorAction,
-} from "../actions";
-import type { CreateInstructorInput, UpdateInstructorInput } from "../schemas";
+} from "./actions";
+import type { CreateInstructorInput, UpdateInstructorInput } from "./schemas";
+
+// Re-export queries
+export {
+  type InstructorsQueryKey,
+  instructorsQueryKeys,
+  useInstructorsQuery,
+} from "./queries";
 
 export const instructorKeys = {
   all: ["instructors"] as const,
