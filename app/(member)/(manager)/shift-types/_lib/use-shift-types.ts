@@ -4,8 +4,15 @@ import {
   createShiftTypeAction,
   deleteShiftTypeAction,
   updateShiftTypeAction,
-} from "../actions";
-import type { CreateShiftTypeInput, UpdateShiftTypeInput } from "../schemas";
+} from "./actions";
+import type { CreateShiftTypeInput, UpdateShiftTypeInput } from "./schemas";
+
+// Re-export queries
+export {
+  type ShiftTypesQueryKey,
+  shiftTypesQueryKeys,
+  useShiftTypesQuery,
+} from "./queries";
 
 export const shiftTypeKeys = {
   all: ["shift-types"] as const,
