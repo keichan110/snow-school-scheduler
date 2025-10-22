@@ -40,6 +40,7 @@ const LineLoginButton = forwardRef<HTMLButtonElement, LineLoginButtonProps>(
         )}
         disabled={disabled}
         ref={ref}
+        variant={null}
         {...props}
       >
         <Image
