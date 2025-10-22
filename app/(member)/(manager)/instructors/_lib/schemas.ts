@@ -3,7 +3,7 @@ import {
   idSchema,
   instructorStatusSchema,
   optionalStringSchema,
-} from "@/features/shared";
+} from "@/shared/schemas/common";
 
 /**
  * インストラクター作成スキーマ

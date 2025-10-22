@@ -1,6 +1,6 @@
 "use server";
 import { authenticateFromCookies } from "@/lib/auth/middleware";
-import type { AuthenticatedUser } from "../types/actions";
+import type { AuthenticatedUser } from "@/shared/types/actions";
 
 /**
  * Server Actions 用の認証ヘルパー

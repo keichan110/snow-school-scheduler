@@ -1,5 +1,5 @@
 "use server";
-import type { AuthenticatedUser } from "../types/actions";
+import type { AuthenticatedUser } from "@/shared/types/actions";
 import { authenticate } from "./auth";
 import { ForbiddenError, UnauthorizedError } from "./auth-errors";
 

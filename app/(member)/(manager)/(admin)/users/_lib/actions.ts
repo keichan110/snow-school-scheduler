@@ -1,8 +1,8 @@
 "use server";
 import { revalidatePath, revalidateTag } from "next/cache";
-import { requireAdmin } from "@/features/shared/lib/role-guard";
-import type { ActionResult } from "@/features/shared/types/actions";
+import { requireAdmin } from "@/lib/auth/role-guard";
 import { prisma } from "@/lib/db";
+import type { ActionResult } from "@/shared/types/actions";
 import {
   type CreateUserInput,
   createUserSchema,

@@ -1,11 +1,11 @@
+import { authenticateFromCookies } from "@/lib/auth/middleware";
 import {
   assertRole,
   ensureRole,
   requireAdmin,
   requireAuth,
   requireManagerAuth,
-} from "@/features/shared/lib/role-guard";
-import { authenticateFromCookies } from "@/lib/auth/middleware";
+} from "@/lib/auth/role-guard";
 
 type MockedAuthenticateFromCookies = jest.MockedFunction<
   typeof authenticateFromCookies

@@ -4,8 +4,8 @@ import type { ReactNode } from "react";
 import {
   ACCESS_DENIED_REDIRECT,
   buildLoginRedirectUrl,
-} from "@/features/shared/lib/auth-redirect";
-import { ensureRole } from "@/features/shared/lib/role-guard";
+} from "@/lib/auth/auth-redirect";
+import { ensureRole } from "@/lib/auth/role-guard";
 
 /**
  * MANAGER以上の権限を持つユーザー専用レイアウト

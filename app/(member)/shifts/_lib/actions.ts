@@ -1,7 +1,8 @@
 "use server";
 import { revalidatePath, revalidateTag } from "next/cache";
-import { type ActionResult, requireManagerAuth } from "@/features/shared";
+import { requireManagerAuth } from "@/lib/auth/role-guard";
 import { prisma } from "@/lib/db";
+import type { ActionResult } from "@/shared/types/actions";
 import {
   type CreateShiftInput,
   createShiftSchema,
