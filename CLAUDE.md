@@ -122,10 +122,24 @@ lib/                        # ライブラリ設定・ユーティリティ
 ├── api/                    # API クライアントライブラリ
 └── utils/                  # 共通ユーティリティ
 
-shared/                     # 共有ユーティリティ・型定義・ヘルパー
-├── types/                  # 共有型定義
-├── schemas/                # 共有スキーマ（Zod）
-└── utils/                  # 共有ユーティリティ関数
+types/                      # TypeScript型定義
+├── common.ts               # 共通型定義
+├── actions.ts              # Server Actions型
+├── shift-display-types.ts  # シフト表示型
+└── result.ts               # Result パターン型
+
+schemas/                    # Zodバリデーションスキーマ
+└── common.ts               # 共通スキーマ
+
+constants/                  # アプリケーション定数
+├── auth.ts                 # 認証関連定数
+├── http-status.ts          # HTTPステータス定数
+├── pagination.ts           # ページネーション定数
+└── validation.ts           # バリデーション定数
+
+utils/                      # ユーティリティ関数
+├── date-formatter.ts       # 日付フォーマット
+└── validation.ts           # バリデーション関数
 
 contexts/                   # React Context 定義
 prisma/                     # データベーススキーマ・シード・マイグレーション

@@ -3,7 +3,7 @@
  * Write操作はServer Actionsを使用してください
  */
 
-import { HTTP_STATUS_NOT_FOUND } from "@/shared/constants/http-status";
+import { HTTP_STATUS_NOT_FOUND } from "@/constants/http-status";
 import type { InvitationApiResponse, InvitationTokenWithStats } from "./types";
 
 const API_BASE_URL = "/api/auth/invitations";

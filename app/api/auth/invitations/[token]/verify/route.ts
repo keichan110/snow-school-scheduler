@@ -1,20 +1,20 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { validateInvitationToken } from "@/lib/auth/invitations";
-import type { ApiResponse, InvitationValidationData } from "@/lib/auth/types";
-import { secureAuthLog, secureLog } from "@/lib/utils/logging";
-import { getClientIp, getRequestUserAgent } from "@/lib/utils/request";
 import {
   TOKEN_MASK_MIN_LENGTH,
   TOKEN_MASK_PREFIX_LENGTH,
   TOKEN_MASK_SUFFIX_LENGTH,
-} from "@/shared/constants/auth";
+} from "@/constants/auth";
 import {
   HTTP_STATUS_BAD_REQUEST,
   HTTP_STATUS_GONE,
   HTTP_STATUS_INTERNAL_SERVER_ERROR,
   HTTP_STATUS_NOT_FOUND,
   HTTP_STATUS_OK,
-} from "@/shared/constants/http-status";
+} from "@/constants/http-status";
+import { validateInvitationToken } from "@/lib/auth/invitations";
+import type { ApiResponse, InvitationValidationData } from "@/lib/auth/types";
+import { secureAuthLog, secureLog } from "@/lib/utils/logging";
+import { getClientIp, getRequestUserAgent } from "@/lib/utils/request";
 
 /**
  * 招待URL検証API

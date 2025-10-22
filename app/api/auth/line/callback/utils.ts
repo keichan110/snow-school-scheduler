@@ -1,8 +1,8 @@
 import { type NextRequest, NextResponse } from "next/server";
+import { TOKEN_PREVIEW_LENGTH } from "@/constants/auth";
 import { validateInvitationToken } from "@/lib/auth/invitations";
 import { prisma } from "@/lib/db";
 import { secureLog } from "@/lib/utils/logging";
-import { TOKEN_PREVIEW_LENGTH } from "@/shared/constants/auth";
 
 export type AuthSession = {
   state: string;

@@ -2,7 +2,7 @@
  * Shifts API の型定義
  */
 
-import type { ApiResponse, BaseQueryParams } from "@/shared/types";
+import type { ApiResponse, BaseQueryParams } from "@/types";
 import type {
   CalendarShift,
   MonthlyShiftData,

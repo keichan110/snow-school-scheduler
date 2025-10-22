@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { isActiveSchema } from "@/shared/schemas/common";
+import { isActiveSchema } from "@/schemas/common";
 
 /**
  * シフト種別作成スキーマ

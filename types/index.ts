@@ -10,7 +10,7 @@ export type {
   ApiSuccessResponse,
   BaseQueryParams,
   HttpStatus,
-} from "../../lib/api/types";
+} from "@/lib/api/types";
 
 // 共通型定義
 export * from "./common";

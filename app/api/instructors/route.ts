@@ -15,7 +15,7 @@ import {
 import { isOneOf } from "@/lib/api/validation";
 import { authenticateFromRequest } from "@/lib/auth/middleware";
 import { prisma } from "@/lib/db";
-import type { InstructorStatus } from "@/shared/types/common";
+import type { InstructorStatus } from "@/types/common";
 
 export async function GET(request: NextRequest) {
   // 個人情報保護のため認証必須

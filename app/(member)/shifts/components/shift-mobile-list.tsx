@@ -1,6 +1,6 @@
 "use client";
 
-import type { BaseShiftDisplayProps } from "@/shared/types/shift-display-types";
+import type { BaseShiftDisplayProps } from "@/types/shift-display-types";
 import { BaseShiftMobileList } from "./base-shift-mobile-list";
 
 /**

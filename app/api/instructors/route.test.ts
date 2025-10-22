@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { authenticateFromRequest } from "@/lib/auth/middleware";
 import { prisma } from "@/lib/db";
-import type { InstructorStatus } from "@/shared/types/common";
+import type { InstructorStatus } from "@/types/common";
 import { GET } from "./route";
 
 type Instructor = {

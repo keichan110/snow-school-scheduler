@@ -10,7 +10,7 @@ import type {
   ShiftAssignmentId,
   ShiftId,
   ShiftTypeId,
-} from "@/shared/types/common";
+} from "@/types/common";
 
 /**
  * シフト種別

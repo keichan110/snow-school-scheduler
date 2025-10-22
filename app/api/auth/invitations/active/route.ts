@@ -1,14 +1,14 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { authenticateFromRequest, checkUserRole } from "@/lib/auth/middleware";
-import type { ApiResponse } from "@/lib/auth/types";
-import { prisma } from "@/lib/db";
 import {
   HTTP_STATUS_FORBIDDEN,
   HTTP_STATUS_INTERNAL_SERVER_ERROR,
   HTTP_STATUS_NOT_FOUND,
   HTTP_STATUS_OK,
   HTTP_STATUS_UNAUTHORIZED,
-} from "@/shared/constants/http-status";
+} from "@/constants/http-status";
+import { authenticateFromRequest, checkUserRole } from "@/lib/auth/middleware";
+import type { ApiResponse } from "@/lib/auth/types";
+import { prisma } from "@/lib/db";
 
 /**
  * 有効な招待チェックAPI

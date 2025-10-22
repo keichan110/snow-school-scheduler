@@ -8,7 +8,7 @@ import {
   positiveIntSchema,
   shiftSchema,
   shiftTypeSchema,
-} from "@/shared/utils/validation";
+} from "@/utils/validation";
 
 /**
  * シフト作成バリデーションスキーマ

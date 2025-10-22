@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import type { InstructorStatus } from "@/shared/types/common";
+import type { InstructorStatus } from "@/types/common";
 import { GET } from "./route";
 
 type InstructorWithCertifications = {

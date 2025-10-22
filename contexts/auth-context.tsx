@@ -8,10 +8,7 @@ import {
   useEffect,
   useState,
 } from "react";
-import {
-  HTTP_STATUS_FORBIDDEN,
-  HTTP_STATUS_UNAUTHORIZED,
-} from "@/shared/constants";
+import { HTTP_STATUS_FORBIDDEN, HTTP_STATUS_UNAUTHORIZED } from "@/constants";
 
 /**
  * 認証状態管理Context

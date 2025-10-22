@@ -1,5 +1,5 @@
 import { ZodError, type ZodIssue, type ZodSchema } from "zod";
-import type { ActionResult } from "@/shared/types/actions";
+import type { ActionResult } from "@/types/actions";
 
 /**
  * Server Actions 用の安全なバリデーションラッパー

@@ -3,7 +3,7 @@ import {
   dateStringSchema,
   idSchema,
   optionalStringSchema,
-} from "@/shared/schemas/common";
+} from "@/schemas/common";
 
 /**
  * シフト作成スキーマ

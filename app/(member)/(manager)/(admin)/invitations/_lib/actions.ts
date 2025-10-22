@@ -8,7 +8,7 @@ import {
 } from "@/lib/auth/invitations";
 import { requireAuth } from "@/lib/auth/role-guard";
 import { prisma } from "@/lib/db";
-import type { ActionResult } from "@/shared/types/actions";
+import type { ActionResult } from "@/types/actions";
 import {
   type AcceptInvitationInput,
   acceptInvitationSchema,

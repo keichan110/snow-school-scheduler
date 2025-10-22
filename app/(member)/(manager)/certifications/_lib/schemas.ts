@@ -3,7 +3,7 @@ import {
   idSchema,
   isActiveSchema,
   optionalStringSchema,
-} from "@/shared/schemas/common";
+} from "@/schemas/common";
 
 /**
  * 資格作成スキーマ

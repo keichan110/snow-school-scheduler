@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import Background from "@/app/_components/layout/background";
+import { QueryProvider } from "@/app/_components/providers/query-client";
 import { ThemeProvider } from "@/app/_components/providers/theme-provider";
 import { NotificationProvider } from "@/app/_components/shared/notifications";
-import { QueryProvider } from "@/shared/providers/query-client";
 
 export const metadata: Metadata = {
   title: "スキー・スノーボードスクール シフト管理システム",

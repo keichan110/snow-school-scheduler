@@ -42,7 +42,7 @@ jest.mock("next/dynamic", () => {
 });
 
 // ShiftCalendarSkeletonをモック化
-jest.mock("@/shared/components/skeletons/shift-calendar-skeleton", () => ({
+jest.mock("../_components/shift-calendar-skeleton", () => ({
   ShiftCalendarSkeleton: () => (
     <div data-testid="calendar-skeleton">Loading...</div>
   ),
