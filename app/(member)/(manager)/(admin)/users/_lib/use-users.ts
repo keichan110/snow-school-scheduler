@@ -4,8 +4,15 @@ import {
   createUserAction,
   deleteUserAction,
   updateUserAction,
-} from "../actions";
-import type { CreateUserInput, UpdateUserInput } from "../schemas";
+} from "./actions";
+import type { CreateUserInput, UpdateUserInput } from "./schemas";
+
+// Re-export queries
+export {
+  type UsersQueryKey,
+  usersQueryKeys,
+  useUsersQuery,
+} from "./queries";
 
 /**
  * ユーザークエリキー定義
