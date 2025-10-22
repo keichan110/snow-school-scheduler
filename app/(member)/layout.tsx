@@ -1,8 +1,8 @@
 import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
 
-import Footer from "@/components/footer";
-import Header from "@/components/header";
+import Footer from "@/app/_components/layout/footer";
+import Header from "@/app/_components/layout/header";
 import { AuthProvider } from "@/contexts/auth-context";
 import {
   ACCESS_DENIED_REDIRECT,

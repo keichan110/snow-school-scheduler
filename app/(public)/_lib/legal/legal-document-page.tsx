@@ -1,4 +1,4 @@
-import { MarkdownContent } from "@/components/markdown-content";
+import { MarkdownContent } from "@/app/_components/shared/markdown-content";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { LegalDocument } from "./types";
 

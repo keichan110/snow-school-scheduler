@@ -12,7 +12,7 @@ import {
   useTransition,
 } from "react";
 import { ErrorBoundary } from "react-error-boundary";
-import Header from "@/components/header";
+import Header from "@/app/_components/layout/header";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useRequireAuth } from "@/contexts/auth-context";

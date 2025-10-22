@@ -7,7 +7,7 @@ import {
   PersonSimpleSnowboard,
 } from "@phosphor-icons/react";
 import { useEffect, useState } from "react";
-import { useNotification } from "@/components/notifications";
+import { useNotification } from "@/app/_components/shared/notifications";
 import { Button } from "@/components/ui/button";
 import {
   Drawer,

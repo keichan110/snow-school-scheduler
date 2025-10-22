@@ -1,4 +1,4 @@
-import Header from "@/components/header";
+import Header from "@/app/_components/layout/header";
 import { Button } from "@/components/ui/button";
 
 type PublicShiftsErrorStateProps = {

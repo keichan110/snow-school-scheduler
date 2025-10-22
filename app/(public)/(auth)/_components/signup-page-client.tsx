@@ -2,6 +2,7 @@
 
 import { Loader2, Shield, Users } from "lucide-react";
 import { useState } from "react";
+import { LineLoginButton } from "@/app/(auth)/_components/line-login-button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,7 +12,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { LineLoginButton } from "@/components/ui/line-login-button";
 
 /**
  * SignupPageClient Props

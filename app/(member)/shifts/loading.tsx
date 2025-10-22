@@ -1,5 +1,5 @@
-import Header from "@/components/header";
-import { SkeletonCalendar, SkeletonSection } from "@/components/skeletons";
+import Header from "@/app/_components/layout/header";
+import { SkeletonCalendar, SkeletonSection } from "@/app/_components/ui";
 
 export default function ShiftsLoading() {
   return (

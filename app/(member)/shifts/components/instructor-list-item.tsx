@@ -1,7 +1,7 @@
 "use client";
 
 import { Check } from "@phosphor-icons/react";
-import { CertificationBadge } from "@/components/ui/certification-badge";
+import { CertificationBadge } from "@/app/_components/shared/certification-badge";
 import { cn } from "@/lib/utils";
 
 type Certification = {

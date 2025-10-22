@@ -81,6 +81,12 @@ const config: Config = {
           "900": "#7c2d12",
           "950": "#431407",
         },
+        "button-gradient": {
+          from: "hsl(var(--button-gradient-from))",
+          to: "hsl(var(--button-gradient-to))",
+          "hover-from": "hsl(var(--button-gradient-hover-from))",
+          "hover-to": "hsl(var(--button-gradient-hover-to))",
+        },
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         card: {

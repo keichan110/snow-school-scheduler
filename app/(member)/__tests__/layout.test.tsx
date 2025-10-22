@@ -21,12 +21,12 @@ jest.mock("@/lib/auth/auth-redirect", () => ({
 }));
 
 // Mock Header and Footer components
-jest.mock("@/components/header", () => ({
+jest.mock("@/app/_components/layout/header", () => ({
   __esModule: true,
   default: () => <div data-testid="header">Header</div>,
 }));
 
-jest.mock("@/components/footer", () => ({
+jest.mock("@/app/_components/layout/footer", () => ({
   __esModule: true,
   default: () => <div data-testid="footer">Footer</div>,
 }));

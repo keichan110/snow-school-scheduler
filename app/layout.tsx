@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import Background from "@/components/background";
-import { NotificationProvider } from "@/components/notifications";
-import { ThemeProvider } from "@/components/theme-provider";
+import Background from "@/app/_components/layout/background";
+import { ThemeProvider } from "@/app/_components/providers/theme-provider";
+import { NotificationProvider } from "@/app/_components/shared/notifications";
 import { QueryProvider } from "@/shared/providers/query-client";
 
 export const metadata: Metadata = {
