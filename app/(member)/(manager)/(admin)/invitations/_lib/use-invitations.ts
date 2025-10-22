@@ -4,8 +4,15 @@ import {
   acceptInvitationAction,
   createInvitationAction,
   deleteInvitationAction,
-} from "../actions";
-import type { AcceptInvitationInput, CreateInvitationInput } from "../schemas";
+} from "./actions";
+import type { AcceptInvitationInput, CreateInvitationInput } from "./schemas";
+
+// Re-export queries
+export {
+  type InvitationsQueryKey,
+  invitationsQueryKeys,
+  useInvitationsQuery,
+} from "./queries";
 
 /**
  * 招待クエリキー定義

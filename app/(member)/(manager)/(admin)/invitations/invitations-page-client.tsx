@@ -30,7 +30,7 @@ import {
   useCreateInvitation,
   useDeleteInvitation,
   useInvitationsQuery,
-} from "@/features/invitations";
+} from "./_lib/use-invitations";
 import { checkActiveInvitation } from "./api";
 import InvitationModal from "./invitation-modal";
 import InvitationWarningModal from "./invitation-warning-modal";

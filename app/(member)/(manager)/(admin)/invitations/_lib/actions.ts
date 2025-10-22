@@ -1,6 +1,7 @@
 "use server";
 import { revalidatePath, revalidateTag } from "next/cache";
-import { type ActionResult, requireAuth } from "@/features/shared";
+import { requireAuth } from "@/features/shared/lib/role-guard";
+import type { ActionResult } from "@/features/shared/types/actions";
 import {
   createInvitationToken,
   deactivateInvitationToken,
