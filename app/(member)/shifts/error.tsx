@@ -16,7 +16,7 @@ import {
 import {
   publicShiftsDepartmentsQueryKeys,
   publicShiftsQueryKeys,
-} from "@/features/shifts/api/queries";
+} from "./_lib/queries";
 
 type ShiftsErrorProps = {
   readonly error: Error & { digest?: string };

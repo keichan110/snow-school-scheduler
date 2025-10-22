@@ -4,8 +4,8 @@ import {
   createShiftAction,
   deleteShiftAction,
   updateShiftAction,
-} from "../actions";
-import type { CreateShiftInput, UpdateShiftInput } from "../schemas";
+} from "../_lib/actions";
+import type { CreateShiftInput, UpdateShiftInput } from "../_lib/schemas";
 
 export const shiftKeys = {
   all: ["shifts"] as const,

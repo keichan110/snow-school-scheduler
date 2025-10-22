@@ -14,7 +14,7 @@ import type {
   ShiftUpdateInput,
   ShiftWithDetails,
   WeeklyShiftData,
-} from "../types/domain";
+} from "./domain-types";
 
 /**
  * Shifts API クエリパラメータ

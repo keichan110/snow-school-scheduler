@@ -4,11 +4,11 @@ import {
   createShiftAction,
   deleteShiftAction,
   updateShiftAction,
-} from "@/features/shifts/actions";
+} from "@/app/(member)/shifts/_lib/actions";
 import type {
   CreateShiftInput,
   UpdateShiftInput,
-} from "@/features/shifts/schemas";
+} from "@/app/(member)/shifts/_lib/schemas";
 import type { ApiResponse } from "@/lib/api/types";
 
 // 簡素化されたシフト型（実際のAPIレスポンスに合わせる）
