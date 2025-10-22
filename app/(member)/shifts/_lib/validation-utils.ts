@@ -4,8 +4,8 @@
  */
 
 import { z } from "zod";
-import type { ValidationError } from "../types/common";
-import { failure, type Result, success } from "../types/result";
+import type { ValidationError } from "@/types/common";
+import { failure, type Result, success } from "@/types/result";
 
 /**
  * 共通のバリデーションスキーマ

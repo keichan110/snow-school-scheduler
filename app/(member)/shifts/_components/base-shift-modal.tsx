@@ -12,7 +12,7 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from "@/components/ui/drawer";
-import { formatDateForDisplay } from "@/utils/date-formatter";
+import { formatDateForDisplay } from "../_lib/date-formatter";
 
 export type BaseShiftModalProps = {
   isOpen: boolean;
