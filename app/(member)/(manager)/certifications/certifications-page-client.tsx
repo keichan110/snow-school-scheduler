@@ -20,6 +20,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { getDepartmentType } from "@/lib/utils/department-type";
 import {
   useCertificationsQuery,
   useCreateCertification,
@@ -32,7 +33,6 @@ import type {
   CertificationStats,
   CertificationWithDepartment,
 } from "./types";
-import { getDepartmentType } from "./utils";
 
 type CertificationRowProps = {
   certification: CertificationWithDepartment;

@@ -24,8 +24,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
+import { getDepartmentType } from "@/lib/utils/department-type";
 import type { CertificationFormData, CertificationModalProps } from "./types";
-import { getDepartmentType } from "./utils";
 
 export default function CertificationModal({
   isOpen,
