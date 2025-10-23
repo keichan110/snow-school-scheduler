@@ -61,6 +61,12 @@
     --sidebar-accent-foreground: 240 5.9% 10%;
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+
+    /* Button gradient colors - Light theme */
+    --button-gradient-from: 203 89% 53%;
+    --button-gradient-to: 199 92% 70%;
+    --button-gradient-hover-from: 199 92% 70%;
+    --button-gradient-hover-to: 203 89% 53%;
   }
   .dark {
     --background: 222.2 84% 4.9%;
@@ -105,6 +111,12 @@
     --color-5: rgba(255, 154, 158, 0.45); /* ウィンターピンク */
     --color-6: rgba(15, 32, 39, 0.8); /* 深いベース */
     --color-7: rgba(25, 42, 49, 0.6); /* ミッドトーン */
+
+    /* Button gradient colors - Dark theme */
+    --button-gradient-from: 160 100% 50%;
+    --button-gradient-to: 177 100% 71%;
+    --button-gradient-hover-from: 177 100% 71%;
+    --button-gradient-hover-to: 160 100% 50%;
   }
 }
 
@@ -125,6 +137,19 @@
     background-clip: text;
     -webkit-text-fill-color: transparent;
     color: transparent;
+  }
+
+  /* グラデーションボタンスタイル */
+  .btn-gradient {
+    @apply bg-gradient-to-r from-button-gradient-from to-button-gradient-to font-semibold text-white shadow transition-all duration-300;
+  }
+
+  .btn-gradient:hover:not(:disabled) {
+    @apply from-button-gradient-hover-from to-button-gradient-hover-to;
+  }
+
+  .dark .btn-gradient {
+    @apply text-[#0F2027];
   }
 
   .icon-active-color {

@@ -1,16 +1,16 @@
 import { type NextRequest, NextResponse } from "next/server";
 import {
-  type AuthenticatedUser,
-  authenticateFromRequest,
-} from "@/lib/auth/middleware";
-import {
   HTTP_STATUS_BAD_REQUEST,
   HTTP_STATUS_FORBIDDEN,
   HTTP_STATUS_INTERNAL_SERVER_ERROR,
   HTTP_STATUS_OK,
   HTTP_STATUS_UNAUTHORIZED,
-} from "@/shared/constants/http-status";
-import { DISPLAY_NAME_MAX_LENGTH } from "@/shared/constants/validation";
+} from "@/constants/http-status";
+import { DISPLAY_NAME_MAX_LENGTH } from "@/constants/validation";
+import {
+  type AuthenticatedUser,
+  authenticateFromRequest,
+} from "@/lib/auth/middleware";
 
 /**
  * ユーザー情報取得API

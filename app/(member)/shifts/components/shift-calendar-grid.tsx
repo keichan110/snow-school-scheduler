@@ -1,8 +1,8 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { ShiftCalendarSkeleton } from "@/shared/components/skeletons/shift-calendar-skeleton";
-import type { BaseShiftDisplayProps } from "@/shared/types/shift-display-types";
+import type { BaseShiftDisplayProps } from "@/types/shift-display-types";
+import { ShiftCalendarSkeleton } from "../_components/shift-calendar-skeleton";
 
 /**
  * 統合シフトカレンダーグリッドコンポーネントのProps型

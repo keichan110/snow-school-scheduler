@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 
-import Footer from "@/components/footer";
+import Footer from "@/app/_components/layout/footer";
 
 /**
  * 公開ページレイアウト

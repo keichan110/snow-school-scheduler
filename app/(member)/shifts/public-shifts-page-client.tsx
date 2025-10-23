@@ -12,17 +12,17 @@ import {
   useTransition,
 } from "react";
 import { ErrorBoundary } from "react-error-boundary";
-import Header from "@/components/header";
+import Header from "@/app/_components/layout/header";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useRequireAuth } from "@/contexts/auth-context";
+import { hasManagePermission } from "@/lib/auth/permissions";
 import {
   publicShiftsDepartmentsQueryKeys,
   publicShiftsQueryKeys,
   useDepartmentsQuery,
   usePublicShiftsQuery,
-} from "@/features/shifts";
-import { hasManagePermission } from "@/lib/auth/permissions";
+} from "./_lib/queries";
 import { MonthlyCalendarWithDetails } from "./components/monthly-calendar-with-details";
 import { PublicShiftsErrorState } from "./components/public-shifts-error-state";
 import { PublicShiftsSuspenseFallback } from "./components/public-shifts-suspense-fallback";

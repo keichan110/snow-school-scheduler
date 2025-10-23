@@ -73,8 +73,8 @@ export default async function TodosPage() {
 // app/(member)/layout.tsx
 import { redirect } from 'next/navigation';
 import { AuthProvider } from '@/contexts/auth-context';
-import { ensureRole } from '@/features/shared/lib/role-guard';
-import { buildLoginRedirectUrl, ACCESS_DENIED_REDIRECT } from '@/features/shared/lib/auth-redirect';
+import { ensureRole } from '@/lib/auth/role-guard';
+import { buildLoginRedirectUrl, ACCESS_DENIED_REDIRECT } from '@/lib/auth/auth-redirect';
 
 export default async function MemberLayout({ children }: { children: React.ReactNode }) {
   const result = await ensureRole({ atLeast: "MEMBER" });

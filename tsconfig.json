@@ -27,8 +27,7 @@
     "paths": {
       "@/*": ["./*"],
       "@prisma/client": ["./generated/prisma"],
-      "@/shared/*": ["./shared/*"],
-      "@/features/*": ["./features/*"]
+      "@/shared/*": ["./shared/*"]
     },
     "target": "ES2017",
     "strictNullChecks": true

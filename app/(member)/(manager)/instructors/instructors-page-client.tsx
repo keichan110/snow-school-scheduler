@@ -7,9 +7,9 @@ import {
   SealCheck,
 } from "@phosphor-icons/react";
 import { useCallback, useMemo, useState } from "react";
+import { CertificationBadge } from "@/app/_components/shared/certification-badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { CertificationBadge } from "@/components/ui/certification-badge";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import {
@@ -25,7 +25,7 @@ import {
   useCreateInstructor,
   useInstructorsQuery,
   useUpdateInstructor,
-} from "@/features/instructors";
+} from "./_lib/use-instructors";
 import { mapStatusToApi } from "./api";
 import InstructorModal from "./instructor-modal";
 import type {

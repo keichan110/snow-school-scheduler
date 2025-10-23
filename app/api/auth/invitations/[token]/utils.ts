@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
-import type { AuthenticatedUser } from "@/lib/auth/types";
-import { prisma } from "@/lib/db";
 import {
   HTTP_STATUS_BAD_REQUEST,
   HTTP_STATUS_CONFLICT,
   HTTP_STATUS_FORBIDDEN,
   HTTP_STATUS_NOT_FOUND,
-} from "@/shared/constants/http-status";
+} from "@/constants/http-status";
+import type { AuthenticatedUser } from "@/lib/auth/types";
+import { prisma } from "@/lib/db";
 
 /**
  * トークンパラメータをバリデーションする

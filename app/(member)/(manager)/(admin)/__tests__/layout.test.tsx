@@ -3,19 +3,19 @@ import AdminLayout from "@/app/(member)/(manager)/(admin)/layout";
 import {
   ACCESS_DENIED_REDIRECT,
   buildLoginRedirectUrl,
-} from "@/features/shared/lib/auth-redirect";
-import { ensureRole } from "@/features/shared/lib/role-guard";
+} from "@/lib/auth/auth-redirect";
+import { ensureRole } from "@/lib/auth/role-guard";
 
 // Mock dependencies
 jest.mock("next/navigation", () => ({
   redirect: jest.fn(),
 }));
 
-jest.mock("@/features/shared/lib/role-guard", () => ({
+jest.mock("@/lib/auth/role-guard", () => ({
   ensureRole: jest.fn(),
 }));
 
-jest.mock("@/features/shared/lib/auth-redirect", () => ({
+jest.mock("@/lib/auth/auth-redirect", () => ({
   ACCESS_DENIED_REDIRECT: "/",
   buildLoginRedirectUrl: jest.fn(),
 }));

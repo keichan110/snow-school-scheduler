@@ -100,17 +100,48 @@ app/
 ├── terms/                  # 利用規約
 ├── layout.tsx              # ルートレイアウト（共通UI・Providers）
 ├── page.tsx                # ホームページ
-└── globals.css             # グローバルスタイル
+├── globals.css             # グローバルスタイル
+└── _components/            # グローバルUIコンポーネント
+    ├── ui/                 # shadcn/ui基本コンポーネント
+    ├── layout/             # ヘッダー・フッター等
+    ├── shared/             # 共有コンポーネント
+    └── providers/          # Providers
 
-components/                   # 再利用可能UIコンポーネント（shadcn/ui拡張）
-shared/                      # 共有ユーティリティ・型定義・ヘルパー
-features/                    # 機能別モジュール（ドメイン駆動設計）
-├── departments/             # 部門機能モジュール
-├── instructors/             # インストラクター機能モジュール
-├── shifts/                  # シフト機能モジュール
-└── shared/                  # 機能間共有モジュール
-hooks/                       # カスタムフック集
+※ 各機能ディレクトリには colocation パターンに従い、以下のような構造を持つ:
+  ├── _lib/                 # 機能専用のライブラリコード
+  ├── _queries/             # データフェッチング用 hooks
+  ├── _components/          # 機能専用コンポーネント
+  └── __tests__/            # テストファイル
+
+components/
+└── ui/                     # shadcn/ui コンポーネント（グローバル共有）
+
 lib/                        # ライブラリ設定・ユーティリティ
+├── auth/                   # 認証関連ライブラリ
+├── hooks/                  # グローバル共有 hooks
+├── api/                    # API クライアントライブラリ
+└── utils/                  # 共通ユーティリティ
+
+types/                      # TypeScript型定義
+├── common.ts               # 共通型定義
+├── actions.ts              # Server Actions型
+├── shift-display-types.ts  # シフト表示型
+└── result.ts               # Result パターン型
+
+schemas/                    # Zodバリデーションスキーマ
+└── common.ts               # 共通スキーマ
+
+constants/                  # アプリケーション定数
+├── auth.ts                 # 認証関連定数
+├── http-status.ts          # HTTPステータス定数
+├── pagination.ts           # ページネーション定数
+└── validation.ts           # バリデーション定数
+
+utils/                      # ユーティリティ関数
+├── date-formatter.ts       # 日付フォーマット
+└── validation.ts           # バリデーション関数
+
+contexts/                   # React Context 定義
 prisma/                     # データベーススキーマ・シード・マイグレーション
 public/                     # 静的アセット
 docs/                       # プロジェクトドキュメント

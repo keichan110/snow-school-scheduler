@@ -1,10 +1,10 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { authenticateFromRequest } from "@/lib/auth/middleware";
-import type { ApiResponse, InvitationListItem } from "@/lib/auth/types";
 import {
   HTTP_STATUS_INTERNAL_SERVER_ERROR,
   HTTP_STATUS_OK,
-} from "@/shared/constants/http-status";
+} from "@/constants/http-status";
+import { authenticateFromRequest } from "@/lib/auth/middleware";
+import type { ApiResponse, InvitationListItem } from "@/lib/auth/types";
 import {
   buildInvitationListResponse,
   checkAuthAndRole,

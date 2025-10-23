@@ -1,20 +1,20 @@
 import type { User } from "@prisma/client";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { authenticateFromRequest } from "@/lib/auth/middleware";
-import type { ApiResponse } from "@/lib/auth/types";
-import { prisma } from "@/lib/db";
 import {
   HTTP_STATUS_BAD_REQUEST,
   HTTP_STATUS_FORBIDDEN,
   HTTP_STATUS_INTERNAL_SERVER_ERROR,
   HTTP_STATUS_UNAUTHORIZED,
-} from "@/shared/constants/http-status";
+} from "@/constants/http-status";
 import {
   PAGINATION_MAX_LIMIT,
   PAGINATION_MIN_LIMIT,
   PAGINATION_MIN_PAGE,
-} from "@/shared/constants/pagination";
+} from "@/constants/pagination";
+import { authenticateFromRequest } from "@/lib/auth/middleware";
+import type { ApiResponse } from "@/lib/auth/types";
+import { prisma } from "@/lib/db";
 
 /**
  * ユーザー管理API

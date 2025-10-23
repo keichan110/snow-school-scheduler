@@ -18,7 +18,7 @@ import {
   useCreateShiftType,
   useShiftTypesQuery,
   useUpdateShiftType,
-} from "@/features/shift-types";
+} from "./_lib/use-shift-types";
 import ShiftTypeModal from "./shift-type-modal";
 import type { ShiftType, ShiftTypeFormData, ShiftTypeStats } from "./types";
 

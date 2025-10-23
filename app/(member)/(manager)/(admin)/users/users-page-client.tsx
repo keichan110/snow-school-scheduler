@@ -30,7 +30,7 @@ import {
   usersQueryKeys,
   useUpdateUser,
   useUsersQuery,
-} from "@/features/users";
+} from "./_lib/use-users";
 import { getRoleColor, getRoleDisplayName } from "./api";
 import type {
   UserFilters,

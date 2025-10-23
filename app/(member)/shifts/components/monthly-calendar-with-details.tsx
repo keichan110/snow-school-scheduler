@@ -1,8 +1,8 @@
 "use client";
 
 import { useMemo } from "react";
-import { DepartmentIcon } from "@/components/shared/ui/department-icon";
-import { ShiftBadge } from "@/components/shared/ui/shift-badge";
+import { DepartmentIcon } from "@/app/(member)/shifts/_components/department-icon";
+import { ShiftBadge } from "@/app/(member)/shifts/_components/shift-badge";
 import { cn } from "@/lib/utils";
 import type { DayData } from "../types";
 import { ShiftDayCard } from "./shift-day-card";

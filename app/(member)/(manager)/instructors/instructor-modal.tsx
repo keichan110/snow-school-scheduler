@@ -10,9 +10,9 @@ import {
   UserMinus,
 } from "@phosphor-icons/react";
 import { useCallback, useEffect, useState } from "react";
+import { useNotification } from "@/app/_components/shared/notifications";
+import { fetchCertifications } from "@/app/(member)/(manager)/certifications/_lib/queries";
 import type { CertificationWithDepartment } from "@/app/(member)/(manager)/certifications/types";
-import { getDepartmentType } from "@/app/(member)/(manager)/certifications/utils";
-import { useNotification } from "@/components/notifications";
 import { Button } from "@/components/ui/button";
 import {
   Drawer,
@@ -28,7 +28,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
-import { fetchCertifications } from "@/features/certifications/api/queries";
+import { getDepartmentType } from "@/lib/utils/department-type";
 import type { InstructorFormData, InstructorModalProps } from "./types";
 
 export default function InstructorModal({

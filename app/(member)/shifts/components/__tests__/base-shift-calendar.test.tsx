@@ -8,7 +8,7 @@ jest.mock("@/lib/utils", () => ({
   cn: jest.fn((...classes) => classes.filter(Boolean).join(" ")),
 }));
 
-jest.mock("@/components/shared/ui/department-icon", () => ({
+jest.mock("@/app/(member)/shifts/_components/department-icon", () => ({
   DepartmentIcon: jest.fn(({ department, size }) => (
     <div
       data-department={department}
@@ -20,7 +20,7 @@ jest.mock("@/components/shared/ui/department-icon", () => ({
   )),
 }));
 
-jest.mock("@/components/shared/ui/shift-badge", () => ({
+jest.mock("@/app/(member)/shifts/_components/shift-badge", () => ({
   ShiftBadge: jest.fn(({ count }) => (
     <div data-count={count} data-testid="shift-badge">
       {count}名

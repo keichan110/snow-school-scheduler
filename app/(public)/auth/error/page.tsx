@@ -1,8 +1,8 @@
+import { AuthErrorClient } from "../../(auth)/_components/auth-error-client";
 import {
   authErrorMap,
   sanitizeDescription,
-} from "@/features/auth/lib/auth-error-map";
-import { AuthErrorClient } from "@/features/auth/ui/auth-error-client";
+} from "../../(auth)/_lib/auth-error-map";
 
 type AuthErrorPageProps = {
   searchParams: Promise<{
