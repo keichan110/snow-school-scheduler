@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 
-import CertificationsPageClient from "./certifications-page-client";
+import CertificationsPageClient from "./_components/page-client";
 import Loading from "./loading";
 
 /**

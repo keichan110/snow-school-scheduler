@@ -21,18 +21,18 @@ import {
 } from "@/components/ui/table";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getDepartmentType } from "@/lib/utils/department-type";
-import {
-  useCertificationsQuery,
-  useCreateCertification,
-  useUpdateCertification,
-} from "./_lib/use-certifications";
-import { getDepartmentIdByType } from "./api";
-import CertificationModal from "./certification-modal";
+import { getDepartmentIdByType } from "../_lib/api";
 import type {
   CertificationFormData,
   CertificationStats,
   CertificationWithDepartment,
-} from "./types";
+} from "../_lib/types";
+import {
+  useCertificationsQuery,
+  useCreateCertification,
+  useUpdateCertification,
+} from "../_lib/use-certifications";
+import CertificationModal from "./certification-modal";
 
 type CertificationRowProps = {
   certification: CertificationWithDepartment;

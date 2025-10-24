@@ -12,7 +12,7 @@ import {
 import { useCallback, useEffect, useState } from "react";
 import { useNotification } from "@/app/_components/shared/notifications";
 import { fetchCertifications } from "@/app/(member)/(manager)/certifications/_lib/queries";
-import type { CertificationWithDepartment } from "@/app/(member)/(manager)/certifications/types";
+import type { CertificationWithDepartment } from "@/app/(member)/(manager)/certifications/_lib/types";
 import { Button } from "@/components/ui/button";
 import {
   Drawer,
