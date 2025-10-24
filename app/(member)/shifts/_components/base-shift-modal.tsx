@@ -2,7 +2,6 @@
 
 import { Calendar } from "@phosphor-icons/react";
 import type React from "react";
-import type { DayData } from "@/app/(member)/shifts/types";
 import { Button } from "@/components/ui/button";
 import {
   Drawer,
@@ -13,6 +12,7 @@ import {
   DrawerTitle,
 } from "@/components/ui/drawer";
 import { formatDateForDisplay } from "../_lib/date-formatter";
+import type { DayData } from "../_lib/types";
 
 export type BaseShiftModalProps = {
   isOpen: boolean;
