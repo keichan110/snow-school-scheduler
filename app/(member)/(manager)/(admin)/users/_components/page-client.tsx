@@ -25,20 +25,20 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  useDeleteUser,
-  usersQueryKeys,
-  useUpdateUser,
-  useUsersQuery,
-} from "./_lib/use-users";
-import { getRoleColor, getRoleDisplayName } from "./api";
+import { getRoleColor, getRoleDisplayName } from "../_lib/api";
 import type {
   UserFilters,
   UserFormData,
   UserRole,
   UserStats,
   UserWithDetails,
-} from "./types";
+} from "../_lib/types";
+import {
+  useDeleteUser,
+  usersQueryKeys,
+  useUpdateUser,
+  useUsersQuery,
+} from "../_lib/use-users";
 import UserModal from "./user-modal";
 
 const ROLE_ORDER: Record<UserRole, number> = {

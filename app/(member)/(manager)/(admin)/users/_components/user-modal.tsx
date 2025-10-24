@@ -16,8 +16,8 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Switch } from "@/components/ui/switch";
-import { getRoleDisplayName } from "./api";
-import type { UserFormData, UserRole, UserWithDetails } from "./types";
+import { getRoleDisplayName } from "../_lib/api";
+import type { UserFormData, UserRole, UserWithDetails } from "../_lib/types";
 
 type UserModalProps = {
   isOpen: boolean;
