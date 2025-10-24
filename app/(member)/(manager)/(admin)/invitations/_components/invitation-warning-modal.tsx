@@ -11,7 +11,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
-import type { InvitationTokenWithStats } from "./types";
+import type { InvitationTokenWithStats } from "../_lib/types";
 
 type InvitationWarningModalProps = {
   isOpen: boolean;

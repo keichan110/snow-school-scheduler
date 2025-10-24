@@ -25,20 +25,20 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { checkActiveInvitation } from "../_lib/api";
+import type {
+  InvitationFormData,
+  InvitationStats,
+  InvitationTokenWithStats,
+} from "../_lib/types";
 import {
   invitationsQueryKeys,
   useCreateInvitation,
   useDeleteInvitation,
   useInvitationsQuery,
-} from "./_lib/use-invitations";
-import { checkActiveInvitation } from "./api";
+} from "../_lib/use-invitations";
 import InvitationModal from "./invitation-modal";
 import InvitationWarningModal from "./invitation-warning-modal";
-import type {
-  InvitationFormData,
-  InvitationStats,
-  InvitationTokenWithStats,
-} from "./types";
 
 const CLIPBOARD_SUCCESS_TIMEOUT_MS = 2000;
 

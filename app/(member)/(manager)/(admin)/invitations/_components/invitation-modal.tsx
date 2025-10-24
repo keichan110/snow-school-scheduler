@@ -17,7 +17,10 @@ import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
-import type { InvitationFormData, InvitationTokenWithStats } from "./types";
+import type {
+  InvitationFormData,
+  InvitationTokenWithStats,
+} from "../_lib/types";
 
 const DEFAULT_EXPIRY_DAYS = 7;
 const MAX_EXPIRY_MONTHS = 1;
