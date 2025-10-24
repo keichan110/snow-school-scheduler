@@ -29,7 +29,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { getDepartmentType } from "@/lib/utils/department-type";
-import type { InstructorFormData, InstructorModalProps } from "./types";
+import type { InstructorFormData, InstructorModalProps } from "../_lib/types";
 
 export default function InstructorModal({
   isOpen,

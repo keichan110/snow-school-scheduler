@@ -21,19 +21,19 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  useCreateInstructor,
-  useInstructorsQuery,
-  useUpdateInstructor,
-} from "./_lib/use-instructors";
-import { mapStatusToApi } from "./api";
-import InstructorModal from "./instructor-modal";
+import { mapStatusToApi } from "../_lib/api";
 import type {
   CategoryFilterType,
   InstructorFormData,
   InstructorStats,
   InstructorWithCertifications,
-} from "./types";
+} from "../_lib/types";
+import {
+  useCreateInstructor,
+  useInstructorsQuery,
+  useUpdateInstructor,
+} from "../_lib/use-instructors";
+import InstructorModal from "./instructor-modal";
 
 const STATUS_ORDER: Partial<
   Record<InstructorWithCertifications["status"], number>

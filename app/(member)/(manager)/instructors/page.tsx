@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 
-import InstructorsPageClient from "./instructors-page-client";
+import InstructorsPageClient from "./_components/page-client";
 import Loading from "./loading";
 
 /**
