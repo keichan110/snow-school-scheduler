@@ -14,13 +14,17 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import type {
+  ShiftType,
+  ShiftTypeFormData,
+  ShiftTypeStats,
+} from "../_lib/types";
 import {
   useCreateShiftType,
   useShiftTypesQuery,
   useUpdateShiftType,
-} from "./_lib/use-shift-types";
+} from "../_lib/use-shift-types";
 import ShiftTypeModal from "./shift-type-modal";
-import type { ShiftType, ShiftTypeFormData, ShiftTypeStats } from "./types";
 
 function sortShiftTypes(shiftTypes: ShiftType[]): ShiftType[] {
   return [...shiftTypes].sort((a, b) => {

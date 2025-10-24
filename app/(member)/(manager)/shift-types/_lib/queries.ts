@@ -4,8 +4,8 @@ import {
   useSuspenseQuery,
 } from "@tanstack/react-query";
 
-import { fetchShiftTypes } from "@/app/(member)/(manager)/shift-types/api";
-import type { ShiftType } from "@/app/(member)/(manager)/shift-types/types";
+import { fetchShiftTypes } from "@/app/(member)/(manager)/shift-types/_lib/api";
+import type { ShiftType } from "@/app/(member)/(manager)/shift-types/_lib/types";
 
 /**
  * シフト種類一覧向けのクエリキー

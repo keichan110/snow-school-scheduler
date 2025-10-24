@@ -16,7 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Switch } from "@/components/ui/switch";
-import type { ShiftTypeFormData, ShiftTypeModalProps } from "./types";
+import type { ShiftTypeFormData, ShiftTypeModalProps } from "../_lib/types";
 
 export default function ShiftTypeModal({
   isOpen,
