@@ -123,6 +123,10 @@ describe("setAuthCookie", () => {
     };
   });
 
+  afterEach(() => {
+    (process.env as any).NODE_ENV = originalNodeEnv;
+  });
+
   test("認証トークン用の厳格なセキュリティ設定を適用する", () => {
     (process.env as any).NODE_ENV = "production";
 
@@ -134,7 +138,7 @@ describe("setAuthCookie", () => {
       {
         httpOnly: true,
         secure: true,
-        sameSite: "strict", // 最も厳格な設定
+        sameSite: "lax", // OAuth/外部IdPリダイレクトに対応
         maxAge: 48 * 60 * 60, // 48時間（既存の設定に合わせる）
         path: "/",
       }
@@ -184,6 +188,11 @@ describe("setRefreshTokenCookie", () => {
         set: jest.fn(),
       },
     };
+    (process.env as any).NODE_ENV = "production";
+  });
+
+  afterEach(() => {
+    (process.env as any).NODE_ENV = originalNodeEnv;
   });
 
   test("リフレッシュトークン用の最高レベルセキュリティ設定を適用する", () => {
@@ -214,6 +223,10 @@ describe("deleteCookie", () => {
     };
   });
 
+  afterEach(() => {
+    (process.env as any).NODE_ENV = originalNodeEnv;
+  });
+
   test("Cookieを安全に削除する", () => {
     (process.env as any).NODE_ENV = "production";
 
@@ -222,14 +235,14 @@ describe("deleteCookie", () => {
     expect(mockResponse.cookies.set).toHaveBeenCalledWith("test-cookie", "", {
       httpOnly: true,
       secure: true,
-      sameSite: "strict",
+      sameSite: "lax",
       maxAge: 0, // 即座に期限切れ
       path: "/",
     });
   });
 
   test("カスタムパスでCookieを削除する", () => {
-    deleteCookie(mockResponse, "api-cookie", "/api/auth");
+    deleteCookie(mockResponse, "api-cookie", "/api/auth", "strict");
 
     expect(mockResponse.cookies.set).toHaveBeenCalledWith("api-cookie", "", {
       httpOnly: true,
@@ -345,17 +358,17 @@ describe("validateCookieOptions", () => {
 });
 
 describe("CSRF攻撃対策テスト", () => {
-  test("SameSite=strictによりCSRF攻撃を防ぐ", () => {
+  test("SameSite=laxでOAuthリダイレクト後もCSRF攻撃を防ぐ", () => {
     const mockResponse = { cookies: { set: jest.fn() } } as any;
 
-    // 認証トークンは最も厳格な設定
+    // OAuthリダイレクト後もCookieを送信する必要があるためlaxを使用
     setAuthCookie(mockResponse, "auth-token");
 
     expect(mockResponse.cookies.set).toHaveBeenCalledWith(
       "auth-token",
       "auth-token",
       expect.objectContaining({
-        sameSite: "strict",
+        sameSite: "lax",
       })
     );
   });

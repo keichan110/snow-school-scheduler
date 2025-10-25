@@ -1,6 +1,8 @@
 "use client";
 
-import { useEffect } from "react";
+import { isRedirectError } from "next/dist/client/components/redirect-error";
+import { useRouter } from "next/navigation";
+import { useEffect, useRef } from "react";
 import { useAuth } from "@/contexts/auth-context";
 import { logoutAction } from "@/lib/auth/actions";
 
@@ -21,9 +23,15 @@ import { logoutAction } from "@/lib/auth/actions";
  */
 export default function LogoutPageClient() {
   const { logout } = useAuth();
+  const router = useRouter();
+  const hasTriggeredRef = useRef(false);
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: logout関数は再レンダリング毎に再生成されるため、依存配列に含めると重複実行される。マウント時のみ1回実行するため意図的に空配列を使用。
   useEffect(() => {
+    if (hasTriggeredRef.current) {
+      return;
+    }
+    hasTriggeredRef.current = true;
+
     const performLogout = async () => {
       try {
         // 1. まずクライアント状態をクリア (AuthProvider.logout呼び出し)
@@ -32,14 +40,26 @@ export default function LogoutPageClient() {
 
         // 2. 次にServer Actionでサーバー側Cookie削除+リダイレクト
         await logoutAction();
-      } catch {
-        // Server Action内でredirectが呼ばれるとエラーとしてキャッチされる
-        // これは正常な挙動なので、何もしない
+
+        // redirect が発生しない場合のフォールバック
+        router.replace("/login");
+      } catch (error) {
+        if (isRedirectError(error)) {
+          // redirectエラーは再送出してNext.jsに処理を委ねる
+          throw error;
+        }
+
+        // redirectが発生しなかった場合でもUXを維持するためログインページへ遷移
+        router.replace("/login");
       }
     };
 
-    performLogout();
-  }, []);
+    performLogout().catch((error) => {
+      if (isRedirectError(error)) {
+        throw error;
+      }
+    });
+  }, [logout, router]);
 
   return (
     <div className="flex h-[calc(100vh-16rem)] items-center justify-center">
