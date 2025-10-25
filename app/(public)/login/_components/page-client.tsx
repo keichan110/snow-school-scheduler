@@ -1,7 +1,7 @@
 "use client";
 
 import { Snowflake } from "@phosphor-icons/react";
-import { LineLoginButton } from "@/app/(auth)/_components/line-login-button";
+import { LineLoginButton } from "./line-login-button";
 
 // 背景表示用定数
 const MAX_SHIFTS_PER_DAY = 5;

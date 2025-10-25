@@ -3,7 +3,7 @@
  * 規約の変更履歴を独立して管理するため、このファイルで内容を管理
  */
 
-import type { LegalDocument } from "./types";
+import type { MarkdownDocument } from "@/app/_lib/markdown-document";
 
 const PRIVACY_CONTENT = `## 第1条(目的)
 
@@ -84,7 +84,7 @@ const PRIVACY_METADATA = {
   最終更新日: "2025年9月12日",
 };
 
-export const privacyDocument: LegalDocument = {
+export const privacyDocument: MarkdownDocument = {
   title: PRIVACY_TITLE,
   metadata: PRIVACY_METADATA,
   content: PRIVACY_CONTENT,

@@ -19,7 +19,7 @@ import { logoutAction } from "@/lib/auth/actions";
  * - logout関数は再レンダリング毎に新しく生成されるが、依存配列に含めると重複実行されるため意図的に除外
  * - Server Action内で redirect() が呼ばれるとエラーとしてキャッチされる（Next.jsの仕様、正常な挙動）
  */
-export default function LogoutActionClient() {
+export default function LogoutPageClient() {
   const { logout } = useAuth();
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: logout関数は再レンダリング毎に再生成されるため、依存配列に含めると重複実行される。マウント時のみ1回実行するため意図的に空配列を使用。

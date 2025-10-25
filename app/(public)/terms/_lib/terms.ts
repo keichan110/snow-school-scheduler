@@ -3,7 +3,7 @@
  * 規約の変更履歴を独立して管理するため、このファイルで内容を管理
  */
 
-import type { LegalDocument } from "./types";
+import type { MarkdownDocument } from "@/app/_lib/markdown-document";
 
 const TERMS_CONTENT = `## 第1条（適用）
 
@@ -88,7 +88,7 @@ const TERMS_METADATA = {
   最終更新日: "2025年9月12日",
 };
 
-export const termsDocument: LegalDocument = {
+export const termsDocument: MarkdownDocument = {
   title: TERMS_TITLE,
   metadata: TERMS_METADATA,
   content: TERMS_CONTENT,

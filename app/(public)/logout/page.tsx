@@ -1,4 +1,4 @@
-import LogoutActionClient from "./logout-action-client";
+import LogoutPageClient from "./_components/page-client";
 
 export const dynamic = "force-dynamic";
 
@@ -22,5 +22,5 @@ export const dynamic = "force-dynamic";
  * 4. ルートページが未認証を検知し、`/login` へリダイレクト
  */
 export default function LogoutPage() {
-  return <LogoutActionClient />;
+  return <LogoutPageClient />;
 }

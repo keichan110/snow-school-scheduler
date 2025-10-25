@@ -1,6 +1,6 @@
-import { LegalDocumentPage } from "../_lib/legal/legal-document-page";
-import { termsDocument } from "../_lib/legal/terms";
+import { DocumentPage } from "@/app/_components/document-page";
+import { termsDocument } from "./_lib/terms";
 
 export default function TermsPage() {
-  return <LegalDocumentPage document={termsDocument} />;
+  return <DocumentPage document={termsDocument} />;
 }
