@@ -1,5 +1,5 @@
-import { MarkdownContent } from "@/app/_components/shared/markdown-content";
 import type { MarkdownDocument } from "@/app/_lib/markdown-document";
+import { MarkdownContent } from "@/app/(public)/_components/markdown-content";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 type DocumentPageProps = {

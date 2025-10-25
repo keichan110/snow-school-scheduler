@@ -1,11 +1,9 @@
-import Header from "@/app/_components/layout/header";
-import { SkeletonCalendar, SkeletonSection } from "@/app/_components/ui";
+import { SkeletonCalendar } from "@/app/(member)/shifts/_components/skeleton-calendar";
+import { SkeletonSection } from "@/app/(member)/shifts/_components/skeleton-section";
 
 export default function ShiftsLoading() {
   return (
     <div className="min-h-screen">
-      <Header />
-
       <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 md:py-8 lg:px-8">
         <div aria-hidden="true" className="mb-6 text-center md:mb-8">
           <div className="mx-auto h-8 w-48 rounded-md bg-muted" />

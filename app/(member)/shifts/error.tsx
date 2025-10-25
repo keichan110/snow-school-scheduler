@@ -4,7 +4,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { AlertTriangle, Home, Loader2, RefreshCw } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useState } from "react";
-import { useNotification } from "@/app/_components/shared/notifications";
+import { useNotification } from "@/app/_providers/notifications";
 import { Button } from "@/components/ui/button";
 import {
   Card,

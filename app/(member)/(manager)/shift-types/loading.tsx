@@ -1,4 +1,4 @@
-import { SkeletonTable } from "@/app/_components/ui";
+import { SkeletonTable } from "@/app/(member)/(manager)/_components/skeleton-table";
 
 export default function Loading() {
   return (

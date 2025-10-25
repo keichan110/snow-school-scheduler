@@ -1,4 +1,3 @@
-import Header from "@/app/_components/layout/header";
 import { Button } from "@/components/ui/button";
 
 type PublicShiftsErrorStateProps = {
@@ -22,8 +21,6 @@ export function PublicShiftsErrorState({
 
   return (
     <div className="min-h-screen">
-      <Header />
-
       <div className="flex items-center justify-center px-4 py-12">
         <div className="max-w-md text-center">
           <div className="mb-2 font-medium text-lg text-red-600 dark:text-red-400">

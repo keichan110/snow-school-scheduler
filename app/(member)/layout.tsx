@@ -1,8 +1,7 @@
 import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
 
-import Footer from "@/app/_components/layout/footer";
-import Header from "@/app/_components/layout/header";
+import { HeaderAuthenticated } from "@/app/_components/header-authenticated";
 import { AuthProvider } from "@/contexts/auth-context";
 import {
   ACCESS_DENIED_REDIRECT,
@@ -16,13 +15,15 @@ import { ensureRole } from "@/lib/auth/role-guard";
  * このレイアウトの役割：
  * 1. サーバー側でMEMBER以上の権限をチェック
  * 2. 未認証・権限不足ユーザーを適切にリダイレクト
- * 3. 認証済みユーザー情報を AuthProvider に渡してクライアント側で利用可能にする
- * 4. Header と Footer を含む共通UIレイアウトを提供
+ * 3. 認証済みユーザー情報をAuthProviderに渡してクライアント側で即座に利用可能にする
+ * 4. サーバー取得済みのユーザー情報を使ってHeaderAuthenticatedを表示
  *
  * 設計上の重要な点：
- * - AuthProvider はこのレイアウトで一度だけ配置される（二重ラップ防止）
- * - Header が参照する useAuth() はこの AuthProvider を指す
- * - 子コンポーネントの logout() や updateDisplayName() は Header にも反映される
+ * - RootLayoutのAuthProviderをオーバーライドして、サーバー取得済みのユーザー情報を提供
+ * - HeaderAuthenticatedにサーバーユーザー情報を直接渡すことで、初回レンダリングから完全なUIを表示
+ * - これにより、初回レンダリング時のレイアウトシフト(CLS)やFOUCを回避
+ * - HeaderAuthenticatedは このレイアウト で提供される
+ * - Background、Footerは RootLayout で提供される
  */
 export const dynamic = "force-dynamic";
 
@@ -41,19 +42,11 @@ export default async function MemberLayout({ children }: Props) {
     redirect(ACCESS_DENIED_REDIRECT);
   }
 
-  const { user } = result; // status === "authorized"
-
-  // AuthProvider に初期ユーザー情報を渡してクライアント側での追加フェッチを回避
-  // この AuthProvider が保護ルート全体で唯一のインスタンスとなる
+  // 認証チェック成功 → サーバー取得済みのユーザー情報をAuthProviderとHeaderに渡す
   return (
-    <AuthProvider initialStatus="authenticated" initialUser={user}>
-      <div className="flex min-h-screen flex-col">
-        <Header />
-        <main className="mx-auto w-full max-w-7xl flex-1 px-4 pt-32 sm:px-6 lg:px-8">
-          {children}
-        </main>
-        <Footer />
-      </div>
+    <AuthProvider initialStatus="authenticated" initialUser={result.user}>
+      <HeaderAuthenticated user={result.user} />
+      {children}
     </AuthProvider>
   );
 }

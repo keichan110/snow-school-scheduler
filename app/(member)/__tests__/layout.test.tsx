@@ -20,22 +20,8 @@ jest.mock("@/lib/auth/auth-redirect", () => ({
   buildLoginRedirectUrl: jest.fn(),
 }));
 
-// Mock Header and Footer components
-jest.mock("@/app/_components/layout/header", () => ({
-  __esModule: true,
-  default: () => <div data-testid="header">Header</div>,
-}));
-
-jest.mock("@/app/_components/layout/footer", () => ({
-  __esModule: true,
-  default: () => <div data-testid="footer">Footer</div>,
-}));
-
-// Mock AuthProvider
 jest.mock("@/contexts/auth-context", () => ({
-  AuthProvider: ({ children }: { children: React.ReactNode }) => (
-    <div data-testid="auth-provider">{children}</div>
-  ),
+  AuthProvider: ({ children }: { children: React.ReactNode }) => children,
 }));
 
 type MockedEnsureRole = jest.MockedFunction<typeof ensureRole>;

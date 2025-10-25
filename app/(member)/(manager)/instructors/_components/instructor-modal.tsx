@@ -10,7 +10,7 @@ import {
   UserMinus,
 } from "@phosphor-icons/react";
 import { useCallback, useEffect, useState } from "react";
-import { useNotification } from "@/app/_components/shared/notifications";
+import { useNotification } from "@/app/_providers/notifications";
 import { fetchCertifications } from "@/app/(member)/(manager)/certifications/_lib/queries";
 import type { CertificationWithDepartment } from "@/app/(member)/(manager)/certifications/_lib/types";
 import { Button } from "@/components/ui/button";

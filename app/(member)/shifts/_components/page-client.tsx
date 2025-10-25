@@ -12,7 +12,6 @@ import {
   useTransition,
 } from "react";
 import { ErrorBoundary } from "react-error-boundary";
-import Header from "@/app/_components/layout/header";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useRequireAuth } from "@/contexts/auth-context";
@@ -166,8 +165,6 @@ function PublicShiftsPageContent() {
 
   return (
     <div className="min-h-screen">
-      <Header />
-
       <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 md:py-8 lg:px-8">
         <div className="mb-6 text-center md:mb-8">
           <h1 className="mb-2 font-bold text-2xl text-foreground md:text-3xl">

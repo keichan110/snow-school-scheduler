@@ -1,9 +1,7 @@
 import type { HTMLAttributes } from "react";
-
+import { SkeletonSection } from "@/app/(member)/shifts/_components/skeleton-section";
 import { cn } from "@/lib/utils";
-
 import { SkeletonCardGrid } from "./skeleton-card-grid";
-import { SkeletonSection } from "./skeleton-section";
 
 export type SkeletonAppShellProps = HTMLAttributes<HTMLDivElement>;
 

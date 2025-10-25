@@ -7,7 +7,7 @@ import {
   SealCheck,
 } from "@phosphor-icons/react";
 import { useCallback, useMemo, useState } from "react";
-import { CertificationBadge } from "@/app/_components/shared/certification-badge";
+import { CertificationBadge } from "@/app/_components/certification-badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
