@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
 
 import { HeaderAuthenticated } from "@/app/_components/header-authenticated";
-import { AuthProvider } from "@/contexts/auth-context";
+import { AuthProvider } from "@/app/_providers/auth";
 import {
   ACCESS_DENIED_REDIRECT,
   buildLoginRedirectUrl,

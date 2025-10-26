@@ -2,11 +2,11 @@
 
 import { ArrowRight, Edit3 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
+import { useAuth } from "@/app/_providers/auth";
 import { useNotification } from "@/app/_providers/notifications";
 import { AdminShiftModal } from "@/app/(member)/shifts/_components/base-shift-modal";
 import { Button } from "@/components/ui/button";
 import { DrawerFooter } from "@/components/ui/drawer";
-import { useAuth } from "@/contexts/auth-context";
 import { hasManagePermission } from "@/lib/auth/permissions";
 import type { AuthenticatedUser } from "@/lib/auth/types";
 import { cn } from "@/lib/utils";

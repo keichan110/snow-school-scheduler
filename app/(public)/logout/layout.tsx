@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 
-import { AuthProvider } from "@/contexts/auth-context";
+import { AuthProvider } from "@/app/_providers/auth";
 
 /**
  * ログアウトページ専用レイアウト

@@ -72,7 +72,7 @@ export default async function TodosPage() {
 ```tsx
 // app/(member)/layout.tsx
 import { redirect } from 'next/navigation';
-import { AuthProvider } from '@/contexts/auth-context';
+import { AuthProvider } from '@/app/_providers/auth';
 import { ensureRole } from '@/lib/auth/role-guard';
 import { buildLoginRedirectUrl, ACCESS_DENIED_REDIRECT } from '@/lib/auth/auth-redirect';
 

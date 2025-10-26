@@ -1,5 +1,5 @@
 import { render, screen, waitFor } from "@testing-library/react";
-import { AuthProvider, type User, useAuth } from "@/contexts/auth-context";
+import { AuthProvider, type User, useAuth } from "@/app/_providers/auth";
 
 // Save original fetch implementation
 const originalFetch = global.fetch;

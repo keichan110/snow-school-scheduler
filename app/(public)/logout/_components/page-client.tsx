@@ -3,7 +3,7 @@
 import { isRedirectError } from "next/dist/client/components/redirect-error";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
-import { useAuth } from "@/contexts/auth-context";
+import { useAuth } from "@/app/_providers/auth";
 import { logoutAction } from "@/lib/auth/actions";
 
 /**

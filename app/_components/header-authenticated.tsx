@@ -1,6 +1,6 @@
 "use client";
 
-import { useAuth } from "@/contexts/auth-context";
+import { useAuth } from "@/app/_providers/auth";
 import type { AuthenticatedUser } from "@/types/actions";
 import { HeaderMenuDrawer } from "./header/header-menu-drawer";
 import { HeaderShell } from "./header/header-shell";

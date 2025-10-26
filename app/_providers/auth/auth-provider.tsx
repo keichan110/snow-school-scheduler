@@ -2,13 +2,20 @@
 
 import {
   createContext,
-  type ReactNode,
   useCallback,
   useContext,
   useEffect,
   useState,
 } from "react";
 import { HTTP_STATUS_FORBIDDEN, HTTP_STATUS_UNAUTHORIZED } from "@/constants";
+import type {
+  ApiResponse,
+  AuthContextValue,
+  AuthProviderProps,
+  AuthStatus,
+  InitialUser,
+  User,
+} from "./types";
 
 /**
  * 認証状態管理Context
@@ -16,102 +23,9 @@ import { HTTP_STATUS_FORBIDDEN, HTTP_STATUS_UNAUTHORIZED } from "@/constants";
  */
 
 /**
- * ユーザー情報の型定義
- */
-export type User = {
-  /** ユーザーID */
-  id: string;
-  /** LINEユーザーID */
-  lineUserId: string;
-  /** 表示名 */
-  displayName: string;
-  /** LINEプロフィール画像URL */
-  pictureUrl?: string | null;
-  /** ユーザー権限 */
-  role: "ADMIN" | "MANAGER" | "MEMBER";
-  /** アクティブフラグ */
-  isActive: boolean;
-  /** 作成日時 */
-  createdAt: Date;
-  /** 更新日時 */
-  updatedAt: Date;
-};
-
-/**
- * 認証状態の型定義
- */
-export type AuthStatus =
-  | "loading"
-  | "authenticated"
-  | "unauthenticated"
-  | "error";
-
-/**
- * 認証Contextの値の型定義
- */
-type AuthContextValue = {
-  /** 現在のユーザー情報 */
-  user: User | null;
-  /** 認証状態 */
-  status: AuthStatus;
-  /** エラーメッセージ */
-  error: string | null;
-  /** ユーザー情報の再取得 */
-  refetch: () => Promise<void>;
-  /** ログアウト */
-  logout: () => Promise<void>;
-  /** 表示名の更新 */
-  updateDisplayName: (newDisplayName: string) => Promise<boolean>;
-  /** 認証チェック（手動実行用） */
-  checkAuth: () => Promise<void>;
-};
-
-/**
  * AuthContext作成
  */
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
-
-/**
- * 簡易ユーザー情報型（レイアウトからの初期化用）
- * Server Components の ensureRole から得られる最小限のユーザー情報
- */
-type InitialUser = {
-  id: string;
-  lineUserId: string;
-  displayName: string;
-  pictureUrl?: string | null;
-  role: "ADMIN" | "MANAGER" | "MEMBER";
-};
-
-/**
- * AuthProviderのProps
- */
-type AuthProviderProps = {
-  children: ReactNode;
-  /**
-   * 初期ユーザー情報（サーバーサイドで取得済みの場合）
-   * レイアウトで ensureRole を使って取得したユーザー情報を渡すことで、
-   * クライアント側での追加フェッチを回避できる
-   *
-   * InitialUser（最小限の情報）または User（完全な情報）を受け入れる
-   */
-  initialUser?: InitialUser | User | null;
-  /**
-   * 初期認証状態（サーバーサイドで判定済みの場合）
-   * レイアウトでの認証結果を渡すことで、クライアント側の初期状態を制御できる
-   */
-  initialStatus?: "authenticated" | "unauthenticated" | "loading";
-};
-
-/**
- * API Response型定義
- */
-type ApiResponse<T> = {
-  success: boolean;
-  data?: T;
-  user?: T;
-  error?: string;
-};
 
 /**
  * ユーザー情報取得
@@ -208,31 +122,6 @@ async function updateUserDisplayName(newDisplayName: string): Promise<User> {
 }
 
 /**
- * AuthProvider コンポーネント
- * アプリケーション全体に認証状態を提供
- *
- * @param children - 子コンポーネント
- * @param initialUser - 初期ユーザー情報（サーバーサイドから渡される場合）
- * @param initialStatus - 初期認証状態（サーバーサイドから渡される場合）
- *
- * @example
- * ```tsx
- * // レイアウトでサーバー判定結果を渡す場合
- * export default async function MemberLayout({ children }: Props) {
- *   const result = await ensureRole({ atLeast: "MEMBER" });
- *   if (result.status === "unauthenticated") redirect(buildLoginRedirectUrl());
- *   if (result.status === "forbidden") redirect(ACCESS_DENIED_REDIRECT);
- *
- *   const { user } = result; // status === "authorized"
- *   return (
- *     <AuthProvider initialStatus="authenticated" initialUser={user}>
- *       {children}
- *     </AuthProvider>
- *   );
- * }
- * ```
- */
-/**
  * InitialUser を User 型に変換する
  * 不足しているフィールドには仮の値を設定する
  */
@@ -257,6 +146,31 @@ function convertInitialUser(initial: InitialUser | User | null): User | null {
   };
 }
 
+/**
+ * AuthProvider コンポーネント
+ * アプリケーション全体に認証状態を提供
+ *
+ * @param children - 子コンポーネント
+ * @param initialUser - 初期ユーザー情報（サーバーサイドから渡される場合）
+ * @param initialStatus - 初期認証状態（サーバーサイドから渡される場合）
+ *
+ * @example
+ * ```tsx
+ * // レイアウトでサーバー判定結果を渡す場合
+ * export default async function MemberLayout({ children }: Props) {
+ *   const result = await ensureRole({ atLeast: "MEMBER" });
+ *   if (result.status === "unauthenticated") redirect(buildLoginRedirectUrl());
+ *   if (result.status === "forbidden") redirect(ACCESS_DENIED_REDIRECT);
+ *
+ *   const { user } = result; // status === "authorized"
+ *   return (
+ *     <AuthProvider initialStatus="authenticated" initialUser={user}>
+ *       {children}
+ *     </AuthProvider>
+ *   );
+ * }
+ * ```
+ */
 export function AuthProvider({
   children,
   initialUser,
@@ -372,120 +286,14 @@ export function AuthProvider({
 }
 
 /**
- * AuthContext を使用するカスタムフック
- * 認証状態とユーザー情報にアクセスするために使用
- *
- * @returns AuthContextValue
- * @throws Error AuthProvider外で使用された場合
- *
- * @example
- * ```tsx
- * function MyComponent() {
- *   const { user, status, logout } = useAuth();
- *
- *   if (status === 'loading') {
- *     return <div>Loading...</div>;
- *   }
- *
- *   if (status === 'unauthenticated') {
- *     return <div>Please log in</div>;
- *   }
- *
- *   return (
- *     <div>
- *       <p>Welcome, {user?.displayName}!</p>
- *       <button onClick={logout}>Logout</button>
- *     </div>
- *   );
- * }
- * ```
+ * AuthContext へのアクセス用フック（内部使用）
  */
-export function useAuth(): AuthContextValue {
+export function useAuthContext(): AuthContextValue {
   const context = useContext(AuthContext);
 
   if (context === undefined) {
-    throw new Error("useAuth must be used within an AuthProvider");
+    throw new Error("useAuthContext must be used within an AuthProvider");
   }
 
   return context;
-}
-
-/**
- * 認証が必要なコンポーネントで使用するカスタムフック
- * 認証されていない場合は自動的にリダイレクトやエラー処理を行う
- *
- * @returns 認証済みユーザー情報（null以外が保証される）
- * @throws Error 認証されていない場合
- *
- * @example
- * ```tsx
- * function ProtectedComponent() {
- *   const user = useRequireAuth();
- *   // この時点でuserはnullではないことが保証される
- *
- *   return (
- *     <div>
- *       <h1>Admin Dashboard</h1>
- *       <p>Welcome, {user.displayName}!</p>
- *     </div>
- *   );
- * }
- * ```
- */
-export function useRequireAuth(): User {
-  const { user, status } = useAuth();
-
-  if (status === "loading") {
-    throw new Error("Authentication is still loading");
-  }
-
-  if (status === "unauthenticated" || !user) {
-    throw new Error("Authentication required");
-  }
-
-  if (status === "error") {
-    throw new Error("Authentication error occurred");
-  }
-
-  return user;
-}
-
-/**
- * 特定の権限が必要なコンポーネントで使用するカスタムフック
- *
- * @param requiredRole 必要な権限レベル
- * @returns 認証済みユーザー情報（権限確認済み）
- * @throws Error 権限が不足している場合
- *
- * @example
- * ```tsx
- * function AdminOnlyComponent() {
- *   const user = useRequireRole('ADMIN');
- *   // この時点でuserはADMIN権限を持つことが保証される
- *
- *   return <div>Admin only content</div>;
- * }
- * ```
- */
-export function useRequireRole(
-  requiredRole: "ADMIN" | "MANAGER" | "MEMBER"
-): User {
-  const user = useRequireAuth();
-
-  const roleHierarchy = {
-    ADMIN: 3,
-    MANAGER: 2,
-    MEMBER: 1,
-  };
-
-  const userRoleLevel = roleHierarchy[user.role];
-  const requiredRoleLevel = roleHierarchy[requiredRole];
-
-  if (userRoleLevel < requiredRoleLevel) {
-    throw new Error(
-      `Insufficient permissions. Required: ${requiredRole}, Current: ${user.role}`
-    );
-  }
-
-  return user;
 }

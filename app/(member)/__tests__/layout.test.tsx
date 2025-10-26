@@ -20,7 +20,7 @@ jest.mock("@/lib/auth/auth-redirect", () => ({
   buildLoginRedirectUrl: jest.fn(),
 }));
 
-jest.mock("@/contexts/auth-context", () => ({
+jest.mock("@/app/_providers/auth", () => ({
   AuthProvider: ({ children }: { children: React.ReactNode }) => children,
 }));
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { User } from "@phosphor-icons/react";
+import { useAuth } from "@/app/_providers/auth";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -9,7 +10,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useAuth } from "@/contexts/auth-context";
 import type { AuthenticatedUser } from "@/types/actions";
 
 /**

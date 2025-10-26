@@ -12,9 +12,9 @@ import {
   useTransition,
 } from "react";
 import { ErrorBoundary } from "react-error-boundary";
+import { useRequireAuth } from "@/app/_providers/auth";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useRequireAuth } from "@/contexts/auth-context";
 import { hasManagePermission } from "@/lib/auth/permissions";
 import { isHoliday } from "../_lib/constants";
 import {
