@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { authenticateFromCookies } from "@/lib/auth/middleware";
-import LoginPageClient from "./login-page-client";
+import LoginPageClient from "./_components/page-client";
 
 export const dynamic = "force-dynamic";
 

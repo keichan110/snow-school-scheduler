@@ -45,7 +45,7 @@ export function setSecureCookie(
 
 /**
  * 認証トークン用のセキュアなCookie設定
- * 最も厳格なセキュリティ設定を適用
+ * OAuth/外部IdP認証フローに対応したセキュリティ設定を適用
  */
 export function setAuthCookie(response: NextResponse, token: string) {
   setSecureCookie(response, {
@@ -53,7 +53,7 @@ export function setAuthCookie(response: NextResponse, token: string) {
     value: token,
     // biome-ignore lint/style/noMagicNumbers: 時間計算は数式のままが可読性が高い
     maxAge: 48 * 60 * 60, // 48時間（既存の設定に合わせる）
-    sameSite: "strict", // 最も厳格なCSRF対策
+    sameSite: "lax", // OAuth/LINE認証のクロスサイトリダイレクトに対応しつつCSRF対策
     httpOnly: true, // JavaScriptからアクセス不可
     secure: process.env.NODE_ENV === "production", // HTTPS必須
   });
@@ -97,12 +97,19 @@ export function setRefreshTokenCookie(
 /**
  * Cookieを安全に削除
  * セキュリティを考慮した削除処理
+ *
+ * 注意: Cookie削除時は設定時と同じsameSite値を使用する必要がある
  */
-export function deleteCookie(response: NextResponse, name: string, path = "/") {
+export function deleteCookie(
+  response: NextResponse,
+  name: string,
+  path = "/",
+  sameSite: "strict" | "lax" = "lax" // auth-tokenはlaxで設定されているため、デフォルトをlaxに変更
+) {
   response.cookies.set(name, "", {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
-    sameSite: "strict",
+    sameSite,
     maxAge: 0, // 即座に期限切れ
     path,
   });
@@ -113,9 +120,9 @@ export function deleteCookie(response: NextResponse, name: string, path = "/") {
  * ログアウト時などに使用
  */
 export function clearAuthCookies(response: NextResponse) {
-  deleteCookie(response, "auth-token");
-  deleteCookie(response, "auth-session");
-  deleteCookie(response, "refresh-token", "/api/auth");
+  deleteCookie(response, "auth-token", "/", "lax"); // auth-tokenはlaxで設定
+  deleteCookie(response, "auth-session", "/", "lax"); // auth-sessionもlaxで設定
+  deleteCookie(response, "refresh-token", "/api/auth", "strict"); // refresh-tokenはstrictで設定
 }
 
 /**

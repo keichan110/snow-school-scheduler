@@ -15,15 +15,36 @@ import { redirect } from "next/navigation";
  * - redirect() の呼び出しにより、呼び出し元でエラーがスローされる（Next.js の仕様）
  */
 export async function logoutAction() {
-  try {
-    const cookieStore = await cookies();
+  const cookieStore = await cookies();
+  const isProduction = process.env.NODE_ENV === "production";
 
-    // 認証関連のCookieを削除
-    cookieStore.delete("auth-token");
-    cookieStore.delete("auth-session");
-  } catch {
-    // エラーが発生してもリダイレクトは続行
-  }
+  const deleteCookieSafely = (
+    name: string,
+    options: { path: string; sameSite: "lax" | "strict" }
+  ) => {
+    try {
+      // cookies().delete() はオプションをサポートしていないため、
+      // set() を使用して空の値と maxAge: 0 でCookieを削除する
+      cookieStore.set({
+        name,
+        value: "",
+        path: options.path,
+        sameSite: options.sameSite,
+        secure: isProduction,
+        httpOnly: true,
+        maxAge: 0,
+      });
+    } catch {
+      // Cookie操作に失敗してもリダイレクト処理は継続する
+    }
+  };
+
+  deleteCookieSafely("auth-token", { path: "/", sameSite: "lax" });
+  deleteCookieSafely("auth-session", { path: "/", sameSite: "lax" });
+  deleteCookieSafely("refresh-token", {
+    path: "/api/auth",
+    sameSite: "strict",
+  });
 
   // ルートページにリダイレクト
   // ルートページは未認証ユーザーを /login へリダイレクトする

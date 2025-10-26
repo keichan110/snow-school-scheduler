@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import Background from "@/app/_components/layout/background";
-import { QueryProvider } from "@/app/_components/providers/query-client";
-import { ThemeProvider } from "@/app/_components/providers/theme-provider";
-import { NotificationProvider } from "@/app/_components/shared/notifications";
+import Background from "@/app/_components/background";
+import Footer from "@/app/_components/footer";
+import { NotificationProvider } from "@/app/_providers/notifications";
+import { QueryProvider } from "@/app/_providers/query-client";
+import { ThemeProvider } from "@/app/_providers/theme-provider";
 
 export const metadata: Metadata = {
   title: "スキー・スノーボードスクール シフト管理システム",
@@ -14,11 +15,18 @@ export const metadata: Metadata = {
 /**
  * ルートレイアウト
  *
- * グローバルプロバイダーのみを提供し、認証状態管理とUIレイアウトは
- * 各ルートグループ（(public), (member)）に委譲する設計。
+ * グローバルプロバイダーと共通UIコンポーネントを提供する設計。
  *
- * - AuthProvider: 各ルートグループで個別に配置
- * - Header/Footer: 各ルートグループで必要に応じて配置
+ * - Background: 背景デザイン
+ * - Footer: 全ページで表示
+ * - 各ルートグループが独自のHeaderと認証状態を提供：
+ *   - (public): HeaderPublic（ロゴのみ） - 認証不要
+ *   - (member): HeaderAuthenticated（権限に応じた機能） + AuthProvider（サーバー取得済みユーザー情報付き）
+ *
+ * パフォーマンス最適化：
+ * - 公開ページは静的配信可能（認証チェックなし、AuthProviderなし）
+ * - メンバーページはlayout.tsxで認証チェック後、AuthProviderと最適化されたHeaderを提供
+ * - 不要なAPI呼び出しを排除し、必要な場所でのみ認証状態を管理
  */
 export default function RootLayout({
   children,
@@ -42,7 +50,12 @@ export default function RootLayout({
           >
             <NotificationProvider>
               <Background />
-              {children}
+              <div className="flex min-h-screen flex-col">
+                <main className="mx-auto w-full max-w-7xl flex-1 px-4 pt-32 sm:px-6 lg:px-8">
+                  {children}
+                </main>
+                <Footer />
+              </div>
             </NotificationProvider>
           </ThemeProvider>
         </QueryProvider>

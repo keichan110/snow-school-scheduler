@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 
-import InvitationsPageClient from "./invitations-page-client";
+import InvitationsPageClient from "./_components/page-client";
 import Loading from "./loading";
 
 /**

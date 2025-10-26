@@ -4,11 +4,8 @@ import {
   useSuspenseQuery,
 } from "@tanstack/react-query";
 
-import { fetchUsers } from "@/app/(member)/(manager)/(admin)/users/api";
-import type {
-  UserFilters,
-  UserWithDetails,
-} from "@/app/(member)/(manager)/(admin)/users/types";
+import { fetchUsers } from "./api";
+import type { UserFilters, UserWithDetails } from "./types";
 
 /**
  * ユーザー一覧向けのクエリキー

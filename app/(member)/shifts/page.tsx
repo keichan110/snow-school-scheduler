@@ -1,7 +1,6 @@
 import { Suspense } from "react";
-
+import PublicShiftsPageClient from "./_components/page-client";
 import Loading from "./loading";
-import PublicShiftsPageClient from "./public-shifts-page-client";
 
 /**
  * シフト表示ページ

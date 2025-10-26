@@ -1,7 +1,6 @@
 import { Suspense } from "react";
-
+import ShiftTypesPageClient from "./_components/page-client";
 import Loading from "./loading";
-import ShiftTypesPageClient from "./shift-types-page-client";
 
 /**
  * シフト種別管理ページ

@@ -1,7 +1,6 @@
 import { Suspense } from "react";
-
+import UsersPageClient from "./_components/page-client";
 import Loading from "./loading";
-import UsersPageClient from "./users-page-client";
 
 /**
  * ユーザー管理ページ
