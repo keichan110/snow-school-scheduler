@@ -23,8 +23,11 @@ export async function logoutAction() {
     options: { path: string; sameSite: "lax" | "strict" }
   ) => {
     try {
-      cookieStore.delete({
+      // cookies().delete() はオプションをサポートしていないため、
+      // set() を使用して空の値と maxAge: 0 でCookieを削除する
+      cookieStore.set({
         name,
+        value: "",
         path: options.path,
         sameSite: options.sameSite,
         secure: isProduction,
