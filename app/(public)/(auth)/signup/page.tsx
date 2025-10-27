@@ -29,7 +29,7 @@ export default async function SignupPage({ searchParams }: SignupPageProps) {
 
   // 既にログイン済みの場合はリダイレクト
   if (authResult.success && authResult.user) {
-    redirect("/shifts");
+    redirect("/");
   }
 
   // クエリパラメータを取得
