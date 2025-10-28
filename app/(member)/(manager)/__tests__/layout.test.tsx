@@ -38,6 +38,10 @@ describe("ManagerLayout", () => {
     displayName: "Test User",
     pictureUrl: null,
     role: "MANAGER" as const,
+    instructorId: null,
+    isActive: true,
+    createdAt: new Date("2024-01-01"),
+    updatedAt: new Date("2024-01-01"),
   };
 
   beforeEach(() => {

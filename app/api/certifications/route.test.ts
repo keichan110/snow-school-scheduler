@@ -76,6 +76,7 @@ describe("GET /api/certifications", () => {
         displayName: "Test User",
         pictureUrl: null,
         role: "ADMIN",
+        instructorId: null,
         isActive: true,
         createdAt: new Date(),
         updatedAt: new Date(),

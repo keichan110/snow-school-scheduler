@@ -5,34 +5,13 @@ import {
   clearAuthCookies,
   setAuthCookie as setSecureAuthCookie,
 } from "@/lib/utils/cookies";
+import type { AuthenticatedUser } from "@/types/actions";
 import { verifyJwt } from "./jwt";
 
 /**
  * 認証ミドルウェア
  * JWT検証とユーザー情報取得機能を提供
  */
-
-/**
- * 認証ユーザー情報の型定義
- */
-export type AuthenticatedUser = {
-  /** ユーザーID */
-  id: string;
-  /** LINEユーザーID */
-  lineUserId: string;
-  /** 表示名 */
-  displayName: string;
-  /** LINEプロフィール画像URL */
-  pictureUrl?: string | null;
-  /** ユーザー権限 */
-  role: "ADMIN" | "MANAGER" | "MEMBER";
-  /** アクティブフラグ */
-  isActive: boolean;
-  /** 作成日時 */
-  createdAt: Date;
-  /** 更新日時 */
-  updatedAt: Date;
-};
 
 /**
  * 認証結果の型定義
@@ -160,8 +139,9 @@ export async function authenticateToken(
       id: user.id,
       lineUserId: user.lineUserId,
       displayName: user.displayName,
-      pictureUrl: user.pictureUrl,
+      pictureUrl: user.pictureUrl ?? null,
       role: user.role as "ADMIN" | "MANAGER" | "MEMBER",
+      instructorId: user.instructorId,
       isActive: user.isActive,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,

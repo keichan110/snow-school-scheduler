@@ -16,6 +16,7 @@ import { useRequireAuth } from "@/app/_providers/auth";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { hasManagePermission } from "@/lib/auth/permissions";
+import type { AuthenticatedUser } from "@/types/actions";
 import { isHoliday } from "../_lib/constants";
 import {
   publicShiftsDepartmentsQueryKeys,
@@ -53,7 +54,10 @@ function PublicShiftsPageContent() {
   >("create-step1");
   const [isPending, startTransition] = useTransition();
 
-  const canManage = hasManagePermission(user, "shifts");
+  const canManage = hasManagePermission(
+    user as unknown as AuthenticatedUser,
+    "shifts"
+  );
 
   const { currentYear, currentMonth, monthlyQueryParams, navigateMonth } =
     useMonthNavigation();

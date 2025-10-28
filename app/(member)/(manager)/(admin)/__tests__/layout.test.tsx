@@ -38,6 +38,10 @@ describe("AdminLayout", () => {
     displayName: "Admin User",
     pictureUrl: null,
     role: "ADMIN" as const,
+    instructorId: null,
+    isActive: true,
+    createdAt: new Date("2024-01-01"),
+    updatedAt: new Date("2024-01-01"),
   };
 
   beforeEach(() => {

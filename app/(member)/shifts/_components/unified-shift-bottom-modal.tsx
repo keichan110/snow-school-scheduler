@@ -79,7 +79,7 @@ export function UnifiedShiftBottomModal({
 
   // 管理権限チェック（MANAGER以上）
   const canManage = user
-    ? hasManagePermission(user as AuthenticatedUser, "shifts")
+    ? hasManagePermission(user as unknown as AuthenticatedUser, "shifts")
     : false;
 
   // 管理機能の状態

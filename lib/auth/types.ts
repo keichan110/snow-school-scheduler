@@ -2,12 +2,9 @@
  * 認証・招待システム関連の型定義
  */
 
-// ユーザー情報型をmiddlewareから再エクスポート
-export type {
-  AuthenticatedUser,
-  AuthenticationResult,
-  AuthorizationResult,
-} from "./middleware";
+// ユーザー情報型を再エクスポート
+export type { AuthenticatedUser } from "@/types/actions";
+export type { AuthenticationResult, AuthorizationResult } from "./middleware";
 
 // API共通レスポンス型
 export type ApiResponse<T> =
