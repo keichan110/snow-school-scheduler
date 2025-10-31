@@ -13,6 +13,17 @@ if (Intl?.DateTimeFormat) {
   global.Intl = Intl;
 }
 
+// Next.js Server Components用のグローバルオブジェクトのモック
+if (typeof global.Request === "undefined") {
+  global.Request = class Request {};
+}
+if (typeof global.Response === "undefined") {
+  global.Response = class Response {};
+}
+if (typeof global.Headers === "undefined") {
+  global.Headers = class Headers {};
+}
+
 // Date.now() のモック設定用ヘルパー（テストで使用）
 global.mockDate = (isoDate) => {
   const mockDate = new Date(isoDate);
@@ -83,6 +94,28 @@ global.IntersectionObserver = jest.fn().mockImplementation(() => ({
   disconnect: jest.fn(),
 }));
 
+// PointerEvent polyfill for Radix UI
+if (!global.PointerEvent) {
+  class PointerEvent extends MouseEvent {
+    constructor(type, params = {}) {
+      super(type, params);
+      this.pointerId = params.pointerId || 0;
+      this.pointerType = params.pointerType || "mouse";
+    }
+  }
+  global.PointerEvent = PointerEvent;
+}
+
+// hasPointerCapture polyfill for JSDOM
+if (typeof Element !== "undefined") {
+  Element.prototype.hasPointerCapture =
+    Element.prototype.hasPointerCapture || (() => false);
+  Element.prototype.setPointerCapture =
+    Element.prototype.setPointerCapture || (() => {});
+  Element.prototype.releasePointerCapture =
+    Element.prototype.releasePointerCapture || (() => {});
+}
+
 // console のテスト時の抑制設定
 if (process.env.NODE_ENV === "test") {
   // エラーやワーニングは表示するが、ログは抑制
@@ -104,7 +137,9 @@ if (process.env.NODE_ENV === "test") {
     if (
       typeof args[0] === "string" &&
       (args[0].includes("componentWillReceiveProps") ||
-        args[0].includes("componentWillUpdate"))
+        args[0].includes("componentWillUpdate") ||
+        args[0].includes("Missing `Description`") ||
+        args[0].includes("aria-describedby"))
     ) {
       return;
     }
