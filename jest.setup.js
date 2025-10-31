@@ -111,9 +111,15 @@ if (typeof Element !== "undefined") {
   Element.prototype.hasPointerCapture =
     Element.prototype.hasPointerCapture || (() => false);
   Element.prototype.setPointerCapture =
-    Element.prototype.setPointerCapture || (() => {});
+    Element.prototype.setPointerCapture ||
+    (() => {
+      /* no-op */
+    });
   Element.prototype.releasePointerCapture =
-    Element.prototype.releasePointerCapture || (() => {});
+    Element.prototype.releasePointerCapture ||
+    (() => {
+      /* no-op */
+    });
 }
 
 // console のテスト時の抑制設定

@@ -10,6 +10,7 @@ const mockInstructors: InstructorBasicInfo[] = [
     lastName: "山田",
     firstNameKana: "タロウ",
     lastNameKana: "ヤマダ",
+    status: "ACTIVE",
   },
   {
     id: 2,
@@ -17,6 +18,7 @@ const mockInstructors: InstructorBasicInfo[] = [
     lastName: "佐藤",
     firstNameKana: "ハナコ",
     lastNameKana: "サトウ",
+    status: "ACTIVE",
   },
 ];
 

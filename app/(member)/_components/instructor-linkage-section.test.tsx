@@ -1,5 +1,4 @@
 import { render, screen } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
 import { useRouter } from "next/navigation";
 import type {
   InstructorBasicInfo,
@@ -19,6 +18,7 @@ const mockInstructors: InstructorBasicInfo[] = [
     lastName: "山田",
     firstNameKana: "タロウ",
     lastNameKana: "ヤマダ",
+    status: "ACTIVE",
   },
 ];
 
@@ -28,6 +28,8 @@ const mockInstructorProfile: UserInstructorProfile = {
   lastName: "山田",
   firstNameKana: "タロウ",
   lastNameKana: "ヤマダ",
+  status: "ACTIVE",
+  certifications: [],
 };
 
 describe("InstructorLinkageSection", () => {
