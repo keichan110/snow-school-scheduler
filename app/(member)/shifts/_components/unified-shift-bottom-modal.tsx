@@ -8,7 +8,6 @@ import { AdminShiftModal } from "@/app/(member)/shifts/_components/base-shift-mo
 import { Button } from "@/components/ui/button";
 import { DrawerFooter } from "@/components/ui/drawer";
 import { hasManagePermission } from "@/lib/auth/permissions";
-import type { AuthenticatedUser } from "@/lib/auth/types";
 import { cn } from "@/lib/utils";
 import { prepareShift } from "../_lib/api-client";
 import type {
@@ -78,9 +77,7 @@ export function UnifiedShiftBottomModal({
   const { showNotification } = useNotification();
 
   // 管理権限チェック（MANAGER以上）
-  const canManage = user
-    ? hasManagePermission(user as unknown as AuthenticatedUser, "shifts")
-    : false;
+  const canManage = user ? hasManagePermission(user, "shifts") : false;
 
   // 管理機能の状態
   const [currentStep, setCurrentStep] = useState<ModalStep>(initialStep);

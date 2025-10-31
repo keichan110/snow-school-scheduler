@@ -15,9 +15,11 @@ export type User = {
   /** 表示名 */
   displayName: string;
   /** LINEプロフィール画像URL */
-  pictureUrl?: string | null;
+  pictureUrl: string | null;
   /** ユーザー権限 */
   role: "ADMIN" | "MANAGER" | "MEMBER";
+  /** 紐付けられたインストラクターID */
+  instructorId: number | null;
   /** アクティブフラグ */
   isActive: boolean;
   /** 作成日時 */
@@ -65,6 +67,7 @@ export type InitialUser = {
   displayName: string;
   pictureUrl?: string | null;
   role: "ADMIN" | "MANAGER" | "MEMBER";
+  instructorId?: number | null;
 };
 
 /**
