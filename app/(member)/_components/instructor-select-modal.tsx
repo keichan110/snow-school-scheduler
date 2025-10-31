@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -15,7 +15,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { linkMyInstructor } from "@/lib/actions/user-instructor-linkage";
+import {
+  linkMyInstructor,
+  unlinkMyInstructor,
+} from "@/lib/actions/user-instructor-linkage";
 import type { InstructorBasicInfo } from "@/types/actions";
 
 type InstructorSelectModalProps = {
@@ -23,6 +26,8 @@ type InstructorSelectModalProps = {
   onOpenChange: (open: boolean) => void;
   instructors: InstructorBasicInfo[];
   onSuccess: () => void;
+  /** 現在紐づけられているインストラクターID (紐付け解除ボタンの表示制御に使用) */
+  currentInstructorId?: number | null;
 };
 
 export function InstructorSelectModal({
@@ -30,10 +35,20 @@ export function InstructorSelectModal({
   onOpenChange,
   instructors,
   onSuccess,
+  currentInstructorId,
 }: InstructorSelectModalProps) {
   const [selectedId, setSelectedId] = useState<string>("");
   const [isPending, startTransition] = useTransition();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  // モーダルが開いたときに現在のインストラクターIDをセット
+  useEffect(() => {
+    if (open && currentInstructorId) {
+      setSelectedId(currentInstructorId.toString());
+    } else if (open && !currentInstructorId) {
+      setSelectedId("");
+    }
+  }, [open, currentInstructorId]);
 
   const handleSubmit = () => {
     if (!selectedId) {
@@ -43,6 +58,22 @@ export function InstructorSelectModal({
     setErrorMessage(null);
     startTransition(async () => {
       const result = await linkMyInstructor(Number(selectedId));
+
+      if (result.success) {
+        onSuccess();
+        onOpenChange(false);
+        setSelectedId(""); // リセット
+        setErrorMessage(null);
+      } else {
+        setErrorMessage(result.error);
+      }
+    });
+  };
+
+  const handleUnlink = () => {
+    setErrorMessage(null);
+    startTransition(async () => {
+      const result = await unlinkMyInstructor();
 
       if (result.success) {
         onSuccess();
@@ -99,20 +130,39 @@ export function InstructorSelectModal({
           )}
 
           {/* アクション */}
-          <div className="flex justify-end gap-2">
-            <Button
-              disabled={isPending}
-              onClick={() => {
-                onOpenChange(false);
-                setSelectedId(""); // リセット
-              }}
-              variant="outline"
-            >
-              キャンセル
-            </Button>
-            <Button disabled={!selectedId || isPending} onClick={handleSubmit}>
-              {isPending ? "保存中..." : "保存"}
-            </Button>
+          <div className="flex items-center justify-between gap-2">
+            {/* 紐付け解除ボタン (現在紐づけられている場合のみ表示) */}
+            {currentInstructorId ? (
+              <Button
+                disabled={isPending}
+                onClick={handleUnlink}
+                variant="destructive"
+              >
+                {isPending ? "解除中..." : "紐付けを解除"}
+              </Button>
+            ) : (
+              <div /> // スペーサー
+            )}
+
+            {/* キャンセル・保存ボタン */}
+            <div className="flex gap-2">
+              <Button
+                disabled={isPending}
+                onClick={() => {
+                  onOpenChange(false);
+                  setSelectedId(""); // リセット
+                }}
+                variant="outline"
+              >
+                キャンセル
+              </Button>
+              <Button
+                disabled={!selectedId || isPending}
+                onClick={handleSubmit}
+              >
+                {isPending ? "保存中..." : "保存"}
+              </Button>
+            </div>
           </div>
         </div>
       </DialogContent>
