@@ -1,9 +1,7 @@
-import { redirect } from "next/navigation";
 import {
   getAvailableInstructors,
   getMyInstructorProfile,
 } from "@/lib/actions/user-instructor-linkage";
-import { authenticate } from "@/lib/auth/auth";
 import type { InstructorBasicInfo } from "@/types/actions";
 import { InstructorLinkageSection } from "./_components/instructor-linkage-section";
 
@@ -19,12 +17,6 @@ import { InstructorLinkageSection } from "./_components/instructor-linkage-secti
  * URL: /
  */
 export default async function DashboardPage() {
-  const user = await authenticate();
-
-  if (!user) {
-    redirect("/login");
-  }
-
   // インストラクター情報取得
   const instructorProfileResult = await getMyInstructorProfile();
   const instructorProfile = instructorProfileResult.success
