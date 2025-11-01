@@ -57,6 +57,7 @@ model Instructor {
   updatedAt        DateTime                  @updatedAt @map("updated_at")
   certifications   InstructorCertification[]
   shiftAssignments ShiftAssignment[]
+  users            User[]
 
   @@index([status], map: "idx_instructors_status")
   @@index([lastName, firstName], map: "idx_instructors_name")
@@ -147,6 +148,8 @@ model User {
   pictureUrl         String?           @map("picture_url")
   role               String            @default("MEMBER")
   isActive           Boolean           @default(true) @map("is_active")
+  instructorId       Int?              @map("instructor_id")
+  instructor         Instructor?       @relation(fields: [instructorId], references: [id], onDelete: SetNull)
   createdAt          DateTime          @default(now()) @map("created_at")
   updatedAt          DateTime          @updatedAt @map("updated_at")
   createdInvitations InvitationToken[] @relation("CreatedBy")
@@ -155,6 +158,7 @@ model User {
   @@index([role], map: "idx_users_role")
   @@index([isActive], map: "idx_users_active")
   @@index([role, isActive], map: "idx_users_role_active")
+  @@index([instructorId], map: "idx_users_instructor_id")
   @@map("users")
 }
 

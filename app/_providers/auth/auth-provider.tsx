@@ -140,6 +140,7 @@ function convertInitialUser(initial: InitialUser | User | null): User | null {
   return {
     ...initial,
     pictureUrl: initial.pictureUrl ?? null,
+    instructorId: initial.instructorId ?? null,
     isActive: true, // レイアウトで認証済みなので true
     createdAt: now, // 仮の値（クライアント側では使用しない想定）
     updatedAt: now, // 仮の値（クライアント側では使用しない想定）

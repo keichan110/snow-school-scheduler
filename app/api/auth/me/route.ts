@@ -7,10 +7,8 @@ import {
   HTTP_STATUS_UNAUTHORIZED,
 } from "@/constants/http-status";
 import { DISPLAY_NAME_MAX_LENGTH } from "@/constants/validation";
-import {
-  type AuthenticatedUser,
-  authenticateFromRequest,
-} from "@/lib/auth/middleware";
+import { authenticateFromRequest } from "@/lib/auth/middleware";
+import type { AuthenticatedUser } from "@/types/actions";
 
 /**
  * ユーザー情報取得API
@@ -79,6 +77,7 @@ export async function GET(request: NextRequest) {
         displayName: user.displayName,
         pictureUrl: user.pictureUrl ?? null,
         role: user.role,
+        instructorId: user.instructorId,
         isActive: user.isActive,
         createdAt: user.createdAt,
         updatedAt: user.updatedAt,
@@ -188,8 +187,9 @@ export async function POST(request: NextRequest) {
       id: updatedUser.id,
       lineUserId: updatedUser.lineUserId,
       displayName: updatedUser.displayName,
-      pictureUrl: updatedUser.pictureUrl,
+      pictureUrl: updatedUser.pictureUrl ?? null,
       role: updatedUser.role as "ADMIN" | "MANAGER" | "MEMBER",
+      instructorId: updatedUser.instructorId,
       isActive: updatedUser.isActive,
       createdAt: updatedUser.createdAt,
       updatedAt: updatedUser.updatedAt,

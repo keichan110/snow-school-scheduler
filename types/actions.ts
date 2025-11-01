@@ -32,4 +32,44 @@ export type AuthenticatedUser = {
   pictureUrl: string | null;
   /** ユーザー権限 */
   role: "ADMIN" | "MANAGER" | "MEMBER";
+  /** 紐付けられたインストラクターID */
+  instructorId: number | null;
+  /** アクティブフラグ（権限チェックで使用） */
+  isActive: boolean;
+  /** 作成日時 */
+  createdAt: Date;
+  /** 更新日時 */
+  updatedAt: Date;
+};
+
+/**
+ * インストラクター基本情報型
+ * ダイアログでの選択肢表示用
+ */
+export type InstructorBasicInfo = {
+  id: number;
+  lastName: string;
+  firstName: string;
+  lastNameKana: string | null;
+  firstNameKana: string | null;
+  status: string;
+};
+
+/**
+ * ユーザーのインストラクター情報（詳細版）
+ * プロフィール表示用
+ */
+export type UserInstructorProfile = {
+  id: number;
+  lastName: string;
+  firstName: string;
+  lastNameKana: string | null;
+  firstNameKana: string | null;
+  status: string;
+  certifications: {
+    id: number;
+    name: string;
+    shortName: string;
+    organization: string;
+  }[];
 };

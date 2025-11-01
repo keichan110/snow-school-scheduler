@@ -37,6 +37,10 @@ export async function authenticate(): Promise<AuthenticatedUser | null> {
       displayName: result.user.displayName,
       pictureUrl: result.user.pictureUrl ?? null,
       role: result.user.role,
+      instructorId: result.user.instructorId ?? null,
+      isActive: result.user.isActive,
+      createdAt: result.user.createdAt,
+      updatedAt: result.user.updatedAt,
     };
   } catch {
     // 認証フロー内での例外は認証失敗として扱う
