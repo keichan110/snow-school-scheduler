@@ -8,6 +8,15 @@ process.env.DATABASE_URL = "file:./test.db";
 process.env.NEXT_PUBLIC_APP_URL = "http://localhost:3000";
 process.env.NEXT_PUBLIC_TEST_MODE = "true";
 
+// 認証関連の環境変数（テスト用）
+process.env.JWT_SECRET =
+  "test-jwt-secret-key-for-testing-only-must-be-at-least-32-characters-long";
+process.env.JWT_EXPIRES_IN = "48h";
+process.env.LINE_CHANNEL_ID = "1234567890";
+process.env.LINE_CHANNEL_SECRET = "0123456789abcdef0123456789abcdef";
+process.env.NEXTAUTH_URL = "http://localhost:3000";
+process.env.INVITE_DEFAULT_EXPIRES = "168h";
+
 // 日本語ロケール設定
 if (Intl?.DateTimeFormat) {
   global.Intl = Intl;
