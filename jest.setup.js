@@ -94,16 +94,35 @@ global.IntersectionObserver = jest.fn().mockImplementation(() => ({
   disconnect: jest.fn(),
 }));
 
+// MouseEvent polyfill for JSDOM
+if (!global.MouseEvent) {
+  global.MouseEvent = class MouseEvent extends Event {
+    constructor(type, params = {}) {
+      super(type, params);
+      this.screenX = params.screenX || 0;
+      this.screenY = params.screenY || 0;
+      this.clientX = params.clientX || 0;
+      this.clientY = params.clientY || 0;
+      this.ctrlKey = params.ctrlKey;
+      this.shiftKey = params.shiftKey;
+      this.altKey = params.altKey;
+      this.metaKey = params.metaKey;
+      this.button = params.button || 0;
+      this.buttons = params.buttons || 0;
+      this.relatedTarget = params.relatedTarget || null;
+    }
+  };
+}
+
 // PointerEvent polyfill for Radix UI
 if (!global.PointerEvent) {
-  class PointerEvent extends MouseEvent {
+  global.PointerEvent = class PointerEvent extends global.MouseEvent {
     constructor(type, params = {}) {
       super(type, params);
       this.pointerId = params.pointerId || 0;
       this.pointerType = params.pointerType || "mouse";
     }
-  }
-  global.PointerEvent = PointerEvent;
+  };
 }
 
 // hasPointerCapture polyfill for JSDOM
