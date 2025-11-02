@@ -5,6 +5,7 @@ import {
   buildLoginRedirectUrl,
 } from "@/lib/auth/auth-redirect";
 import { ensureRole } from "@/lib/auth/role-guard";
+import { prisma } from "@/lib/db";
 
 // Mock dependencies
 jest.mock("next/navigation", () => ({
@@ -24,10 +25,29 @@ jest.mock("@/app/_providers/auth", () => ({
   AuthProvider: ({ children }: { children: React.ReactNode }) => children,
 }));
 
+jest.mock("@/app/_components/header-authenticated", () => ({
+  HeaderAuthenticated: () => null,
+}));
+
+jest.mock("@/lib/db", () => ({
+  prisma: {
+    instructor: {
+      findUnique: jest.fn(),
+      findMany: jest.fn(),
+    },
+  },
+}));
+
 type MockedEnsureRole = jest.MockedFunction<typeof ensureRole>;
 type MockedRedirect = jest.MockedFunction<typeof redirect>;
 type MockedBuildLoginRedirectUrl = jest.MockedFunction<
   typeof buildLoginRedirectUrl
+>;
+type MockedPrismaInstructorFindUnique = jest.MockedFunction<
+  typeof prisma.instructor.findUnique
+>;
+type MockedPrismaInstructorFindMany = jest.MockedFunction<
+  typeof prisma.instructor.findMany
 >;
 
 describe("MemberLayout", () => {
@@ -35,6 +55,10 @@ describe("MemberLayout", () => {
   const mockRedirect = redirect as MockedRedirect;
   const mockBuildLoginRedirectUrl =
     buildLoginRedirectUrl as MockedBuildLoginRedirectUrl;
+  const mockPrismaInstructorFindUnique = prisma.instructor
+    .findUnique as MockedPrismaInstructorFindUnique;
+  const mockPrismaInstructorFindMany = prisma.instructor
+    .findMany as MockedPrismaInstructorFindMany;
 
   const mockUser = {
     id: "user_1",
@@ -50,6 +74,9 @@ describe("MemberLayout", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    // デフォルトのモック戻り値を設定
+    mockPrismaInstructorFindUnique.mockResolvedValue(null);
+    mockPrismaInstructorFindMany.mockResolvedValue([]);
   });
 
   it("renders children when user has MEMBER role", async () => {
@@ -102,10 +129,15 @@ describe("MemberLayout", () => {
       status: "unauthenticated",
     });
     mockBuildLoginRedirectUrl.mockResolvedValue("/login?redirect=%2F");
-
-    await MemberLayout({
-      children: <div>Test Content</div>,
+    mockRedirect.mockImplementation(() => {
+      throw new Error("NEXT_REDIRECT");
     });
+
+    await expect(
+      MemberLayout({
+        children: <div>Test Content</div>,
+      })
+    ).rejects.toThrow("NEXT_REDIRECT");
 
     expect(mockEnsureRole).toHaveBeenCalledWith({ atLeast: "MEMBER" });
     expect(mockBuildLoginRedirectUrl).toHaveBeenCalled();
@@ -117,10 +149,15 @@ describe("MemberLayout", () => {
       status: "forbidden",
       user: mockUser,
     });
-
-    await MemberLayout({
-      children: <div>Test Content</div>,
+    mockRedirect.mockImplementation(() => {
+      throw new Error("NEXT_REDIRECT");
     });
+
+    await expect(
+      MemberLayout({
+        children: <div>Test Content</div>,
+      })
+    ).rejects.toThrow("NEXT_REDIRECT");
 
     expect(mockEnsureRole).toHaveBeenCalledWith({ atLeast: "MEMBER" });
     expect(mockRedirect).toHaveBeenCalledWith(ACCESS_DENIED_REDIRECT);

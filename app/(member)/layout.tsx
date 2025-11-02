@@ -9,10 +9,7 @@ import {
 } from "@/lib/auth/auth-redirect";
 import { ensureRole } from "@/lib/auth/role-guard";
 import { prisma } from "@/lib/db";
-import type {
-  InstructorBasicInfo,
-  UserInstructorProfile,
-} from "@/types/actions";
+import type { UserInstructorProfile } from "@/types/actions";
 
 /**
  * MEMBER以上の権限を持つユーザー専用レイアウト
