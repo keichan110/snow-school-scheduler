@@ -50,6 +50,14 @@ export function InstructorSelectModal({
     }
   }, [open, currentInstructorId]);
 
+  // 成功時の共通処理
+  const handleSuccess = () => {
+    onSuccess();
+    onOpenChange(false);
+    setSelectedId("");
+    setErrorMessage(null);
+  };
+
   const handleSubmit = () => {
     if (!selectedId) {
       return;
@@ -60,10 +68,7 @@ export function InstructorSelectModal({
       const result = await linkMyInstructor(Number(selectedId));
 
       if (result.success) {
-        onSuccess();
-        onOpenChange(false);
-        setSelectedId(""); // リセット
-        setErrorMessage(null);
+        handleSuccess();
       } else {
         setErrorMessage(result.error);
       }
@@ -76,10 +81,7 @@ export function InstructorSelectModal({
       const result = await unlinkMyInstructor();
 
       if (result.success) {
-        onSuccess();
-        onOpenChange(false);
-        setSelectedId(""); // リセット
-        setErrorMessage(null);
+        handleSuccess();
       } else {
         setErrorMessage(result.error);
       }
