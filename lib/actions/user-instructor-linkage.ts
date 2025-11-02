@@ -27,6 +27,11 @@ export async function linkMyInstructor(
     return { success: false, error: "認証が必要です" };
   }
 
+  // 既に同じインストラクターに紐付けられている場合は何もしない
+  if (user.instructorId === instructorId) {
+    return { success: true, data: undefined };
+  }
+
   try {
     // インストラクターの存在確認とステータス検証
     const instructor = await prisma.instructor.findUnique({
