@@ -54,15 +54,18 @@ export function maskSensitiveData(data: SensitiveData): SensitiveData {
 
 /**
  * セキュアなログ出力関数
- * 開発環境でのみ機密情報をマスクしてログ出力
+ * 機密情報をマスクしてログ出力
+ *
+ * - error: 本番環境でも出力（Cloudflare Logsに記録）
+ * - info/warn: 開発環境でのみ出力
  */
 export function secureLog(
   level: "info" | "warn" | "error",
   message: string,
   data?: SensitiveData
 ) {
-  // Cloudflare Workers本番環境では絶対にログを出力しない
-  if (process.env.NODE_ENV !== "development") {
+  // errorレベル以外は開発環境でのみ出力
+  if (level !== "error" && process.env.NODE_ENV !== "development") {
     return;
   }
 

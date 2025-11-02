@@ -6,6 +6,7 @@ import {
   getAvailableInstructors,
   getMyInstructorProfile,
 } from "@/lib/actions/user-instructor-linkage";
+import { secureLog } from "@/lib/utils/logging";
 import type {
   AuthenticatedUser,
   InstructorBasicInfo,
@@ -63,10 +64,19 @@ export function HeaderAuthenticated({
   }, []);
 
   useEffect(() => {
-    fetchInstructorData().catch(() => {
-      // エラーは無視（必要に応じて通知UIを実装）
+    fetchInstructorData().catch((error) => {
+      secureLog(
+        "error",
+        "[HeaderAuthenticated] Failed to fetch instructor data",
+        {
+          error: error instanceof Error ? error.message : String(error),
+          stack: error instanceof Error ? error.stack : undefined,
+          timestamp: new Date().toISOString(),
+          userId: currentUser.id,
+        }
+      );
     });
-  }, [fetchInstructorData]);
+  }, [fetchInstructorData, currentUser.id]);
 
   // MANAGER以上の権限チェック
   const hasManagerAccess =
