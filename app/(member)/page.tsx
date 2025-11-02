@@ -1,9 +1,8 @@
 import { authenticate } from "@/lib/auth/auth";
-import { prisma } from "@/lib/db";
-import type {
-  InstructorBasicInfo,
-  UserInstructorProfile,
-} from "@/types/actions";
+import {
+  getAvailableInstructors,
+  getInstructorProfile,
+} from "@/lib/data/instructor";
 import { InstructorLinkageSection } from "./_components/instructor-linkage-section";
 
 /**
@@ -24,58 +23,12 @@ export default async function DashboardPage() {
     throw new Error("認証が必要です");
   }
 
-  // インストラクター情報取得（Server Componentで直接Prismaクエリ）
-  let instructorProfile: UserInstructorProfile | null = null;
-  if (user.instructorId) {
-    const instructor = await prisma.instructor.findUnique({
-      where: { id: user.instructorId },
-      include: {
-        certifications: {
-          include: {
-            certification: {
-              select: {
-                id: true,
-                name: true,
-                shortName: true,
-                organization: true,
-              },
-            },
-          },
-        },
-      },
-    });
-
-    if (instructor) {
-      instructorProfile = {
-        id: instructor.id,
-        lastName: instructor.lastName,
-        firstName: instructor.firstName,
-        lastNameKana: instructor.lastNameKana,
-        firstNameKana: instructor.firstNameKana,
-        status: instructor.status,
-        certifications: instructor.certifications.map((ic) => ic.certification),
-      };
-    }
-  }
-
-  // 紐付け可能なインストラクター一覧取得（未紐付けの場合のみ）
-  let availableInstructors: InstructorBasicInfo[] = [];
-  if (!instructorProfile) {
-    availableInstructors = await prisma.instructor.findMany({
-      where: {
-        status: "ACTIVE",
-      },
-      select: {
-        id: true,
-        lastName: true,
-        firstName: true,
-        lastNameKana: true,
-        firstNameKana: true,
-        status: true,
-      },
-      orderBy: [{ lastNameKana: "asc" }, { firstNameKana: "asc" }],
-    });
-  }
+  // インストラクター情報取得（React.cacheでメモ化されているため、layout.tsxと重複してもDBクエリは1回のみ）
+  const [instructorProfile, availableInstructors] = await Promise.all([
+    user.instructorId ? getInstructorProfile(user.instructorId) : null,
+    // 未紐付けの場合でもHeaderで使用するため、常に取得する
+    getAvailableInstructors(),
+  ]);
 
   return (
     <div className="space-y-6">

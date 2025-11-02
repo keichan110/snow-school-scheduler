@@ -8,8 +8,10 @@ import {
   buildLoginRedirectUrl,
 } from "@/lib/auth/auth-redirect";
 import { ensureRole } from "@/lib/auth/role-guard";
-import { prisma } from "@/lib/db";
-import type { UserInstructorProfile } from "@/types/actions";
+import {
+  getAvailableInstructors,
+  getInstructorProfile,
+} from "@/lib/data/instructor";
 
 /**
  * MEMBER以上の権限を持つユーザー専用レイアウト
@@ -44,58 +46,15 @@ export default async function MemberLayout({ children }: Props) {
     redirect(ACCESS_DENIED_REDIRECT);
   }
 
-  // インストラクター情報を取得（Headerでの重複フェッチを回避）
-  // インストラクタープロファイルと利用可能なインストラクター一覧を並行取得
-  const [instructorProfileData, availableInstructors] = await Promise.all([
+  // インストラクター情報を取得（React.cacheでメモ化されているため、page.tsxで再取得しても重複クエリは発生しない）
+  const [instructorProfile, availableInstructors] = await Promise.all([
     // ユーザーに紐づくインストラクター情報を取得（紐付け済みの場合のみ）
     result.user.instructorId
-      ? prisma.instructor.findUnique({
-          where: { id: result.user.instructorId },
-          include: {
-            certifications: {
-              include: {
-                certification: {
-                  select: {
-                    id: true,
-                    name: true,
-                    shortName: true,
-                    organization: true,
-                  },
-                },
-              },
-            },
-          },
-        })
+      ? getInstructorProfile(result.user.instructorId)
       : Promise.resolve(null),
     // 利用可能なインストラクター一覧を常に取得（Header のドロップダウンで切り替え可能にする）
-    prisma.instructor.findMany({
-      where: { status: "ACTIVE" },
-      select: {
-        id: true,
-        lastName: true,
-        firstName: true,
-        lastNameKana: true,
-        firstNameKana: true,
-        status: true,
-      },
-      orderBy: [{ lastNameKana: "asc" }, { firstNameKana: "asc" }],
-    }),
+    getAvailableInstructors(),
   ]);
-
-  // インストラクタープロファイルを整形
-  const instructorProfile: UserInstructorProfile | null = instructorProfileData
-    ? {
-        id: instructorProfileData.id,
-        lastName: instructorProfileData.lastName,
-        firstName: instructorProfileData.firstName,
-        lastNameKana: instructorProfileData.lastNameKana,
-        firstNameKana: instructorProfileData.firstNameKana,
-        status: instructorProfileData.status,
-        certifications: instructorProfileData.certifications.map(
-          (ic) => ic.certification
-        ),
-      }
-    : null;
 
   // 認証チェック成功 → サーバー取得済みのユーザー情報とインストラクター情報をAuthProviderとHeaderに渡す
   return (

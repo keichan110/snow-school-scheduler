@@ -5,6 +5,10 @@ import {
   buildLoginRedirectUrl,
 } from "@/lib/auth/auth-redirect";
 import { ensureRole } from "@/lib/auth/role-guard";
+import {
+  getAvailableInstructors,
+  getInstructorProfile,
+} from "@/lib/data/instructor";
 import { prisma } from "@/lib/db";
 
 // Mock dependencies
@@ -38,10 +42,21 @@ jest.mock("@/lib/db", () => ({
   },
 }));
 
+jest.mock("@/lib/data/instructor", () => ({
+  getInstructorProfile: jest.fn(),
+  getAvailableInstructors: jest.fn(),
+}));
+
 type MockedEnsureRole = jest.MockedFunction<typeof ensureRole>;
 type MockedRedirect = jest.MockedFunction<typeof redirect>;
 type MockedBuildLoginRedirectUrl = jest.MockedFunction<
   typeof buildLoginRedirectUrl
+>;
+type MockedGetInstructorProfile = jest.MockedFunction<
+  typeof getInstructorProfile
+>;
+type MockedGetAvailableInstructors = jest.MockedFunction<
+  typeof getAvailableInstructors
 >;
 type MockedPrismaInstructorFindUnique = jest.MockedFunction<
   typeof prisma.instructor.findUnique
@@ -55,6 +70,10 @@ describe("MemberLayout", () => {
   const mockRedirect = redirect as MockedRedirect;
   const mockBuildLoginRedirectUrl =
     buildLoginRedirectUrl as MockedBuildLoginRedirectUrl;
+  const mockGetInstructorProfile =
+    getInstructorProfile as MockedGetInstructorProfile;
+  const mockGetAvailableInstructors =
+    getAvailableInstructors as MockedGetAvailableInstructors;
   const mockPrismaInstructorFindUnique = prisma.instructor
     .findUnique as MockedPrismaInstructorFindUnique;
   const mockPrismaInstructorFindMany = prisma.instructor
@@ -75,6 +94,8 @@ describe("MemberLayout", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     // デフォルトのモック戻り値を設定
+    mockGetInstructorProfile.mockResolvedValue(null);
+    mockGetAvailableInstructors.mockResolvedValue([]);
     mockPrismaInstructorFindUnique.mockResolvedValue(null);
     mockPrismaInstructorFindMany.mockResolvedValue([]);
   });
