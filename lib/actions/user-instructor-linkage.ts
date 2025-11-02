@@ -79,10 +79,14 @@ export async function unlinkMyInstructor(): Promise<ActionResult<void>> {
 
 /**
  * 紐付け可能なインストラクター一覧を取得
+ *
  * ACTIVE状態のインストラクターのみを返す
  *
- * Note: 複数のユーザーが同じインストラクターに紐付け可能なため、
- * 他のユーザーに紐付けられているかどうかのフィルタリングは行わない
+ * Note:
+ * - 複数のユーザーが同じインストラクターに紐付け可能なため、
+ *   他のユーザーに紐付けられているかどうかのフィルタリングは行わない
+ * - この関数はClient Componentから呼ばれることを想定
+ *   Server Componentからは直接Prismaクエリを使用すること
  *
  * @returns インストラクター基本情報の配列
  */
@@ -122,7 +126,12 @@ export async function getAvailableInstructors(): Promise<
 
 /**
  * 現在ログイン中のユーザーに紐付けられたインストラクターの詳細情報を取得
+ *
  * 資格情報も含めて返す
+ *
+ * Note:
+ * - この関数はClient Componentから呼ばれることを想定
+ *   Server Componentからは直接Prismaクエリを使用すること
  *
  * @returns インストラクター詳細情報、未紐付けの場合はnull
  */
