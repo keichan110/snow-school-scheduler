@@ -2,6 +2,7 @@
 
 import { authenticate } from "@/lib/auth/auth";
 import { prisma } from "@/lib/db";
+import { secureLog } from "@/lib/utils/logging";
 import type {
   ActionResult,
   InstructorBasicInfo,
@@ -53,7 +54,12 @@ export async function linkMyInstructor(
     });
 
     return { success: true, data: undefined };
-  } catch (_error) {
+  } catch (error) {
+    secureLog("error", "インストラクター紐付け処理でエラーが発生しました", {
+      userId: user.id,
+      instructorId,
+      error,
+    });
     return { success: false, error: "紐付けに失敗しました" };
   }
 }
@@ -77,7 +83,11 @@ export async function unlinkMyInstructor(): Promise<ActionResult<void>> {
     });
 
     return { success: true, data: undefined };
-  } catch (_error) {
+  } catch (error) {
+    secureLog("error", "インストラクター紐付け解除処理でエラーが発生しました", {
+      userId: user.id,
+      error,
+    });
     return { success: false, error: "紐付け解除に失敗しました" };
   }
 }
@@ -121,7 +131,11 @@ export async function getAvailableInstructors(): Promise<
     });
 
     return { success: true, data: instructors };
-  } catch (_error) {
+  } catch (error) {
+    secureLog("error", "インストラクター一覧取得処理でエラーが発生しました", {
+      userId: user.id,
+      error,
+    });
     return {
       success: false,
       error: "インストラクター一覧の取得に失敗しました",
@@ -188,7 +202,12 @@ export async function getMyInstructorProfile(): Promise<
         certifications: instructor.certifications.map((ic) => ic.certification),
       },
     };
-  } catch (_error) {
+  } catch (error) {
+    secureLog("error", "インストラクター情報取得処理でエラーが発生しました", {
+      userId: user.id,
+      instructorId: user.instructorId,
+      error,
+    });
     return {
       success: false,
       error: "インストラクター情報の取得に失敗しました",
