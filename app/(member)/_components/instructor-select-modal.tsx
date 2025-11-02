@@ -1,6 +1,10 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
+import {
+  linkMyInstructor,
+  unlinkMyInstructor,
+} from "@/app/(member)/_actions/instructor-linkage";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -15,10 +19,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  linkMyInstructor,
-  unlinkMyInstructor,
-} from "@/lib/actions/user-instructor-linkage";
 import type { InstructorBasicInfo } from "@/types/actions";
 
 type InstructorSelectModalProps = {

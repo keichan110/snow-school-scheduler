@@ -5,7 +5,7 @@ import { useAuth } from "@/app/_providers/auth";
 import {
   getAvailableInstructors,
   getMyInstructorProfile,
-} from "@/lib/actions/user-instructor-linkage";
+} from "@/app/(member)/_actions/instructor-linkage";
 import { secureLog } from "@/lib/utils/logging";
 import type {
   AuthenticatedUser,

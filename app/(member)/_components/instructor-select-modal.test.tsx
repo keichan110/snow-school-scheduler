@@ -3,12 +3,12 @@ import userEvent from "@testing-library/user-event";
 import {
   linkMyInstructor,
   unlinkMyInstructor,
-} from "@/lib/actions/user-instructor-linkage";
+} from "@/app/(member)/_actions/instructor-linkage";
 import type { InstructorBasicInfo } from "@/types/actions";
 import { InstructorSelectModal } from "./instructor-select-modal";
 
 // Server Actionsをモック
-jest.mock("@/lib/actions/user-instructor-linkage", () => ({
+jest.mock("@/app/(member)/_actions/instructor-linkage", () => ({
   linkMyInstructor: jest.fn(),
   unlinkMyInstructor: jest.fn(),
 }));
