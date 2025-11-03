@@ -23,7 +23,8 @@ import type {
  * ユーザードロップダウンコンポーネント
  * 認証済みユーザーのアバターとメニューを表示
  *
- * クライアント側の認証状態変更(updateDisplayName, logout等)に即座に反応する。
+ * インストラクター情報の更新は router.refresh() で行われる。
+ * ユーザー情報のみクライアント側のAuthContext(displayName変更、logout等)を優先する。
  */
 type HeaderUserDropdownProps = {
   /** サーバー側で取得済みのユーザー情報(フォールバック用) */
@@ -32,15 +33,12 @@ type HeaderUserDropdownProps = {
   instructorProfile: UserInstructorProfile | null;
   /** 利用可能なインストラクター一覧 */
   availableInstructors: InstructorBasicInfo[];
-  /** インストラクター情報を再取得するコールバック */
-  onRefreshInstructorData: () => Promise<void>;
 };
 
 export function HeaderUserDropdown({
   user: serverUser,
   instructorProfile,
   availableInstructors,
-  onRefreshInstructorData,
 }: HeaderUserDropdownProps) {
   // クライアント側の最新認証状態を購読
   const { user: clientUser } = useAuth();
@@ -53,8 +51,7 @@ export function HeaderUserDropdown({
   const user = (clientUser ?? serverUser) as AuthenticatedUser;
 
   // インストラクター紐付け成功時の処理
-  const handleSuccess = async () => {
-    await onRefreshInstructorData();
+  const handleSuccess = () => {
     router.refresh();
   };
   // 権限に応じた日本語表示
