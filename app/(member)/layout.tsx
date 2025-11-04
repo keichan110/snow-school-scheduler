@@ -8,6 +8,10 @@ import {
   buildLoginRedirectUrl,
 } from "@/lib/auth/auth-redirect";
 import { ensureRole } from "@/lib/auth/role-guard";
+import {
+  getAvailableInstructors,
+  getInstructorProfile,
+} from "@/lib/data/instructor";
 
 /**
  * MEMBER以上の権限を持つユーザー専用レイアウト
@@ -42,10 +46,24 @@ export default async function MemberLayout({ children }: Props) {
     redirect(ACCESS_DENIED_REDIRECT);
   }
 
-  // 認証チェック成功 → サーバー取得済みのユーザー情報をAuthProviderとHeaderに渡す
+  // インストラクター情報を取得（React.cacheでメモ化されているため、page.tsxで再取得しても重複クエリは発生しない）
+  const [instructorProfile, availableInstructors] = await Promise.all([
+    // ユーザーに紐づくインストラクター情報を取得（紐付け済みの場合のみ）
+    result.user.instructorId
+      ? getInstructorProfile(result.user.instructorId)
+      : Promise.resolve(null),
+    // 利用可能なインストラクター一覧を常に取得（Header のドロップダウンで切り替え可能にする）
+    getAvailableInstructors(),
+  ]);
+
+  // 認証チェック成功 → サーバー取得済みのユーザー情報とインストラクター情報をAuthProviderとHeaderに渡す
   return (
     <AuthProvider initialStatus="authenticated" initialUser={result.user}>
-      <HeaderAuthenticated user={result.user} />
+      <HeaderAuthenticated
+        availableInstructors={availableInstructors}
+        instructorProfile={instructorProfile}
+        user={result.user}
+      />
       {children}
     </AuthProvider>
   );

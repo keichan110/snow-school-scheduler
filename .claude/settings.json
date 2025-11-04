@@ -10,19 +10,34 @@
           }
         ]
       }
+    ],
+    "Notification": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "osascript -e 'display notification \"許可を求めています\" with title \"Claude Code\" subtitle \"Notification\" sound name \"Pop\"'"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/codereview.sh"
+          },
+          {
+            "type": "command",
+            "command": "osascript -e 'display notification \"完了しました\" with title \"Claude Code\" subtitle \"Stop\" sound name \"Blow\"'"
+          }
+        ]
+      }
     ]
   },
   "permissions": {
     "allow": [
-      "mcp__github__create_issue",
-      "mcp__github__add_issue_comment",
-      "mcp__github__update_issue",
-      "mcp__github__add_sub_issue",
-      "mcp__github__list_sub_issues",
-      "mcp__github__remove_sub_issue",
-      "mcp__github__reprioritize_sub_issue",
-      "mcp__github__list_issues",
-      "mcp__github__get_issue",
       "mcp__serena__list_dir",
       "mcp__serena__find_file",
       "mcp__serena__search_for_pattern",

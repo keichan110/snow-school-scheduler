@@ -25,13 +25,13 @@ function validateRedirectUrl(
 
   // パラメータが空、または undefined の場合はデフォルト
   if (!redirectValue) {
-    return "/shifts";
+    return "/";
   }
 
   try {
     // プロトコル付き、またはプロトコル相対URLは拒否
     if (redirectValue.includes("://") || redirectValue.startsWith("//")) {
-      return "/shifts";
+      return "/";
     }
 
     // 相対パスの場合は許可（/ で始まる）
@@ -40,10 +40,10 @@ function validateRedirectUrl(
     }
 
     // それ以外はデフォルト
-    return "/shifts";
+    return "/";
   } catch {
     // パース失敗時はデフォルト
-    return "/shifts";
+    return "/";
   }
 }
 

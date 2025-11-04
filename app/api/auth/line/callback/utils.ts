@@ -94,6 +94,7 @@ export async function updateUserProfileIfNeeded(
     pictureUrl: string | null;
     lineUserId: string;
     role: string;
+    instructorId: number | null;
     isActive: boolean;
     createdAt: Date;
     updatedAt: Date;

@@ -1,7 +1,11 @@
 "use client";
 
 import { useAuth } from "@/app/_providers/auth";
-import type { AuthenticatedUser } from "@/types/actions";
+import type {
+  AuthenticatedUser,
+  InstructorBasicInfo,
+  UserInstructorProfile,
+} from "@/types/actions";
 import { HeaderMenuDrawer } from "./header/header-menu-drawer";
 import { HeaderShell } from "./header/header-shell";
 import { HeaderUserDropdown } from "./header/header-user-dropdown";
@@ -13,16 +17,22 @@ import { HeaderUserDropdown } from "./header/header-user-dropdown";
  * - MEMBER: ロゴ + ユーザードロップダウン
  * - MANAGER+: ロゴ + 管理メニューDrawer + ユーザードロップダウン
  *
- * サーバーから渡されたユーザー情報をフォールバックとしつつ、
- * クライアント側の認証状態変更(updateDisplayName, logout等)に即座に反応する。
+ * インストラクター情報はサーバーから渡され、router.refresh()で更新される。
+ * ユーザー情報のみクライアント側のAuthContext(displayName変更、logout等)を優先する。
  */
 type HeaderAuthenticatedProps = {
   /** サーバー側で取得済みのユーザー情報(フォールバック用) */
   user: AuthenticatedUser;
+  /** サーバー側で取得済みのインストラクタープロファイル */
+  instructorProfile: UserInstructorProfile | null;
+  /** サーバー側で取得済みの利用可能インストラクター一覧 */
+  availableInstructors: InstructorBasicInfo[];
 };
 
 export function HeaderAuthenticated({
   user: serverUser,
+  instructorProfile,
+  availableInstructors,
 }: HeaderAuthenticatedProps) {
   // クライアント側の最新認証状態を購読
   const { user: clientUser } = useAuth();
@@ -39,7 +49,13 @@ export function HeaderAuthenticated({
       leftSlot={
         hasManagerAccess ? <HeaderMenuDrawer user={currentUser} /> : undefined
       }
-      rightSlot={<HeaderUserDropdown user={currentUser} />}
+      rightSlot={
+        <HeaderUserDropdown
+          availableInstructors={availableInstructors}
+          instructorProfile={instructorProfile}
+          user={currentUser}
+        />
+      }
     />
   );
 }
