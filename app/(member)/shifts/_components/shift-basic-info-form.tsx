@@ -1,17 +1,12 @@
 "use client";
 
 import { Label } from "@/components/ui/label";
-import type { Department } from "../_lib/types";
+import type { DepartmentMinimal, ShiftTypeMinimal } from "../_lib/types";
 import { DepartmentSelector } from "./department-selector";
 
-type ShiftType = {
-  id: number;
-  name: string;
-};
-
 type ShiftBasicInfoFormProps = {
-  departments: Department[];
-  shiftTypes: ShiftType[];
+  departments: DepartmentMinimal[];
+  shiftTypes: ShiftTypeMinimal[];
   formData: {
     departmentId: number;
     shiftTypeId: number;

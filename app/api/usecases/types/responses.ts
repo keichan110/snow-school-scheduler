@@ -1,21 +1,19 @@
 import type { ApiErrorResponse } from "@/lib/api/types";
+import type { DepartmentMinimal, ShiftTypeMinimal } from "@/lib/types/domain";
 
 /**
  * シフト作成フォームデータのレスポンス型
+ *
+ * @description
+ * `/api/usecases/shifts/form-data` エンドポイントのレスポンス型。
+ * API契約型として生産者側（API）に配置し、複数のクライアントから参照可能にする。
  */
 export type ShiftFormDataResponse =
   | {
       success: true;
       data: {
-        departments: Array<{
-          id: number;
-          name: string;
-          code: string;
-        }>;
-        shiftTypes: Array<{
-          id: number;
-          name: string;
-        }>;
+        departments: DepartmentMinimal[];
+        shiftTypes: ShiftTypeMinimal[];
         stats: {
           activeInstructorsCount: number;
           totalDepartments: number;

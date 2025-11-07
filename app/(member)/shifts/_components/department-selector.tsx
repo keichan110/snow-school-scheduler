@@ -3,10 +3,10 @@
 import { cn } from "@/lib/utils";
 import { DEPARTMENT_STYLES } from "../_lib/constants";
 import { getDepartmentIcon } from "../_lib/shift-components";
-import type { Department, DepartmentType } from "../_lib/types";
+import type { DepartmentMinimal, DepartmentType } from "../_lib/types";
 
 type DepartmentSelectorProps = {
-  departments: Department[];
+  departments: DepartmentMinimal[];
   selectedId: number;
   onSelect: (id: number) => void;
   error?: string | undefined;

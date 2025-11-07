@@ -141,3 +141,7 @@ export type CalendarDate = {
   readonly isHoliday: boolean;
   readonly isToday: boolean;
 };
+
+// ドメイン共通型を再エクスポート
+// API契約型とUIコンポーネントの両方で使用する型はlib/types/domainから参照
+export type { DepartmentMinimal, ShiftTypeMinimal } from "@/lib/types/domain";

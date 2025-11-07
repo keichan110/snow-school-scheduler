@@ -10,12 +10,8 @@ import { DrawerFooter } from "@/components/ui/drawer";
 import { hasManagePermission } from "@/lib/auth/permissions";
 import { cn } from "@/lib/utils";
 import { prepareShift } from "../_lib/api-client";
-import type {
-  ApiResponse,
-  DayData,
-  Department,
-  ShiftType,
-} from "../_lib/types";
+import type { ApiResponse, DayData } from "../_lib/types";
+import { useShiftFormData } from "../_lib/use-shift-form-data";
 import { useCreateShift } from "../_lib/use-shifts";
 import type { ExistingShiftData } from "./duplicate-shift-dialog";
 import { InstructorSelector } from "./instructor-selector";
@@ -79,12 +75,13 @@ export function UnifiedShiftBottomModal({
   // 管理権限チェック（MANAGER以上）
   const canManage = user ? hasManagePermission(user, "shifts") : false;
 
+  // シフト作成フォームデータを取得（React Query）
+  const { data: shiftFormData } = useShiftFormData();
+
   // 管理機能の状態
   const [currentStep, setCurrentStep] = useState<ModalStep>(initialStep);
   const [formData, setFormData] = useState<ShiftFormData>(INITIAL_FORM_DATA);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [departments, setDepartments] = useState<Department[]>([]);
-  const [shiftTypes, setShiftTypes] = useState<ShiftType[]>([]);
   const [instructors, setInstructors] = useState<Instructor[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [editMode, setEditMode] = useState<{
@@ -106,30 +103,6 @@ export function UnifiedShiftBottomModal({
     setCurrentStep(initialStep);
   }, [initialStep]);
 
-  // データ取得ヘルパー関数
-  const fetchDepartmentsAndShiftTypes = useCallback(async () => {
-    const [departmentsRes, shiftTypesRes] = await Promise.all([
-      fetch("/api/departments"),
-      fetch("/api/shift-types"),
-    ]);
-
-    if (departmentsRes?.ok) {
-      const departmentsData: ApiResponse<Department[]> =
-        await departmentsRes.json();
-      if (departmentsData.success && departmentsData.data) {
-        setDepartments(departmentsData.data);
-      }
-    }
-
-    if (shiftTypesRes?.ok) {
-      const shiftTypesData: ApiResponse<ShiftType[]> =
-        await shiftTypesRes.json();
-      if (shiftTypesData.success && shiftTypesData.data) {
-        setShiftTypes(shiftTypesData.data);
-      }
-    }
-  }, []);
-
   const fetchInstructors = useCallback(async () => {
     const instructorsRes = await fetch(
       `/api/instructors?status=ACTIVE&departmentId=${formData.departmentId}`
@@ -144,14 +117,12 @@ export function UnifiedShiftBottomModal({
     }
   }, [formData.departmentId]);
 
-  // API データ取得
+  // インストラクターデータ取得（step2でのみ）
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
       try {
-        if (currentStep === "create-step1") {
-          await fetchDepartmentsAndShiftTypes();
-        } else if (currentStep === "create-step2") {
+        if (currentStep === "create-step2") {
           await fetchInstructors();
         }
       } catch (_error) {
@@ -162,7 +133,7 @@ export function UnifiedShiftBottomModal({
     };
 
     fetchData();
-  }, [currentStep, fetchDepartmentsAndShiftTypes, fetchInstructors]);
+  }, [currentStep, fetchInstructors]);
 
   // 権限がない場合、選択された日付がない場合はモーダルを表示しない
   if (!(canManage && selectedDate && localDayData)) {
@@ -371,10 +342,10 @@ export function UnifiedShiftBottomModal({
       return null;
     }
 
-    const departmentName = departments.find(
+    const departmentName = shiftFormData?.departments.find(
       (d) => d.id === formData.departmentId
     )?.name;
-    const shiftTypeName = shiftTypes.find(
+    const shiftTypeName = shiftFormData?.shiftTypes.find(
       (t) => t.id === formData.shiftTypeId
     )?.name;
 
@@ -480,14 +451,14 @@ export function UnifiedShiftBottomModal({
 
         {currentStep === "create-step1" && (
           <ShiftBasicInfoForm
-            departments={departments}
+            departments={shiftFormData?.departments ?? []}
             errors={errors}
             formData={formData}
             isLoading={isLoading}
             onDepartmentChange={handleDepartmentChange}
             onNotesChange={handleNotesChange}
             onShiftTypeChange={handleShiftTypeChange}
-            shiftTypes={shiftTypes}
+            shiftTypes={shiftFormData?.shiftTypes ?? []}
           />
         )}
 
