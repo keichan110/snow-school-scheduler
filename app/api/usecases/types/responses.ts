@@ -97,11 +97,43 @@ export type CalendarViewResponse =
 /**
  * シフト編集データのレスポンス型
  */
+/**
+ * シフト編集用のインストラクター情報
+ *
+ * @description
+ * 通常のFormattedInstructorに加えて、アサイン状態と競合情報を含む
+ */
+export type ShiftEditInstructor = {
+  /** インストラクターID */
+  id: number;
+  /** 表示名（姓名が結合済み、例: "山田 太郎"） */
+  displayName: string;
+  /** カナ表示名（姓名カナが結合済み、例: "ヤマダ タロウ"） */
+  displayNameKana: string;
+  /** ステータス（"ACTIVE" など） */
+  status: string;
+  /** 資格情報の要約文字列（例: "SAJ1級, SAJ2級" または "なし"） */
+  certificationSummary: string;
+  /** このシフトにアサイン済みかどうか */
+  isAssigned: boolean;
+  /** 同日の他シフトと競合しているかどうか */
+  hasConflict: boolean;
+};
+
+/**
+ * シフト編集データのレスポンス型
+ *
+ * @description
+ * `/api/usecases/shifts/edit-data` エンドポイントのレスポンス型。
+ * シフト編集モーダルで必要な全データ（既存シフト、インストラクター一覧、競合情報）を一度に返す。
+ */
 export type ShiftEditDataResponse =
   | {
       success: true;
       data: {
+        /** 編集モード（既存シフト編集）か作成モード（新規シフト作成）か */
         mode: "edit" | "create";
+        /** 既存シフト情報（作成モードの場合はnull） */
         shift: {
           id: number;
           date: string;
@@ -110,13 +142,9 @@ export type ShiftEditDataResponse =
           description: string | null;
           assignedInstructorIds: number[];
         } | null;
-        availableInstructors: Array<{
-          id: number;
-          displayName: string;
-          certificationSummary: string;
-          isAssigned: boolean;
-          hasConflict: boolean;
-        }>;
+        /** 利用可能なインストラクター一覧（アサイン状態と競合情報付き） */
+        availableInstructors: ShiftEditInstructor[];
+        /** 競合情報の詳細リスト */
         conflicts: Array<{
           instructorId: number;
           instructorName: string;
@@ -126,6 +154,7 @@ export type ShiftEditDataResponse =
             shiftTypeName: string;
           };
         }>;
+        /** フォーム初期値 */
         formData: {
           date: string;
           departmentId: number;
