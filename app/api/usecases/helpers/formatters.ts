@@ -33,8 +33,22 @@ export function formatInstructorDisplayNameKana(instructor: {
 /**
  * 資格情報を要約文字列にフォーマット
  *
- * @param certifications - 資格配列
- * @returns カンマ区切りの資格名 (例: "SAJ1級, SAJ2級")
+ * @description
+ * 資格配列を受け取り、カンマ区切りの資格名文字列を返します。
+ * 空配列の場合は "なし" を返します。
+ *
+ * @param certifications - 資格配列（0件以上）
+ * @returns カンマ区切りの資格名、または "なし"
+ *
+ * @example
+ * ```typescript
+ * formatCertificationSummary([
+ *   { certification: { shortName: "SAJ1級" } },
+ *   { certification: { shortName: "SAJ2級" } }
+ * ]) // => "SAJ1級, SAJ2級"
+ *
+ * formatCertificationSummary([]) // => "なし"
+ * ```
  */
 export function formatCertificationSummary(
   certifications: Array<{ certification: { shortName: string } }>

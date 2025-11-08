@@ -3,47 +3,43 @@
 import { Search, User } from "lucide-react";
 import { useState } from "react";
 import { Label } from "@/components/ui/label";
+import type { FormattedInstructor } from "../_lib/types";
 import { InstructorListItem } from "./instructor-list-item";
 import { SelectedInstructorsList } from "./selected-instructors-list";
 
-type Certification = {
-  id: number;
-  name: string;
-  shortName: string;
-  organization: string;
-  department: {
-    id: number;
-    name: string;
-  };
-};
-
-type Instructor = {
-  id: number;
-  lastName: string;
-  firstName: string;
-  lastNameKana?: string;
-  firstNameKana?: string;
-  status: string;
-  certifications: Certification[];
-};
-
+/**
+ * インストラクターセレクターのプロパティ
+ */
 type InstructorSelectorProps = {
-  instructors: Instructor[];
+  /** インストラクター配列 */
+  instructors: FormattedInstructor[];
+  /** 選択済みインストラクターID配列 */
   selectedInstructorIds: number[];
-  departmentId: number;
+  /** ローディング状態 */
   isLoading: boolean;
+  /** エラーメッセージ */
   errors: {
     instructors?: string;
     submit?: string;
   };
+  /** トグルハンドラー */
   onToggle: (id: number) => void;
+  /** 削除ハンドラー */
   onRemove: (id: number) => void;
 };
 
+/**
+ * インストラクター選択コンポーネント
+ *
+ * @description
+ * シフト作成時にインストラクターを選択するためのコンポーネント。
+ * サーバー側でフォーマット済みのデータを使用し、フロントエンドの処理を簡素化。
+ *
+ * @param props - コンポーネントプロパティ
+ */
 export function InstructorSelector({
   instructors,
   selectedInstructorIds,
-  departmentId,
   isLoading,
   errors,
   onToggle,
@@ -52,6 +48,7 @@ export function InstructorSelector({
   const [searchTerm, setSearchTerm] = useState("");
 
   // インストラクター検索フィルタリング
+  // displayName と displayNameKana で検索
   const filteredInstructors = instructors.filter((instructor) => {
     if (!searchTerm) {
       return true;
@@ -59,10 +56,8 @@ export function InstructorSelector({
 
     const searchLower = searchTerm.toLowerCase();
     return (
-      instructor.lastName.toLowerCase().includes(searchLower) ||
-      instructor.firstName.toLowerCase().includes(searchLower) ||
-      instructor.lastNameKana?.toLowerCase().includes(searchLower) ||
-      instructor.firstNameKana?.toLowerCase().includes(searchLower)
+      instructor.displayName.toLowerCase().includes(searchLower) ||
+      instructor.displayNameKana.toLowerCase().includes(searchLower)
     );
   });
 
@@ -121,19 +116,9 @@ export function InstructorSelector({
                 const isSelected = selectedInstructorIds.includes(
                   instructor.id
                 );
-                const hasRequiredCertification =
-                  instructor.certifications.filter(
-                    (cert) => cert.department.id === departmentId
-                  ).length > 0;
-                const departmentCertifications =
-                  instructor.certifications.filter(
-                    (cert) => cert.department.id === departmentId
-                  );
 
                 return (
                   <InstructorListItem
-                    departmentCertifications={departmentCertifications}
-                    hasRequiredCertification={hasRequiredCertification}
                     instructor={instructor}
                     isSelected={isSelected}
                     key={instructor.id}
@@ -150,17 +135,9 @@ export function InstructorSelector({
               表示: {filteredInstructors.length}名{searchTerm && " (検索結果)"}
             </div>
             <div>
-              認定済み:{" "}
+              選択中:{" "}
               <span className="font-semibold text-foreground">
-                {
-                  filteredInstructors.filter(
-                    (i) =>
-                      i.certifications.filter(
-                        (c) => c.department.id === departmentId
-                      ).length > 0
-                  ).length
-                }
-                名
+                {selectedInstructorIds.length}名
               </span>
             </div>
           </div>

@@ -25,6 +25,10 @@ export type ShiftFormDataResponse =
 
 /**
  * 部門別アクティブインストラクターのレスポンス型
+ *
+ * @description
+ * 資格の有無に関わらず、アクティブなインストラクター全員を返します。
+ * `certificationSummary` が "なし" の場合は資格未保有を示します。
  */
 export type ActiveInstructorsByDepartmentResponse =
   | {
@@ -35,6 +39,7 @@ export type ActiveInstructorsByDepartmentResponse =
           displayName: string;
           displayNameKana: string;
           status: string;
+          /** 資格情報の要約 ("なし" または "資格名, 資格名, ...") */
           certificationSummary: string;
         }>;
         metadata: {

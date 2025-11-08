@@ -1,7 +1,7 @@
 "use client";
 
 import { ArrowRight, Edit3 } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "@/app/_providers/auth";
 import { useNotification } from "@/app/_providers/notifications";
 import { AdminShiftModal } from "@/app/(member)/shifts/_components/base-shift-modal";
@@ -10,7 +10,8 @@ import { DrawerFooter } from "@/components/ui/drawer";
 import { hasManagePermission } from "@/lib/auth/permissions";
 import { cn } from "@/lib/utils";
 import { prepareShift } from "../_lib/api-client";
-import type { ApiResponse, DayData } from "../_lib/types";
+import type { DayData } from "../_lib/types";
+import { useActiveInstructorsByDepartment } from "../_lib/use-active-instructors";
 import { useShiftFormData } from "../_lib/use-shift-form-data";
 import { useCreateShift } from "../_lib/use-shifts";
 import type { ExistingShiftData } from "./duplicate-shift-dialog";
@@ -18,25 +19,6 @@ import { InstructorSelector } from "./instructor-selector";
 import { ShiftBasicInfoForm } from "./shift-basic-info-form";
 
 type ModalStep = "create-step1" | "create-step2";
-
-type Instructor = {
-  id: number;
-  lastName: string;
-  firstName: string;
-  lastNameKana?: string;
-  firstNameKana?: string;
-  status: string;
-  certifications: {
-    id: number;
-    name: string;
-    shortName: string;
-    organization: string;
-    department: {
-      id: number;
-      name: string;
-    };
-  }[];
-};
 
 type ShiftFormData = {
   departmentId: number;
@@ -82,13 +64,18 @@ export function UnifiedShiftBottomModal({
   const [currentStep, setCurrentStep] = useState<ModalStep>(initialStep);
   const [formData, setFormData] = useState<ShiftFormData>(INITIAL_FORM_DATA);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [instructors, setInstructors] = useState<Instructor[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [editMode, setEditMode] = useState<{
     isEdit: boolean;
     existingShift?: ExistingShiftData;
   }>({ isEdit: false });
   const [localDayData, setLocalDayData] = useState<DayData | null>(dayData);
+
+  // 部門別アクティブインストラクターを取得（React Query）
+  const { data: instructorData, isLoading: isLoadingInstructors } =
+    useActiveInstructorsByDepartment(
+      currentStep === "create-step2" ? formData.departmentId : null
+    );
 
   // Server Actions
   const createShiftMutation = useCreateShift();
@@ -102,38 +89,6 @@ export function UnifiedShiftBottomModal({
   useEffect(() => {
     setCurrentStep(initialStep);
   }, [initialStep]);
-
-  const fetchInstructors = useCallback(async () => {
-    const instructorsRes = await fetch(
-      `/api/instructors?status=ACTIVE&departmentId=${formData.departmentId}`
-    );
-
-    if (instructorsRes?.ok) {
-      const instructorsData: ApiResponse<Instructor[]> =
-        await instructorsRes.json();
-      if (instructorsData.success && instructorsData.data) {
-        setInstructors(instructorsData.data);
-      }
-    }
-  }, [formData.departmentId]);
-
-  // インストラクターデータ取得（step2でのみ）
-  useEffect(() => {
-    const fetchData = async () => {
-      setIsLoading(true);
-      try {
-        if (currentStep === "create-step2") {
-          await fetchInstructors();
-        }
-      } catch (_error) {
-        // エラーは無視してデフォルト値を使用
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [currentStep, fetchInstructors]);
 
   // 権限がない場合、選択された日付がない場合はモーダルを表示しない
   if (!(canManage && selectedDate && localDayData)) {
@@ -259,6 +214,13 @@ export function UnifiedShiftBottomModal({
     }
   };
 
+  /**
+   * シフト作成/更新ハンドラー
+   *
+   * @description
+   * バリデーション、シフト作成/更新、エラーハンドリングを実行します。
+   * React Query mutationの例外を適切にキャッチして、ユーザーにエラーを表示します。
+   */
   const handleCreateShift = async () => {
     if (!canManage || formData.selectedInstructorIds.length === 0) {
       setErrors({ instructors: "最低1名のインストラクターを選択してください" });
@@ -272,19 +234,30 @@ export function UnifiedShiftBottomModal({
 
     setErrors({});
 
-    const result = await createShiftMutation.mutateAsync({
-      date: selectedDate,
-      departmentId: formData.departmentId,
-      shiftTypeId: formData.shiftTypeId,
-      description: formData.notes || null,
-      assignedInstructorIds: formData.selectedInstructorIds,
-      force: editMode.isEdit,
-    });
+    try {
+      const result = await createShiftMutation.mutateAsync({
+        date: selectedDate,
+        departmentId: formData.departmentId,
+        shiftTypeId: formData.shiftTypeId,
+        description: formData.notes || null,
+        assignedInstructorIds: formData.selectedInstructorIds,
+        force: editMode.isEdit,
+      });
 
-    if (result.success) {
-      await handleShiftSuccess();
-    } else {
-      setErrors({ submit: result.error || "シフトの処理に失敗しました" });
+      if (result.success) {
+        await handleShiftSuccess();
+      } else {
+        setErrors({ submit: result.error || "シフトの処理に失敗しました" });
+      }
+    } catch (error) {
+      // React Query mutationの例外をキャッチ
+      // ネットワークエラー、サーバーエラー、予期しないエラーなど
+      setErrors({
+        submit:
+          error instanceof Error
+            ? error.message
+            : "予期しないエラーが発生しました",
+      });
     }
   };
 
@@ -464,10 +437,9 @@ export function UnifiedShiftBottomModal({
 
         {currentStep === "create-step2" && (
           <InstructorSelector
-            departmentId={formData.departmentId}
             errors={errors}
-            instructors={instructors}
-            isLoading={isLoading}
+            instructors={instructorData?.instructors ?? []}
+            isLoading={isLoadingInstructors}
             onRemove={handleRemoveInstructor}
             onToggle={handleInstructorToggle}
             selectedInstructorIds={formData.selectedInstructorIds}

@@ -23,6 +23,7 @@ export const instructorWithCertificationsSelect = {
         select: {
           id: true,
           shortName: true,
+          departmentId: true,
         },
       },
     },
