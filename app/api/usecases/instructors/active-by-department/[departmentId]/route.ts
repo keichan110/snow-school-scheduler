@@ -131,18 +131,11 @@ export async function GET(
     const instructors = await prisma.instructor.findMany({
       where: {
         status: "ACTIVE",
-        OR: [
-          // 資格なしのインストラクター
-          { certifications: { none: {} } },
-          // 指定部門の資格を持つインストラクター
-          {
-            certifications: {
-              some: {
-                certification: { departmentId },
-              },
-            },
+        certifications: {
+          some: {
+            certification: { departmentId },
           },
-        ],
+        },
       },
       select: instructorWithCertificationsSelect,
       orderBy: [{ lastName: "asc" }, { firstName: "asc" }],
