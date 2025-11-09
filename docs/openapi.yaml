@@ -2,7 +2,7 @@ openapi: 3.0.3
 info:
   title: Snow School Scheduler API
   description: スキー・スノーボードスクールのシフト管理システム API。
-  version: 1.1.0
+  version: 1.2.0
   contact:
     name: Snow School Scheduler
 
@@ -361,6 +361,180 @@ paths:
           $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /api/usecases/shifts/form-data:
+    get:
+      summary: シフト作成フォーム初期データ
+      description: シフト作成モーダルで必要となる部門一覧・シフト種別一覧・統計情報をまとめて返します。
+      tags:
+        - シフト管理
+      security:
+        - bearerAuth: []
+        - sessionCookie: []
+      responses:
+        '200':
+          description: フォーム初期化に必要なデータ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShiftFormDataResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /api/usecases/shifts/weekly-view:
+    get:
+      summary: 週次カレンダービュー
+      description: 指定した開始日から7日間のシフトと集計情報を返します。
+      tags:
+        - シフト管理
+      security:
+        - bearerAuth: []
+        - sessionCookie: []
+      parameters:
+        - name: dateFrom
+          in: query
+          required: true
+          description: 取得対象となる週の開始日 (YYYY-MM-DD)。
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: 週次シフトデータ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShiftCalendarViewResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /api/usecases/shifts/monthly-view:
+    get:
+      summary: 月次カレンダービュー
+      description: 指定した年月に含まれる全シフトと統計情報を返します。
+      tags:
+        - シフト管理
+      security:
+        - bearerAuth: []
+        - sessionCookie: []
+      parameters:
+        - name: year
+          in: query
+          required: true
+          description: 取得したい年 (例 2025)。
+          schema:
+            type: integer
+            minimum: 2000
+            maximum: 2100
+        - name: month
+          in: query
+          required: true
+          description: 取得したい月 (1-12)。
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 12
+      responses:
+        '200':
+          description: 月次シフトデータ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShiftCalendarViewResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /api/usecases/shifts/edit-data:
+    get:
+      summary: シフト編集データ取得
+      description: 既存シフトの有無、利用可能なインストラクター、競合情報をまとめて返します。
+      tags:
+        - シフト管理
+      security:
+        - bearerAuth: []
+        - sessionCookie: []
+      parameters:
+        - name: date
+          in: query
+          required: true
+          description: シフト日付 (YYYY-MM-DD)。
+          schema:
+            type: string
+            format: date
+        - name: departmentId
+          in: query
+          required: true
+          description: 対象部門 ID。
+          schema:
+            type: integer
+            minimum: 1
+        - name: shiftTypeId
+          in: query
+          required: true
+          description: 対象シフト種別 ID。
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        '200':
+          description: シフト編集モーダル用データ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShiftEditDataResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /api/usecases/instructors/active-by-department/{departmentId}:
+    parameters:
+      - $ref: '#/components/parameters/DepartmentId'
+    get:
+      summary: 部門別アクティブインストラクター取得
+      description: 指定部門に紐づくアクティブインストラクター一覧とメタデータを返します。
+      tags:
+        - インストラクター管理
+      security:
+        - bearerAuth: []
+        - sessionCookie: []
+      responses:
+        '200':
+          description: アクティブインストラクター一覧
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActiveInstructorsByDepartmentResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
         '500':
           $ref: '#/components/responses/ServerError'
 
@@ -748,6 +922,14 @@ components:
       in: path
       required: true
       description: 数値 ID
+      schema:
+        type: integer
+        minimum: 1
+    DepartmentId:
+      name: departmentId
+      in: path
+      required: true
+      description: 部門 ID
       schema:
         type: integer
         minimum: 1
@@ -1326,6 +1508,405 @@ components:
         data:
           $ref: '#/components/schemas/PrepareShiftData'
 
+    DepartmentMinimal:
+      type: object
+      required:
+        - id
+        - name
+        - code
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        code:
+          type: string
+
+    ShiftTypeMinimal:
+      type: object
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+
+    ShiftFormDataStats:
+      type: object
+      required:
+        - activeInstructorsCount
+        - totalDepartments
+        - totalShiftTypes
+      properties:
+        activeInstructorsCount:
+          type: integer
+        totalDepartments:
+          type: integer
+        totalShiftTypes:
+          type: integer
+
+    ShiftFormDataPayload:
+      type: object
+      required:
+        - departments
+        - shiftTypes
+        - stats
+      properties:
+        departments:
+          type: array
+          items:
+            $ref: '#/components/schemas/DepartmentMinimal'
+        shiftTypes:
+          type: array
+          items:
+            $ref: '#/components/schemas/ShiftTypeMinimal'
+        stats:
+          $ref: '#/components/schemas/ShiftFormDataStats'
+
+    ShiftFormDataResponse:
+      type: object
+      required:
+        - success
+        - data
+      properties:
+        success:
+          type: boolean
+          enum: [true]
+        data:
+          $ref: '#/components/schemas/ShiftFormDataPayload'
+        message:
+          type: string
+          nullable: true
+        error:
+          type: string
+          nullable: true
+
+    CalendarAssignedInstructor:
+      type: object
+      required:
+        - id
+        - displayName
+      properties:
+        id:
+          type: integer
+        displayName:
+          type: string
+
+    CalendarShiftStats:
+      type: object
+      required:
+        - assignedCount
+        - hasNotes
+      properties:
+        assignedCount:
+          type: integer
+        hasNotes:
+          type: boolean
+
+    CalendarShift:
+      type: object
+      required:
+        - id
+        - date
+        - department
+        - shiftType
+        - assignedInstructors
+        - stats
+      properties:
+        id:
+          type: integer
+        date:
+          type: string
+          format: date
+        department:
+          $ref: '#/components/schemas/DepartmentMinimal'
+        shiftType:
+          $ref: '#/components/schemas/ShiftTypeMinimal'
+        assignedInstructors:
+          type: array
+          items:
+            $ref: '#/components/schemas/CalendarAssignedInstructor'
+        stats:
+          $ref: '#/components/schemas/CalendarShiftStats'
+        description:
+          type: string
+          nullable: true
+
+    CalendarSummary:
+      type: object
+      required:
+        - totalShifts
+        - totalAssignments
+        - dateRange
+        - byDepartment
+      properties:
+        totalShifts:
+          type: integer
+        totalAssignments:
+          type: integer
+        dateRange:
+          type: object
+          required:
+            - from
+            - to
+          properties:
+            from:
+              type: string
+              format: date
+            to:
+              type: string
+              format: date
+        byDepartment:
+          type: object
+          additionalProperties:
+            type: integer
+
+    ShiftCalendarViewPayload:
+      type: object
+      required:
+        - shifts
+        - summary
+      properties:
+        shifts:
+          type: array
+          items:
+            $ref: '#/components/schemas/CalendarShift'
+        summary:
+          $ref: '#/components/schemas/CalendarSummary'
+
+    ShiftCalendarViewResponse:
+      type: object
+      required:
+        - success
+        - data
+      properties:
+        success:
+          type: boolean
+          enum: [true]
+        data:
+          $ref: '#/components/schemas/ShiftCalendarViewPayload'
+        message:
+          type: string
+          nullable: true
+        error:
+          type: string
+          nullable: true
+
+    ShiftEditInstructor:
+      type: object
+      required:
+        - id
+        - displayName
+        - displayNameKana
+        - status
+        - certificationSummary
+        - isAssigned
+        - hasConflict
+      properties:
+        id:
+          type: integer
+        displayName:
+          type: string
+        displayNameKana:
+          type: string
+        status:
+          type: string
+        certificationSummary:
+          type: string
+        isAssigned:
+          type: boolean
+        hasConflict:
+          type: boolean
+
+    ShiftEditConflict:
+      type: object
+      required:
+        - instructorId
+        - instructorName
+        - conflictingShift
+      properties:
+        instructorId:
+          type: integer
+        instructorName:
+          type: string
+        conflictingShift:
+          type: object
+          required:
+            - id
+            - departmentName
+            - shiftTypeName
+          properties:
+            id:
+              type: integer
+            departmentName:
+              type: string
+            shiftTypeName:
+              type: string
+
+    ShiftEditShift:
+      type: object
+      required:
+        - id
+        - date
+        - departmentId
+        - shiftTypeId
+        - assignedInstructorIds
+      properties:
+        id:
+          type: integer
+        date:
+          type: string
+          format: date
+        departmentId:
+          type: integer
+        shiftTypeId:
+          type: integer
+        description:
+          type: string
+          nullable: true
+        assignedInstructorIds:
+          type: array
+          items:
+            type: integer
+
+    ShiftEditFormData:
+      type: object
+      required:
+        - date
+        - departmentId
+        - shiftTypeId
+        - selectedInstructorIds
+      properties:
+        date:
+          type: string
+          format: date
+        departmentId:
+          type: integer
+        shiftTypeId:
+          type: integer
+        description:
+          type: string
+          nullable: true
+        selectedInstructorIds:
+          type: array
+          items:
+            type: integer
+
+    ShiftEditData:
+      type: object
+      required:
+        - mode
+        - shift
+        - availableInstructors
+        - conflicts
+        - formData
+      properties:
+        mode:
+          type: string
+          enum: [create, edit]
+        shift:
+          nullable: true
+          allOf:
+            - $ref: '#/components/schemas/ShiftEditShift'
+        availableInstructors:
+          type: array
+          items:
+            $ref: '#/components/schemas/ShiftEditInstructor'
+        conflicts:
+          type: array
+          items:
+            $ref: '#/components/schemas/ShiftEditConflict'
+        formData:
+          $ref: '#/components/schemas/ShiftEditFormData'
+
+    ShiftEditDataResponse:
+      type: object
+      required:
+        - success
+        - data
+      properties:
+        success:
+          type: boolean
+          enum: [true]
+        data:
+          $ref: '#/components/schemas/ShiftEditData'
+        message:
+          type: string
+          nullable: true
+        error:
+          type: string
+          nullable: true
+
+    ActiveInstructorSummary:
+      type: object
+      required:
+        - id
+        - displayName
+        - displayNameKana
+        - status
+        - certificationSummary
+      properties:
+        id:
+          type: integer
+        displayName:
+          type: string
+        displayNameKana:
+          type: string
+        status:
+          type: string
+        certificationSummary:
+          type: string
+
+    ActiveInstructorMetadata:
+      type: object
+      required:
+        - departmentId
+        - departmentName
+        - totalCount
+        - activeCount
+      properties:
+        departmentId:
+          type: integer
+        departmentName:
+          type: string
+        totalCount:
+          type: integer
+        activeCount:
+          type: integer
+
+    ActiveInstructorsByDepartmentPayload:
+      type: object
+      required:
+        - instructors
+        - metadata
+      properties:
+        instructors:
+          type: array
+          items:
+            $ref: '#/components/schemas/ActiveInstructorSummary'
+        metadata:
+          $ref: '#/components/schemas/ActiveInstructorMetadata'
+
+    ActiveInstructorsByDepartmentResponse:
+      type: object
+      required:
+        - success
+        - data
+      properties:
+        success:
+          type: boolean
+          enum: [true]
+        data:
+          $ref: '#/components/schemas/ActiveInstructorsByDepartmentPayload'
+        message:
+          type: string
+          nullable: true
+        error:
+          type: string
+          nullable: true
+
     PrepareShiftErrorResponse:
       type: object
       properties:
@@ -1599,4 +2180,3 @@ components:
             isValid:
               type: boolean
               enum: [true]
-
