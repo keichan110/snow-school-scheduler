@@ -7,9 +7,9 @@ import {
 import { instructorWithCertificationsSelect } from "@/app/api/usecases/helpers/query-optimizers";
 import { validateNumericId } from "@/app/api/usecases/helpers/validators";
 import type { ActiveInstructorsByDepartmentResponse } from "@/app/api/usecases/types/responses";
+import { logApiError } from "@/lib/api/error-handlers";
 import { withAuth } from "@/lib/auth/middleware";
 import { prisma } from "@/lib/db";
-import { secureLog } from "@/lib/utils/logging";
 
 /**
  * 部門別アクティブインストラクター取得APIエンドポイント
@@ -79,7 +79,7 @@ import { secureLog } from "@/lib/utils/logging";
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { departmentId: string } }
+  { params }: { params: Promise<{ departmentId: string }> }
 ): Promise<NextResponse<ActiveInstructorsByDepartmentResponse>> {
   // 認証・認可チェック（MEMBER以上の権限が必要）
   const { errorResponse } =
@@ -89,8 +89,9 @@ export async function GET(
   }
 
   try {
-    // 部門IDのバリデーション
-    const validation = validateNumericId(params.departmentId);
+    const { departmentId: departmentIdParam } = await params;
+
+    const validation = validateNumericId(departmentIdParam);
     if (!validation.isValid || validation.parsedValue === null) {
       const STATUS_BAD_REQUEST = 400;
       return NextResponse.json(
@@ -171,17 +172,8 @@ export async function GET(
       },
     });
   } catch (error) {
-    secureLog(
-      "error",
-      "[API Error] Failed to fetch active instructors by department",
-      {
-        error:
-          error instanceof Error ? error.message : "Unknown error occurred",
-        stack: error instanceof Error ? error.stack : undefined,
-      }
-    );
+    logApiError("Failed to fetch active instructors by department", error);
 
-    // 500エラーレスポンスを返却
     const STATUS_INTERNAL_SERVER_ERROR = 500;
     return NextResponse.json(
       {

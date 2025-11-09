@@ -1,7 +1,9 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
+import { logApiError } from "@/lib/api/error-handlers";
 import { withAuth } from "@/lib/auth/middleware";
 import { prisma } from "@/lib/db";
+import { secureLog } from "@/lib/utils/logging";
 import {
   formatCertificationSummary,
   formatInstructorDisplayName,
@@ -63,7 +65,7 @@ export async function GET(
   request: NextRequest
 ): Promise<NextResponse<ShiftEditDataResponse>> {
   // 認証チェック（MANAGER権限必須）
-  const { result, errorResponse } = await withAuth<ShiftEditDataResponse>(
+  const { errorResponse } = await withAuth<ShiftEditDataResponse>(
     request,
     "MANAGER"
   );
@@ -235,9 +237,9 @@ export async function GET(
 
         // 競合シフトが見つからない場合はスキップ(データ不整合の可能性)
         if (!conflictShift) {
-          console.warn(
-            `Conflict shift not found for instructor ${instructor.id}`
-          );
+          secureLog("warn", "Conflict shift not found for instructor", {
+            instructorId: instructor.id,
+          });
           return null;
         }
 
@@ -284,7 +286,8 @@ export async function GET(
       data: responseData,
     });
   } catch (error) {
-    console.error("[API Error] shifts/edit-data:", error);
+    logApiError("Failed to fetch shift edit data", error);
+
     return NextResponse.json(
       {
         success: false,

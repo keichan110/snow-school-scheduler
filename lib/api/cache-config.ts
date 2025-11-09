@@ -7,12 +7,6 @@
  */
 
 /**
- * ミリ秒単位の時間計算用ヘルパー定数
- */
-const MS_PER_SECOND = 1000;
-const SECONDS_PER_MINUTE = 60;
-
-/**
  * シフトデータ用キャッシュ設定
  *
  * @description
@@ -26,14 +20,16 @@ export const SHIFT_CACHE_CONFIG = {
    * この期間内は、キャッシュされたデータを使用し、
    * 新たなリクエストは発行されません。
    */
-  STALE_TIME_MS: MS_PER_SECOND * SECONDS_PER_MINUTE * 2,
+  // biome-ignore lint/style/noMagicNumbers: キャッシュ時間の分数は可読性重視のため定数化しない
+  STALE_TIME_MS: 1000 * 60 * 2,
 
   /**
    * gcTime: キャッシュがメモリに保持される期間（5分）
    *
    * この期間を過ぎると、キャッシュはガベージコレクションの対象となります。
    */
-  GC_TIME_MS: MS_PER_SECOND * SECONDS_PER_MINUTE * 5,
+  // biome-ignore lint/style/noMagicNumbers: キャッシュ時間の分数は可読性重視のため定数化しない
+  GC_TIME_MS: 1000 * 60 * 5,
 } as const;
 
 /**
@@ -45,10 +41,12 @@ export const SHIFT_CACHE_CONFIG = {
  */
 export const FORM_DATA_CACHE_CONFIG = {
   /** staleTime: 5分 */
-  STALE_TIME_MS: MS_PER_SECOND * SECONDS_PER_MINUTE * 5,
+  // biome-ignore lint/style/noMagicNumbers: キャッシュ時間の分数は可読性重視のため定数化しない
+  STALE_TIME_MS: 1000 * 60 * 5,
 
   /** gcTime: 10分 */
-  GC_TIME_MS: MS_PER_SECOND * SECONDS_PER_MINUTE * 10,
+  // biome-ignore lint/style/noMagicNumbers: キャッシュ時間の分数は可読性重視のため定数化しない
+  GC_TIME_MS: 1000 * 60 * 10,
 } as const;
 
 /**
@@ -59,8 +57,10 @@ export const FORM_DATA_CACHE_CONFIG = {
  */
 export const INSTRUCTOR_CACHE_CONFIG = {
   /** staleTime: 3分 */
-  STALE_TIME_MS: MS_PER_SECOND * SECONDS_PER_MINUTE * 3,
+  // biome-ignore lint/style/noMagicNumbers: キャッシュ時間の分数は可読性重視のため定数化しない
+  STALE_TIME_MS: 1000 * 60 * 3,
 
   /** gcTime: 5分 */
-  GC_TIME_MS: MS_PER_SECOND * SECONDS_PER_MINUTE * 5,
+  // biome-ignore lint/style/noMagicNumbers: キャッシュ時間の分数は可読性重視のため定数化しない
+  GC_TIME_MS: 1000 * 60 * 5,
 } as const;

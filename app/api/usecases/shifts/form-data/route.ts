@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import type { ShiftFormDataResponse } from "@/app/api/usecases/types/responses";
+import { logApiError } from "@/lib/api/error-handlers";
 import { withAuth } from "@/lib/auth/middleware";
 import { prisma } from "@/lib/db";
 
@@ -101,8 +102,9 @@ export async function GET(
         },
       },
     });
-  } catch (_error) {
-    // 500エラーレスポンスを返却
+  } catch (error) {
+    logApiError("Failed to fetch shift form data", error);
+
     const STATUS_INTERNAL_SERVER_ERROR = 500;
     return NextResponse.json(
       {

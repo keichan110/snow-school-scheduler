@@ -1,6 +1,7 @@
 "use client";
 import { useQuery } from "@tanstack/react-query";
 import type { ActiveInstructorsByDepartmentResponse } from "@/app/api/usecases/types/responses";
+import { INSTRUCTOR_CACHE_CONFIG } from "@/lib/api/cache-config";
 
 /**
  * 部門別アクティブインストラクターのクエリキー
@@ -112,13 +113,8 @@ export function useActiveInstructorsByDepartment(departmentId: number | null) {
       // 成功時はdataプロパティを返却
       return data.data;
     },
-    // departmentIdがnullの場合はクエリを無効化
     enabled: departmentId !== null,
-    // インストラクター情報は比較的変更される可能性があるため3分間キャッシュ
-    // biome-ignore lint/style/noMagicNumbers: ミリ秒換算（3分）
-    staleTime: 1000 * 60 * 3,
-    // メモリ上に5分間保持
-    // biome-ignore lint/style/noMagicNumbers: ミリ秒換算（5分）
-    gcTime: 1000 * 60 * 5,
+    staleTime: INSTRUCTOR_CACHE_CONFIG.STALE_TIME_MS,
+    gcTime: INSTRUCTOR_CACHE_CONFIG.GC_TIME_MS,
   });
 }

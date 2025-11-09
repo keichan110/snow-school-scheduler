@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import type { ShiftEditDataResponse } from "@/app/api/usecases/types/responses";
+import { SHIFT_CACHE_CONFIG } from "@/lib/api/cache-config";
 
 /**
  * シフト編集データ取得パラメータ
@@ -96,7 +97,7 @@ export function useShiftEditData(params: UseShiftEditDataParams) {
       return data.data;
     },
     enabled: params.enabled !== false,
-    staleTime: 0, // 常に最新データを取得（編集中のデータは即座に反映する必要がある）
-    gcTime: 1000 * 60 * 5, // 5分間メモリに保持（モーダル再表示時の高速化）
+    staleTime: 0,
+    gcTime: SHIFT_CACHE_CONFIG.GC_TIME_MS,
   });
 }

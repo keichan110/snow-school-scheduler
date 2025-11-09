@@ -1,8 +1,8 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
+import { logApiError } from "@/lib/api/error-handlers";
 import { withAuth } from "@/lib/auth/middleware";
 import { prisma } from "@/lib/db";
-import { secureLog } from "@/lib/utils/logging";
 import { formatDateString } from "../../helpers/formatters";
 import {
   departmentMinimalSelect,
@@ -82,7 +82,6 @@ export async function GET(
 
     // 必須パラメータのチェック
     if (!(yearStr && monthStr)) {
-      // biome-ignore lint/style/useNamingConvention: HTTP status code
       const STATUS_BAD_REQUEST = 400;
       return NextResponse.json(
         {
@@ -101,7 +100,6 @@ export async function GET(
 
     // バリデーション
     if (Number.isNaN(year) || Number.isNaN(month)) {
-      // biome-ignore lint/style/useNamingConvention: HTTP status code
       const STATUS_BAD_REQUEST = 400;
       return NextResponse.json(
         {
@@ -118,7 +116,6 @@ export async function GET(
     const MIN_YEAR = 2000;
     const MAX_YEAR = 2100;
     if (year < MIN_YEAR || year > MAX_YEAR) {
-      // biome-ignore lint/style/useNamingConvention: HTTP status code
       const STATUS_BAD_REQUEST = 400;
       return NextResponse.json(
         {
@@ -135,7 +132,6 @@ export async function GET(
     const MIN_MONTH = 1;
     const MAX_MONTH = 12;
     if (month < MIN_MONTH || month > MAX_MONTH) {
-      // biome-ignore lint/style/useNamingConvention: HTTP status code
       const STATUS_BAD_REQUEST = 400;
       return NextResponse.json(
         {
@@ -150,7 +146,6 @@ export async function GET(
 
     // 月の開始日と終了日を計算
     const startDate = new Date(year, month - 1, 1);
-    // biome-ignore lint/style/useNamingConvention: Date constructor parameter
     const endDate = new Date(year, month, 0); // 月末日
 
     // シフトデータを取得
@@ -211,8 +206,8 @@ export async function GET(
       },
     });
   } catch (error) {
-    secureLog("error", "[API Error] shifts/monthly-view", { error });
-    // biome-ignore lint/style/useNamingConvention: HTTP status code
+    logApiError("Failed to fetch monthly view", error);
+
     const STATUS_INTERNAL_SERVER_ERROR = 500;
     return NextResponse.json(
       {

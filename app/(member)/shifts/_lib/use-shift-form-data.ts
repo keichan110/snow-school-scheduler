@@ -1,6 +1,7 @@
 "use client";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import type { ShiftFormDataResponse } from "@/app/api/usecases/types/responses";
+import { FORM_DATA_CACHE_CONFIG } from "@/lib/api/cache-config";
 
 /**
  * シフト作成フォームデータのクエリキー
@@ -86,11 +87,7 @@ export function useShiftFormData() {
       // 成功時はdataプロパティを返却
       return data.data;
     },
-    // マスターデータなので5分間はキャッシュを有効とする
-    // biome-ignore lint/style/noMagicNumbers: ミリ秒換算（5分）
-    staleTime: 1000 * 60 * 5,
-    // メモリ上に10分間保持
-    // biome-ignore lint/style/noMagicNumbers: ミリ秒換算（10分）
-    gcTime: 1000 * 60 * 10,
+    staleTime: FORM_DATA_CACHE_CONFIG.STALE_TIME_MS,
+    gcTime: FORM_DATA_CACHE_CONFIG.GC_TIME_MS,
   });
 }

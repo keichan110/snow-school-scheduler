@@ -1,30 +1,50 @@
 import { NextRequest } from "next/server";
-import { beforeEach, describe, expect, it, vi } from "vitest";
 import { GET } from "../route";
 
+// NextRequestをモック化
+jest.mock("next/server", () => ({
+  NextRequest: jest.fn((url, init) => ({
+    url,
+    ...init,
+    headers: new Headers(init?.headers),
+    cookies: {
+      get: jest.fn().mockReturnValue({ value: "test-token" }),
+    },
+    nextUrl: {
+      searchParams: new URL(url as string).searchParams,
+    },
+  })),
+  NextResponse: {
+    json: jest.fn((data, init) => ({
+      status: init?.status ?? 200,
+      json: async () => data,
+    })),
+  },
+}));
+
 // モック
-vi.mock("@/lib/auth/middleware", () => ({
-  withAuth: vi.fn(async () => ({
+jest.mock("@/lib/auth/middleware", () => ({
+  withAuth: jest.fn(async () => ({
     result: { user: { id: 1, role: "MANAGER" } },
     errorResponse: null,
   })),
 }));
 
-vi.mock("@/lib/db", () => ({
+jest.mock("@/lib/db", () => ({
   prisma: {
     shift: {
-      findFirst: vi.fn(),
-      findMany: vi.fn(),
+      findFirst: jest.fn(),
+      findMany: jest.fn(),
     },
     instructor: {
-      findMany: vi.fn(),
+      findMany: jest.fn(),
     },
   },
 }));
 
 describe("GET /api/usecases/shifts/edit-data", () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    jest.clearAllMocks();
   });
 
   it("should return 400 for missing required parameters", async () => {
@@ -36,7 +56,7 @@ describe("GET /api/usecases/shifts/edit-data", () => {
 
     expect(response.status).toBe(400);
     expect(data.success).toBe(false);
-    expect(data.error).toContain("Required parameters");
+    expect(data.error).toContain("Missing required parameters");
   });
 
   it("should return 400 for invalid date format", async () => {

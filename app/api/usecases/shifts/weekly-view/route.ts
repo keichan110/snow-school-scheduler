@@ -1,8 +1,8 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
+import { logApiError } from "@/lib/api/error-handlers";
 import { withAuth } from "@/lib/auth/middleware";
 import { prisma } from "@/lib/db";
-import { secureLog } from "@/lib/utils/logging";
 import { formatDateString } from "../../helpers/formatters";
 import {
   departmentMinimalSelect,
@@ -81,7 +81,6 @@ export async function GET(
 
     // 必須パラメータのチェック
     if (!dateFrom) {
-      // biome-ignore lint/style/useNamingConvention: HTTP status code
       const STATUS_BAD_REQUEST = 400;
       return NextResponse.json(
         {
@@ -97,7 +96,6 @@ export async function GET(
     // 日付のバリデーション
     const validation = validateDateString(dateFrom);
     if (!validation.isValid || validation.parsedValue === null) {
-      // biome-ignore lint/style/useNamingConvention: HTTP status code
       const STATUS_BAD_REQUEST = 400;
       return NextResponse.json(
         {
@@ -114,7 +112,6 @@ export async function GET(
 
     // 終了日を計算（開始日から6日後 = 7日間）
     const endDate = new Date(startDate);
-    // biome-ignore lint/style/useNamingConvention: Magic number for days in a week
     const DAYS_IN_WEEK = 7;
     endDate.setDate(endDate.getDate() + DAYS_IN_WEEK - 1);
 
@@ -176,8 +173,8 @@ export async function GET(
       },
     });
   } catch (error) {
-    secureLog("error", "[API Error] shifts/weekly-view", { error });
-    // biome-ignore lint/style/useNamingConvention: HTTP status code
+    logApiError("Failed to fetch weekly view", error);
+
     const STATUS_INTERNAL_SERVER_ERROR = 500;
     return NextResponse.json(
       {
