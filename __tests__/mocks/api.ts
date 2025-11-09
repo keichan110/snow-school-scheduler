@@ -285,18 +285,20 @@ export const setupApiMocks = {
 
   // シフトAPI
   shifts: {
-    list: (shifts: any[] = []) =>
-      mockApiResponse("GET", "/api/shifts", {
-        response: { success: true, data: shifts },
-      }),
+    // DEPRECATED: GET /api/shifts has been replaced by /api/usecases/shifts/monthly-view and weekly-view
+    // list: (shifts: any[] = []) =>
+    //   mockApiResponse("GET", "/api/shifts", {
+    //     response: { success: true, data: shifts },
+    //   }),
 
-    get: (id: number, shift: any) =>
-      mockApiResponse("GET", `/api/shifts/${id}`, {
-        response: {
-          success: true,
-          data: shift,
-        },
-      }),
+    // DEPRECATED: GET /api/shifts/[id] has been replaced by /api/usecases/shifts/edit-data
+    // get: (id: number, shift: any) =>
+    //   mockApiResponse("GET", `/api/shifts/${id}`, {
+    //     response: {
+    //       success: true,
+    //       data: shift,
+    //     },
+    //   }),
 
     create: (shift: any) =>
       mockApiResponse("POST", "/api/shifts", {

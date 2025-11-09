@@ -246,78 +246,19 @@ paths:
         '500':
           $ref: '#/components/responses/ServerError'
 
-  /api/shifts:
-    get:
-      summary: シフト一覧取得
-      description: 部門・シフト種類・期間でフィルタしたシフト枠を取得します。
-      tags:
-        - シフト管理
-      security:
-        - bearerAuth: []
-        - sessionCookie: []
-      parameters:
-        - name: departmentId
-          in: query
-          description: 部門 ID でフィルタリングします。
-          schema:
-            type: integer
-            minimum: 1
-        - name: shiftTypeId
-          in: query
-          description: シフト種類 ID でフィルタリングします。
-          schema:
-            type: integer
-            minimum: 1
-        - name: dateFrom
-          in: query
-          description: 取得期間の開始日 (YYYY-MM-DD)。
-          schema:
-            type: string
-            format: date
-        - name: dateTo
-          in: query
-          description: 取得期間の終了日 (YYYY-MM-DD)。
-          schema:
-            type: string
-            format: date
-      responses:
-        '200':
-          description: シフト一覧
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ShiftListResponse'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '500':
-          $ref: '#/components/responses/ServerError'
+  # DEPRECATED: Use /api/usecases/shifts/monthly-view or /api/usecases/shifts/weekly-view instead
+  # /api/shifts:
+  #   get:
+  #     summary: シフト一覧取得 (非推奨)
+  #     deprecated: true
 
-  /api/shifts/{id}:
-    parameters:
-      - $ref: '#/components/parameters/Id'
-    get:
-      summary: シフト詳細取得
-      description: ID で指定されたシフト枠の詳細と割り当てを返します。
-      tags:
-        - シフト管理
-      security:
-        - bearerAuth: []
-        - sessionCookie: []
-      responses:
-        '200':
-          description: シフト詳細
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ShiftDetailResponse'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/ServerError'
+  # DEPRECATED: Use /api/usecases/shifts/edit-data instead
+  # /api/shifts/{id}:
+  #   parameters:
+  #     - $ref: '#/components/parameters/Id'
+  #   get:
+  #     summary: シフト詳細取得 (非推奨)
+  #     deprecated: true
 
   /api/shifts/prepare:
     get:
