@@ -23,15 +23,13 @@ export function Logo() {
 
   return (
     <Link
-      className="flex items-center space-x-2"
+      className="flex items-center"
       href="/"
       onFocus={() => handlePrefetch("/")}
       onMouseEnter={() => handlePrefetch("/")}
       prefetch
     >
-      <div className="flex items-center">
-        <h1 className="font-bold text-foreground text-xl">Fuyugyō</h1>
-      </div>
+      <h1 className="font-bold text-foreground text-xl">Fuyugyō</h1>
     </Link>
   );
 }
