@@ -1,4 +1,5 @@
 import { PrismaClient } from "../generated/prisma";
+import { secureLog } from "../lib/utils/logging";
 
 const prisma = new PrismaClient();
 
@@ -517,9 +518,9 @@ async function main() {
     const instructor = instructors[assignment.instructorIndex];
 
     if (!instructor) {
-      console.warn(
-        `Instructor not found at index: ${assignment.instructorIndex}`
-      );
+      secureLog("warn", "Instructor not found at index", {
+        instructorIndex: assignment.instructorIndex,
+      });
       continue;
     }
 
@@ -530,9 +531,10 @@ async function main() {
           : snowboardCertifications[cert.certIndex]?.id;
 
       if (!certificationId) {
-        console.warn(
-          `Certification not found: dept=${cert.dept}, index=${cert.certIndex}`
-        );
+        secureLog("warn", "Certification not found", {
+          department: cert.dept,
+          certIndex: cert.certIndex,
+        });
         continue;
       }
 

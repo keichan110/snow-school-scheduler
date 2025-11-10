@@ -141,3 +141,29 @@ export type CalendarDate = {
   readonly isHoliday: boolean;
   readonly isToday: boolean;
 };
+
+/**
+ * サーバー側でフォーマット済みのインストラクター情報
+ *
+ * @description
+ * `/api/usecases/instructors/active-by-department` APIから返される
+ * インストラクター情報の型定義。
+ * サーバー側で姓名結合・資格情報の要約が完了しているため、
+ * フロントエンドでの追加処理は不要です。
+ */
+export type FormattedInstructor = {
+  /** インストラクターID */
+  id: number;
+  /** 表示名（姓名が結合済み、例: "山田 太郎"） */
+  displayName: string;
+  /** カナ表示名（姓名カナが結合済み、例: "ヤマダ タロウ"） */
+  displayNameKana: string;
+  /** ステータス（"ACTIVE" など） */
+  status: string;
+  /** 資格情報の要約文字列（例: "SAJ1級, SAJ2級" または "なし"） */
+  certificationSummary: string;
+};
+
+// ドメイン共通型を再エクスポート
+// API契約型とUIコンポーネントの両方で使用する型はlib/types/domainから参照
+export type { DepartmentMinimal, ShiftTypeMinimal } from "@/lib/types/domain";

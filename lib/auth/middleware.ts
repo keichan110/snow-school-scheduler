@@ -34,6 +34,17 @@ export type AuthorizationResult = {
 };
 
 /**
+ * 認証ミドルウェアで返却可能なレスポンス型
+ *
+ * @description
+ * withAuth関数のジェネリック型制約として使用。
+ * 成功時と失敗時のレスポンス構造を保証する。
+ */
+export type AuthCompatibleResponse =
+  | { success: true; data: unknown }
+  | { success: false; error: string };
+
+/**
  * Cookieから認証トークンを取得
  *
  * @returns JWT トークンまたは null
@@ -251,33 +262,65 @@ export async function authenticateAndAuthorize(
 }
 
 /**
+ * 型安全なエラーレスポンス生成ヘルパー
+ *
+ * @description
+ * 認証エラー時のNextResponseを型安全に生成します。
+ * NextResponse.json()の型定義の制約により型アサーションが必要ですが、
+ * この関数内にカプセル化することで影響範囲を局所化しています。
+ *
+ * @template T - レスポンス型（AuthCompatibleResponseを継承）
+ * @param error - エラーメッセージ
+ * @param statusCode - HTTPステータスコード
+ * @returns 型付きNextResponse
+ */
+function createAuthErrorResponse<T extends AuthCompatibleResponse>(
+  error: string,
+  statusCode: number
+): NextResponse<T> {
+  const errorBody = {
+    success: false,
+    error,
+  } satisfies { success: false; error: string };
+
+  // NOTE: NextResponse.json()の型定義の制約により型アサーション必要
+  return NextResponse.json(errorBody, {
+    status: statusCode,
+  }) as unknown as NextResponse<T>;
+}
+
+/**
  * API Route用認証ミドルウェア
  * Next.js API Routesで使用するヘルパー関数
  *
+ * @template T - エラーレスポンスの型（AuthCompatibleResponseを継承）
  * @param request - NextRequest オブジェクト
  * @param requiredRole - 必要な権限レベル
  * @returns 認証結果とエラーレスポンス（必要時）
+ *
+ * @example
+ * // 使用例：型パラメータを指定して型安全性を確保
+ * const { errorResponse } = await withAuth<ShiftFormDataResponse>(request, "MANAGER");
+ * if (errorResponse) {
+ *   return errorResponse; // 型アサーション不要
+ * }
  */
-export async function withAuth(
+export async function withAuth<T extends AuthCompatibleResponse>(
   request: NextRequest,
   requiredRole: "ADMIN" | "MANAGER" | "MEMBER" = "MEMBER"
 ): Promise<{
   result: AuthorizationResult;
-  errorResponse?: NextResponse;
+  errorResponse?: NextResponse<T>;
 }> {
   const token = getAuthTokenFromRequest(request);
   const result = await authenticateAndAuthorize(token, requiredRole);
 
   if (!result.success) {
-    const errorResponse = NextResponse.json(
-      {
-        success: false,
-        error: result.error || "Authentication failed",
-      },
+    const errorResponse = createAuthErrorResponse<T>(
+      result.error || "Authentication failed",
       // biome-ignore lint/style/noMagicNumbers: 標準的なHTTPステータスコード
-      { status: result.statusCode || 401 }
+      result.statusCode || 401
     );
-
     return { result, errorResponse };
   }
 

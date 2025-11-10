@@ -1,20 +1,27 @@
 "use client";
 
 import { X } from "lucide-react";
+import type { FormattedInstructor } from "../_lib/types";
 
-type Instructor = {
-  id: number;
-  lastName: string;
-  firstName: string;
-  lastNameKana?: string;
-  firstNameKana?: string;
-};
-
+/**
+ * 選択済みインストラクターリストのプロパティ
+ */
 type SelectedInstructorsListProps = {
-  instructors: Instructor[];
+  /** 選択済みインストラクター配列 */
+  instructors: FormattedInstructor[];
+  /** 削除ハンドラー */
   onRemove: (id: number) => void;
 };
 
+/**
+ * 選択済みインストラクター表示コンポーネント
+ *
+ * @description
+ * サーバー側でフォーマット済みのdisplayNameを使用。
+ * フロントエンドでのフルネーム結合処理が不要。
+ *
+ * @param props - コンポーネントプロパティ
+ */
 export function SelectedInstructorsList({
   instructors,
   onRemove,
@@ -34,9 +41,7 @@ export function SelectedInstructorsList({
             className="flex items-center gap-1 rounded-full border border-blue-300 bg-blue-100 px-3 py-1 text-blue-800 text-sm dark:border-blue-600 dark:bg-blue-900 dark:text-blue-100"
             key={instructor.id}
           >
-            <span>
-              {instructor.lastName} {instructor.firstName}
-            </span>
+            <span>{instructor.displayName}</span>
             <button
               className="rounded-full p-0.5 transition-colors hover:bg-blue-200 dark:hover:bg-blue-800"
               onClick={(e) => {

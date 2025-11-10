@@ -1,43 +1,34 @@
 "use client";
 
 import { Check } from "@phosphor-icons/react";
-import { CertificationBadge } from "@/app/_components/certification-badge";
 import { cn } from "@/lib/utils";
+import type { FormattedInstructor } from "../_lib/types";
 
-type Certification = {
-  id: number;
-  name: string;
-  shortName: string;
-  organization: string;
-  department: {
-    id: number;
-    name: string;
-  };
-};
-
-type Instructor = {
-  id: number;
-  lastName: string;
-  firstName: string;
-  lastNameKana?: string;
-  firstNameKana?: string;
-  status: string;
-  certifications: Certification[];
-};
-
+/**
+ * インストラクターリストアイテムのプロパティ
+ */
 type InstructorListItemProps = {
-  instructor: Instructor;
+  /** インストラクター情報 */
+  instructor: FormattedInstructor;
+  /** 選択状態 */
   isSelected: boolean;
-  hasRequiredCertification: boolean;
-  departmentCertifications: Certification[];
+  /** トグルハンドラー */
   onToggle: (id: number) => void;
 };
 
+/**
+ * インストラクターリストアイテムコンポーネント
+ *
+ * @description
+ * サーバー側でフォーマット済みのインストラクター情報を表示。
+ * API層で資格ありのインストラクターのみにフィルタリング済みのため、
+ * 資格情報は常に存在します。
+ *
+ * @param props - コンポーネントプロパティ
+ */
 export function InstructorListItem({
   instructor,
   isSelected,
-  hasRequiredCertification,
-  departmentCertifications,
   onToggle,
 }: InstructorListItemProps) {
   return (
@@ -46,10 +37,8 @@ export function InstructorListItem({
         "flex cursor-pointer items-center justify-between p-3 transition-all duration-200",
         "border-gray-100 border-b last:border-b-0 hover:bg-blue-50 dark:border-gray-800 dark:hover:bg-blue-950",
         isSelected &&
-          "border-blue-200 bg-blue-50 dark:border-blue-700 dark:bg-blue-950",
-        !hasRequiredCertification && "opacity-60"
+          "border-blue-200 bg-blue-50 dark:border-blue-700 dark:bg-blue-950"
       )}
-      key={instructor.id}
       onClick={() => onToggle(instructor.id)}
       type="button"
     >
@@ -69,32 +58,16 @@ export function InstructorListItem({
           )}
         </div>
         <div>
-          <div className="font-medium text-sm">
-            {instructor.lastName} {instructor.firstName}
+          <div className="font-medium text-sm">{instructor.displayName}</div>
+          <div className="text-muted-foreground text-xs">
+            {instructor.displayNameKana}
           </div>
-          {instructor.lastNameKana && instructor.firstNameKana && (
-            <div className="text-muted-foreground text-xs">
-              {instructor.lastNameKana} {instructor.firstNameKana}
-            </div>
-          )}
         </div>
       </div>
       <div className="text-right">
-        {hasRequiredCertification ? (
-          <div className="flex flex-wrap justify-end gap-1">
-            {departmentCertifications.map((cert) => (
-              <CertificationBadge
-                departmentName={cert.department.name}
-                key={cert.id}
-                shortName={cert.shortName}
-              />
-            ))}
-          </div>
-        ) : (
-          <div className="rounded-full border border-orange-200 bg-orange-100 px-2 py-1 text-orange-800 text-xs dark:border-orange-700 dark:bg-orange-900 dark:text-orange-100">
-            認定なし
-          </div>
-        )}
+        <div className="rounded-full border border-blue-200 bg-blue-100 px-2 py-1 text-blue-800 text-xs dark:border-blue-700 dark:bg-blue-900 dark:text-blue-100">
+          {instructor.certificationSummary}
+        </div>
       </div>
     </button>
   );

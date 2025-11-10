@@ -1,0 +1,87 @@
+import { NextRequest } from "next/server";
+import { GET } from "../route";
+
+// NextRequestをモック化
+jest.mock("next/server", () => ({
+  NextRequest: jest.fn((url, init) => ({
+    url,
+    ...init,
+    headers: new Headers(init?.headers),
+    cookies: {
+      get: jest.fn().mockReturnValue({ value: "test-token" }),
+    },
+    nextUrl: {
+      searchParams: new URL(url as string).searchParams,
+    },
+  })),
+  NextResponse: {
+    json: jest.fn((data, init) => ({
+      status: init?.status ?? 200,
+      json: async () => data,
+    })),
+  },
+}));
+
+// モック
+jest.mock("@/lib/auth/middleware", () => ({
+  withAuth: jest.fn(async () => ({
+    result: { user: { id: 1, role: "MANAGER" } },
+    errorResponse: null,
+  })),
+}));
+
+jest.mock("@/lib/db", () => ({
+  prisma: {
+    shift: {
+      findFirst: jest.fn(),
+      findMany: jest.fn(),
+    },
+    instructor: {
+      findMany: jest.fn(),
+    },
+  },
+}));
+
+describe("GET /api/usecases/shifts/edit-data", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it("should return 400 for missing required parameters", async () => {
+    const request = new NextRequest(
+      "http://localhost/api/usecases/shifts/edit-data?date=2025-01-15"
+    );
+    const response = await GET(request);
+    const data = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(data.success).toBe(false);
+    expect(data.error).toContain("Missing required parameters");
+  });
+
+  it("should return 400 for invalid date format", async () => {
+    const request = new NextRequest(
+      "http://localhost/api/usecases/shifts/edit-data?date=invalid&departmentId=1&shiftTypeId=1"
+    );
+    const response = await GET(request);
+    const data = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(data.success).toBe(false);
+  });
+
+  it("should return 400 for invalid department ID", async () => {
+    const request = new NextRequest(
+      "http://localhost/api/usecases/shifts/edit-data?date=2025-01-15&departmentId=abc&shiftTypeId=1"
+    );
+    const response = await GET(request);
+    const data = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(data.success).toBe(false);
+    expect(data.error).toContain("Invalid department or shift type ID");
+  });
+
+  // 注: 実際のデータベース操作を伴うテストは、統合テストまたはE2Eテストで実施することを推奨
+  // このファイルではバリデーションロジックのテストに焦点を当てています
+});

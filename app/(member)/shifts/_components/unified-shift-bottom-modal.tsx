@@ -1,7 +1,7 @@
 "use client";
 
 import { ArrowRight, Edit3 } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "@/app/_providers/auth";
 import { useNotification } from "@/app/_providers/notifications";
 import { AdminShiftModal } from "@/app/(member)/shifts/_components/base-shift-modal";
@@ -9,38 +9,15 @@ import { Button } from "@/components/ui/button";
 import { DrawerFooter } from "@/components/ui/drawer";
 import { hasManagePermission } from "@/lib/auth/permissions";
 import { cn } from "@/lib/utils";
-import { prepareShift } from "../_lib/api-client";
-import type {
-  ApiResponse,
-  DayData,
-  Department,
-  ShiftType,
-} from "../_lib/types";
+import { useShiftEditData } from "../_lib/hooks/use-shift-edit-data";
+import type { DayData } from "../_lib/types";
+import { useShiftFormData } from "../_lib/use-shift-form-data";
 import { useCreateShift } from "../_lib/use-shifts";
-import type { ExistingShiftData } from "./duplicate-shift-dialog";
+import { toFormattedInstructors } from "../_lib/utils/instructor-mappers";
 import { InstructorSelector } from "./instructor-selector";
 import { ShiftBasicInfoForm } from "./shift-basic-info-form";
 
 type ModalStep = "create-step1" | "create-step2";
-
-type Instructor = {
-  id: number;
-  lastName: string;
-  firstName: string;
-  lastNameKana?: string;
-  firstNameKana?: string;
-  status: string;
-  certifications: {
-    id: number;
-    name: string;
-    shortName: string;
-    organization: string;
-    department: {
-      id: number;
-      name: string;
-    };
-  }[];
-};
 
 type ShiftFormData = {
   departmentId: number;
@@ -79,19 +56,30 @@ export function UnifiedShiftBottomModal({
   // 管理権限チェック（MANAGER以上）
   const canManage = user ? hasManagePermission(user, "shifts") : false;
 
+  // シフト作成フォームデータを取得（React Query）
+  const { data: shiftFormData } = useShiftFormData();
+
   // 管理機能の状態
   const [currentStep, setCurrentStep] = useState<ModalStep>(initialStep);
   const [formData, setFormData] = useState<ShiftFormData>(INITIAL_FORM_DATA);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [departments, setDepartments] = useState<Department[]>([]);
-  const [shiftTypes, setShiftTypes] = useState<ShiftType[]>([]);
-  const [instructors, setInstructors] = useState<Instructor[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
   const [editMode, setEditMode] = useState<{
     isEdit: boolean;
-    existingShift?: ExistingShiftData;
   }>({ isEdit: false });
   const [localDayData, setLocalDayData] = useState<DayData | null>(dayData);
+
+  // シフト編集データを取得（React Query）
+  const { data: shiftEditData, isLoading: isLoadingEditData } =
+    useShiftEditData({
+      date: selectedDate || "",
+      departmentId: formData.departmentId,
+      shiftTypeId: formData.shiftTypeId,
+      enabled:
+        currentStep === "create-step2" &&
+        Boolean(selectedDate) &&
+        formData.departmentId > 0 &&
+        formData.shiftTypeId > 0,
+    });
 
   // Server Actions
   const createShiftMutation = useCreateShift();
@@ -106,63 +94,37 @@ export function UnifiedShiftBottomModal({
     setCurrentStep(initialStep);
   }, [initialStep]);
 
-  // データ取得ヘルパー関数
-  const fetchDepartmentsAndShiftTypes = useCallback(async () => {
-    const [departmentsRes, shiftTypesRes] = await Promise.all([
-      fetch("/api/departments"),
-      fetch("/api/shift-types"),
-    ]);
-
-    if (departmentsRes?.ok) {
-      const departmentsData: ApiResponse<Department[]> =
-        await departmentsRes.json();
-      if (departmentsData.success && departmentsData.data) {
-        setDepartments(departmentsData.data);
-      }
-    }
-
-    if (shiftTypesRes?.ok) {
-      const shiftTypesData: ApiResponse<ShiftType[]> =
-        await shiftTypesRes.json();
-      if (shiftTypesData.success && shiftTypesData.data) {
-        setShiftTypes(shiftTypesData.data);
-      }
-    }
-  }, []);
-
-  const fetchInstructors = useCallback(async () => {
-    const instructorsRes = await fetch(
-      `/api/instructors?status=ACTIVE&departmentId=${formData.departmentId}`
-    );
-
-    if (instructorsRes?.ok) {
-      const instructorsData: ApiResponse<Instructor[]> =
-        await instructorsRes.json();
-      if (instructorsData.success && instructorsData.data) {
-        setInstructors(instructorsData.data);
-      }
-    }
-  }, [formData.departmentId]);
-
-  // API データ取得
+  /**
+   * シフト編集データが取得できたらフォームを初期化
+   *
+   * @description
+   * Step2に遷移した際に、APIから取得したデータでフォームを初期化する。
+   * 既存シフトがある場合は編集モード、ない場合は作成モードに設定。
+   *
+   * React Queryのキャッシュメカニズムにより、同一クエリキーのデータは
+   * 参照が安定しているため、shiftEditDataを依存配列に含めても無限ループは発生しない。
+   */
   useEffect(() => {
-    const fetchData = async () => {
-      setIsLoading(true);
-      try {
-        if (currentStep === "create-step1") {
-          await fetchDepartmentsAndShiftTypes();
-        } else if (currentStep === "create-step2") {
-          await fetchInstructors();
-        }
-      } catch (_error) {
-        // エラーは無視してデフォルト値を使用
-      } finally {
-        setIsLoading(false);
+    if (shiftEditData && currentStep === "create-step2") {
+      // 編集モードか作成モードかを判定
+      if (shiftEditData.mode === "edit" && shiftEditData.shift) {
+        setEditMode({
+          isEdit: true,
+        });
+      } else {
+        setEditMode({
+          isEdit: false,
+        });
       }
-    };
 
-    fetchData();
-  }, [currentStep, fetchDepartmentsAndShiftTypes, fetchInstructors]);
+      // フォームデータを設定
+      setFormData((prev) => ({
+        ...prev,
+        notes: shiftEditData.formData.description || "",
+        selectedInstructorIds: shiftEditData.formData.selectedInstructorIds,
+      }));
+    }
+  }, [shiftEditData, currentStep]);
 
   // 権限がない場合、選択された日付がない場合はモーダルを表示しない
   if (!(canManage && selectedDate && localDayData)) {
@@ -170,6 +132,12 @@ export function UnifiedShiftBottomModal({
   }
 
   // 管理機能のハンドラー
+  /**
+   * キャンセルハンドラー
+   *
+   * @description
+   * モーダルを閉じ、フォーム状態をリセットします。
+   */
   const handleCancel = () => {
     setFormData(INITIAL_FORM_DATA);
     setErrors({});
@@ -177,6 +145,11 @@ export function UnifiedShiftBottomModal({
     onOpenChange(false);
   };
 
+  /**
+   * 部門変更ハンドラー
+   *
+   * @param departmentId - 選択された部門ID
+   */
   const handleDepartmentChange = (departmentId: number) => {
     setFormData((prev) => ({ ...prev, departmentId }));
     if (errors.departmentId) {
@@ -184,6 +157,11 @@ export function UnifiedShiftBottomModal({
     }
   };
 
+  /**
+   * シフト種別変更ハンドラー
+   *
+   * @param shiftTypeId - 選択されたシフト種別ID
+   */
   const handleShiftTypeChange = (shiftTypeId: number) => {
     setFormData((prev) => ({ ...prev, shiftTypeId }));
     if (errors.shiftTypeId) {
@@ -191,10 +169,23 @@ export function UnifiedShiftBottomModal({
     }
   };
 
+  /**
+   * 備考変更ハンドラー
+   *
+   * @param notes - 入力された備考テキスト
+   */
   const handleNotesChange = (notes: string) => {
     setFormData((prev) => ({ ...prev, notes }));
   };
 
+  /**
+   * フォームバリデーション
+   *
+   * @description
+   * Step1のフォーム（部門・シフト種別）を検証します。
+   *
+   * @returns {boolean} バリデーション結果（true: 成功、false: 失敗）
+   */
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
 
@@ -210,53 +201,30 @@ export function UnifiedShiftBottomModal({
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleNext = async () => {
+  /**
+   * 次へボタンハンドラー（Step1 → Step2）
+   *
+   * @description
+   * フォームをバリデーションしてStep2に遷移します。
+   * Step2への遷移時に、useShiftEditDataフックが自動的にAPIからデータを取得します。
+   */
+  const handleNext = () => {
     if (!(canManage && validateForm() && selectedDate)) {
       return;
     }
 
-    setIsLoading(true);
-
-    try {
-      const prepareResponse = await prepareShift({
-        date: selectedDate,
-        departmentId: formData.departmentId,
-        shiftTypeId: formData.shiftTypeId,
-      });
-
-      if (prepareResponse.success && prepareResponse.data) {
-        if (
-          prepareResponse.data.mode === "edit" &&
-          prepareResponse.data.shift
-        ) {
-          setEditMode({
-            isEdit: true,
-            existingShift: prepareResponse.data.shift,
-          });
-        } else {
-          setEditMode({
-            isEdit: false,
-          });
-        }
-
-        setFormData((prev) => ({
-          ...prev,
-          notes: prepareResponse.data?.formData.description || "",
-          selectedInstructorIds:
-            prepareResponse.data?.formData.selectedInstructorIds || [],
-        }));
-
-        setCurrentStep("create-step2");
-      } else {
-        setErrors({ submit: prepareResponse.error || "エラーが発生しました" });
-      }
-    } catch (_error) {
-      setErrors({ submit: "ネットワークエラーが発生しました" });
-    } finally {
-      setIsLoading(false);
-    }
+    // Step2に遷移（useShiftEditDataが自動的にデータを取得）
+    setCurrentStep("create-step2");
   };
 
+  /**
+   * インストラクター選択トグルハンドラー
+   *
+   * @description
+   * インストラクターの選択/選択解除を切り替えます。
+   *
+   * @param instructorId - トグルするインストラクターのID
+   */
   const handleInstructorToggle = (instructorId: number) => {
     setFormData((prev) => {
       const isSelected = prev.selectedInstructorIds.includes(instructorId);
@@ -268,12 +236,25 @@ export function UnifiedShiftBottomModal({
     });
   };
 
+  /**
+   * フォーム状態リセット
+   *
+   * @description
+   * フォームデータ、エラー、編集モードを初期状態に戻します。
+   */
   const resetFormState = () => {
     setFormData(INITIAL_FORM_DATA);
     setErrors({});
     setEditMode({ isEdit: false });
   };
 
+  /**
+   * シフト作成/更新成功時の処理
+   *
+   * @description
+   * 成功通知を表示し、フォームをリセットしてモーダルを閉じます。
+   * 親コンポーネントのonShiftUpdatedコールバックを呼び出してデータを更新します。
+   */
   const handleShiftSuccess = async () => {
     const message = editMode.isEdit
       ? "シフトが正常に更新されました"
@@ -288,7 +269,15 @@ export function UnifiedShiftBottomModal({
     }
   };
 
+  /**
+   * シフト作成/更新ハンドラー
+   *
+   * @description
+   * バリデーションを実行し、シフトの作成または更新を行います。
+   * エラーハンドリングはReact Query mutationに委譲し、結果のみをチェックします。
+   */
   const handleCreateShift = async () => {
+    // バリデーション
     if (!canManage || formData.selectedInstructorIds.length === 0) {
       setErrors({ instructors: "最低1名のインストラクターを選択してください" });
       return;
@@ -301,6 +290,7 @@ export function UnifiedShiftBottomModal({
 
     setErrors({});
 
+    // React Query mutationを実行（エラーハンドリングはmutation内で処理）
     const result = await createShiftMutation.mutateAsync({
       date: selectedDate,
       departmentId: formData.departmentId,
@@ -310,6 +300,7 @@ export function UnifiedShiftBottomModal({
       force: editMode.isEdit,
     });
 
+    // 成功時の処理
     if (result.success) {
       await handleShiftSuccess();
     } else {
@@ -317,6 +308,14 @@ export function UnifiedShiftBottomModal({
     }
   };
 
+  /**
+   * モーダル開閉ハンドラー
+   *
+   * @description
+   * モーダルを閉じる際にフォーム状態をリセットします。
+   *
+   * @param open - モーダルの開閉状態
+   */
   const handleModalOpenChange = (open: boolean) => {
     if (!open) {
       resetFormState();
@@ -324,6 +323,14 @@ export function UnifiedShiftBottomModal({
     onOpenChange(open);
   };
 
+  /**
+   * インストラクター削除ハンドラー
+   *
+   * @description
+   * 選択済みインストラクター一覧から指定したインストラクターを削除します。
+   *
+   * @param instructorId - 削除するインストラクターのID
+   */
   const handleRemoveInstructor = (instructorId: number) => {
     setFormData((prev) => ({
       ...prev,
@@ -371,10 +378,10 @@ export function UnifiedShiftBottomModal({
       return null;
     }
 
-    const departmentName = departments.find(
+    const departmentName = shiftFormData?.departments.find(
       (d) => d.id === formData.departmentId
     )?.name;
-    const shiftTypeName = shiftTypes.find(
+    const shiftTypeName = shiftFormData?.shiftTypes.find(
       (t) => t.id === formData.shiftTypeId
     )?.name;
 
@@ -480,23 +487,26 @@ export function UnifiedShiftBottomModal({
 
         {currentStep === "create-step1" && (
           <ShiftBasicInfoForm
-            departments={departments}
+            departments={shiftFormData?.departments ?? []}
             errors={errors}
             formData={formData}
-            isLoading={isLoading}
+            isLoading={false}
             onDepartmentChange={handleDepartmentChange}
             onNotesChange={handleNotesChange}
             onShiftTypeChange={handleShiftTypeChange}
-            shiftTypes={shiftTypes}
+            shiftTypes={shiftFormData?.shiftTypes ?? []}
           />
         )}
 
         {currentStep === "create-step2" && (
           <InstructorSelector
-            departmentId={formData.departmentId}
             errors={errors}
-            instructors={instructors}
-            isLoading={isLoading}
+            instructors={
+              shiftEditData
+                ? toFormattedInstructors(shiftEditData.availableInstructors)
+                : []
+            }
+            isLoading={isLoadingEditData}
             onRemove={handleRemoveInstructor}
             onToggle={handleInstructorToggle}
             selectedInstructorIds={formData.selectedInstructorIds}
