@@ -3,7 +3,7 @@ import {
   type UseSuspenseQueryResult,
   useSuspenseQuery,
 } from "@tanstack/react-query";
-import { type ApiError, fetchShifts } from "./api";
+import { ApiError, fetchShifts } from "./api";
 import type { Department, Shift, ShiftQueryParams } from "./types";
 import { shiftFormDataKeys } from "./use-shift-form-data";
 
@@ -130,13 +130,16 @@ export function useDepartmentsQuery<TData = Department[]>(
       const response = await fetch("/api/usecases/shifts/form-data");
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        throw new ApiError(
+          `HTTP error! status: ${response.status}`,
+          response.status
+        );
       }
 
       const result = await response.json();
 
       if (!result.success) {
-        throw new Error(result.error || "Failed to fetch form data");
+        throw new ApiError(result.error || "Failed to fetch form data");
       }
 
       // departments のみを返す
