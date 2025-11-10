@@ -3,8 +3,9 @@ import {
   type UseSuspenseQueryResult,
   useSuspenseQuery,
 } from "@tanstack/react-query";
-import { type ApiError, fetchDepartments, fetchShifts } from "./api";
+import { type ApiError, fetchShifts } from "./api";
 import type { Department, Shift, ShiftQueryParams } from "./types";
+import { shiftFormDataKeys } from "./use-shift-form-data";
 
 /**
  * 公開シフト一覧クエリのフィルタ型
@@ -36,9 +37,10 @@ export type PublicShiftsQueryKey = ReturnType<
 
 /**
  * 公開ビューで利用する部門クエリキー
+ * @deprecated Use shiftFormDataKeys from use-shift-form-data instead
  */
 export const publicShiftsDepartmentsQueryKeys = {
-  all: ["public-shifts", "departments"] as const,
+  all: shiftFormDataKeys.all,
 };
 
 export type PublicShiftsDepartmentsQueryKey =
@@ -103,6 +105,15 @@ type DepartmentsQueryOptions<TData> = Omit<
   "queryKey" | "queryFn" | "suspense"
 >;
 
+/**
+ * 部門一覧を取得するReact Queryフック
+ *
+ * @description
+ * `/api/usecases/shifts/form-data` エンドポイントから部門一覧を取得します。
+ * このフックは`useShiftFormData`のデータをselect関数で部門のみに絞り込んでいます。
+ *
+ * @deprecated 直接 useShiftFormData を使用することを推奨します
+ */
 export function useDepartmentsQuery<TData = Department[]>(
   options: DepartmentsQueryOptions<TData> = {}
 ): UseSuspenseQueryResult<TData, ApiError> {
@@ -114,7 +125,23 @@ export function useDepartmentsQuery<TData = Department[]>(
     PublicShiftsDepartmentsQueryKey
   >({
     queryKey: publicShiftsDepartmentsQueryKeys.all,
-    queryFn: fetchDepartments,
+    queryFn: async () => {
+      // /api/usecases/shifts/form-data エンドポイントを呼び出し
+      const response = await fetch("/api/usecases/shifts/form-data");
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+
+      if (!result.success) {
+        throw new Error(result.error || "Failed to fetch form data");
+      }
+
+      // departments のみを返す
+      return result.data.departments;
+    },
     ...options,
   });
 }
