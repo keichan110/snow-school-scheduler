@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback } from "react";
@@ -30,15 +29,6 @@ export function Logo() {
       onMouseEnter={() => handlePrefetch("/")}
       prefetch
     >
-      <div className="flex items-center justify-center">
-        <Image
-          alt="logo"
-          className="h-8 w-8"
-          height={32}
-          src="/icon.svg"
-          width={32}
-        />
-      </div>
       <div className="flex items-center">
         <h1 className="font-bold text-foreground text-xl">Fuyugyō</h1>
       </div>
