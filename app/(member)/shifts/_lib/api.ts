@@ -10,6 +10,7 @@ import type {
 const API_BASE = "/api" as const;
 
 // 日付計算用の定数
+// biome-ignore lint/style/noMagicNumbers: ミリ秒から日への変換は一般的な計算式
 const MILLISECONDS_PER_DAY = 1000 * 60 * 60 * 24;
 const WEEKLY_VIEW_MAX_DAYS = 7;
 
