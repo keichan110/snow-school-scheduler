@@ -9,7 +9,14 @@ import type {
 
 const API_BASE = "/api" as const;
 
-// Generic API error handler
+// 日付計算用の定数
+const MILLISECONDS_PER_DAY = 1000 * 60 * 60 * 24;
+const WEEKLY_VIEW_MAX_DAYS = 7;
+
+// 名前解析用の正規表現
+const WHITESPACE_REGEX = /\s+/;
+
+// 汎用APIエラーハンドラ
 class ApiError extends Error {
   readonly statusCode?: number | undefined;
   readonly originalError?: unknown;
@@ -74,14 +81,14 @@ export async function fetchShifts(params?: ShiftQueryParams): Promise<Shift[]> {
   const dateFrom = new Date(params.dateFrom);
   const dateTo = new Date(params.dateTo);
   const daysDiff = Math.ceil(
-    (dateTo.getTime() - dateFrom.getTime()) / (1000 * 60 * 60 * 24)
+    (dateTo.getTime() - dateFrom.getTime()) / MILLISECONDS_PER_DAY
   );
 
   let endpoint: string;
   const searchParams = new URLSearchParams();
 
   // 7日間なら週次ビュー、それ以外は月次ビュー
-  if (daysDiff <= 7) {
+  if (daysDiff <= WEEKLY_VIEW_MAX_DAYS) {
     endpoint = "/usecases/shifts/weekly-view";
     searchParams.append("dateFrom", params.dateFrom);
   } else {
@@ -160,7 +167,7 @@ export async function fetchShifts(params?: ShiftQueryParams): Promise<Shift[]> {
       },
       assignments: shift.assignedInstructors.map((instructor, index) => {
         // displayNameを姓名に分離（スペースで分割、失敗時は全体を姓とする）
-        const nameParts = instructor.displayName.trim().split(/\s+/);
+        const nameParts = instructor.displayName.trim().split(WHITESPACE_REGEX);
         const lastName = nameParts[0] || "";
         const firstName = nameParts[1] || "";
 
