@@ -28,7 +28,7 @@ export type ShiftType = {
 };
 
 export type ShiftAssignment = {
-  id: number;
+  id: string;
   shiftId: number;
   instructorId: number;
   assignedAt: string;

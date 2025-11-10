@@ -166,14 +166,14 @@ export async function fetchShifts(params?: ShiftQueryParams): Promise<Shift[]> {
         createdAt: "",
         updatedAt: "",
       },
-      assignments: shift.assignedInstructors.map((instructor, index) => {
+      assignments: shift.assignedInstructors.map((instructor, _index) => {
         // displayNameを姓名に分離（スペースで分割、失敗時は全体を姓とする）
         const nameParts = instructor.displayName.trim().split(WHITESPACE_REGEX);
         const lastName = nameParts[0] || "";
         const firstName = nameParts[1] || "";
 
         return {
-          id: index, // アサインメントIDは返されないため、仮のIDを使用
+          id: `${shift.id}-${instructor.id}`, // shiftIdとinstructorIdの複合キーで一意性を保証
           shiftId: shift.id,
           instructorId: instructor.id,
           assignedAt: "",
