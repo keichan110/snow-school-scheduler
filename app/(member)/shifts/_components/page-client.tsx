@@ -15,6 +15,7 @@ import { ErrorBoundary } from "react-error-boundary";
 import { useRequireAuth } from "@/app/_providers/auth";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { MOBILE_BREAKPOINT } from "@/constants";
 import { hasManagePermission } from "@/lib/auth/permissions";
 import { isHoliday } from "../_lib/constants";
 import {
@@ -44,7 +45,22 @@ function PublicShiftsPageContent() {
   const searchParams = useSearchParams();
   const queryClient = useQueryClient();
 
-  const [viewMode, setViewMode] = useState<ViewMode>("monthly");
+  // レスポンシブな初期ビューモードの決定
+  const getInitialViewMode = useCallback((): ViewMode => {
+    // URLパラメータがある場合は優先
+    const viewParam = searchParams.get("view") as ViewMode;
+    if (viewParam === "weekly" || viewParam === "monthly") {
+      return viewParam;
+    }
+    // モバイル（MOBILE_BREAKPOINT未満）の場合は週間ビュー、それ以外は月間ビュー
+    if (typeof window !== "undefined") {
+      return window.innerWidth < MOBILE_BREAKPOINT ? "weekly" : "monthly";
+    }
+    return "monthly";
+  }, [searchParams]);
+
+  const [viewMode, setViewMode] = useState<ViewMode>(getInitialViewMode);
+  const [isMobile, setIsMobile] = useState(false);
   const [pendingView, setPendingView] = useState<ViewMode | null>(null);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -61,12 +77,32 @@ function PublicShiftsPageContent() {
     useWeekNavigation();
   const { transformShiftsToStats } = useShiftDataTransformation();
 
+  // 画面サイズの監視
   useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);
+    };
+
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
+  // URLパラメータからのビューモード設定（モバイルの場合は無視）
+  useEffect(() => {
+    if (isMobile) {
+      // モバイルでは常に週間ビューを維持
+      if (viewMode !== "weekly") {
+        setViewMode("weekly");
+      }
+      return;
+    }
+
     const view = searchParams.get("view") as ViewMode;
     if (view === "weekly" || view === "monthly") {
       setViewMode(view);
     }
-  }, [searchParams]);
+  }, [searchParams, isMobile, viewMode]);
 
   const queryParams = useMemo<ShiftQueryParams>(
     () => (viewMode === "weekly" ? weeklyQueryParams : monthlyQueryParams),
@@ -175,14 +211,16 @@ function PublicShiftsPageContent() {
           </p>
         </div>
 
-        <div className="mb-6 flex justify-center">
-          <ViewToggle
-            currentView={viewMode}
-            isPending={isPending}
-            onViewChange={handleViewChange}
-            pendingView={pendingView}
-          />
-        </div>
+        {!isMobile && (
+          <div className="mb-6 flex justify-center">
+            <ViewToggle
+              currentView={viewMode}
+              isPending={isPending}
+              onViewChange={handleViewChange}
+              pendingView={pendingView}
+            />
+          </div>
+        )}
 
         <div className="mb-8">
           {viewMode === "monthly" ? (
