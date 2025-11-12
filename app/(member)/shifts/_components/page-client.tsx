@@ -71,10 +71,21 @@ function PublicShiftsPageContent() {
 
   const canManage = hasManagePermission(user, "shifts");
 
-  const { currentYear, currentMonth, monthlyQueryParams, navigateMonth } =
-    useMonthNavigation();
-  const { weeklyBaseDate, weeklyQueryParams, navigateWeek, handleDateSelect } =
-    useWeekNavigation();
+  const {
+    currentYear,
+    currentMonth,
+    setCurrentYear,
+    setCurrentMonth,
+    monthlyQueryParams,
+    navigateMonth,
+  } = useMonthNavigation();
+  const {
+    weeklyBaseDate,
+    setWeeklyBaseDate,
+    weeklyQueryParams,
+    navigateWeek,
+    handleDateSelect,
+  } = useWeekNavigation();
   const { transformShiftsToStats } = useShiftDataTransformation();
 
   // 画面サイズの監視
@@ -124,11 +135,32 @@ function PublicShiftsPageContent() {
       }
       setPendingView(newView);
       startTransition(() => {
+        // ビュー切り替え時に日付を引き継ぐ
+        if (newView === "monthly") {
+          // 週間 → 月間: 週間ビューの基準日の年月を月間ビューに設定
+          const year = weeklyBaseDate.getFullYear();
+          const month = weeklyBaseDate.getMonth() + 1;
+          setCurrentYear(year);
+          setCurrentMonth(month);
+        } else if (newView === "weekly") {
+          // 月間 → 週間: 月間ビューの1日を週間ビューの基準日に設定
+          const firstDayOfMonth = new Date(currentYear, currentMonth - 1, 1);
+          setWeeklyBaseDate(firstDayOfMonth);
+        }
         setViewMode(newView);
         router.push(`/shifts?view=${newView}`, { scroll: false });
       });
     },
-    [router, viewMode]
+    [
+      router,
+      viewMode,
+      weeklyBaseDate,
+      currentYear,
+      currentMonth,
+      setCurrentYear,
+      setCurrentMonth,
+      setWeeklyBaseDate,
+    ]
   );
 
   const handleMonthlyDateSelect = useCallback((date: string) => {
