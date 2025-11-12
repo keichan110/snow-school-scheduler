@@ -14,8 +14,8 @@ import { HeaderUserDropdown } from "./header/header-user-dropdown";
  * 認証済みルート用Headerコンポーネント
  *
  * MEMBER以上の権限を持つユーザー向けに、権限に応じた機能を表示。
- * - MEMBER: ロゴ + ユーザードロップダウン
- * - MANAGER+: ロゴ + 管理メニューDrawer + ユーザードロップダウン
+ * - 全ユーザー: ロゴ + 管理メニューDrawer + ユーザードロップダウン
+ * - メニューDrawer内のアイテムは権限に応じてフィルタリングされる
  *
  * インストラクター情報はサーバーから渡され、router.refresh()で更新される。
  * ユーザー情報のみクライアント側のAuthContext(displayName変更、logout等)を優先する。
@@ -40,15 +40,9 @@ export function HeaderAuthenticated({
   // クライアント状態が利用可能ならそちらを優先、なければサーバーデータを使用
   const currentUser = (clientUser ?? serverUser) as AuthenticatedUser;
 
-  // MANAGER以上の権限チェック
-  const hasManagerAccess =
-    currentUser.role === "MANAGER" || currentUser.role === "ADMIN";
-
   return (
     <HeaderShell
-      leftSlot={
-        hasManagerAccess ? <HeaderMenuDrawer user={currentUser} /> : undefined
-      }
+      leftSlot={<HeaderMenuDrawer user={currentUser} />}
       rightSlot={
         <HeaderUserDropdown
           availableInstructors={availableInstructors}

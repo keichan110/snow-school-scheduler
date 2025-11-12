@@ -35,7 +35,7 @@ type MenuItem = {
 
 /**
  * 管理メニューDrawerコンポーネント
- * MANAGER以上の権限を持つユーザーに表示される
+ * 全ての認証済みユーザーに表示され、権限に応じてメニュー項目がフィルタリングされる
  */
 type HeaderMenuDrawerProps = {
   user: AuthenticatedUser;
@@ -61,7 +61,7 @@ export function HeaderMenuDrawer({ user }: HeaderMenuDrawerProps) {
       icon: CalendarDots,
       label: "シフト管理",
       description: "シフト表の作成・編集・割り当て管理",
-      requiredRole: "MANAGER",
+      requiredRole: "MEMBER",
     },
     {
       href: "/instructors",
