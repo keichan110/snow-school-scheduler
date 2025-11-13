@@ -21,6 +21,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { useShiftsLink } from "@/lib/hooks/use-shifts-link";
 import type { AuthenticatedUser } from "@/types/actions";
 
 type UserRole = "ADMIN" | "MANAGER" | "MEMBER";
@@ -44,6 +45,7 @@ type HeaderMenuDrawerProps = {
 export function HeaderMenuDrawer({ user }: HeaderMenuDrawerProps) {
   const pathname = usePathname();
   const router = useRouter();
+  const shiftsLink = useShiftsLink();
 
   const handlePrefetch = useCallback(
     (href: string) => {
@@ -57,7 +59,7 @@ export function HeaderMenuDrawer({ user }: HeaderMenuDrawerProps) {
 
   const allMenuItems: MenuItem[] = [
     {
-      href: "/shifts",
+      href: shiftsLink,
       icon: CalendarDots,
       label: "シフト管理",
       description: "シフト表の作成・編集・割り当て管理",

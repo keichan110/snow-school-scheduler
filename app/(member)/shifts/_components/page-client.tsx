@@ -45,21 +45,7 @@ function PublicShiftsPageContent() {
   const searchParams = useSearchParams();
   const queryClient = useQueryClient();
 
-  // レスポンシブな初期ビューモードの決定
-  const getInitialViewMode = useCallback((): ViewMode => {
-    // URLパラメータがある場合は優先
-    const viewParam = searchParams.get("view") as ViewMode;
-    if (viewParam === "weekly" || viewParam === "monthly") {
-      return viewParam;
-    }
-    // モバイル（MOBILE_BREAKPOINT未満）の場合は週間ビュー、それ以外は月間ビュー
-    if (typeof window !== "undefined") {
-      return window.innerWidth < MOBILE_BREAKPOINT ? "weekly" : "monthly";
-    }
-    return "monthly";
-  }, [searchParams]);
-
-  const [viewMode, setViewMode] = useState<ViewMode>(getInitialViewMode);
+  // 画面サイズの状態管理
   const [isMobile, setIsMobile] = useState(false);
   const [pendingView, setPendingView] = useState<ViewMode | null>(null);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
@@ -99,21 +85,22 @@ function PublicShiftsPageContent() {
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
-  // URLパラメータからのビューモード設定（モバイルの場合は無視）
-  useEffect(() => {
+  // ビューモードをisMobileとURLパラメータから計算（派生状態）
+  const viewMode = useMemo<ViewMode>(() => {
+    // モバイルの場合は強制的に週間ビュー
     if (isMobile) {
-      // モバイルでは常に週間ビューを維持
-      if (viewMode !== "weekly") {
-        setViewMode("weekly");
-      }
-      return;
+      return "weekly";
     }
 
-    const view = searchParams.get("view") as ViewMode;
-    if (view === "weekly" || view === "monthly") {
-      setViewMode(view);
+    // デスクトップの場合はURLパラメータを優先
+    const viewParam = searchParams.get("view") as ViewMode;
+    if (viewParam === "weekly" || viewParam === "monthly") {
+      return viewParam;
     }
-  }, [searchParams, isMobile, viewMode]);
+
+    // フォールバック（Middlewareによりこのケースは通常発生しない）
+    return "monthly";
+  }, [isMobile, searchParams]);
 
   const queryParams = useMemo<ShiftQueryParams>(
     () => (viewMode === "weekly" ? weeklyQueryParams : monthlyQueryParams),
@@ -147,7 +134,7 @@ function PublicShiftsPageContent() {
           const firstDayOfMonth = new Date(currentYear, currentMonth - 1, 1);
           setWeeklyBaseDate(firstDayOfMonth);
         }
-        setViewMode(newView);
+        // URLを変更すると、useMemoによりviewModeが自動的に更新される
         router.push(`/shifts?view=${newView}`, { scroll: false });
       });
     },
