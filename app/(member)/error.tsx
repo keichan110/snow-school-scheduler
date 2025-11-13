@@ -10,6 +10,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { useShiftsLink } from "@/lib/hooks/use-shifts-link";
 
 type DashboardErrorProps = {
   readonly error: Error & { digest?: string };
@@ -22,6 +23,8 @@ type DashboardErrorProps = {
  * エラーバウンダリによる自動的なエラー表示
  */
 export default function DashboardError({ error, reset }: DashboardErrorProps) {
+  const shiftsLink = useShiftsLink();
+
   return (
     <div className="flex min-h-[calc(100vh-8rem)] items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
       <Card className="w-full max-w-xl border border-destructive/30 bg-background/90 shadow-xl backdrop-blur-sm">
@@ -49,7 +52,7 @@ export default function DashboardError({ error, reset }: DashboardErrorProps) {
         </CardContent>
         <CardFooter className="flex flex-col gap-3 sm:flex-row sm:justify-end">
           <Button asChild className="w-full sm:w-auto" variant="outline">
-            <Link href="/shifts">
+            <Link href={shiftsLink}>
               <Home aria-hidden="true" className="mr-2 h-4 w-4" />
               シフト表示へ
             </Link>

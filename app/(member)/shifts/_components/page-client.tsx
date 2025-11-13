@@ -15,6 +15,7 @@ import { ErrorBoundary } from "react-error-boundary";
 import { useRequireAuth } from "@/app/_providers/auth";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { MOBILE_BREAKPOINT } from "@/constants";
 import { hasManagePermission } from "@/lib/auth/permissions";
 import { isHoliday } from "../_lib/constants";
 import {
@@ -44,7 +45,8 @@ function PublicShiftsPageContent() {
   const searchParams = useSearchParams();
   const queryClient = useQueryClient();
 
-  const [viewMode, setViewMode] = useState<ViewMode>("monthly");
+  // 画面サイズの状態管理
+  const [isMobile, setIsMobile] = useState(false);
   const [pendingView, setPendingView] = useState<ViewMode | null>(null);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -55,18 +57,57 @@ function PublicShiftsPageContent() {
 
   const canManage = hasManagePermission(user, "shifts");
 
-  const { currentYear, currentMonth, monthlyQueryParams, navigateMonth } =
-    useMonthNavigation();
-  const { weeklyBaseDate, weeklyQueryParams, navigateWeek, handleDateSelect } =
-    useWeekNavigation();
+  const {
+    currentYear,
+    currentMonth,
+    setCurrentYear,
+    setCurrentMonth,
+    monthlyQueryParams,
+    navigateMonth,
+  } = useMonthNavigation();
+  const {
+    weeklyBaseDate,
+    setWeeklyBaseDate,
+    weeklyQueryParams,
+    navigateWeek,
+    handleDateSelect,
+  } = useWeekNavigation();
   const { transformShiftsToStats } = useShiftDataTransformation();
 
+  // 画面サイズの監視（matchMediaでブレークポイント越え時のみ反応）
   useEffect(() => {
-    const view = searchParams.get("view") as ViewMode;
-    if (view === "weekly" || view === "monthly") {
-      setViewMode(view);
+    const mediaQuery = window.matchMedia(
+      `(max-width: ${MOBILE_BREAKPOINT - 1}px)`
+    );
+
+    // 初期値設定
+    setIsMobile(mediaQuery.matches);
+
+    // ブレークポイント越え時のみイベント発火
+    const handleChange = (e: MediaQueryListEvent) => {
+      setIsMobile(e.matches);
+    };
+
+    mediaQuery.addEventListener("change", handleChange);
+    return () => mediaQuery.removeEventListener("change", handleChange);
+  }, []);
+
+  // ビューモードをisMobileとURLパラメータから計算（派生状態）
+  const viewMode = useMemo<ViewMode>(() => {
+    // モバイルの場合は強制的に週間ビュー
+    if (isMobile) {
+      return "weekly";
     }
-  }, [searchParams]);
+
+    // デスクトップの場合はURLパラメータを優先
+    const viewParam = searchParams.get("view") as ViewMode;
+    if (viewParam === "weekly" || viewParam === "monthly") {
+      return viewParam;
+    }
+
+    // フォールバック（Middlewareによりこのケースは通常発生しない）
+    return "monthly";
+  }, [isMobile, searchParams]);
 
   const queryParams = useMemo<ShiftQueryParams>(
     () => (viewMode === "weekly" ? weeklyQueryParams : monthlyQueryParams),
@@ -88,11 +129,32 @@ function PublicShiftsPageContent() {
       }
       setPendingView(newView);
       startTransition(() => {
-        setViewMode(newView);
+        // ビュー切り替え時に日付を引き継ぐ
+        if (newView === "monthly") {
+          // 週間 → 月間: 週間ビューの基準日の年月を月間ビューに設定
+          const year = weeklyBaseDate.getFullYear();
+          const month = weeklyBaseDate.getMonth() + 1;
+          setCurrentYear(year);
+          setCurrentMonth(month);
+        } else if (newView === "weekly") {
+          // 月間 → 週間: 月間ビューの1日を週間ビューの基準日に設定
+          const firstDayOfMonth = new Date(currentYear, currentMonth - 1, 1);
+          setWeeklyBaseDate(firstDayOfMonth);
+        }
+        // URLを変更すると、useMemoによりviewModeが自動的に更新される
         router.push(`/shifts?view=${newView}`, { scroll: false });
       });
     },
-    [router, viewMode]
+    [
+      router,
+      viewMode,
+      weeklyBaseDate,
+      currentYear,
+      currentMonth,
+      setCurrentYear,
+      setCurrentMonth,
+      setWeeklyBaseDate,
+    ]
   );
 
   const handleMonthlyDateSelect = useCallback((date: string) => {
@@ -175,14 +237,16 @@ function PublicShiftsPageContent() {
           </p>
         </div>
 
-        <div className="mb-6 flex justify-center">
-          <ViewToggle
-            currentView={viewMode}
-            isPending={isPending}
-            onViewChange={handleViewChange}
-            pendingView={pendingView}
-          />
-        </div>
+        {!isMobile && (
+          <div className="mb-6 flex justify-center">
+            <ViewToggle
+              currentView={viewMode}
+              isPending={isPending}
+              onViewChange={handleViewChange}
+              pendingView={pendingView}
+            />
+          </div>
+        )}
 
         <div className="mb-8">
           {viewMode === "monthly" ? (

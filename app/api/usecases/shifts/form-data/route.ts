@@ -8,7 +8,7 @@ import { prisma } from "@/lib/db";
  * シフト作成フォームの初期表示データを取得するAPIエンドポイント
  *
  * @route GET /api/usecases/shifts/form-data
- * @access MANAGER以上
+ * @access MEMBER以上
  *
  * @description
  * シフト作成モーダルの初期表示に必要な全データを1回のAPI呼び出しで取得します。
@@ -50,10 +50,10 @@ import { prisma } from "@/lib/db";
 export async function GET(
   request: NextRequest
 ): Promise<NextResponse<ShiftFormDataResponse>> {
-  // 認証・認可チェック（MANAGER以上の権限が必要）
+  // 認証・認可チェック（MEMBER以上の権限が必要）
   const { errorResponse } = await withAuth<ShiftFormDataResponse>(
     request,
-    "MANAGER"
+    "MEMBER"
   );
   if (errorResponse) {
     return errorResponse;

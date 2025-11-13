@@ -21,6 +21,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { useShiftsLink } from "@/lib/hooks/use-shifts-link";
 import type { AuthenticatedUser } from "@/types/actions";
 
 type UserRole = "ADMIN" | "MANAGER" | "MEMBER";
@@ -35,7 +36,7 @@ type MenuItem = {
 
 /**
  * 管理メニューDrawerコンポーネント
- * MANAGER以上の権限を持つユーザーに表示される
+ * 全ての認証済みユーザーに表示され、権限に応じてメニュー項目がフィルタリングされる
  */
 type HeaderMenuDrawerProps = {
   user: AuthenticatedUser;
@@ -44,6 +45,7 @@ type HeaderMenuDrawerProps = {
 export function HeaderMenuDrawer({ user }: HeaderMenuDrawerProps) {
   const pathname = usePathname();
   const router = useRouter();
+  const shiftsLink = useShiftsLink();
 
   const handlePrefetch = useCallback(
     (href: string) => {
@@ -57,11 +59,11 @@ export function HeaderMenuDrawer({ user }: HeaderMenuDrawerProps) {
 
   const allMenuItems: MenuItem[] = [
     {
-      href: "/shifts",
+      href: shiftsLink,
       icon: CalendarDots,
       label: "シフト管理",
       description: "シフト表の作成・編集・割り当て管理",
-      requiredRole: "MANAGER",
+      requiredRole: "MEMBER",
     },
     {
       href: "/instructors",

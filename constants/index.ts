@@ -5,6 +5,10 @@
 
 // Authentication Constants
 export * from "./auth";
+
+// Breakpoint Constants
+export * from "./breakpoints";
+
 // HTTP Status Codes
 export * from "./http-status";
 
