@@ -74,15 +74,22 @@ function PublicShiftsPageContent() {
   } = useWeekNavigation();
   const { transformShiftsToStats } = useShiftDataTransformation();
 
-  // 画面サイズの監視
+  // 画面サイズの監視（matchMediaでブレークポイント越え時のみ反応）
   useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);
+    const mediaQuery = window.matchMedia(
+      `(max-width: ${MOBILE_BREAKPOINT - 1}px)`
+    );
+
+    // 初期値設定
+    setIsMobile(mediaQuery.matches);
+
+    // ブレークポイント越え時のみイベント発火
+    const handleChange = (e: MediaQueryListEvent) => {
+      setIsMobile(e.matches);
     };
 
-    checkMobile();
-    window.addEventListener("resize", checkMobile);
-    return () => window.removeEventListener("resize", checkMobile);
+    mediaQuery.addEventListener("change", handleChange);
+    return () => mediaQuery.removeEventListener("change", handleChange);
   }, []);
 
   // ビューモードをisMobileとURLパラメータから計算（派生状態）
