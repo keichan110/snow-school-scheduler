@@ -14,7 +14,6 @@ import {
 import { ErrorBoundary } from "react-error-boundary";
 import { useRequireAuth } from "@/app/_providers/auth";
 import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { MOBILE_BREAKPOINT } from "@/constants";
 import { hasManagePermission } from "@/lib/auth/permissions";
 import { isHoliday } from "../_lib/constants";
@@ -287,50 +286,48 @@ function PublicShiftsPageContent() {
             />
           )}
 
-          <ScrollArea className="h-[calc(100vh-20rem)]">
-            <div className="pb-8">
-              {viewMode === "monthly" ? (
-                <>
-                  <div className="hidden sm:block">
-                    <MonthlyCalendarWithDetails
-                      canManage={canManage}
-                      isHoliday={isHoliday}
-                      month={currentMonth}
-                      onCreateShift={handleCreateShift}
-                      onDateSelect={handleMonthlyDateSelect}
-                      onShiftDetailClick={handleShiftDetailClick}
-                      selectedDate={selectedDate}
-                      shiftStats={shiftStats}
-                      year={currentYear}
-                    />
-                  </div>
-
-                  <div className="block px-4 sm:hidden">
-                    <ShiftMobileList
-                      isHoliday={isHoliday}
-                      month={currentMonth}
-                      onDateSelect={handleMonthlyDateSelect}
-                      selectedDate={selectedDate}
-                      shiftStats={shiftStats}
-                      year={currentYear}
-                    />
-                  </div>
-                </>
-              ) : (
-                <div className="px-4">
-                  <WeeklyShiftList
-                    baseDate={weeklyBaseDate}
+          <div className="pb-8">
+            {viewMode === "monthly" ? (
+              <>
+                <div className="hidden sm:block">
+                  <MonthlyCalendarWithDetails
                     canManage={canManage}
                     isHoliday={isHoliday}
-                    onDateSelect={handleWeeklyDateSelect}
-                    onShiftDetailSelect={handleWeeklyShiftDetailSelect}
+                    month={currentMonth}
+                    onCreateShift={handleCreateShift}
+                    onDateSelect={handleMonthlyDateSelect}
+                    onShiftDetailClick={handleShiftDetailClick}
                     selectedDate={selectedDate}
                     shiftStats={shiftStats}
+                    year={currentYear}
                   />
                 </div>
-              )}
-            </div>
-          </ScrollArea>
+
+                <div className="block px-4 sm:hidden">
+                  <ShiftMobileList
+                    isHoliday={isHoliday}
+                    month={currentMonth}
+                    onDateSelect={handleMonthlyDateSelect}
+                    selectedDate={selectedDate}
+                    shiftStats={shiftStats}
+                    year={currentYear}
+                  />
+                </div>
+              </>
+            ) : (
+              <div className="px-4">
+                <WeeklyShiftList
+                  baseDate={weeklyBaseDate}
+                  canManage={canManage}
+                  isHoliday={isHoliday}
+                  onDateSelect={handleWeeklyDateSelect}
+                  onShiftDetailSelect={handleWeeklyShiftDetailSelect}
+                  selectedDate={selectedDate}
+                  shiftStats={shiftStats}
+                />
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
