@@ -3,10 +3,10 @@ export default function Footer() {
     <footer className="bg-transparent py-2">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col items-center justify-between gap-2 md:flex-row">
-          <div className="text-muted-foreground text-xs">
+          <div className="text-muted-foreground text-sm">
             © 2025 Keisuke Ito. All rights reserved.
           </div>
-          <div className="flex gap-4 text-xs">
+          <div className="flex gap-4 text-sm">
             <a
               className="text-muted-foreground transition-colors hover:text-foreground"
               href="/terms"
