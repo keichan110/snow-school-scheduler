@@ -4,6 +4,7 @@ import {
   getInstructorProfile,
 } from "@/lib/data/instructor";
 import { InstructorLinkageSection } from "./_components/instructor-linkage-section";
+import { UpcomingShiftsSection } from "./_components/upcoming-shifts-section";
 
 /**
  * ダッシュボードページ
@@ -44,6 +45,11 @@ export default async function DashboardPage() {
         availableInstructors={availableInstructors}
         instructorProfile={instructorProfile}
       />
+
+      {/* 今後のシフト（インストラクター紐付け済みの場合のみ表示） */}
+      {user.instructorId && (
+        <UpcomingShiftsSection instructorId={user.instructorId} />
+      )}
 
       {/* 今後追加される他のダッシュボードコンテンツ */}
     </div>
