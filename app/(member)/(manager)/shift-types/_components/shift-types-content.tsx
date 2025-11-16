@@ -1,6 +1,7 @@
 "use client";
 
 import { Plus, SealCheck, Tag } from "@phosphor-icons/react";
+import { useRouter } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -21,10 +22,13 @@ import type {
 } from "../_lib/types";
 import {
   useCreateShiftType,
-  useShiftTypesQuery,
   useUpdateShiftType,
 } from "../_lib/use-shift-types";
 import ShiftTypeModal from "./shift-type-modal";
+
+type ShiftTypesContentProps = {
+  initialShiftTypes: ShiftType[];
+};
 
 function sortShiftTypes(shiftTypes: ShiftType[]): ShiftType[] {
   return [...shiftTypes].sort((a, b) => {
@@ -58,25 +62,30 @@ function calculateStats(shiftTypes: ShiftType[]): ShiftTypeStats {
   };
 }
 
-export default function ShiftTypesPageClient() {
+export default function ShiftTypesContent({
+  initialShiftTypes,
+}: ShiftTypesContentProps) {
+  const router = useRouter();
   const [showActiveOnly, setShowActiveOnly] = useState<boolean>(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingShiftType, setEditingShiftType] = useState<ShiftType | null>(
     null
   );
 
-  const { data: shiftTypes } = useShiftTypesQuery({
-    select: sortShiftTypes,
-  });
+  // 初期データをソート
+  const sortedShiftTypes = useMemo(
+    () => sortShiftTypes(initialShiftTypes),
+    [initialShiftTypes]
+  );
 
   const filteredShiftTypes = useMemo(
-    () => filterShiftTypes(shiftTypes, showActiveOnly),
-    [shiftTypes, showActiveOnly]
+    () => filterShiftTypes(sortedShiftTypes, showActiveOnly),
+    [sortedShiftTypes, showActiveOnly]
   );
 
   const stats = useMemo<ShiftTypeStats>(
-    () => calculateStats(shiftTypes ?? []),
-    [shiftTypes]
+    () => calculateStats(sortedShiftTypes),
+    [sortedShiftTypes]
   );
 
   const createShiftTypeMutation = useCreateShiftType();
@@ -107,12 +116,15 @@ export default function ShiftTypesPageClient() {
         await createShiftTypeMutation.mutateAsync(data);
       }
 
+      // Server Componentを再実行してサーバーから最新データを取得
+      router.refresh();
       handleCloseModal();
     },
     [
       createShiftTypeMutation,
       editingShiftType,
       handleCloseModal,
+      router,
       updateShiftTypeMutation,
     ]
   );
