@@ -6,6 +6,7 @@ import {
   PersonSimpleSki,
   PersonSimpleSnowboard,
 } from "@phosphor-icons/react";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useNotification } from "@/app/_providers/notifications";
 import { Button } from "@/components/ui/button";
@@ -25,17 +26,67 @@ import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { getDepartmentType } from "@/lib/utils/department-type";
+import type { ActionResult } from "@/types/actions";
+import { getDepartmentIdByTypeAction } from "../_lib/actions";
+import type {
+  CreateCertificationInput,
+  UpdateCertificationInput,
+} from "../_lib/schemas";
 import type {
   CertificationFormData,
-  CertificationModalProps,
+  CertificationWithDepartment,
 } from "../_lib/types";
 
+type CertificationActionResult = ActionResult<unknown>;
+type CreateAction = (
+  input: CreateCertificationInput
+) => Promise<CertificationActionResult>;
+type UpdateAction = (
+  id: number,
+  input: UpdateCertificationInput
+) => Promise<CertificationActionResult>;
+
+/**
+ * 資格モーダルコンポーネントのプロパティ
+ */
+type CertificationModalProps = {
+  /** モーダルの開閉状態 */
+  isOpen: boolean;
+  /** モーダルを閉じるコールバック */
+  onClose: () => void;
+  /** 編集する資格（未指定の場合は新規追加） */
+  certification?: CertificationWithDepartment | null;
+  /** 資格作成アクション */
+  onCreateCertification: CreateAction;
+  /** 資格更新アクション */
+  onUpdateCertification: UpdateAction;
+};
+
+/**
+ * 資格の作成・編集モーダルコンポーネント
+ *
+ * @remarks
+ * Client Component として実装され、useState で送信状態を管理しながら Server Actions を呼び出します。
+ * フォームデータを Server Actions の入力形式に変換して送信します。
+ *
+ * 機能:
+ * - 資格の新規作成
+ * - 既存資格の編集
+ * - フォームバリデーション
+ * - Server Actions による保存
+ * - 保存中の UI 状態表示
+ *
+ * @param props - コンポーネントのプロパティ
+ * @returns 資格モーダルコンポーネント
+ */
 export default function CertificationModal({
   isOpen,
   onClose,
   certification,
-  onSave,
+  onCreateCertification,
+  onUpdateCertification,
 }: CertificationModalProps) {
+  const router = useRouter();
   const { showNotification } = useNotification();
   const [formData, setFormData] = useState<CertificationFormData>({
     name: "",
@@ -73,19 +124,79 @@ export default function CertificationModal({
     }
   }, [certification]);
 
+  /**
+   * 部門IDを取得するヘルパー関数
+   */
+  const fetchDepartmentId = async (
+    departmentType: "ski" | "snowboard"
+  ): Promise<number> => {
+    const result = await getDepartmentIdByTypeAction(departmentType);
+    if (!result.success) {
+      throw new Error(result.error || "部門IDの取得に失敗しました");
+    }
+    return result.data;
+  };
+
+  /**
+   * 入力データを構築するヘルパー関数
+   */
+  const buildCertificationInput = (
+    departmentId: number,
+    data: CertificationFormData
+  ) => ({
+    departmentId,
+    name: data.name,
+    shortName: data.shortName,
+    organization: data.organization,
+    description: data.description || null,
+    isActive: data.status === "active",
+  });
+
+  /**
+   * Server Actionを実行するヘルパー関数
+   */
+  const executeCertificationAction = async (
+    input: CreateCertificationInput | UpdateCertificationInput
+  ): Promise<CertificationActionResult> => {
+    if (certification) {
+      return await onUpdateCertification(certification.id, input);
+    }
+    return await onCreateCertification(input);
+  };
+
+  /**
+   * フォーム送信ハンドラー
+   *
+   * @remarks
+   * フォームデータを Server Actions の入力形式に変換し、
+   * useState ベースの送信フラグで UI をロックしながら非同期で保存処理を実行します。
+   *
+   * @param e - フォームイベント
+   */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
+    if (isSubmitting) {
+      return;
+    }
 
+    setIsSubmitting(true);
     try {
-      await onSave(formData);
-      showNotification(
-        certification
-          ? "資格が正常に更新されました"
-          : "資格が正常に作成されました",
-        "success"
-      );
-      onClose();
+      const departmentId = await fetchDepartmentId(formData.department);
+      const input = buildCertificationInput(departmentId, formData);
+      const result = await executeCertificationAction(input);
+
+      if (result.success) {
+        showNotification(
+          certification
+            ? "資格が正常に更新されました"
+            : "資格が正常に作成されました",
+          "success"
+        );
+        router.refresh();
+        onClose();
+      } else {
+        showNotification(result.error || "保存に失敗しました", "error");
+      }
     } catch (error) {
       showNotification(
         error instanceof Error ? error.message : "保存に失敗しました",

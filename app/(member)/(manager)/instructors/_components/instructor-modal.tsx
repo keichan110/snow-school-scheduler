@@ -11,7 +11,7 @@ import {
 } from "@phosphor-icons/react";
 import { useCallback, useEffect, useState } from "react";
 import { useNotification } from "@/app/_providers/notifications";
-import { fetchCertifications } from "@/app/(member)/(manager)/certifications/_lib/queries";
+import { getCertificationsAction } from "@/app/(member)/(manager)/certifications/_lib/actions";
 import type { CertificationWithDepartment } from "@/app/(member)/(manager)/certifications/_lib/types";
 import { Button } from "@/components/ui/button";
 import {
@@ -106,15 +106,19 @@ export default function InstructorModal({
   const loadCertifications = useCallback(async () => {
     try {
       setIsLoadingCertifications(true);
-      const certifications = await fetchCertifications();
-      // 有効な資格のみ選択可能にする
-      const activeCertifications = certifications.filter(
-        (cert) => cert.isActive
-      );
-      setAvailableCertifications(activeCertifications);
+      const result = await getCertificationsAction();
+
+      if (result.success && result.data) {
+        // getCertificationsAction は既に isActive: true でフィルタ済み
+        setAvailableCertifications(result.data);
+      } else {
+        // エラー時は空配列をセット
+        setAvailableCertifications([]);
+      }
     } catch (_error) {
       // Intentionally catching and ignoring errors
       // User will see empty certification list in the UI
+      setAvailableCertifications([]);
     } finally {
       setIsLoadingCertifications(false);
     }

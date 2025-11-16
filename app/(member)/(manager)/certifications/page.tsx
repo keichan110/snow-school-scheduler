@@ -1,16 +1,218 @@
 import { Suspense } from "react";
-
-import CertificationsPageClient from "./_components/page-client";
+import { prisma } from "@/lib/db";
+import { CertificationFilters } from "./_components/certification-filters";
+import { CertificationList } from "./_components/certification-list";
+import { CertificationStats } from "./_components/certification-stats";
+import {
+  createCertificationAction,
+  updateCertificationAction,
+} from "./_lib/actions";
 import Loading from "./loading";
 
 /**
- * 資格管理ページ
- * - MANAGER以上の権限が必要（親レイアウトで認証済み）
+ * searchParams から文字列値を安全に取得するヘルパー関数
+ *
+ * @remarks
+ * Next.js 15 では searchParams の値が string | string[] | undefined になるため、
+ * 配列の場合は最初の要素を取得し、統一的に string | undefined として扱います。
+ *
+ * @param value - 取得する searchParams の値
+ * @returns 正規化された文字列値または undefined
  */
-export default function CertificationsPage() {
+function getSearchParam(
+  value: string | string[] | undefined
+): string | undefined {
+  if (Array.isArray(value)) {
+    return value[0];
+  }
+  return value;
+}
+
+/**
+ * 部門名から部門タイプを判定するヘルパー関数
+ *
+ * @param departmentName - 判定する部門名
+ * @returns 部門タイプ（"ski" | "snowboard" | "other"）
+ */
+function getDepartmentType(
+  departmentName: string
+): "ski" | "snowboard" | "other" {
+  const name = departmentName.toLowerCase();
+  if (name.includes("スキー") || name.includes("ski")) {
+    return "ski";
+  }
+  if (name.includes("スノーボード") || name.includes("snowboard")) {
+    return "snowboard";
+  }
+  return "other";
+}
+
+/**
+ * 資格管理ページのプロパティ
+ */
+type CertificationsPageProps = {
+  /** URL検索パラメータ（Next.js 15+では Promise 型） */
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+};
+
+/**
+ * 資格管理ページのコンテンツコンポーネント（Server Component）
+ *
+ * @remarks
+ * このコンポーネントは Server Component として実装され、以下の処理を行います：
+ *
+ * 処理フロー:
+ * 1. URL パラメータから部門フィルターとアクティブフィルターを取得
+ * 2. Prisma を使用してサーバーサイドでデータを取得（フィルタリング・ソート済み）
+ * 3. 統計データを計算（全資格の集計）
+ * 4. Client Components にデータを渡して表示
+ *
+ * フィルタリング:
+ * - `department`: "all" | "ski" | "snowboard"（デフォルト: "all"）
+ * - `active`: "true" | "false"（デフォルト: "true"）
+ *
+ * データ取得の最適化:
+ * - フィルタリングとソートは Prisma クエリで実行
+ * - 統計用の全データ取得は並列化可能
+ *
+ * @param props - ページプロパティ
+ * @returns 資格管理ページコンテンツ
+ */
+async function CertificationsPageContent({
+  searchParams,
+}: CertificationsPageProps) {
+  // searchParams は Promise なので await する (Next.js 15+)
+  const params = await searchParams;
+
+  // URLパラメータ取得・正規化
+  const departmentParam = getSearchParam(params.department) as
+    | "all"
+    | "ski"
+    | "snowboard"
+    | undefined;
+  const department = departmentParam || "all";
+  const showActiveOnly = getSearchParam(params.active) !== "false";
+
+  // Prisma where 条件を動的に構築
+  const where: {
+    isActive?: boolean;
+    department?: {
+      name: {
+        contains: string;
+      };
+    };
+  } = {};
+
+  // アクティブフィルター
+  if (showActiveOnly) {
+    where.isActive = true;
+  }
+
+  // 部門フィルター
+  if (department !== "all") {
+    where.department = {
+      name: {
+        contains: department === "ski" ? "スキー" : "スノーボード",
+      },
+    };
+  }
+
+  // サーバーサイドでデータ取得
+  const certifications = await prisma.certification.findMany({
+    where,
+    include: {
+      department: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+    },
+    orderBy: [
+      { isActive: "desc" }, // アクティブ優先
+      { department: { name: "asc" } },
+      { name: "asc" },
+    ],
+  });
+
+  // 統計計算（フィルター適用前の全データで計算）
+  const allCertifications = await prisma.certification.findMany({
+    include: {
+      department: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+    },
+  });
+
+  const stats = {
+    total: allCertifications.length,
+    active: allCertifications.filter((c) => c.isActive).length,
+    ski: allCertifications.filter(
+      (c) => getDepartmentType(c.department.name) === "ski"
+    ).length,
+    snowboard: allCertifications.filter(
+      (c) => getDepartmentType(c.department.name) === "snowboard"
+    ).length,
+  };
+
+  return (
+    <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 md:py-8 lg:px-8">
+      <div className="mb-6 md:mb-8">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+          <div>
+            <h1 className="mb-2 font-bold text-2xl text-foreground md:text-3xl">
+              資格管理
+            </h1>
+            <p className="text-muted-foreground text-sm md:text-base">
+              スキー・スノーボード資格の登録・管理を行います
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <CertificationStats stats={stats} />
+
+      <div className="overflow-x-auto rounded-lg border bg-white shadow-lg dark:bg-gray-900">
+        <div className="space-y-4 border-b p-4">
+          <div className="flex items-center justify-between">
+            <h2 className="font-semibold text-lg">資格一覧</h2>
+            <CertificationFilters />
+          </div>
+        </div>
+
+        <CertificationList
+          certifications={certifications}
+          onCreateCertification={createCertificationAction}
+          onUpdateCertification={updateCertificationAction}
+        />
+      </div>
+    </div>
+  );
+}
+
+/**
+ * 資格管理ページ（エントリーポイント）
+ *
+ * @remarks
+ * MANAGER以上の権限が必要です（親レイアウトで認証済み）。
+ * Suspense でラップすることで、データ取得中に loading.tsx を表示します。
+ *
+ * ベストプラクティス準拠:
+ * - Server Component で直接 Prisma クエリ
+ * - searchParams による URL ベースのフィルタリング
+ * - Server Actions による書き込み操作
+ * - 適切なコンポーネント分割（Server/Client）
+ *
+ * @param props - ページプロパティ
+ * @returns 資格管理ページ
+ */
+export default function CertificationsPage(props: CertificationsPageProps) {
   return (
     <Suspense fallback={<Loading />}>
-      <CertificationsPageClient />
+      <CertificationsPageContent {...props} />
     </Suspense>
   );
 }
