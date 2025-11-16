@@ -9,9 +9,9 @@ import {
   Plus,
   UserCheck,
 } from "@phosphor-icons/react";
-import { useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { ja } from "date-fns/locale";
+import { useRouter } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -32,15 +32,17 @@ import type {
   InvitationTokenWithStats,
 } from "../_lib/types";
 import {
-  invitationsQueryKeys,
   useCreateInvitation,
   useDeleteInvitation,
-  useInvitationsQuery,
 } from "../_lib/use-invitations";
 import InvitationModal from "./invitation-modal";
 import InvitationWarningModal from "./invitation-warning-modal";
 
 const CLIPBOARD_SUCCESS_TIMEOUT_MS = 2000;
+
+type InvitationsContentProps = {
+  initialData: InvitationTokenWithStats[];
+};
 
 type InvitationRowProps = {
   invitation: InvitationTokenWithStats;
@@ -267,7 +269,10 @@ const STATUS_STYLES = {
   { row: string; icon: string; text: string }
 >;
 
-export default function InvitationsPageClient() {
+export default function InvitationsContent({
+  initialData,
+}: InvitationsContentProps) {
+  const router = useRouter();
   const [showActiveOnly, setShowActiveOnly] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingInvitation, setEditingInvitation] =
@@ -279,18 +284,20 @@ export default function InvitationsPageClient() {
   const [pendingFormData, setPendingFormData] =
     useState<InvitationFormData | null>(null);
 
-  const queryClient = useQueryClient();
-
-  const { data: invitations } = useInvitationsQuery({
-    select: (data) => sortInvitations(data),
-  });
-
-  const filteredInvitations = useMemo(
-    () => filterInvitations(invitations, showActiveOnly),
-    [invitations, showActiveOnly]
+  const sortedInvitations = useMemo(
+    () => sortInvitations(initialData),
+    [initialData]
   );
 
-  const stats = useMemo(() => calculateStats(invitations), [invitations]);
+  const filteredInvitations = useMemo(
+    () => filterInvitations(sortedInvitations, showActiveOnly),
+    [sortedInvitations, showActiveOnly]
+  );
+
+  const stats = useMemo(
+    () => calculateStats(sortedInvitations),
+    [sortedInvitations]
+  );
 
   const createInvitationMutation = useCreateInvitation();
   const deleteInvitationMutation = useDeleteInvitation();
@@ -312,24 +319,6 @@ export default function InvitationsPageClient() {
     setShowActiveOnly(checked);
   }, []);
 
-  const updateInvitationCache = useCallback(
-    (
-      updater: (items: InvitationTokenWithStats[]) => InvitationTokenWithStats[]
-    ) => {
-      queryClient.setQueryData<InvitationTokenWithStats[]>(
-        invitationsQueryKeys.list(),
-        (previous) => {
-          if (!previous) {
-            return previous;
-          }
-
-          return updater([...previous]);
-        }
-      );
-    },
-    [queryClient]
-  );
-
   const executeInvitationCreation = useCallback(
     async (formData: InvitationFormData) => {
       const requestData = {
@@ -341,13 +330,11 @@ export default function InvitationsPageClient() {
       const result = await createInvitationMutation.mutateAsync(requestData);
 
       if (result.success) {
-        // キャッシュを無効化して再フェッチ
-        await queryClient.invalidateQueries({
-          queryKey: invitationsQueryKeys.all,
-        });
+        // Server Componentを再実行してサーバーから最新データを取得
+        router.refresh();
       }
     },
-    [createInvitationMutation, queryClient]
+    [createInvitationMutation, router]
   );
 
   const handleSave = useCallback(
@@ -388,19 +375,10 @@ export default function InvitationsPageClient() {
     async (token: string) => {
       await deleteInvitationMutation.mutateAsync(token);
 
-      updateInvitationCache((items) =>
-        items.map((invitation) =>
-          invitation.token === token
-            ? { ...invitation, isActive: false }
-            : invitation
-        )
-      );
-
-      await queryClient.invalidateQueries({
-        queryKey: invitationsQueryKeys.all,
-      });
+      // Server Componentを再実行してサーバーから最新データを取得
+      router.refresh();
     },
-    [deleteInvitationMutation, updateInvitationCache, queryClient]
+    [deleteInvitationMutation, router]
   );
 
   const handleCopyInvitationUrl = useCallback(async (token: string) => {

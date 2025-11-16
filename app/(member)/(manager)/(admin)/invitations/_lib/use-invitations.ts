@@ -1,40 +1,11 @@
 "use client";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import {
   acceptInvitationAction,
   createInvitationAction,
   deleteInvitationAction,
 } from "./actions";
 import type { AcceptInvitationInput, CreateInvitationInput } from "./schemas";
-
-// Re-export queries
-export {
-  type InvitationsQueryKey,
-  invitationsQueryKeys,
-  useInvitationsQuery,
-} from "./queries";
-
-/**
- * 招待クエリキー定義
- *
- * TanStack Query のクエリキャッシュ管理に使用します。
- * 階層的なキー構造により、効率的なキャッシュ無効化が可能です。
- *
- * @example
- * ```typescript
- * // 全招待データを無効化
- * queryClient.invalidateQueries({ queryKey: invitationKeys.all });
- *
- * // 有効な招待リストのみ無効化
- * queryClient.invalidateQueries({ queryKey: invitationKeys.activeList() });
- * ```
- */
-export const invitationKeys = {
-  all: ["invitations"] as const,
-  lists: () => [...invitationKeys.all, "list"] as const,
-  list: () => [...invitationKeys.lists()] as const,
-  activeList: () => [...invitationKeys.lists(), "active"] as const,
-};
 
 /**
  * 招待作成ミューテーションフック
@@ -64,13 +35,8 @@ export const invitationKeys = {
  * ```
  */
 export function useCreateInvitation() {
-  const qc = useQueryClient();
   return useMutation({
     mutationFn: (vars: CreateInvitationInput) => createInvitationAction(vars),
-    onSuccess: () => {
-      // 全招待リストのキャッシュを無効化
-      qc.invalidateQueries({ queryKey: invitationKeys.all });
-    },
   });
 }
 
@@ -142,12 +108,7 @@ export function useAcceptInvitation() {
  * ```
  */
 export function useDeleteInvitation() {
-  const qc = useQueryClient();
   return useMutation({
     mutationFn: (token: string) => deleteInvitationAction(token),
-    onSuccess: () => {
-      // 全招待リストのキャッシュを無効化
-      qc.invalidateQueries({ queryKey: invitationKeys.all });
-    },
   });
 }
