@@ -7,13 +7,6 @@ import {
 } from "./actions";
 import type { CreateInstructorInput, UpdateInstructorInput } from "./schemas";
 
-// Re-export queries
-export {
-  type InstructorsQueryKey,
-  instructorsQueryKeys,
-  useInstructorsQuery,
-} from "./queries";
-
 export const instructorKeys = {
   all: ["instructors"] as const,
   lists: () => [...instructorKeys.all, "list"] as const,

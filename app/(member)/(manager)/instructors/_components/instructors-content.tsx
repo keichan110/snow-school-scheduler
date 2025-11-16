@@ -6,6 +6,7 @@ import {
   Plus,
   SealCheck,
 } from "@phosphor-icons/react";
+import { useRouter } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
 import { CertificationBadge } from "@/app/_components/certification-badge";
 import { Button } from "@/components/ui/button";
@@ -30,7 +31,6 @@ import type {
 } from "../_lib/types";
 import {
   useCreateInstructor,
-  useInstructorsQuery,
   useUpdateInstructor,
 } from "../_lib/use-instructors";
 import InstructorModal from "./instructor-modal";
@@ -239,7 +239,14 @@ function InstructorRow({ instructor, onOpenModal }: InstructorRowProps) {
   );
 }
 
-export default function InstructorsPageClient() {
+type InstructorsContentProps = {
+  initialData: InstructorWithCertifications[];
+};
+
+export default function InstructorsContent({
+  initialData,
+}: InstructorsContentProps) {
+  const router = useRouter();
   const [currentCategory, setCurrentCategory] =
     useState<CategoryFilterType>("all");
   const [showActiveOnly, setShowActiveOnly] = useState<boolean>(true);
@@ -247,16 +254,14 @@ export default function InstructorsPageClient() {
   const [editingInstructor, setEditingInstructor] =
     useState<InstructorWithCertifications | null>(null);
 
-  const { data: instructors } = useInstructorsQuery();
-
   const filteredInstructors = useMemo(
-    () => filterInstructors(instructors, currentCategory, showActiveOnly),
-    [instructors, currentCategory, showActiveOnly]
+    () => filterInstructors(initialData, currentCategory, showActiveOnly),
+    [initialData, currentCategory, showActiveOnly]
   );
 
   const stats = useMemo<InstructorStats>(
-    () => calculateInstructorStats(instructors),
-    [instructors]
+    () => calculateInstructorStats(initialData),
+    [initialData]
   );
 
   const createInstructorMutation = useCreateInstructor();
@@ -305,12 +310,15 @@ export default function InstructorsPageClient() {
         await createInstructorMutation.mutateAsync(input);
       }
 
+      // ★重要★ Server Componentを再実行してサーバーから最新データを取得
+      router.refresh();
       handleCloseModal();
     },
     [
       createInstructorMutation,
       editingInstructor,
       handleCloseModal,
+      router,
       updateInstructorMutation,
     ]
   );

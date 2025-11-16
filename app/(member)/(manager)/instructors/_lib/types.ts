@@ -1,6 +1,13 @@
 import type { Instructor } from "@prisma/client";
 
-export interface InstructorWithCertifications extends Instructor {
+/**
+ * シリアライズ済みのインストラクター型
+ * Server ComponentからClient Componentに渡すため、Date型はstring型に変換
+ */
+export interface InstructorWithCertifications
+  extends Omit<Instructor, "createdAt" | "updatedAt"> {
+  createdAt: string; // Date → ISO 8601 string
+  updatedAt: string; // Date → ISO 8601 string
   certifications: {
     id: number;
     name: string;
