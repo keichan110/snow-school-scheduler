@@ -64,7 +64,7 @@ type CertificationsPageProps = {
  * 処理フロー:
  * 1. URL パラメータから部門フィルターとアクティブフィルターを取得
  * 2. Prisma を使用してサーバーサイドでデータを取得（フィルタリング・ソート済み）
- * 3. 統計データを計算（全資格の集計）
+ * 3. 統計データを計算（フィルター済みデータの集計）
  * 4. Client Components にデータを渡して表示
  *
  * フィルタリング:
@@ -73,7 +73,6 @@ type CertificationsPageProps = {
  *
  * データ取得の最適化:
  * - フィルタリングとソートは Prisma クエリで実行
- * - 統計用の全データ取得は並列化可能
  *
  * @param props - ページプロパティ
  * @returns 資格管理ページコンテンツ
@@ -135,25 +134,14 @@ async function CertificationsPageContent({
     ],
   });
 
-  // 統計計算（フィルター適用前の全データで計算）
-  const allCertifications = await prisma.certification.findMany({
-    include: {
-      department: {
-        select: {
-          id: true,
-          name: true,
-        },
-      },
-    },
-  });
-
+  // 統計計算（フィルター済みデータで計算）
   const stats = {
-    total: allCertifications.length,
-    active: allCertifications.filter((c) => c.isActive).length,
-    ski: allCertifications.filter(
+    total: certifications.length,
+    active: certifications.filter((c) => c.isActive).length,
+    ski: certifications.filter(
       (c) => getDepartmentType(c.department.name) === "ski"
     ).length,
-    snowboard: allCertifications.filter(
+    snowboard: certifications.filter(
       (c) => getDepartmentType(c.department.name) === "snowboard"
     ).length,
   };
