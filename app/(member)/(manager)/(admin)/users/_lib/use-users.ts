@@ -7,12 +7,8 @@ import {
 } from "./actions";
 import type { CreateUserInput, UpdateUserInput } from "./schemas";
 
-// Re-export queries
-export {
-  type UsersQueryKey,
-  usersQueryKeys,
-  useUsersQuery,
-} from "./queries";
+// Re-export query keys (queries removed - use Server Component data fetching)
+export { usersQueryKeys } from "./queries";
 
 /**
  * ユーザークエリキー定義

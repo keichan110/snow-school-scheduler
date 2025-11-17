@@ -1,35 +1,12 @@
-import {
-  type UseSuspenseQueryOptions,
-  type UseSuspenseQueryResult,
-  useSuspenseQuery,
-} from "@tanstack/react-query";
-
-import { fetchUsers } from "./api";
-import type { UserFilters, UserWithDetails } from "./types";
-
 /**
  * ユーザー一覧向けのクエリキー
+ *
+ * 注意: Server Components移行により、useUsersQuery は削除されました。
+ * データフェッチングは _lib/data.ts の getUsers() を使用してください。
+ * このファイルはクエリキー定義のみを保持しています（mutation用）。
  */
 export const usersQueryKeys = {
   all: ["users"] as const,
   lists: () => [...usersQueryKeys.all, "list"] as const,
-  list: (filters: UserFilters) => [...usersQueryKeys.lists(), filters] as const,
+  list: () => [...usersQueryKeys.lists()] as const,
 };
-
-export type UsersQueryKey = ReturnType<typeof usersQueryKeys.list>;
-
-type UsersQueryOptions<TData> = Omit<
-  UseSuspenseQueryOptions<UserWithDetails[], Error, TData, UsersQueryKey>,
-  "queryKey" | "queryFn" | "suspense"
->;
-
-export function useUsersQuery<TData = UserWithDetails[]>(
-  filters: UserFilters,
-  options: UsersQueryOptions<TData> = {}
-): UseSuspenseQueryResult<TData, Error> {
-  return useSuspenseQuery<UserWithDetails[], Error, TData, UsersQueryKey>({
-    queryKey: usersQueryKeys.list(filters),
-    queryFn: () => fetchUsers(filters),
-    ...options,
-  });
-}

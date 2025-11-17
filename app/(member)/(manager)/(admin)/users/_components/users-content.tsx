@@ -8,9 +8,9 @@ import {
   User,
   UserCheck,
 } from "@phosphor-icons/react";
-import { useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { ja } from "date-fns/locale";
+import { useRouter } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -33,12 +33,7 @@ import type {
   UserStats,
   UserWithDetails,
 } from "../_lib/types";
-import {
-  useDeleteUser,
-  usersQueryKeys,
-  useUpdateUser,
-  useUsersQuery,
-} from "../_lib/use-users";
+import { useDeleteUser, useUpdateUser } from "../_lib/use-users";
 import UserModal from "./user-modal";
 
 const ROLE_ORDER: Record<UserRole, number> = {
@@ -148,19 +143,15 @@ function UserRow({ user, onOpenModal }: UserRowProps) {
         </Badge>
       </TableCell>
       <TableCell>
-        {user.lastLoginAt ? (
-          <span
-            className={`text-sm ${statusStyles.text} ${
-              user.isActive ? "" : "line-through"
-            }`}
-          >
-            {format(new Date(user.lastLoginAt), "MM/dd HH:mm", {
-              locale: ja,
-            })}
-          </span>
-        ) : (
-          <span className="text-muted-foreground text-sm">未ログイン</span>
-        )}
+        <span
+          className={`text-muted-foreground text-sm ${
+            user.isActive ? "" : "line-through"
+          }`}
+        >
+          {format(new Date(user.updatedAt), "MM/dd HH:mm", {
+            locale: ja,
+          })}
+        </span>
       </TableCell>
       <TableCell>
         <span
@@ -185,10 +176,8 @@ function sortUsers(users: UserWithDetails[]): UserWithDetails[] {
       return roleDiff;
     }
 
-    const aLogin = a.lastLoginAt ? new Date(a.lastLoginAt).getTime() : 0;
-    const bLogin = b.lastLoginAt ? new Date(b.lastLoginAt).getTime() : 0;
-
-    return bLogin - aLogin;
+    // 同じロールの場合は表示名でソート
+    return a.displayName.localeCompare(b.displayName, "ja");
   });
 }
 
@@ -229,7 +218,12 @@ function getEmptyStateMessage(filters: UserFilters): string {
   return "ユーザーが登録されていません";
 }
 
-export default function UsersPageClient() {
+type UsersContentProps = {
+  initialData: UserWithDetails[];
+};
+
+export default function UsersContent({ initialData }: UsersContentProps) {
+  const router = useRouter();
   const [filters, setFilters] = useState<UserFilters>({
     role: "all",
     status: "active",
@@ -237,13 +231,18 @@ export default function UsersPageClient() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<UserWithDetails | null>(null);
 
-  const queryClient = useQueryClient();
+  // クライアント側でフィルタリング & ソート
+  const filteredUsers = useMemo(() => {
+    const filtered = initialData.filter((user) =>
+      matchesFilters(user, filters)
+    );
+    return sortUsers(filtered);
+  }, [initialData, filters]);
 
-  const { data: users } = useUsersQuery(filters, {
-    select: (data) => sortUsers(data),
-  });
-
-  const stats = useMemo<UserStats>(() => calculateStats(users), [users]);
+  const stats = useMemo<UserStats>(
+    () => calculateStats(filteredUsers),
+    [filteredUsers]
+  );
   const emptyStateMessage = useMemo(
     () => getEmptyStateMessage(filters),
     [filters]
@@ -290,7 +289,7 @@ export default function UsersPageClient() {
         throw new Error("編集対象のユーザーが設定されていません");
       }
 
-      const result = await updateUserMutation.mutateAsync({
+      await updateUserMutation.mutateAsync({
         id: editingUser.id,
         data: {
           role: formData.role,
@@ -298,54 +297,21 @@ export default function UsersPageClient() {
         },
       });
 
-      if (result.success && result.data) {
-        const updated = result.data as UserWithDetails;
-        queryClient.setQueryData<UserWithDetails[]>(
-          usersQueryKeys.list(filters),
-          (previous) => {
-            const snapshot = previous ? [...previous] : [];
-            const withoutUpdated = snapshot.filter(
-              (user) => user.id !== updated.id
-            );
-
-            if (matchesFilters(updated, filters)) {
-              withoutUpdated.push(updated);
-            }
-
-            return sortUsers(withoutUpdated);
-          }
-        );
-      }
-
-      await queryClient.invalidateQueries({ queryKey: usersQueryKeys.all });
+      // ★重要★ Server Componentを再実行してサーバーから最新データを取得
+      router.refresh();
       handleCloseModal();
     },
-    [editingUser, updateUserMutation, queryClient, filters, handleCloseModal]
+    [editingUser, updateUserMutation, router, handleCloseModal]
   );
 
   const handleDeactivate = useCallback(
     async (user: UserWithDetails) => {
       await deleteUserMutation.mutateAsync(user.id);
 
-      const deactivatedUser: UserWithDetails = { ...user, isActive: false };
-
-      queryClient.setQueryData<UserWithDetails[]>(
-        usersQueryKeys.list(filters),
-        (previous) => {
-          const snapshot = previous ? [...previous] : [];
-          const withoutTarget = snapshot.filter((item) => item.id !== user.id);
-
-          if (matchesFilters(deactivatedUser, filters)) {
-            withoutTarget.push(deactivatedUser);
-          }
-
-          return sortUsers(withoutTarget);
-        }
-      );
-
-      await queryClient.invalidateQueries({ queryKey: usersQueryKeys.all });
+      // ★重要★ Server Componentを再実行してサーバーから最新データを取得
+      router.refresh();
     },
-    [deleteUserMutation, queryClient, filters]
+    [deleteUserMutation, router]
   );
 
   return (
@@ -460,12 +426,12 @@ export default function UsersPageClient() {
               <TableHead className="w-12" />
               <TableHead className="min-w-[120px]">ユーザー名</TableHead>
               <TableHead className="min-w-[100px]">権限</TableHead>
-              <TableHead className="min-w-[120px]">最終ログイン</TableHead>
+              <TableHead className="min-w-[120px]">最終更新</TableHead>
               <TableHead className="min-w-[120px]">登録日</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {users.length === 0 ? (
+            {filteredUsers.length === 0 ? (
               <TableRow>
                 <TableCell
                   className="py-8 text-center text-muted-foreground"
@@ -475,7 +441,7 @@ export default function UsersPageClient() {
                 </TableCell>
               </TableRow>
             ) : (
-              users.map((user) => (
+              filteredUsers.map((user) => (
                 <UserRow
                   key={user.id}
                   onOpenModal={handleOpenModal}
