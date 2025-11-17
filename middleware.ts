@@ -141,12 +141,28 @@ export function middleware(request: NextRequest) {
   secureLog("info", "Middleware: Checking access", { pathname });
 
   // /shiftsへのクエリパラメータなしアクセスにデフォルト値を付与
-  // rewriteを使用することで、クライアントにリダイレクトせず内部的に処理
+  // モバイルファーストの設計により、週間ビューをデフォルトに設定
+  // redirectを使用してURLパラメータを明示的に表示
   if (pathname === "/shifts" && !searchParams.has("view")) {
     const url = request.nextUrl.clone();
-    url.searchParams.set("view", "monthly");
-    secureLog("info", "Middleware: Adding default view parameter to /shifts");
-    return NextResponse.rewrite(url);
+    url.searchParams.set("view", "weekly");
+
+    // 今日の日付をデフォルトの開始日に設定
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, "0");
+    const day = String(today.getDate()).padStart(2, "0");
+    const dateFrom = `${year}-${month}-${day}`;
+    url.searchParams.set("dateFrom", dateFrom);
+
+    secureLog(
+      "info",
+      "Middleware: Redirecting to /shifts with default weekly view",
+      {
+        dateFrom,
+      }
+    );
+    return NextResponse.redirect(url);
   }
 
   // APIルートの処理

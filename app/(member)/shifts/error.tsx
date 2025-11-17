@@ -1,8 +1,8 @@
 "use client";
 
-import { useQueryClient } from "@tanstack/react-query";
 import { AlertTriangle, Home, Loader2, RefreshCw } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
 import { useNotification } from "@/app/_providers/notifications";
 import { Button } from "@/components/ui/button";
@@ -13,43 +13,34 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  publicShiftsDepartmentsQueryKeys,
-  publicShiftsQueryKeys,
-} from "./_lib/queries";
 
 type ShiftsErrorProps = {
   readonly error: Error & { digest?: string };
   readonly reset: () => void;
 };
 
+/**
+ * シフトページのエラーハンドリングコンポーネント
+ *
+ * @remarks
+ * Server Componentsへの移行により、React Queryではなく
+ * router.refresh()でServer Componentを再実行してデータを再取得します。
+ */
 export default function ShiftsError({ error, reset }: ShiftsErrorProps) {
-  const queryClient = useQueryClient();
+  const router = useRouter();
   const { showSuccess, showError } = useNotification();
   const [isRetrying, setIsRetrying] = useState(false);
   const [retryMessage, setRetryMessage] = useState<string | null>(null);
 
-  const handleRetry = useCallback(async () => {
+  const handleRetry = useCallback(() => {
     setIsRetrying(true);
     setRetryMessage(null);
 
     try {
-      await Promise.all([
-        queryClient.invalidateQueries(
-          { queryKey: publicShiftsQueryKeys.all, refetchType: "all" },
-          { throwOnError: true }
-        ),
-        queryClient.invalidateQueries(
-          {
-            queryKey: publicShiftsDepartmentsQueryKeys.all,
-            refetchType: "all",
-          },
-          { throwOnError: true }
-        ),
-      ]);
-
-      showSuccess("最新のシフト情報を取得しました。");
+      // Server Componentを再実行してサーバーから最新データを取得
+      router.refresh();
       reset();
+      showSuccess("最新のシフト情報を取得しました。");
     } catch (refetchError) {
       const message =
         refetchError instanceof Error
@@ -60,7 +51,7 @@ export default function ShiftsError({ error, reset }: ShiftsErrorProps) {
     } finally {
       setIsRetrying(false);
     }
-  }, [queryClient, reset, showError, showSuccess]);
+  }, [router, reset, showError, showSuccess]);
 
   return (
     <div className="flex min-h-[calc(100vh-8rem)] items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
