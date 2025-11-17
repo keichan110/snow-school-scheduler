@@ -2,7 +2,7 @@
  * ユーザー一覧向けのクエリキー
  *
  * 注意: Server Components移行により、useUsersQuery は削除されました。
- * データフェッチングは _lib/data.ts の getUsers() を使用してください。
+ * データフェッチングは page.tsx で直接 Prisma クエリを使用してください（searchParams による URL ベースのフィルタリング）。
  * このファイルはクエリキー定義のみを保持しています（mutation用）。
  */
 export const usersQueryKeys = {
