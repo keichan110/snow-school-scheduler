@@ -226,3 +226,37 @@ export const getDepartments = cache(async () => {
 
   return departments;
 });
+
+/**
+ * シフト作成フォーム用のマスターデータを取得（Server Component用）
+ *
+ * @description
+ * React.cacheでメモ化され、同一リクエスト内での重複クエリを防止します。
+ * シフト作成モーダルで使用する部門一覧、シフト種別一覧、統計情報を取得します。
+ * 既存のAPIエンドポイント `/api/usecases/shifts/form-data` と同じロジックを使用。
+ *
+ * @returns シフトフォーム用のマスターデータ
+ */
+export const getShiftFormData = cache(async () => {
+  const [departments, shiftTypes, activeInstructorCount] = await Promise.all([
+    prisma.department.findMany({
+      where: { isActive: true },
+      select: { id: true, name: true, code: true },
+      orderBy: { name: "asc" },
+    }),
+    prisma.shiftType.findMany({
+      where: { isActive: true },
+      select: { id: true, name: true },
+      orderBy: { name: "asc" },
+    }),
+    prisma.instructor.count({
+      where: { status: "ACTIVE" },
+    }),
+  ]);
+
+  return {
+    departments,
+    shiftTypes,
+    stats: { activeInstructorCount },
+  };
+});

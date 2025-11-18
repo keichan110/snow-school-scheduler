@@ -64,6 +64,15 @@ type ServerDepartment = {
   code: string;
 };
 
+/**
+ * シフトフォーム用のマスターデータの型
+ */
+type ShiftFormData = {
+  departments: Array<{ id: number; name: string; code: string }>;
+  shiftTypes: Array<{ id: number; name: string }>;
+  stats: { activeInstructorCount: number };
+};
+
 type ShiftsContentProps = {
   /**
    * サーバーから取得したシフトデータ
@@ -73,6 +82,10 @@ type ShiftsContentProps = {
    * サーバーから取得した部門一覧
    */
   initialDepartments: ServerDepartment[];
+  /**
+   * シフトフォーム用のマスターデータ
+   */
+  shiftFormData: ShiftFormData;
 };
 
 /**
@@ -84,10 +97,12 @@ type ShiftsContentProps = {
  *
  * @param props.initialShifts - サーバーから取得したシフトデータ
  * @param props.initialDepartments - サーバーから取得した部門一覧
+ * @param props.shiftFormData - シフトフォーム用のマスターデータ
  */
 export default function ShiftsContent({
   initialShifts,
   initialDepartments,
+  shiftFormData,
 }: ShiftsContentProps) {
   const user = useRequireAuth();
   const router = useRouter();
@@ -511,6 +526,7 @@ export default function ShiftsContent({
         onOpenChange={handleModalOpenChange}
         onShiftUpdated={handleShiftUpdated}
         selectedDate={selectedDate}
+        shiftFormData={shiftFormData}
       />
     </div>
   );

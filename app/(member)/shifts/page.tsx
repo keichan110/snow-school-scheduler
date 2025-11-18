@@ -3,6 +3,7 @@ import ShiftsContent from "./_components/shifts-content";
 import {
   getDepartments,
   getMonthlyShifts,
+  getShiftFormData,
   getWeeklyShifts,
   type MonthlyViewData,
 } from "./_lib/data";
@@ -101,10 +102,14 @@ async function ShiftsPageContent({ searchParams }: ShiftsPageProps) {
   // 部門一覧を取得
   const departments = await getDepartments();
 
+  // シフトフォーム用のマスターデータを取得
+  const shiftFormData = await getShiftFormData();
+
   return (
     <ShiftsContent
       initialDepartments={departments}
       initialShifts={shiftsData.shifts}
+      shiftFormData={shiftFormData}
     />
   );
 }

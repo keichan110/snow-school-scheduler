@@ -11,7 +11,6 @@ import { hasManagePermission } from "@/lib/auth/permissions";
 import { cn } from "@/lib/utils";
 import { useShiftEditData } from "../_lib/hooks/use-shift-edit-data";
 import type { DayData } from "../_lib/types";
-import { useShiftFormData } from "../_lib/use-shift-form-data";
 import { useCreateShift } from "../_lib/use-shifts";
 import { toFormattedInstructors } from "../_lib/utils/instructor-mappers";
 import { InstructorSelector } from "./instructor-selector";
@@ -26,13 +25,20 @@ type ShiftFormData = {
   selectedInstructorIds: number[];
 };
 
+type ShiftFormMasterData = {
+  departments: Array<{ id: number; name: string; code: string }>;
+  shiftTypes: Array<{ id: number; name: string }>;
+  stats: { activeInstructorCount: number };
+};
+
 type UnifiedShiftBottomModalProps = {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   selectedDate: string | null;
   dayData: DayData | null;
-  onShiftUpdated?: () => Promise<void>;
+  onShiftUpdated?: () => void | Promise<void>;
   initialStep?: "create-step1" | "create-step2";
+  shiftFormData: ShiftFormMasterData;
 };
 
 const INITIAL_FORM_DATA: ShiftFormData = {
@@ -49,15 +55,13 @@ export function UnifiedShiftBottomModal({
   dayData,
   onShiftUpdated,
   initialStep = "create-step1",
+  shiftFormData,
 }: UnifiedShiftBottomModalProps) {
   const { user } = useAuth();
   const { showNotification } = useNotification();
 
   // 管理権限チェック（MANAGER以上）
   const canManage = user ? hasManagePermission(user, "shifts") : false;
-
-  // シフト作成フォームデータを取得（React Query）
-  const { data: shiftFormData } = useShiftFormData();
 
   // 管理機能の状態
   const [currentStep, setCurrentStep] = useState<ModalStep>(initialStep);
