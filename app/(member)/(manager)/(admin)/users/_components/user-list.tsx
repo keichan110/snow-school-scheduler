@@ -14,9 +14,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { deleteUserAction, updateUserAction } from "../_lib/actions";
 import { getRoleColor, getRoleDisplayName } from "../_lib/api";
 import type { UserFormData, UserWithDetails } from "../_lib/types";
-import { useDeleteUser, useUpdateUser } from "../_lib/use-users";
 import UserModal from "./user-modal";
 
 const USER_ID_PREVIEW_LENGTH = 8;
@@ -174,9 +174,6 @@ export function UserList({ users }: UserListProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<UserWithDetails | null>(null);
 
-  const updateUserMutation = useUpdateUser();
-  const deleteUserMutation = useDeleteUser();
-
   const handleOpenModal = useCallback((user?: UserWithDetails) => {
     setEditingUser(user ?? null);
     setIsModalOpen(true);
@@ -193,30 +190,35 @@ export function UserList({ users }: UserListProps) {
         throw new Error("編集対象のユーザーが設定されていません");
       }
 
-      await updateUserMutation.mutateAsync({
-        id: editingUser.id,
-        data: {
-          displayName: formData.displayName,
-          role: formData.role,
-          isActive: formData.isActive,
-        },
+      const result = await updateUserAction(editingUser.id, {
+        displayName: formData.displayName,
+        role: formData.role,
+        isActive: formData.isActive,
       });
+
+      if (!result.success) {
+        throw new Error(result.error || "Failed to update user");
+      }
 
       // ★重要★ Server Componentを再実行してサーバーから最新データを取得
       router.refresh();
       handleCloseModal();
     },
-    [editingUser, updateUserMutation, router, handleCloseModal]
+    [editingUser, router, handleCloseModal]
   );
 
   const handleDeactivate = useCallback(
     async (user: UserWithDetails) => {
-      await deleteUserMutation.mutateAsync(user.id);
+      const result = await deleteUserAction(user.id);
+
+      if (!result.success) {
+        throw new Error(result.error || "Failed to deactivate user");
+      }
 
       // ★重要★ Server Componentを再実行してサーバーから最新データを取得
       router.refresh();
     },
-    [deleteUserMutation, router]
+    [router]
   );
 
   return (

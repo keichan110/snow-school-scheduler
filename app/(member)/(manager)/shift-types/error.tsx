@@ -1,6 +1,5 @@
 "use client";
 
-import { useQueryErrorResetBoundary } from "@tanstack/react-query";
 import { AlertTriangle } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -11,8 +10,6 @@ type ShiftTypesErrorProps = {
 };
 
 export default function ShiftTypesError({ reset }: ShiftTypesErrorProps) {
-  const { reset: resetQueryError } = useQueryErrorResetBoundary();
-
   return (
     <div className="mx-auto flex min-h-[320px] max-w-3xl flex-col items-center justify-center gap-4 px-4 py-10 text-center">
       <AlertTriangle className="h-12 w-12 text-destructive" />
@@ -24,13 +21,7 @@ export default function ShiftTypesError({ reset }: ShiftTypesErrorProps) {
           一時的な問題が発生しました。再試行しても解決しない場合は、管理者へお問い合わせください。
         </p>
       </div>
-      <Button
-        onClick={() => {
-          resetQueryError();
-          reset();
-        }}
-        variant="outline"
-      >
+      <Button onClick={reset} variant="outline">
         再試行
       </Button>
     </div>

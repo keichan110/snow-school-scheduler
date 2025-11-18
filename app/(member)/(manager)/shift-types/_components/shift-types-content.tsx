@@ -15,15 +15,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { createShiftTypeAction, updateShiftTypeAction } from "../_lib/actions";
 import type {
   ShiftType,
   ShiftTypeFormData,
   ShiftTypeStats,
 } from "../_lib/types";
-import {
-  useCreateShiftType,
-  useUpdateShiftType,
-} from "../_lib/use-shift-types";
 import ShiftTypeModal from "./shift-type-modal";
 
 type ShiftTypesContentProps = {
@@ -88,9 +85,6 @@ export default function ShiftTypesContent({
     [sortedShiftTypes]
   );
 
-  const createShiftTypeMutation = useCreateShiftType();
-  const updateShiftTypeMutation = useUpdateShiftType();
-
   const handleActiveFilterChange = useCallback((checked: boolean) => {
     setShowActiveOnly(checked);
   }, []);
@@ -107,26 +101,19 @@ export default function ShiftTypesContent({
 
   const handleSave = useCallback(
     async (data: ShiftTypeFormData) => {
-      if (editingShiftType) {
-        await updateShiftTypeMutation.mutateAsync({
-          id: editingShiftType.id,
-          data,
-        });
-      } else {
-        await createShiftTypeMutation.mutateAsync(data);
+      const result = editingShiftType
+        ? await updateShiftTypeAction(editingShiftType.id, data)
+        : await createShiftTypeAction(data);
+
+      if (!result.success) {
+        throw new Error(result.error || "Failed to save shift type");
       }
 
       // Server Componentを再実行してサーバーから最新データを取得
       router.refresh();
       handleCloseModal();
     },
-    [
-      createShiftTypeMutation,
-      editingShiftType,
-      handleCloseModal,
-      router,
-      updateShiftTypeMutation,
-    ]
+    [editingShiftType, handleCloseModal, router]
   );
 
   return (

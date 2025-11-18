@@ -22,6 +22,10 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  createInstructorAction,
+  updateInstructorAction,
+} from "../_lib/actions";
 import { mapStatusToApi } from "../_lib/api";
 import type {
   CategoryFilterType,
@@ -29,10 +33,6 @@ import type {
   InstructorStats,
   InstructorWithCertifications,
 } from "../_lib/types";
-import {
-  useCreateInstructor,
-  useUpdateInstructor,
-} from "../_lib/use-instructors";
 import InstructorModal from "./instructor-modal";
 
 const STATUS_ORDER: Partial<
@@ -264,9 +264,6 @@ export default function InstructorsContent({
     [initialData]
   );
 
-  const createInstructorMutation = useCreateInstructor();
-  const updateInstructorMutation = useUpdateInstructor();
-
   const handleCategoryChange = useCallback((category: string) => {
     setCurrentCategory(category as CategoryFilterType);
   }, []);
@@ -301,26 +298,19 @@ export default function InstructorsContent({
         certificationIds: formData.certificationIds || [],
       };
 
-      if (editingInstructor) {
-        await updateInstructorMutation.mutateAsync({
-          id: editingInstructor.id,
-          data: input,
-        });
-      } else {
-        await createInstructorMutation.mutateAsync(input);
+      const result = editingInstructor
+        ? await updateInstructorAction(editingInstructor.id, input)
+        : await createInstructorAction(input);
+
+      if (!result.success) {
+        throw new Error(result.error || "Failed to save instructor");
       }
 
       // ★重要★ Server Componentを再実行してサーバーから最新データを取得
       router.refresh();
       handleCloseModal();
     },
-    [
-      createInstructorMutation,
-      editingInstructor,
-      handleCloseModal,
-      router,
-      updateInstructorMutation,
-    ]
+    [editingInstructor, handleCloseModal, router]
   );
 
   return (
