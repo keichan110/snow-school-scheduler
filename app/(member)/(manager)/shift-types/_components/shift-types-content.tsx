@@ -1,6 +1,7 @@
 "use client";
 
 import { Plus, SealCheck, Tag } from "@phosphor-icons/react";
+import { useRouter } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -14,17 +15,22 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  TableFilterRow,
+  TableHeaderLayout,
+  TableTitleRow,
+} from "../../_components/table-header";
+import { createShiftTypeAction, updateShiftTypeAction } from "../_lib/actions";
 import type {
   ShiftType,
   ShiftTypeFormData,
   ShiftTypeStats,
 } from "../_lib/types";
-import {
-  useCreateShiftType,
-  useShiftTypesQuery,
-  useUpdateShiftType,
-} from "../_lib/use-shift-types";
 import ShiftTypeModal from "./shift-type-modal";
+
+type ShiftTypesContentProps = {
+  initialShiftTypes: ShiftType[];
+};
 
 function sortShiftTypes(shiftTypes: ShiftType[]): ShiftType[] {
   return [...shiftTypes].sort((a, b) => {
@@ -58,29 +64,31 @@ function calculateStats(shiftTypes: ShiftType[]): ShiftTypeStats {
   };
 }
 
-export default function ShiftTypesPageClient() {
+export default function ShiftTypesContent({
+  initialShiftTypes,
+}: ShiftTypesContentProps) {
+  const router = useRouter();
   const [showActiveOnly, setShowActiveOnly] = useState<boolean>(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingShiftType, setEditingShiftType] = useState<ShiftType | null>(
     null
   );
 
-  const { data: shiftTypes } = useShiftTypesQuery({
-    select: sortShiftTypes,
-  });
+  // 初期データをソート
+  const sortedShiftTypes = useMemo(
+    () => sortShiftTypes(initialShiftTypes),
+    [initialShiftTypes]
+  );
 
   const filteredShiftTypes = useMemo(
-    () => filterShiftTypes(shiftTypes, showActiveOnly),
-    [shiftTypes, showActiveOnly]
+    () => filterShiftTypes(sortedShiftTypes, showActiveOnly),
+    [sortedShiftTypes, showActiveOnly]
   );
 
   const stats = useMemo<ShiftTypeStats>(
-    () => calculateStats(shiftTypes ?? []),
-    [shiftTypes]
+    () => calculateStats(sortedShiftTypes),
+    [sortedShiftTypes]
   );
-
-  const createShiftTypeMutation = useCreateShiftType();
-  const updateShiftTypeMutation = useUpdateShiftType();
 
   const handleActiveFilterChange = useCallback((checked: boolean) => {
     setShowActiveOnly(checked);
@@ -98,23 +106,19 @@ export default function ShiftTypesPageClient() {
 
   const handleSave = useCallback(
     async (data: ShiftTypeFormData) => {
-      if (editingShiftType) {
-        await updateShiftTypeMutation.mutateAsync({
-          id: editingShiftType.id,
-          data,
-        });
-      } else {
-        await createShiftTypeMutation.mutateAsync(data);
+      const result = editingShiftType
+        ? await updateShiftTypeAction(editingShiftType.id, data)
+        : await createShiftTypeAction(data);
+
+      if (!result.success) {
+        throw new Error(result.error || "Failed to save shift type");
       }
 
+      // Server Componentを再実行してサーバーから最新データを取得
+      router.refresh();
       handleCloseModal();
     },
-    [
-      createShiftTypeMutation,
-      editingShiftType,
-      handleCloseModal,
-      updateShiftTypeMutation,
-    ]
+    [editingShiftType, handleCloseModal, router]
   );
 
   return (
@@ -160,38 +164,45 @@ export default function ShiftTypesPageClient() {
       </div>
 
       <div className="overflow-x-auto rounded-lg border bg-white shadow-lg dark:bg-gray-900">
-        <div className="space-y-4 border-b p-4">
-          <div className="flex items-center justify-between">
-            <h2 className="font-semibold text-lg">シフト種類一覧</h2>
-            <Button
-              className="flex items-center gap-2"
-              onClick={() => handleOpenModal()}
-            >
-              <Plus className="h-4 w-4" weight="regular" />
-              追加
-            </Button>
-          </div>
-
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-center space-x-2">
-              <Switch
-                checked={showActiveOnly}
-                id="active-only"
-                onCheckedChange={handleActiveFilterChange}
-              />
-              <Label
-                className="flex cursor-pointer items-center gap-1"
-                htmlFor="active-only"
-              >
-                <SealCheck
-                  className="h-4 w-4 text-green-600 dark:text-green-400"
-                  weight="regular"
-                />
-                有効のみ
-              </Label>
-            </div>
-          </div>
-        </div>
+        <TableHeaderLayout
+          filterRow={
+            <TableFilterRow
+              rightFilter={
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    checked={showActiveOnly}
+                    id="active-only"
+                    onCheckedChange={handleActiveFilterChange}
+                  />
+                  <Label
+                    className="flex cursor-pointer items-center gap-1"
+                    htmlFor="active-only"
+                  >
+                    <SealCheck
+                      className="h-4 w-4 text-green-600 dark:text-green-400"
+                      weight="regular"
+                    />
+                    有効のみ
+                  </Label>
+                </div>
+              }
+            />
+          }
+          titleRow={
+            <TableTitleRow
+              rightAction={
+                <Button
+                  className="flex items-center gap-2"
+                  onClick={() => handleOpenModal()}
+                >
+                  <Plus className="h-4 w-4" weight="regular" />
+                  追加
+                </Button>
+              }
+              title="シフト種類一覧"
+            />
+          }
+        />
         <Table>
           <TableHeader>
             <TableRow className="bg-white dark:bg-gray-900">

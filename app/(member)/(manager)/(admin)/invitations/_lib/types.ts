@@ -2,15 +2,19 @@
  * 招待管理画面の型定義
  */
 
+/**
+ * シリアライズ済みの招待情報型
+ * Server ComponentからClient Componentに渡すため、Date型はstring型に変換
+ */
 export type InvitationTokenWithStats = {
   token: string;
   description: string;
-  expiresAt: Date | null;
+  expiresAt: string | null; // Date → ISO 8601 string
   isActive: boolean;
   maxUses: number | null;
   usageCount: number;
   remainingUses: number;
-  createdAt: Date;
+  createdAt: string; // Date → ISO 8601 string
   createdBy: string;
   invitationUrl?: string; // 新規作成時のみ含まれる
 };

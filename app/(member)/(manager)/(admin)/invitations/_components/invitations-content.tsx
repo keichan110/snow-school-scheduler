@@ -9,9 +9,9 @@ import {
   Plus,
   UserCheck,
 } from "@phosphor-icons/react";
-import { useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { ja } from "date-fns/locale";
+import { useRouter } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -25,22 +25,24 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  createInvitationAction,
+  deleteInvitationAction,
+} from "../_lib/actions";
 import { checkActiveInvitation } from "../_lib/api";
 import type {
   InvitationFormData,
   InvitationStats,
   InvitationTokenWithStats,
 } from "../_lib/types";
-import {
-  invitationsQueryKeys,
-  useCreateInvitation,
-  useDeleteInvitation,
-  useInvitationsQuery,
-} from "../_lib/use-invitations";
 import InvitationModal from "./invitation-modal";
 import InvitationWarningModal from "./invitation-warning-modal";
 
 const CLIPBOARD_SUCCESS_TIMEOUT_MS = 2000;
+
+type InvitationsContentProps = {
+  initialData: InvitationTokenWithStats[];
+};
 
 type InvitationRowProps = {
   invitation: InvitationTokenWithStats;
@@ -267,7 +269,10 @@ const STATUS_STYLES = {
   { row: string; icon: string; text: string }
 >;
 
-export default function InvitationsPageClient() {
+export default function InvitationsContent({
+  initialData,
+}: InvitationsContentProps) {
+  const router = useRouter();
   const [showActiveOnly, setShowActiveOnly] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingInvitation, setEditingInvitation] =
@@ -278,22 +283,23 @@ export default function InvitationsPageClient() {
     useState<InvitationTokenWithStats | null>(null);
   const [pendingFormData, setPendingFormData] =
     useState<InvitationFormData | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [replacementError, setReplacementError] = useState<string | null>(null);
 
-  const queryClient = useQueryClient();
-
-  const { data: invitations } = useInvitationsQuery({
-    select: (data) => sortInvitations(data),
-  });
-
-  const filteredInvitations = useMemo(
-    () => filterInvitations(invitations, showActiveOnly),
-    [invitations, showActiveOnly]
+  const sortedInvitations = useMemo(
+    () => sortInvitations(initialData),
+    [initialData]
   );
 
-  const stats = useMemo(() => calculateStats(invitations), [invitations]);
+  const filteredInvitations = useMemo(
+    () => filterInvitations(sortedInvitations, showActiveOnly),
+    [sortedInvitations, showActiveOnly]
+  );
 
-  const createInvitationMutation = useCreateInvitation();
-  const deleteInvitationMutation = useDeleteInvitation();
+  const stats = useMemo(
+    () => calculateStats(sortedInvitations),
+    [sortedInvitations]
+  );
 
   const handleOpenModal = useCallback(
     (invitation?: InvitationTokenWithStats) => {
@@ -312,42 +318,29 @@ export default function InvitationsPageClient() {
     setShowActiveOnly(checked);
   }, []);
 
-  const updateInvitationCache = useCallback(
-    (
-      updater: (items: InvitationTokenWithStats[]) => InvitationTokenWithStats[]
-    ) => {
-      queryClient.setQueryData<InvitationTokenWithStats[]>(
-        invitationsQueryKeys.list(),
-        (previous) => {
-          if (!previous) {
-            return previous;
-          }
-
-          return updater([...previous]);
-        }
-      );
-    },
-    [queryClient]
-  );
-
   const executeInvitationCreation = useCallback(
     async (formData: InvitationFormData) => {
-      const requestData = {
-        description: formData.description,
-        expiresAt: formData.expiresAt.toISOString(),
-        role: "MEMBER" as const,
-      };
+      setIsSubmitting(true);
+      try {
+        const requestData = {
+          description: formData.description,
+          expiresAt: formData.expiresAt.toISOString(),
+          role: "MEMBER" as const,
+        };
 
-      const result = await createInvitationMutation.mutateAsync(requestData);
+        const result = await createInvitationAction(requestData);
 
-      if (result.success) {
-        // キャッシュを無効化して再フェッチ
-        await queryClient.invalidateQueries({
-          queryKey: invitationsQueryKeys.all,
-        });
+        if (!result.success) {
+          throw new Error(result.error || "Failed to create invitation");
+        }
+
+        // Server Componentを再実行してサーバーから最新データを取得
+        router.refresh();
+      } finally {
+        setIsSubmitting(false);
       }
     },
-    [createInvitationMutation, queryClient]
+    [router]
   );
 
   const handleSave = useCallback(
@@ -371,36 +364,45 @@ export default function InvitationsPageClient() {
       return;
     }
 
-    await executeInvitationCreation(pendingFormData);
+    // Clear any previous error
+    setReplacementError(null);
 
-    setWarningModalOpen(false);
-    setPendingFormData(null);
-    setExistingActiveInvitation(null);
+    try {
+      await executeInvitationCreation(pendingFormData);
+
+      // Success: close modal and clear state
+      setWarningModalOpen(false);
+      setPendingFormData(null);
+      setExistingActiveInvitation(null);
+    } catch (error) {
+      // Error: keep modal open and show error message
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "招待の置き換えに失敗しました。もう一度お試しください。";
+      setReplacementError(errorMessage);
+    }
   }, [executeInvitationCreation, pendingFormData]);
 
   const handleCancelReplacement = useCallback(() => {
     setWarningModalOpen(false);
     setPendingFormData(null);
     setExistingActiveInvitation(null);
+    setReplacementError(null);
   }, []);
 
   const handleDeactivate = useCallback(
     async (token: string) => {
-      await deleteInvitationMutation.mutateAsync(token);
+      const result = await deleteInvitationAction(token);
 
-      updateInvitationCache((items) =>
-        items.map((invitation) =>
-          invitation.token === token
-            ? { ...invitation, isActive: false }
-            : invitation
-        )
-      );
+      if (!result.success) {
+        throw new Error(result.error || "Failed to delete invitation");
+      }
 
-      await queryClient.invalidateQueries({
-        queryKey: invitationsQueryKeys.all,
-      });
+      // Server Componentを再実行してサーバーから最新データを取得
+      router.refresh();
     },
-    [deleteInvitationMutation, updateInvitationCache, queryClient]
+    [router]
   );
 
   const handleCopyInvitationUrl = useCallback(async (token: string) => {
@@ -422,12 +424,12 @@ export default function InvitationsPageClient() {
   }, []);
 
   const handleCloseWarningModal = useCallback(() => {
-    if (createInvitationMutation.isPending) {
+    if (isSubmitting) {
       return;
     }
 
     handleCancelReplacement();
-  }, [handleCancelReplacement, createInvitationMutation.isPending]);
+  }, [handleCancelReplacement, isSubmitting]);
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 md:py-8 lg:px-8">
@@ -565,9 +567,10 @@ export default function InvitationsPageClient() {
 
       {existingActiveInvitation && (
         <InvitationWarningModal
+          error={replacementError}
           existingInvitation={existingActiveInvitation}
           isOpen={warningModalOpen}
-          isSubmitting={createInvitationMutation.isPending}
+          isSubmitting={isSubmitting}
           onClose={handleCloseWarningModal}
           onConfirm={handleConfirmReplacement}
         />

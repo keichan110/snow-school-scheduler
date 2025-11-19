@@ -1,14 +1,16 @@
 "use server";
-import { revalidatePath, revalidateTag } from "next/cache";
+import { revalidatePath } from "next/cache";
 import { requireManagerAuth } from "@/lib/auth/role-guard";
 import { prisma } from "@/lib/db";
 import type { ActionResult } from "@/types/actions";
+import { getCertifications, getDepartmentIdByType } from "./queries";
 import {
   type CreateCertificationInput,
   createCertificationSchema,
   type UpdateCertificationInput,
   updateCertificationSchema,
 } from "./schemas";
+import type { CertificationWithDepartment } from "./types";
 
 /**
  * 資格作成アクション
@@ -35,7 +37,6 @@ export async function createCertificationAction(
 
     // 再検証
     revalidatePath("/certifications");
-    revalidateTag("certifications.list");
 
     return { success: true, data: certification };
   } catch (error) {
@@ -70,8 +71,6 @@ export async function updateCertificationAction(
     });
 
     revalidatePath("/certifications");
-    revalidateTag("certifications.list");
-    revalidateTag(`certifications.detail.${id}`);
 
     return { success: true, data: certification };
   } catch (error) {
@@ -99,7 +98,6 @@ export async function deleteCertificationAction(
     });
 
     revalidatePath("/certifications");
-    revalidateTag("certifications.list");
 
     return { success: true, data: undefined };
   } catch (error) {
@@ -107,5 +105,41 @@ export async function deleteCertificationAction(
       return { success: false, error: error.message };
     }
     return { success: false, error: "Failed to delete certification" };
+  }
+}
+
+/**
+ * Client Component用: 部門タイプからIDを取得
+ * Server Actionとして公開
+ */
+export async function getDepartmentIdByTypeAction(
+  departmentType: "ski" | "snowboard"
+): Promise<ActionResult<number>> {
+  try {
+    const departmentId = await getDepartmentIdByType(departmentType);
+    return { success: true, data: departmentId };
+  } catch (error) {
+    if (error instanceof Error) {
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "Failed to get department ID" };
+  }
+}
+
+/**
+ * Client Component用: 有効な資格一覧を取得
+ * Server Actionとして公開
+ */
+export async function getCertificationsAction(): Promise<
+  ActionResult<CertificationWithDepartment[]>
+> {
+  try {
+    const certifications = await getCertifications();
+    return { success: true, data: certifications };
+  } catch (error) {
+    if (error instanceof Error) {
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "Failed to fetch certifications" };
   }
 }

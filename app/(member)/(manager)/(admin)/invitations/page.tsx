@@ -1,16 +1,13 @@
-import { Suspense } from "react";
-
-import InvitationsPageClient from "./_components/page-client";
-import Loading from "./loading";
+import InvitationsContent from "./_components/invitations-content";
+import { getInvitations } from "./_lib/data";
 
 /**
- * 招待管理ページ
+ * 招待管理ページ（Server Component）
  * - ADMIN権限が必要（親レイアウトで認証済み）
+ * - データはサーバーサイドで取得し、Client Componentに渡す
  */
-export default function InvitationsPage() {
-  return (
-    <Suspense fallback={<Loading />}>
-      <InvitationsPageClient />
-    </Suspense>
-  );
+export default async function InvitationsPage() {
+  const invitations = await getInvitations();
+
+  return <InvitationsContent initialData={invitations} />;
 }

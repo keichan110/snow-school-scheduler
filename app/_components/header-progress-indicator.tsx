@@ -1,6 +1,6 @@
 "use client";
 
-import { useIsFetching } from "@tanstack/react-query";
+import { usePathname, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 
@@ -12,6 +12,7 @@ const PROGRESS_ALMOST_COMPLETE = 90;
 const PROGRESS_INCREMENT_FACTOR = 0.18;
 const PROGRESS_COMPLETE = 100;
 const PROGRESS_RESET = 0;
+const TRANSITION_COMPLETE_DELAY_MS = 100;
 
 function getTime() {
   if (typeof performance !== "undefined") {
@@ -21,16 +22,26 @@ function getTime() {
   return Date.now();
 }
 
+/**
+ * ヘッダープログレスインジケーター
+ *
+ * @remarks
+ * Server Componentsへの移行により、useIsFetchingではなく
+ * ページ遷移（pathname/searchParams変更）を検知してローディング表示します。
+ */
 export function HeaderProgressIndicator() {
-  const isFetching = useIsFetching();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [visible, setVisible] = useState(false);
   const [progress, setProgress] = useState(0);
 
   const startTimeRef = useRef<number | null>(null);
   const intervalRef = useRef<number | null>(null);
   const hideTimeoutRef = useRef<number | null>(null);
+  const previousPathnameRef = useRef<string | null>(null);
+  const previousSearchParamsRef = useRef<string | null>(null);
 
-  const shouldRender = visible || isFetching > 0;
+  const shouldRender = visible;
 
   useEffect(
     () => () => {
@@ -47,7 +58,7 @@ export function HeaderProgressIndicator() {
     []
   );
 
-  // Fetching開始時の処理
+  // ページ遷移開始時の処理
   const startProgressTracking = useCallback(() => {
     // 既存の非表示タイマーをキャンセル
     if (hideTimeoutRef.current) {
@@ -77,7 +88,7 @@ export function HeaderProgressIndicator() {
     }
   }, [visible]);
 
-  // Fetching終了時の処理
+  // ページ遷移終了時の処理
   const stopProgressTracking = useCallback(() => {
     // プログレス更新インターバルの停止
     if (intervalRef.current) {
@@ -109,13 +120,48 @@ export function HeaderProgressIndicator() {
     }, delay);
   }, [visible]);
 
+  // pathname または searchParams の変更を監視
   useEffect(() => {
-    if (isFetching > 0) {
-      startProgressTracking();
+    const currentPathname = pathname;
+    const currentSearchParams = searchParams?.toString() ?? "";
+
+    // 初回マウント時は記録のみ
+    if (
+      previousPathnameRef.current === null &&
+      previousSearchParamsRef.current === null
+    ) {
+      previousPathnameRef.current = currentPathname;
+      previousSearchParamsRef.current = currentSearchParams;
       return;
     }
-    stopProgressTracking();
-  }, [isFetching, startProgressTracking, stopProgressTracking]);
+
+    // pathname または searchParams が変更されたら遷移完了とみなす
+    const hasChanged =
+      previousPathnameRef.current !== currentPathname ||
+      previousSearchParamsRef.current !== currentSearchParams;
+
+    if (hasChanged) {
+      // 遷移が検知された時点で進捗開始
+      // （Next.jsのusePathname/useSearchParamsは遷移完了後に更新されるため、
+      //  ここで開始することで少なくとも変更検知時に進捗バーが表示される）
+      startProgressTracking();
+
+      // 短い遅延後に遷移完了とする
+      const completeTimeout = window.setTimeout(() => {
+        stopProgressTracking();
+      }, TRANSITION_COMPLETE_DELAY_MS);
+
+      // 前回の値を更新
+      previousPathnameRef.current = currentPathname;
+      previousSearchParamsRef.current = currentSearchParams;
+
+      return () => {
+        window.clearTimeout(completeTimeout);
+      };
+    }
+
+    return;
+  }, [pathname, searchParams, startProgressTracking, stopProgressTracking]);
 
   if (!shouldRender) {
     return null;

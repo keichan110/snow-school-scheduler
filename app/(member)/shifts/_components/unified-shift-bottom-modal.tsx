@@ -9,10 +9,9 @@ import { Button } from "@/components/ui/button";
 import { DrawerFooter } from "@/components/ui/drawer";
 import { hasManagePermission } from "@/lib/auth/permissions";
 import { cn } from "@/lib/utils";
+import { createShiftAction } from "../_lib/actions";
 import { useShiftEditData } from "../_lib/hooks/use-shift-edit-data";
 import type { DayData } from "../_lib/types";
-import { useShiftFormData } from "../_lib/use-shift-form-data";
-import { useCreateShift } from "../_lib/use-shifts";
 import { toFormattedInstructors } from "../_lib/utils/instructor-mappers";
 import { InstructorSelector } from "./instructor-selector";
 import { ShiftBasicInfoForm } from "./shift-basic-info-form";
@@ -26,13 +25,20 @@ type ShiftFormData = {
   selectedInstructorIds: number[];
 };
 
+type ShiftFormMasterData = {
+  departments: Array<{ id: number; name: string; code: string }>;
+  shiftTypes: Array<{ id: number; name: string }>;
+  stats: { activeInstructorCount: number };
+};
+
 type UnifiedShiftBottomModalProps = {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   selectedDate: string | null;
   dayData: DayData | null;
-  onShiftUpdated?: () => Promise<void>;
+  onShiftUpdated?: () => void | Promise<void>;
   initialStep?: "create-step1" | "create-step2";
+  shiftFormData: ShiftFormMasterData;
 };
 
 const INITIAL_FORM_DATA: ShiftFormData = {
@@ -49,15 +55,13 @@ export function UnifiedShiftBottomModal({
   dayData,
   onShiftUpdated,
   initialStep = "create-step1",
+  shiftFormData,
 }: UnifiedShiftBottomModalProps) {
   const { user } = useAuth();
   const { showNotification } = useNotification();
 
   // 管理権限チェック（MANAGER以上）
   const canManage = user ? hasManagePermission(user, "shifts") : false;
-
-  // シフト作成フォームデータを取得（React Query）
-  const { data: shiftFormData } = useShiftFormData();
 
   // 管理機能の状態
   const [currentStep, setCurrentStep] = useState<ModalStep>(initialStep);
@@ -81,8 +85,8 @@ export function UnifiedShiftBottomModal({
         formData.shiftTypeId > 0,
     });
 
-  // Server Actions
-  const createShiftMutation = useCreateShift();
+  // ローディング状態管理
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // dayDataが変更された時にlocalDayDataを更新
   useEffect(() => {
@@ -289,22 +293,34 @@ export function UnifiedShiftBottomModal({
     }
 
     setErrors({});
+    setIsSubmitting(true);
 
-    // React Query mutationを実行（エラーハンドリングはmutation内で処理）
-    const result = await createShiftMutation.mutateAsync({
-      date: selectedDate,
-      departmentId: formData.departmentId,
-      shiftTypeId: formData.shiftTypeId,
-      description: formData.notes || null,
-      assignedInstructorIds: formData.selectedInstructorIds,
-      force: editMode.isEdit,
-    });
+    try {
+      // Server Actionを実行
+      const result = await createShiftAction({
+        date: selectedDate,
+        departmentId: formData.departmentId,
+        shiftTypeId: formData.shiftTypeId,
+        description: formData.notes || null,
+        assignedInstructorIds: formData.selectedInstructorIds,
+        force: editMode.isEdit,
+      });
 
-    // 成功時の処理
-    if (result.success) {
-      await handleShiftSuccess();
-    } else {
-      setErrors({ submit: result.error || "シフトの処理に失敗しました" });
+      // 成功時の処理
+      if (result.success) {
+        await handleShiftSuccess();
+      } else {
+        setErrors({ submit: result.error || "シフトの処理に失敗しました" });
+      }
+    } catch (error) {
+      setErrors({
+        submit:
+          error instanceof Error
+            ? error.message
+            : "シフトの処理中にエラーが発生しました",
+      });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -431,7 +447,7 @@ export function UnifiedShiftBottomModal({
   // フッター（ステップ2）
   const renderStep2Footer = () => {
     const getSubmitButtonLabel = () => {
-      if (createShiftMutation.isPending) {
+      if (isSubmitting) {
         return "処理中...";
       }
       if (editMode.isEdit) {
@@ -452,7 +468,7 @@ export function UnifiedShiftBottomModal({
         </Button>
         <Button
           className="gap-2 md:flex-1"
-          disabled={createShiftMutation.isPending}
+          disabled={isSubmitting}
           onClick={handleCreateShift}
           size="lg"
         >

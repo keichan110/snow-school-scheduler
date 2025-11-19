@@ -1,15 +1,13 @@
-import { Suspense } from "react";
-import ShiftTypesPageClient from "./_components/page-client";
-import Loading from "./loading";
+import ShiftTypesContent from "./_components/shift-types-content";
+import { getShiftTypes } from "./_lib/data";
 
 /**
- * シフト種別管理ページ
+ * シフト種別管理ページ（Server Component）
  * - MANAGER以上の権限が必要（親レイアウトで認証済み）
+ * - データはサーバーサイドで取得し、Client Componentに渡す
  */
-export default function ShiftTypesPage() {
-  return (
-    <Suspense fallback={<Loading />}>
-      <ShiftTypesPageClient />
-    </Suspense>
-  );
+export default async function ShiftTypesPage() {
+  const shiftTypes = await getShiftTypes();
+
+  return <ShiftTypesContent initialShiftTypes={shiftTypes} />;
 }

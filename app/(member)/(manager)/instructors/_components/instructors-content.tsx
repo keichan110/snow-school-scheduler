@@ -6,6 +6,7 @@ import {
   Plus,
   SealCheck,
 } from "@phosphor-icons/react";
+import { useRouter } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
 import { CertificationBadge } from "@/app/_components/certification-badge";
 import { Button } from "@/components/ui/button";
@@ -21,6 +22,15 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  TableFilterRow,
+  TableHeaderLayout,
+  TableTitleRow,
+} from "../../_components/table-header";
+import {
+  createInstructorAction,
+  updateInstructorAction,
+} from "../_lib/actions";
 import { mapStatusToApi } from "../_lib/api";
 import type {
   CategoryFilterType,
@@ -28,11 +38,6 @@ import type {
   InstructorStats,
   InstructorWithCertifications,
 } from "../_lib/types";
-import {
-  useCreateInstructor,
-  useInstructorsQuery,
-  useUpdateInstructor,
-} from "../_lib/use-instructors";
 import InstructorModal from "./instructor-modal";
 
 const STATUS_ORDER: Partial<
@@ -239,7 +244,14 @@ function InstructorRow({ instructor, onOpenModal }: InstructorRowProps) {
   );
 }
 
-export default function InstructorsPageClient() {
+type InstructorsContentProps = {
+  initialData: InstructorWithCertifications[];
+};
+
+export default function InstructorsContent({
+  initialData,
+}: InstructorsContentProps) {
+  const router = useRouter();
   const [currentCategory, setCurrentCategory] =
     useState<CategoryFilterType>("all");
   const [showActiveOnly, setShowActiveOnly] = useState<boolean>(true);
@@ -247,20 +259,15 @@ export default function InstructorsPageClient() {
   const [editingInstructor, setEditingInstructor] =
     useState<InstructorWithCertifications | null>(null);
 
-  const { data: instructors } = useInstructorsQuery();
-
   const filteredInstructors = useMemo(
-    () => filterInstructors(instructors, currentCategory, showActiveOnly),
-    [instructors, currentCategory, showActiveOnly]
+    () => filterInstructors(initialData, currentCategory, showActiveOnly),
+    [initialData, currentCategory, showActiveOnly]
   );
 
   const stats = useMemo<InstructorStats>(
-    () => calculateInstructorStats(instructors),
-    [instructors]
+    () => calculateInstructorStats(initialData),
+    [initialData]
   );
-
-  const createInstructorMutation = useCreateInstructor();
-  const updateInstructorMutation = useUpdateInstructor();
 
   const handleCategoryChange = useCallback((category: string) => {
     setCurrentCategory(category as CategoryFilterType);
@@ -296,23 +303,19 @@ export default function InstructorsPageClient() {
         certificationIds: formData.certificationIds || [],
       };
 
-      if (editingInstructor) {
-        await updateInstructorMutation.mutateAsync({
-          id: editingInstructor.id,
-          data: input,
-        });
-      } else {
-        await createInstructorMutation.mutateAsync(input);
+      const result = editingInstructor
+        ? await updateInstructorAction(editingInstructor.id, input)
+        : await createInstructorAction(input);
+
+      if (!result.success) {
+        throw new Error(result.error || "Failed to save instructor");
       }
 
+      // ★重要★ Server Componentを再実行してサーバーから最新データを取得
+      router.refresh();
       handleCloseModal();
     },
-    [
-      createInstructorMutation,
-      editingInstructor,
-      handleCloseModal,
-      updateInstructorMutation,
-    ]
+    [editingInstructor, handleCloseModal, router]
   );
 
   return (
@@ -369,59 +372,73 @@ export default function InstructorsPageClient() {
       </div>
 
       <div className="overflow-x-auto rounded-lg border bg-white shadow-lg dark:bg-gray-900">
-        <div className="space-y-4 border-b p-4">
-          <div className="flex items-center justify-between">
-            <h2 className="font-semibold text-lg">インストラクター一覧</h2>
-            <Button
-              className="flex items-center gap-2"
-              onClick={() => handleOpenModal()}
-            >
-              <Plus className="h-4 w-4" weight="regular" />
-              追加
-            </Button>
-          </div>
-
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <Tabs
-              className="w-full sm:w-auto"
-              onValueChange={handleCategoryChange}
-              value={currentCategory}
-            >
-              <TabsList className="grid w-full grid-cols-3 sm:w-auto">
-                <TabsTrigger className="flex items-center gap-2" value="all">
-                  すべて
-                </TabsTrigger>
-                <TabsTrigger className="flex items-center gap-2" value="ski">
-                  スキー
-                </TabsTrigger>
-                <TabsTrigger
-                  className="flex items-center gap-2"
-                  value="snowboard"
+        <TableHeaderLayout
+          filterRow={
+            <TableFilterRow
+              leftFilter={
+                <Tabs
+                  className="w-full sm:w-auto"
+                  onValueChange={handleCategoryChange}
+                  value={currentCategory}
                 >
-                  スノーボード
-                </TabsTrigger>
-              </TabsList>
-            </Tabs>
-
-            <div className="hidden items-center space-x-2 sm:flex">
-              <Switch
-                checked={showActiveOnly}
-                id="active-only"
-                onCheckedChange={handleActiveFilterChange}
-              />
-              <Label
-                className="flex cursor-pointer items-center gap-1"
-                htmlFor="active-only"
-              >
-                <SealCheck
-                  className="h-4 w-4 text-green-600 dark:text-green-400"
-                  weight="regular"
-                />
-                有効のみ
-              </Label>
-            </div>
-          </div>
-        </div>
+                  <TabsList className="grid w-full grid-cols-3 sm:w-auto">
+                    <TabsTrigger
+                      className="flex items-center gap-2"
+                      value="all"
+                    >
+                      すべて
+                    </TabsTrigger>
+                    <TabsTrigger
+                      className="flex items-center gap-2"
+                      value="ski"
+                    >
+                      スキー
+                    </TabsTrigger>
+                    <TabsTrigger
+                      className="flex items-center gap-2"
+                      value="snowboard"
+                    >
+                      スノーボード
+                    </TabsTrigger>
+                  </TabsList>
+                </Tabs>
+              }
+              rightFilter={
+                <div className="hidden items-center space-x-2 sm:flex">
+                  <Switch
+                    checked={showActiveOnly}
+                    id="active-only"
+                    onCheckedChange={handleActiveFilterChange}
+                  />
+                  <Label
+                    className="flex cursor-pointer items-center gap-1"
+                    htmlFor="active-only"
+                  >
+                    <SealCheck
+                      className="h-4 w-4 text-green-600 dark:text-green-400"
+                      weight="regular"
+                    />
+                    有効のみ
+                  </Label>
+                </div>
+              }
+            />
+          }
+          titleRow={
+            <TableTitleRow
+              rightAction={
+                <Button
+                  className="flex items-center gap-2"
+                  onClick={() => handleOpenModal()}
+                >
+                  <Plus className="h-4 w-4" weight="regular" />
+                  追加
+                </Button>
+              }
+              title="インストラクター一覧"
+            />
+          }
+        />
         <Table>
           <TableHeader>
             <TableRow className="bg-white dark:bg-gray-900">

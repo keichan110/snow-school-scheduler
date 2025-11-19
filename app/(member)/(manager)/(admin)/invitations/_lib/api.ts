@@ -1,6 +1,8 @@
 /**
- * 招待管理API クライアント（READ専用）
- * Write操作はServer Actionsを使用してください
+ * 招待管理API クライアント
+ *
+ * 注意: 主なデータ取得はServer Componentsで行います（_lib/data.ts参照）
+ * このファイルは特定のClient Component用のAPI呼び出しのみを含みます
  */
 
 import { HTTP_STATUS_NOT_FOUND } from "@/constants/http-status";
@@ -24,62 +26,22 @@ export async function checkActiveInvitation(): Promise<InvitationTokenWithStats 
     throw new Error(`有効な招待のチェックに失敗しました: ${response.status}`);
   }
 
-  const result: InvitationApiResponse<InvitationTokenWithStats> =
-    await response.json();
+  const result: InvitationApiResponse<{
+    token: string;
+    description: string;
+    expiresAt: string;
+    isActive: boolean;
+    maxUses: number | null;
+    usageCount: number;
+    remainingUses: number;
+    createdAt: string;
+    createdBy: string;
+  }> = await response.json();
 
   if (!result.success) {
     throw new Error(result.error || "有効な招待のチェックに失敗しました");
   }
 
+  // データがそのまま正しい型なので、そのまま返す
   return result.data || null;
-}
-
-export async function fetchInvitations(): Promise<InvitationTokenWithStats[]> {
-  const response = await fetch(API_BASE_URL, {
-    method: "GET",
-    credentials: "include", // Cookieベースの認証
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
-
-  if (!response.ok) {
-    throw new Error(`招待一覧の取得に失敗しました: ${response.status}`);
-  }
-
-  const result: InvitationApiResponse<
-    {
-      token: string;
-      description: string;
-      expiresAt: string;
-      isActive: boolean;
-      maxUses: number | null;
-      usedCount: number;
-      createdAt: string;
-      createdBy: string;
-      creatorName: string;
-      creatorRole: string;
-      isExpired: boolean;
-      remainingUses: number | null;
-    }[]
-  > = await response.json();
-
-  if (!(result.success && result.data)) {
-    throw new Error(result.error || "招待一覧の取得に失敗しました");
-  }
-
-  // APIレスポンスをフロントエンド用の型に変換
-  const convertedData: InvitationTokenWithStats[] = result.data.map((item) => ({
-    token: item.token,
-    description: item.description,
-    expiresAt: new Date(item.expiresAt),
-    isActive: item.isActive,
-    maxUses: item.maxUses,
-    usageCount: item.usedCount,
-    remainingUses: item.remainingUses || 0, // null を 0 に変換
-    createdAt: new Date(item.createdAt),
-    createdBy: item.creatorName,
-  }));
-
-  return convertedData;
 }

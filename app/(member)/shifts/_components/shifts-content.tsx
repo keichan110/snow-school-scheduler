@@ -1,35 +1,23 @@
 "use client";
 
-import { QueryErrorResetBoundary, useQueryClient } from "@tanstack/react-query";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
-  Suspense,
   useCallback,
   useEffect,
   useMemo,
   useState,
   useTransition,
 } from "react";
-import { ErrorBoundary } from "react-error-boundary";
 import { useRequireAuth } from "@/app/_providers/auth";
 import { Button } from "@/components/ui/button";
 import { MOBILE_BREAKPOINT } from "@/constants";
 import { hasManagePermission } from "@/lib/auth/permissions";
 import { isHoliday } from "../_lib/constants";
-import {
-  publicShiftsDepartmentsQueryKeys,
-  publicShiftsQueryKeys,
-  useDepartmentsQuery,
-  usePublicShiftsQuery,
-} from "../_lib/queries";
-import type { DayData, ShiftQueryParams, ShiftStats } from "../_lib/types";
-import { useMonthNavigation } from "../_lib/use-month-navigation";
+import type { DayData, ShiftStats } from "../_lib/types";
 import { useShiftDataTransformation } from "../_lib/use-shift-data-transformation";
-import { useWeekNavigation } from "../_lib/use-week-navigation";
+import { formatDateToString } from "../_lib/week-calculations";
 import { MonthlyCalendarWithDetails } from "./monthly-calendar-with-details";
-import { PublicShiftsErrorState } from "./public-shifts-error-state";
-import { PublicShiftsSuspenseFallback } from "./public-shifts-suspense-fallback";
 import { ShiftMobileList } from "./shift-mobile-list";
 import { UnifiedShiftBottomModal } from "./unified-shift-bottom-modal";
 import { ViewToggle } from "./view-toggle";
@@ -38,11 +26,88 @@ import { WeeklyShiftList } from "./weekly-shift-list";
 
 type ViewMode = "monthly" | "weekly";
 
-function PublicShiftsPageContent() {
+// 正規表現は関数の外で定義（パフォーマンス最適化）
+const WHITESPACE_REGEX = /\s+/;
+
+/**
+ * サーバーから取得したシフトデータの型
+ * (APIレスポンス形式に合わせた型定義)
+ */
+type ServerShift = {
+  id: number;
+  date: string;
+  department: {
+    id: number;
+    name: string;
+    code: string;
+  };
+  shiftType: {
+    id: number;
+    name: string;
+  };
+  assignedInstructors: Array<{
+    id: number;
+    displayName: string;
+  }>;
+  stats: {
+    assignedCount: number;
+    hasNotes: boolean;
+  };
+  description: string | null;
+};
+
+/**
+ * サーバーから取得した部門データの型
+ */
+type ServerDepartment = {
+  id: number;
+  name: string;
+  code: string;
+};
+
+/**
+ * シフトフォーム用のマスターデータの型
+ */
+type ShiftFormData = {
+  departments: Array<{ id: number; name: string; code: string }>;
+  shiftTypes: Array<{ id: number; name: string }>;
+  stats: { activeInstructorCount: number };
+};
+
+type ShiftsContentProps = {
+  /**
+   * サーバーから取得したシフトデータ
+   */
+  initialShifts: ServerShift[];
+  /**
+   * サーバーから取得した部門一覧
+   */
+  initialDepartments: ServerDepartment[];
+  /**
+   * シフトフォーム用のマスターデータ
+   */
+  shiftFormData: ShiftFormData;
+};
+
+/**
+ * シフトページのクライアントコンテンツコンポーネント
+ *
+ * @description
+ * Server Componentから渡されたデータを受け取り、対話的な機能を提供します。
+ * データの更新後は router.refresh() を呼び出してServer Componentを再実行します。
+ *
+ * @param props.initialShifts - サーバーから取得したシフトデータ
+ * @param props.initialDepartments - サーバーから取得した部門一覧
+ * @param props.shiftFormData - シフトフォーム用のマスターデータ
+ */
+export default function ShiftsContent({
+  initialShifts,
+  initialDepartments,
+  shiftFormData,
+}: ShiftsContentProps) {
   const user = useRequireAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const queryClient = useQueryClient();
 
   // 画面サイズの状態管理
   const [isMobile, setIsMobile] = useState(false);
@@ -56,22 +121,76 @@ function PublicShiftsPageContent() {
 
   const canManage = hasManagePermission(user, "shifts");
 
-  const {
-    currentYear,
-    currentMonth,
-    setCurrentYear,
-    setCurrentMonth,
-    monthlyQueryParams,
-    navigateMonth,
-  } = useMonthNavigation();
-  const {
-    weeklyBaseDate,
-    setWeeklyBaseDate,
-    weeklyQueryParams,
-    navigateWeek,
-    handleDateSelect,
-  } = useWeekNavigation();
+  // URL paramsから現在の表示期間を取得
+  const yearParam = searchParams.get("year");
+  const monthParam = searchParams.get("month");
+  const dateFromParam = searchParams.get("dateFrom");
+
+  const now = new Date();
+  const currentYear = yearParam
+    ? Number.parseInt(yearParam, 10)
+    : now.getFullYear();
+  const currentMonth = monthParam
+    ? Number.parseInt(monthParam, 10)
+    : now.getMonth() + 1;
+  const weeklyBaseDate = dateFromParam
+    ? new Date(dateFromParam)
+    : new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
   const { transformShiftsToStats } = useShiftDataTransformation();
+
+  // 月間ナビゲーション（URLパラメータを更新）
+  const navigateMonth = useCallback(
+    (direction: number) => {
+      let newMonth = currentMonth + direction;
+      let newYear = currentYear;
+
+      const MONTHS_PER_YEAR = 12;
+      const FIRST_MONTH = 1;
+      const LAST_MONTH = 12;
+
+      if (newMonth > MONTHS_PER_YEAR) {
+        newMonth = FIRST_MONTH;
+        newYear++;
+      } else if (newMonth < FIRST_MONTH) {
+        newMonth = LAST_MONTH;
+        newYear--;
+      }
+
+      // URLパラメータを更新してページを再読み込み
+      router.push(`/shifts?view=monthly&year=${newYear}&month=${newMonth}`, {
+        scroll: false,
+      });
+    },
+    [currentMonth, currentYear, router]
+  );
+
+  // 週間ナビゲーション（URLパラメータを更新）
+  const navigateWeek = useCallback(
+    (direction: number) => {
+      const newDate = new Date(weeklyBaseDate);
+      const DAYS_PER_WEEK = 7;
+      newDate.setDate(weeklyBaseDate.getDate() + direction * DAYS_PER_WEEK);
+      const dateFrom = formatDateToString(newDate);
+
+      // URLパラメータを更新してページを再読み込み
+      router.push(`/shifts?view=weekly&dateFrom=${dateFrom}`, {
+        scroll: false,
+      });
+    },
+    [weeklyBaseDate, router]
+  );
+
+  // カレンダーで日付選択（週間ビュー用）
+  const handleDateSelect = useCallback(
+    (date: Date) => {
+      const dateFrom = formatDateToString(date);
+      router.push(`/shifts?view=weekly&dateFrom=${dateFrom}`, {
+        scroll: false,
+      });
+    },
+    [router]
+  );
 
   // 画面サイズの監視（matchMediaでブレークポイント越え時のみ反応）
   useEffect(() => {
@@ -91,6 +210,30 @@ function PublicShiftsPageContent() {
     return () => mediaQuery.removeEventListener("change", handleChange);
   }, []);
 
+  // モバイルで月間ビューのURLの場合、週間ビューに同期
+  // これにより、サーバーデータとクライアントUIの不一致を防ぐ
+  useEffect(() => {
+    // 条件を厳密にして無限ループを防止：
+    // 1. モバイルである
+    // 2. viewパラメータが明示的に"monthly"である
+    // この2つが同時に満たされる場合のみリダイレクト
+    //
+    // 無限ループにならない理由:
+    // - 初回: view="monthly" → 条件true → router.replace()実行
+    // - 2回目: view="weekly" → 条件false → 何もしない
+    // - 以降: viewが変わらない限り条件false → 安定
+    if (isMobile && searchParams.get("view") === "monthly") {
+      const today = new Date();
+      const dateFrom = formatDateToString(today);
+
+      // router.replace()でURLを更新（履歴を残さない）
+      router.replace(`/shifts?view=weekly&dateFrom=${dateFrom}`, {
+        scroll: false,
+      });
+    }
+    // searchParamsを依存配列に含めても、条件分岐により無限ループにならない
+  }, [isMobile, searchParams, router]);
+
   // ビューモードをisMobileとURLパラメータから計算（派生状態）
   const viewMode = useMemo<ViewMode>(() => {
     // モバイルの場合は強制的に週間ビュー
@@ -98,27 +241,83 @@ function PublicShiftsPageContent() {
       return "weekly";
     }
 
-    // デスクトップの場合はURLパラメータを優先
+    // デスクトップの場合はURLパラメータを尊重
+    // Middlewareにより、viewパラメータがない場合は自動的に週間ビューにリダイレクトされる
     const viewParam = searchParams.get("view") as ViewMode;
-    if (viewParam === "weekly" || viewParam === "monthly") {
-      return viewParam;
+    if (viewParam === "monthly") {
+      return "monthly";
     }
 
-    // フォールバック（Middlewareによりこのケースは通常発生しない）
-    return "monthly";
+    // デフォルトは週間ビュー（Middlewareと一致）
+    return "weekly";
   }, [isMobile, searchParams]);
 
-  const queryParams = useMemo<ShiftQueryParams>(
-    () => (viewMode === "weekly" ? weeklyQueryParams : monthlyQueryParams),
-    [viewMode, weeklyQueryParams, monthlyQueryParams]
+  // ServerShift[] を Shift[] 型に変換するアダプター
+  const convertedShifts = useMemo(() => {
+    return initialShifts.map((shift) => {
+      // displayNameを姓名に分離（スペースで分割、失敗時は全体を姓とする）
+      const nameParts = shift.assignedInstructors.map((instructor) => {
+        const parts = instructor.displayName.trim().split(WHITESPACE_REGEX);
+        return {
+          id: instructor.id,
+          lastName: parts[0] || "",
+          firstName: parts[1] || "",
+        };
+      });
+
+      return {
+        id: shift.id,
+        date: shift.date,
+        departmentId: shift.department.id,
+        shiftTypeId: shift.shiftType.id,
+        description: shift.description,
+        createdAt: "",
+        updatedAt: "",
+        department: {
+          id: shift.department.id,
+          name: shift.department.name,
+          createdAt: "",
+          updatedAt: "",
+        },
+        shiftType: {
+          id: shift.shiftType.id,
+          name: shift.shiftType.name,
+          isActive: true,
+          createdAt: "",
+          updatedAt: "",
+        },
+        assignments: nameParts.map((instructor) => ({
+          id: `${shift.id}-${instructor.id}`,
+          shiftId: shift.id,
+          instructorId: instructor.id,
+          assignedAt: "",
+          instructor: {
+            id: instructor.id,
+            lastName: instructor.lastName,
+            firstName: instructor.firstName,
+            status: "ACTIVE" as const,
+          },
+        })),
+        assignedCount: shift.stats.assignedCount,
+      };
+    });
+  }, [initialShifts]);
+
+  // Department型に変換
+  const convertedDepartments = useMemo(
+    () =>
+      initialDepartments.map((dept) => ({
+        id: dept.id,
+        name: dept.name,
+        createdAt: "",
+        updatedAt: "",
+      })),
+    [initialDepartments]
   );
 
-  const { data: shifts } = usePublicShiftsQuery({ params: queryParams });
-  const { data: departments } = useDepartmentsQuery();
-
   const shiftStats = useMemo<ShiftStats>(
-    () => transformShiftsToStats(shifts, departments),
-    [shifts, departments, transformShiftsToStats]
+    () => transformShiftsToStats(convertedShifts, convertedDepartments),
+    [convertedShifts, convertedDepartments, transformShiftsToStats]
   );
 
   const handleViewChange = useCallback(
@@ -129,31 +328,25 @@ function PublicShiftsPageContent() {
       setPendingView(newView);
       startTransition(() => {
         // ビュー切り替え時に日付を引き継ぐ
+        // URL更新後、Server Componentが適切なデータを再取得
         if (newView === "monthly") {
           // 週間 → 月間: 週間ビューの基準日の年月を月間ビューに設定
           const year = weeklyBaseDate.getFullYear();
           const month = weeklyBaseDate.getMonth() + 1;
-          setCurrentYear(year);
-          setCurrentMonth(month);
+          router.push(`/shifts?view=monthly&year=${year}&month=${month}`, {
+            scroll: false,
+          });
         } else if (newView === "weekly") {
           // 月間 → 週間: 月間ビューの1日を週間ビューの基準日に設定
           const firstDayOfMonth = new Date(currentYear, currentMonth - 1, 1);
-          setWeeklyBaseDate(firstDayOfMonth);
+          const dateFrom = formatDateToString(firstDayOfMonth);
+          router.push(`/shifts?view=weekly&dateFrom=${dateFrom}`, {
+            scroll: false,
+          });
         }
-        // URLを変更すると、useMemoによりviewModeが自動的に更新される
-        router.push(`/shifts?view=${newView}`, { scroll: false });
       });
     },
-    [
-      router,
-      viewMode,
-      weeklyBaseDate,
-      currentYear,
-      currentMonth,
-      setCurrentYear,
-      setCurrentMonth,
-      setWeeklyBaseDate,
-    ]
+    [router, viewMode, weeklyBaseDate, currentYear, currentMonth]
   );
 
   const handleMonthlyDateSelect = useCallback((date: string) => {
@@ -195,14 +388,10 @@ function PublicShiftsPageContent() {
     }
   }, []);
 
-  const handleShiftUpdated = useCallback(async () => {
-    await Promise.all([
-      queryClient.invalidateQueries({ queryKey: publicShiftsQueryKeys.all }),
-      queryClient.invalidateQueries({
-        queryKey: publicShiftsDepartmentsQueryKeys.all,
-      }),
-    ]);
-  }, [queryClient]);
+  const handleShiftUpdated = useCallback(() => {
+    // ★重要★ Server Componentを再実行してサーバーから最新データを取得
+    router.refresh();
+  }, [router]);
 
   const dayData = useMemo<DayData | null>(() => {
     if (!selectedDate) {
@@ -338,32 +527,8 @@ function PublicShiftsPageContent() {
         onOpenChange={handleModalOpenChange}
         onShiftUpdated={handleShiftUpdated}
         selectedDate={selectedDate}
+        shiftFormData={shiftFormData}
       />
     </div>
-  );
-}
-
-export default function PublicShiftsPageClient() {
-  return (
-    <QueryErrorResetBoundary>
-      {({ reset }) => (
-        <ErrorBoundary
-          fallbackRender={({ error, resetErrorBoundary }) => (
-            <PublicShiftsErrorState
-              error={error}
-              onRetry={() => {
-                reset();
-                resetErrorBoundary();
-              }}
-            />
-          )}
-          onReset={reset}
-        >
-          <Suspense fallback={<PublicShiftsSuspenseFallback />}>
-            <PublicShiftsPageContent />
-          </Suspense>
-        </ErrorBoundary>
-      )}
-    </QueryErrorResetBoundary>
   );
 }

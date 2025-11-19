@@ -19,6 +19,7 @@ type InvitationWarningModalProps = {
   onConfirm: () => void;
   existingInvitation: InvitationTokenWithStats;
   isSubmitting?: boolean;
+  error?: string | null;
 };
 
 export default function InvitationWarningModal({
@@ -27,6 +28,7 @@ export default function InvitationWarningModal({
   onConfirm,
   existingInvitation,
   isSubmitting = false,
+  error = null,
 }: InvitationWarningModalProps) {
   return (
     <Dialog onOpenChange={onClose} open={isOpen}>
@@ -116,6 +118,21 @@ export default function InvitationWarningModal({
               <li>• 既に配布されたURLを持つ方は新しいURLが必要になります</li>
             </ul>
           </div>
+
+          {error && (
+            <div className="rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-950/20">
+              <div className="flex items-start gap-3">
+                <Warning
+                  className="mt-0.5 h-5 w-5 flex-shrink-0 text-red-600 dark:text-red-400"
+                  weight="fill"
+                />
+                <div className="text-red-800 text-sm dark:text-red-200">
+                  <p className="mb-1 font-medium">エラーが発生しました</p>
+                  <p>{error}</p>
+                </div>
+              </div>
+            </div>
+          )}
 
           <div className="flex gap-2">
             <Button
