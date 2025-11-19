@@ -15,6 +15,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  TableFilterRow,
+  TableHeaderLayout,
+  TableTitleRow,
+} from "../../_components/table-header";
 import { createShiftTypeAction, updateShiftTypeAction } from "../_lib/actions";
 import type {
   ShiftType,
@@ -159,38 +164,45 @@ export default function ShiftTypesContent({
       </div>
 
       <div className="overflow-x-auto rounded-lg border bg-white shadow-lg dark:bg-gray-900">
-        <div className="space-y-4 border-b p-4">
-          <div className="flex items-center justify-between">
-            <h2 className="font-semibold text-lg">シフト種類一覧</h2>
-            <Button
-              className="flex items-center gap-2"
-              onClick={() => handleOpenModal()}
-            >
-              <Plus className="h-4 w-4" weight="regular" />
-              追加
-            </Button>
-          </div>
-
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-center space-x-2">
-              <Switch
-                checked={showActiveOnly}
-                id="active-only"
-                onCheckedChange={handleActiveFilterChange}
-              />
-              <Label
-                className="flex cursor-pointer items-center gap-1"
-                htmlFor="active-only"
-              >
-                <SealCheck
-                  className="h-4 w-4 text-green-600 dark:text-green-400"
-                  weight="regular"
-                />
-                有効のみ
-              </Label>
-            </div>
-          </div>
-        </div>
+        <TableHeaderLayout
+          filterRow={
+            <TableFilterRow
+              rightFilter={
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    checked={showActiveOnly}
+                    id="active-only"
+                    onCheckedChange={handleActiveFilterChange}
+                  />
+                  <Label
+                    className="flex cursor-pointer items-center gap-1"
+                    htmlFor="active-only"
+                  >
+                    <SealCheck
+                      className="h-4 w-4 text-green-600 dark:text-green-400"
+                      weight="regular"
+                    />
+                    有効のみ
+                  </Label>
+                </div>
+              }
+            />
+          }
+          titleRow={
+            <TableTitleRow
+              rightAction={
+                <Button
+                  className="flex items-center gap-2"
+                  onClick={() => handleOpenModal()}
+                >
+                  <Plus className="h-4 w-4" weight="regular" />
+                  追加
+                </Button>
+              }
+              title="シフト種類一覧"
+            />
+          }
+        />
         <Table>
           <TableHeader>
             <TableRow className="bg-white dark:bg-gray-900">

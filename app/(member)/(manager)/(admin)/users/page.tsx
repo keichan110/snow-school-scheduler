@@ -1,8 +1,8 @@
 import { Suspense } from "react";
 import { prisma } from "@/lib/db";
-import { UserFilters } from "./_components/user-filters";
 import { UserList } from "./_components/user-list";
 import { UserStats } from "./_components/user-stats";
+import { UserTableHeader } from "./_components/user-table-header";
 import Loading from "./loading";
 
 /**
@@ -149,12 +149,7 @@ async function UsersPageContent({ searchParams }: UsersPageProps) {
       <UserStats stats={stats} />
 
       <div className="overflow-x-auto rounded-lg border bg-white shadow-lg dark:bg-gray-900">
-        <div className="space-y-4 border-b p-4">
-          <div className="flex items-center justify-between">
-            <h2 className="font-semibold text-lg">ユーザー一覧</h2>
-            <UserFilters />
-          </div>
-        </div>
+        <UserTableHeader />
 
         <UserList users={serializedUsers} />
       </div>

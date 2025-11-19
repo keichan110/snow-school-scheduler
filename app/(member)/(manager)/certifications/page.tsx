@@ -1,8 +1,8 @@
 import { Suspense } from "react";
 import { prisma } from "@/lib/db";
-import { CertificationFilters } from "./_components/certification-filters";
 import { CertificationList } from "./_components/certification-list";
 import { CertificationStats } from "./_components/certification-stats";
+import { CertificationTableHeader } from "./_components/certification-table-header";
 import {
   createCertificationAction,
   updateCertificationAction,
@@ -164,12 +164,7 @@ async function CertificationsPageContent({
       <CertificationStats stats={stats} />
 
       <div className="overflow-x-auto rounded-lg border bg-white shadow-lg dark:bg-gray-900">
-        <div className="space-y-4 border-b p-4">
-          <div className="flex items-center justify-between">
-            <h2 className="font-semibold text-lg">資格一覧</h2>
-            <CertificationFilters />
-          </div>
-        </div>
+        <CertificationTableHeader />
 
         <CertificationList
           certifications={certifications}

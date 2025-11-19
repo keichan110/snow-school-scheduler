@@ -12,6 +12,7 @@ const PROGRESS_ALMOST_COMPLETE = 90;
 const PROGRESS_INCREMENT_FACTOR = 0.18;
 const PROGRESS_COMPLETE = 100;
 const PROGRESS_RESET = 0;
+const TRANSITION_COMPLETE_DELAY_MS = 100;
 
 function getTime() {
   if (typeof performance !== "undefined") {
@@ -148,7 +149,7 @@ export function HeaderProgressIndicator() {
       // 短い遅延後に遷移完了とする
       const completeTimeout = window.setTimeout(() => {
         stopProgressTracking();
-      }, 100);
+      }, TRANSITION_COMPLETE_DELAY_MS);
 
       // 前回の値を更新
       previousPathnameRef.current = currentPathname;
