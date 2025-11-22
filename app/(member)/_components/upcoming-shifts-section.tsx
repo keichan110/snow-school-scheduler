@@ -1,5 +1,4 @@
 import { Calendar } from "lucide-react";
-import { formatDateString } from "@/app/api/usecases/helpers/formatters";
 import {
   Card,
   CardContent,
@@ -8,6 +7,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { getUpcomingShifts } from "@/lib/data/shift";
+import { ShiftCard } from "./shift-card";
 
 /**
  * 今後のシフトとして表示する最大件数
@@ -66,23 +66,7 @@ export async function UpcomingShiftsSection({
       <CardContent>
         <div className="space-y-4">
           {shifts.map((shift) => (
-            <div
-              className="flex items-start justify-between rounded-lg border p-4"
-              key={shift.id}
-            >
-              <div className="space-y-1">
-                <div className="flex items-center gap-2">
-                  <p className="font-medium text-sm">
-                    {formatDateString(shift.date)}
-                  </p>
-                  <span className="text-muted-foreground text-xs">·</span>
-                  <p className="text-muted-foreground text-sm">
-                    {shift.department.name}
-                  </p>
-                </div>
-                <p className="text-sm">{shift.shiftType.name}</p>
-              </div>
-            </div>
+            <ShiftCard key={shift.id} shift={shift} />
           ))}
         </div>
       </CardContent>
