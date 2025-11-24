@@ -42,12 +42,18 @@ function UpcomingShiftsSkeleton() {
         <Skeleton className="h-7 w-48" />
       </CardHeader>
       <CardContent className="space-y-4">
-        {[...Array(3)].map((_, i) => (
-          <div className="space-y-2" key={i}>
-            <Skeleton className="h-6 w-32" />
-            <Skeleton className="h-20 w-full" />
-          </div>
-        ))}
+        <div className="space-y-2">
+          <Skeleton className="h-6 w-32" />
+          <Skeleton className="h-20 w-full" />
+        </div>
+        <div className="space-y-2">
+          <Skeleton className="h-6 w-32" />
+          <Skeleton className="h-20 w-full" />
+        </div>
+        <div className="space-y-2">
+          <Skeleton className="h-6 w-32" />
+          <Skeleton className="h-20 w-full" />
+        </div>
       </CardContent>
     </Card>
   );
@@ -73,19 +79,13 @@ export default async function DashboardPage() {
 
   // インストラクター情報取得（React.cacheでメモ化されているため、layout.tsxと重複してもDBクエリは1回のみ）
   // 今後のシフトはSuspenseで遅延読み込みするため、ここでは取得しない
-  let instructorProfile;
-  let availableInstructors;
-
-  try {
-    [instructorProfile, availableInstructors] = await Promise.all([
-      user.instructorId ? getInstructorProfile(user.instructorId) : null,
-      // 未紐付けの場合でもHeaderで使用するため、常に取得する
-      getAvailableInstructors(),
-    ]);
-  } catch (error) {
-    console.error("Failed to fetch dashboard data:", error);
+  const [instructorProfile, availableInstructors] = await Promise.all([
+    user.instructorId ? getInstructorProfile(user.instructorId) : null,
+    // 未紐付けの場合でもHeaderで使用するため、常に取得する
+    getAvailableInstructors(),
+  ]).catch(() => {
     throw new Error("ダッシュボードデータの取得に失敗しました");
-  }
+  });
 
   return (
     <div className="space-y-6">

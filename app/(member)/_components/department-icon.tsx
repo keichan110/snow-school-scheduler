@@ -1,10 +1,6 @@
 "use client";
 
-import {
-  Calendar,
-  PersonSimpleSki,
-  PersonSimpleSnowboard,
-} from "@phosphor-icons/react";
+import { PersonSimpleSki, PersonSimpleSnowboard } from "@phosphor-icons/react";
 
 type DepartmentIconProps = {
   type: "ski" | "snowboard" | "mixed";
