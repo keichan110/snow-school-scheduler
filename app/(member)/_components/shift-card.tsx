@@ -58,26 +58,21 @@ export function ShiftCard({ shift }: ShiftCardProps) {
   const date = new Date(shift.date);
   const month = date.getMonth() + 1;
   const day = date.getDate();
-  const year = date.getFullYear();
   const weekday = ["日", "月", "火", "水", "木", "金", "土"][date.getDay()];
 
   const departmentType = getDepartmentType(shift.department.name);
   const departmentStyles = getDepartmentStyles(departmentType);
 
   return (
-    <div
-      className="flex items-start justify-between rounded-lg border p-4"
-      key={shift.id}
-    >
-      <div className="space-y-1">
-        <div className="flex items-baseline gap-1">
-          <span className="text-muted-foreground text-xs">{year}</span>
-          <span className="font-bold text-2xl">
+    <div className="h-full rounded-lg border p-4" key={shift.id}>
+      <div className="flex h-full flex-col space-y-3">
+        <div className="flex items-baseline justify-center gap-1.5 text-center">
+          <span className="font-bold text-3xl">
             {month}/{day}
           </span>
           <span className="text-muted-foreground text-xs">({weekday})</span>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-col items-center">
           <span
             className={cn(
               "flex items-center gap-1.5 rounded-full border px-2.5 py-1 font-medium text-xs",

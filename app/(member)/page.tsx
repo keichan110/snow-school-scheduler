@@ -3,8 +3,14 @@ import {
   getAvailableInstructors,
   getInstructorProfile,
 } from "@/lib/data/instructor";
+import { getUpcomingShifts } from "@/lib/data/shift";
 import { InstructorLinkageSection } from "./_components/instructor-linkage-section";
 import { UpcomingShiftsSection } from "./_components/upcoming-shifts-section";
+
+/**
+ * 今後のシフトとして表示する最大件数
+ */
+const MAX_UPCOMING_SHIFTS_DISPLAY = 5;
 
 /**
  * ダッシュボードページ
@@ -25,11 +31,16 @@ export default async function DashboardPage() {
   }
 
   // インストラクター情報取得（React.cacheでメモ化されているため、layout.tsxと重複してもDBクエリは1回のみ）
-  const [instructorProfile, availableInstructors] = await Promise.all([
-    user.instructorId ? getInstructorProfile(user.instructorId) : null,
-    // 未紐付けの場合でもHeaderで使用するため、常に取得する
-    getAvailableInstructors(),
-  ]);
+  const [instructorProfile, availableInstructors, upcomingShifts] =
+    await Promise.all([
+      user.instructorId ? getInstructorProfile(user.instructorId) : null,
+      // 未紐付けの場合でもHeaderで使用するため、常に取得する
+      getAvailableInstructors(),
+      // 今後のシフトを取得
+      user.instructorId
+        ? getUpcomingShifts(user.instructorId, MAX_UPCOMING_SHIFTS_DISPLAY)
+        : [],
+    ]);
 
   return (
     <div className="space-y-6">
@@ -48,7 +59,10 @@ export default async function DashboardPage() {
 
       {/* 今後のシフト（インストラクター紐付け済みの場合のみ表示） */}
       {user.instructorId && (
-        <UpcomingShiftsSection instructorId={user.instructorId} />
+        <UpcomingShiftsSection
+          instructorId={user.instructorId}
+          shifts={upcomingShifts}
+        />
       )}
 
       {/* 今後追加される他のダッシュボードコンテンツ */}

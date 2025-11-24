@@ -1,4 +1,7 @@
-import { Calendar } from "lucide-react";
+"use client";
+
+import { ArrowRight, Calendar } from "lucide-react";
+import Link from "next/link";
 import {
   Card,
   CardContent,
@@ -6,33 +9,44 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { getUpcomingShifts } from "@/lib/data/shift";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
+import { useShiftsLink } from "@/lib/hooks/use-shifts-link";
 import { ShiftCard } from "./shift-card";
-
-/**
- * 今後のシフトとして表示する最大件数
- */
-const MAX_UPCOMING_SHIFTS_DISPLAY = 3;
 
 type UpcomingShiftsSectionProps = {
   instructorId: number;
+  shifts: Array<{
+    id: number;
+    date: Date;
+    department: {
+      name: string;
+    };
+    shiftType: {
+      name: string;
+    };
+  }>;
 };
 
 /**
  * インストラクター向け今後のシフト表示セクション
  *
  * @description
- * 認証ユーザーに紐づくインストラクターの今後のシフト（最大3件）を表示します。
- * Server Componentとして実装し、lib/dataのメモ化された関数から直接データを取得します。
+ * 認証ユーザーに紐づくインストラクターの今後のシフトをCarousel形式で表示します。
+ * Client Componentとして実装し、Carouselの状態管理を行います。
+ * - デスクトップ：一度に5つのシフトを表示
+ * - モバイル：一度に1つのシフトを表示
  */
-export async function UpcomingShiftsSection({
+export function UpcomingShiftsSection({
   instructorId,
+  shifts,
 }: UpcomingShiftsSectionProps) {
-  // lib/data/shift.ts のメモ化された関数から取得
-  const shifts = await getUpcomingShifts(
-    instructorId,
-    MAX_UPCOMING_SHIFTS_DISPLAY
-  );
+  const shiftsLink = useShiftsLink();
 
   // シフトがない場合の表示
   if (shifts.length === 0) {
@@ -64,11 +78,38 @@ export async function UpcomingShiftsSection({
         <CardDescription>直近の予定されたシフトを表示します</CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="space-y-4">
-          {shifts.map((shift) => (
-            <ShiftCard key={shift.id} shift={shift} />
-          ))}
-        </div>
+        <Carousel
+          className="w-full px-12"
+          opts={{
+            align: "start",
+            loop: false,
+          }}
+        >
+          <CarouselContent className="-ml-2 md:-ml-4">
+            {shifts.map((shift) => (
+              <CarouselItem
+                className="basis-full pl-2 md:basis-1/5 md:pl-4"
+                key={shift.id}
+              >
+                <ShiftCard shift={shift} />
+              </CarouselItem>
+            ))}
+            {/* すべてのシフトを見るリンクカード */}
+            <CarouselItem className="basis-full pl-2 md:basis-1/5 md:pl-4">
+              <Link className="block h-full" href={shiftsLink}>
+                <div className="flex h-full flex-col items-center justify-center rounded-lg border border-primary border-dashed bg-primary/5 p-4 transition-all hover:bg-primary/10">
+                  <Calendar className="mb-2 h-8 w-8 text-primary" />
+                  <span className="mb-1 font-medium text-primary text-sm">
+                    すべて表示
+                  </span>
+                  <ArrowRight className="h-4 w-4 text-primary" />
+                </div>
+              </Link>
+            </CarouselItem>
+          </CarouselContent>
+          <CarouselPrevious className="left-0" />
+          <CarouselNext className="right-0" />
+        </Carousel>
       </CardContent>
     </Card>
   );
