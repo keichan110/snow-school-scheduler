@@ -83,14 +83,6 @@ describe("shiftComponents", () => {
       expect(container.firstChild).toBeTruthy();
     });
 
-    it("共通部門のアイコンを返す", () => {
-      const icon = getDepartmentIcon("mixed");
-      render(<div data-testid="icon-container">{icon}</div>);
-
-      const container = screen.getByTestId("icon-container");
-      expect(container.firstChild).toBeTruthy();
-    });
-
     it("カスタムクラス名を適用する", () => {
       const customClass = "custom-class";
       const icon = getDepartmentIcon("ski", customClass);

@@ -8,14 +8,14 @@ jest.mock("@/lib/utils", () => ({
   cn: jest.fn((...classes) => classes.filter(Boolean).join(" ")),
 }));
 
-jest.mock("@/app/(member)/shifts/_components/department-icon", () => ({
-  DepartmentIcon: jest.fn(({ department, size }) => (
+jest.mock("@/app/(member)/_components/department-icon", () => ({
+  DepartmentIcon: jest.fn(({ type, className }) => (
     <div
-      data-department={department}
-      data-size={size}
+      data-classname={className}
+      data-department={type}
       data-testid="department-icon"
     >
-      {department}-icon
+      {type}-icon
     </div>
   )),
 }));

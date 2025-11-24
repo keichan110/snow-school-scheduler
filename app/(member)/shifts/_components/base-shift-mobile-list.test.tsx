@@ -8,14 +8,14 @@ jest.mock("@/lib/utils", () => ({
   cn: jest.fn((...classes) => classes.filter(Boolean).join(" ")),
 }));
 
-jest.mock("@/app/(member)/shifts/_components/department-icon", () => ({
-  DepartmentIcon: jest.fn(({ department, size }) => (
+jest.mock("@/app/(member)/_components/department-icon", () => ({
+  DepartmentIcon: jest.fn(({ type, className }) => (
     <div
-      data-department={department}
-      data-size={size}
+      data-classname={className}
+      data-department={type}
       data-testid="department-icon"
     >
-      {department}-icon-{size}
+      {type}-icon
     </div>
   )),
 }));
@@ -144,11 +144,12 @@ describe("BaseShiftMobileList", () => {
       const departmentIcons = screen.getAllByTestId("department-icon");
       expect(departmentIcons.length).toBeGreaterThan(0);
 
-      // モバイル表示では「md」サイズが使用される
-      const mdSizeIcons = departmentIcons.filter(
-        (icon) => icon.getAttribute("data-size") === "md"
-      );
-      expect(mdSizeIcons.length).toBe(departmentIcons.length);
+      // モバイル表示では「h-4 w-4」サイズが使用される
+      const correctSizeIcons = departmentIcons.filter((icon) => {
+        const className = icon.getAttribute("data-classname") || "";
+        return className.includes("h-4") && className.includes("w-4");
+      });
+      expect(correctSizeIcons.length).toBe(departmentIcons.length);
     });
 
     it("複数のシフトがある日に全て表示される", () => {
