@@ -20,7 +20,6 @@ import { useShiftsLink } from "@/lib/hooks/use-shifts-link";
 import { ShiftCard } from "./shift-card";
 
 type UpcomingShiftsSectionProps = {
-  instructorId: number;
   shifts: Array<{
     id: number;
     date: Date;

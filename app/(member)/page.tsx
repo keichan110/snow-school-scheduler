@@ -24,12 +24,7 @@ async function UpcomingShiftsAsync({ instructorId }: { instructorId: number }) {
     MAX_UPCOMING_SHIFTS_DISPLAY
   );
 
-  return (
-    <UpcomingShiftsSection
-      instructorId={instructorId}
-      shifts={upcomingShifts}
-    />
-  );
+  return <UpcomingShiftsSection shifts={upcomingShifts} />;
 }
 
 /**

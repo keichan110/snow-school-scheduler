@@ -64,7 +64,7 @@ export function ShiftCard({ shift }: ShiftCardProps) {
   const departmentStyles = getDepartmentStyles(departmentType);
 
   return (
-    <div className="h-full rounded-lg border p-4" key={shift.id}>
+    <div className="h-full rounded-lg border p-4">
       <div className="flex h-full flex-col space-y-3">
         <div className="flex items-baseline justify-center gap-1.5 text-center">
           <span className="font-bold text-3xl">
