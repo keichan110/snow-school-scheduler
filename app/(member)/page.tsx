@@ -1,3 +1,6 @@
+import { Suspense } from "react";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { authenticate } from "@/lib/auth/auth";
 import {
   getAvailableInstructors,
@@ -11,6 +14,44 @@ import { UpcomingShiftsSection } from "./_components/upcoming-shifts-section";
  * 今後のシフトとして表示する最大件数
  */
 const MAX_UPCOMING_SHIFTS_DISPLAY = 5;
+
+/**
+ * 今後のシフトセクションの非同期コンポーネント
+ */
+async function UpcomingShiftsAsync({ instructorId }: { instructorId: number }) {
+  const upcomingShifts = await getUpcomingShifts(
+    instructorId,
+    MAX_UPCOMING_SHIFTS_DISPLAY
+  );
+
+  return (
+    <UpcomingShiftsSection
+      instructorId={instructorId}
+      shifts={upcomingShifts}
+    />
+  );
+}
+
+/**
+ * 今後のシフトセクションのスケルトン
+ */
+function UpcomingShiftsSkeleton() {
+  return (
+    <Card>
+      <CardHeader>
+        <Skeleton className="h-7 w-48" />
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {[...Array(3)].map((_, i) => (
+          <div className="space-y-2" key={i}>
+            <Skeleton className="h-6 w-32" />
+            <Skeleton className="h-20 w-full" />
+          </div>
+        ))}
+      </CardContent>
+    </Card>
+  );
+}
 
 /**
  * ダッシュボードページ
@@ -31,16 +72,20 @@ export default async function DashboardPage() {
   }
 
   // インストラクター情報取得（React.cacheでメモ化されているため、layout.tsxと重複してもDBクエリは1回のみ）
-  const [instructorProfile, availableInstructors, upcomingShifts] =
-    await Promise.all([
+  // 今後のシフトはSuspenseで遅延読み込みするため、ここでは取得しない
+  let instructorProfile;
+  let availableInstructors;
+
+  try {
+    [instructorProfile, availableInstructors] = await Promise.all([
       user.instructorId ? getInstructorProfile(user.instructorId) : null,
       // 未紐付けの場合でもHeaderで使用するため、常に取得する
       getAvailableInstructors(),
-      // 今後のシフトを取得
-      user.instructorId
-        ? getUpcomingShifts(user.instructorId, MAX_UPCOMING_SHIFTS_DISPLAY)
-        : [],
     ]);
+  } catch (error) {
+    console.error("Failed to fetch dashboard data:", error);
+    throw new Error("ダッシュボードデータの取得に失敗しました");
+  }
 
   return (
     <div className="space-y-6">
@@ -59,10 +104,9 @@ export default async function DashboardPage() {
 
       {/* 今後のシフト（インストラクター紐付け済みの場合のみ表示） */}
       {user.instructorId && (
-        <UpcomingShiftsSection
-          instructorId={user.instructorId}
-          shifts={upcomingShifts}
-        />
+        <Suspense fallback={<UpcomingShiftsSkeleton />}>
+          <UpcomingShiftsAsync instructorId={user.instructorId} />
+        </Suspense>
       )}
 
       {/* 今後追加される他のダッシュボードコンテンツ */}
