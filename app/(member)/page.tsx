@@ -34,20 +34,31 @@ function UpcomingShiftsSkeleton() {
   return (
     <Card>
       <CardHeader>
-        <Skeleton className="h-7 w-48" />
+        <div className="flex items-center gap-2">
+          <Skeleton className="h-5 w-5" />
+          <Skeleton className="h-6 w-32" />
+        </div>
+        <Skeleton className="mt-1 h-4 w-64" />
       </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="space-y-2">
-          <Skeleton className="h-6 w-32" />
-          <Skeleton className="h-20 w-full" />
-        </div>
-        <div className="space-y-2">
-          <Skeleton className="h-6 w-32" />
-          <Skeleton className="h-20 w-full" />
-        </div>
-        <div className="space-y-2">
-          <Skeleton className="h-6 w-32" />
-          <Skeleton className="h-20 w-full" />
+      <CardContent>
+        <div className="w-full px-12">
+          <div className="-ml-2 md:-ml-4 flex">
+            {/* biome-ignore-start lint/suspicious/noArrayIndexKey: スケルトンは静的表示のため順序変更なし */}
+            {Array.from({ length: MAX_UPCOMING_SHIFTS_DISPLAY }, (_, i) => (
+              <div
+                className="basis-full pl-2 md:basis-1/5 md:pl-4"
+                key={`skeleton-shift-${i}`}
+              >
+                <div className="h-full rounded-lg border p-4">
+                  <div className="flex h-full flex-col items-center justify-center space-y-3">
+                    <Skeleton className="h-8 w-20" />
+                    <Skeleton className="h-6 w-24 rounded-full" />
+                  </div>
+                </div>
+              </div>
+            ))}
+            {/* biome-ignore-end lint/suspicious/noArrayIndexKey: スケルトン表示範囲の終了 */}
+          </div>
         </div>
       </CardContent>
     </Card>
