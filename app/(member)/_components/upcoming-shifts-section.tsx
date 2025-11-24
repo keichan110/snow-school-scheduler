@@ -42,10 +42,7 @@ type UpcomingShiftsSectionProps = {
  * - デスクトップ：一度に5つのシフトを表示
  * - モバイル：一度に1つのシフトを表示
  */
-export function UpcomingShiftsSection({
-  instructorId,
-  shifts,
-}: UpcomingShiftsSectionProps) {
+export function UpcomingShiftsSection({ shifts }: UpcomingShiftsSectionProps) {
   const shiftsLink = useShiftsLink();
 
   // シフトがない場合の表示

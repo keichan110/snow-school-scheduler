@@ -27,7 +27,7 @@ export function DepartmentIcon({
       return <PersonSimpleSki className={className} weight="fill" />;
     case "snowboard":
       return <PersonSimpleSnowboard className={className} weight="fill" />;
-    case "mixed":
-      return <Calendar className={className} weight="fill" />;
+    default:
+      return null;
   }
 }
