@@ -21,7 +21,6 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import { getDepartmentType } from "@/lib/utils/department-type";
 import type { ActionResult } from "@/types/actions";
 import { getDepartmentIdByTypeAction } from "../_lib/actions";
 import type {
@@ -97,12 +96,14 @@ export default function CertificationModal({
   useEffect(() => {
     if (certification) {
       // 編集モード
-      const deptType = getDepartmentType(certification.department.name);
+      const deptCode = certification.department.code.toLowerCase() as
+        | "ski"
+        | "snowboard";
 
       setFormData({
         name: certification.name,
         shortName: certification.shortName || "",
-        department: deptType,
+        department: deptCode,
         organization: certification.organization,
         description: certification.description || "",
         status: certification.isActive ? "active" : "inactive",
@@ -247,7 +248,7 @@ export default function CertificationModal({
                         className="flex cursor-pointer items-center gap-2"
                         htmlFor="ski"
                       >
-                        <DepartmentIcon className="h-5 w-5" type="ski" />
+                        <DepartmentIcon className="h-5 w-5" code="SKI" />
                         <span className="font-medium">スキー</span>
                       </Label>
                     </div>
@@ -257,7 +258,7 @@ export default function CertificationModal({
                         className="flex cursor-pointer items-center gap-2"
                         htmlFor="snowboard"
                       >
-                        <DepartmentIcon className="h-5 w-5" type="snowboard" />
+                        <DepartmentIcon className="h-5 w-5" code="SNOWBOARD" />
                         <span className="font-medium">スノーボード</span>
                       </Label>
                     </div>

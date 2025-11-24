@@ -16,6 +16,7 @@ export type Shift = {
 
 export type Department = {
   id: number;
+  code: string;
   name: string;
   createdAt: string;
   updatedAt: string;
@@ -45,7 +46,8 @@ export type Instructor = {
 };
 
 // Department types
-export type DepartmentType = "ski" | "snowboard" | "mixed";
+// DepartmentType is now simplified to use department.code directly
+export type DepartmentType = "ski" | "snowboard";
 
 // Shift summary and statistics
 export type ShiftSummary = {

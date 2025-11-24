@@ -276,6 +276,7 @@ export default function ShiftsContent({
         department: {
           id: shift.department.id,
           name: shift.department.name,
+          code: shift.department.code,
           createdAt: "",
           updatedAt: "",
         },
@@ -309,6 +310,7 @@ export default function ShiftsContent({
       initialDepartments.map((dept) => ({
         id: dept.id,
         name: dept.name,
+        code: dept.code,
         createdAt: "",
         updatedAt: "",
       })),

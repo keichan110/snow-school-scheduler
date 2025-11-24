@@ -53,7 +53,7 @@ export function CertificationStats({ stats }: CertificationStatsProps) {
             <div className="flex items-center gap-2 px-4 py-1">
               <DepartmentIcon
                 className="h-4 w-4 text-blue-600 dark:text-blue-400"
-                type="ski"
+                code="SKI"
               />
               <div className="font-bold text-base text-blue-600 dark:text-blue-400">
                 {stats.ski}
@@ -63,7 +63,7 @@ export function CertificationStats({ stats }: CertificationStatsProps) {
             <div className="flex items-center gap-2 px-4 py-1">
               <DepartmentIcon
                 className="h-4 w-4 text-amber-600 dark:text-amber-400"
-                type="snowboard"
+                code="SNOWBOARD"
               />
               <div className="font-bold text-amber-600 text-base dark:text-amber-400">
                 {stats.snowboard}

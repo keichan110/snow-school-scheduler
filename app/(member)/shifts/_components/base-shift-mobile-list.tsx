@@ -102,7 +102,7 @@ export function BaseShiftMobileList({
                     <div className="flex items-center gap-2">
                       <DepartmentIcon
                         className="h-4 w-4"
-                        type={shift.department}
+                        code={shift.department}
                       />
                       <span className="font-medium text-foreground text-sm">
                         {getShiftTypeShort(shift.type)}

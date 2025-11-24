@@ -2,6 +2,7 @@
 
 import { Plus } from "@phosphor-icons/react/dist/ssr";
 import { useState } from "react";
+import { CertificationBadge } from "@/app/_components/certification-badge";
 import { DepartmentIcon } from "@/app/(member)/_components/department-icon";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,7 +13,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { getDepartmentType } from "@/lib/utils/department-type";
 import type { ActionResult } from "@/types/actions";
 import type {
   CreateCertificationInput,
@@ -62,7 +62,7 @@ function CertificationRow({
   certification,
   onOpenModal,
 }: CertificationRowProps) {
-  const deptType = getDepartmentType(certification.department.name);
+  const deptCode = certification.department.code.toLowerCase();
 
   const departmentStyles = {
     ski: {
@@ -75,7 +75,11 @@ function CertificationRow({
       icon: "text-snowboard-600 dark:text-snowboard-400",
       text: "text-foreground",
     },
-  }[deptType];
+  }[deptCode] || {
+    row: "bg-muted/30 hover:bg-muted/50",
+    icon: "text-muted-foreground",
+    text: "text-foreground",
+  };
 
   return (
     <TableRow
@@ -88,7 +92,7 @@ function CertificationRow({
       <TableCell>
         <DepartmentIcon
           className={`h-5 w-5 ${departmentStyles.icon}`}
-          type={deptType}
+          code={certification.department.code}
         />
       </TableCell>
       <TableCell>
@@ -106,11 +110,10 @@ function CertificationRow({
         } ${certification.isActive ? "" : "line-through"}`}
       >
         <div className="flex items-center gap-2">
-          <span
-            className={`inline-flex items-center rounded px-2 py-1 font-medium text-xs ${deptType === "ski" ? "badge-ski" : "badge-snowboard"}`}
-          >
-            {certification.organization}
-          </span>
+          <CertificationBadge
+            departmentCode={certification.department.code}
+            shortName={certification.organization}
+          />
           <span>{certification.name}</span>
         </div>
       </TableCell>

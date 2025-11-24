@@ -127,7 +127,7 @@ export function BaseShiftCalendar({
                         <div className="flex items-center gap-2">
                           <DepartmentIcon
                             className="h-3 w-3"
-                            type={shift.department}
+                            code={shift.department}
                           />
                           <span className="font-medium text-foreground text-xs">
                             {getShiftTypeShort(shift.type)}

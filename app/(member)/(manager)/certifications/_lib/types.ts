@@ -3,6 +3,7 @@ import type { Certification, Department } from "@prisma/client";
 export interface CertificationWithDepartment extends Certification {
   department: {
     id: number;
+    code: string;
     name: string;
   };
 }

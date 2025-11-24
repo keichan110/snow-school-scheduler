@@ -6,6 +6,7 @@ type ShiftCardProps = {
     id: number;
     date: Date;
     department: {
+      code: string;
       name: string;
     };
     shiftType: {
@@ -15,30 +16,11 @@ type ShiftCardProps = {
 };
 
 /**
- * 部門名から部門タイプを判定
+ * 部門コードに応じたスタイルを返す
  */
-function getDepartmentType(
-  departmentName: string
-): "ski" | "snowboard" | "mixed" {
-  const name = departmentName.toLowerCase();
-  if (name.includes("スキー") || name.includes("ski")) {
-    return "ski";
-  }
-  if (
-    name.includes("スノーボード") ||
-    name.includes("snowboard") ||
-    name.includes("ボード")
-  ) {
-    return "snowboard";
-  }
-  return "mixed";
-}
-
-/**
- * 部門タイプに応じたスタイルを返す
- */
-function getDepartmentStyles(departmentType: string) {
-  switch (departmentType) {
+function getDepartmentStyles(departmentCode: string) {
+  const normalized = departmentCode.toLowerCase();
+  switch (normalized) {
     case "ski":
       return "bg-ski-100 text-ski-700 border-ski-300 dark:bg-ski-950/30 dark:text-ski-300 dark:border-ski-700";
     case "snowboard":
@@ -60,8 +42,8 @@ export function ShiftCard({ shift }: ShiftCardProps) {
   const day = date.getDate();
   const weekday = ["日", "月", "火", "水", "木", "金", "土"][date.getDay()];
 
-  const departmentType = getDepartmentType(shift.department.name);
-  const departmentStyles = getDepartmentStyles(departmentType);
+  const departmentCode = shift.department.code;
+  const departmentStyles = getDepartmentStyles(departmentCode);
 
   return (
     <div className="h-full rounded-lg border p-4">
@@ -79,7 +61,7 @@ export function ShiftCard({ shift }: ShiftCardProps) {
               departmentStyles
             )}
           >
-            <DepartmentIcon type={departmentType} />
+            <DepartmentIcon code={departmentCode} />
             {shift.shiftType.name}
           </span>
         </div>

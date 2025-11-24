@@ -65,8 +65,8 @@ function hasSkiCertification(
   instructor: InstructorWithCertifications
 ): boolean {
   return instructor.certifications.some((cert) => {
-    const deptName = cert.department.name.toLowerCase();
-    return deptName.includes("スキー") || deptName.includes("ski");
+    const deptCode = cert.department.code.toLowerCase();
+    return deptCode === "ski";
   });
 }
 
@@ -74,12 +74,8 @@ function hasSnowboardCertification(
   instructor: InstructorWithCertifications
 ): boolean {
   return instructor.certifications.some((cert) => {
-    const deptName = cert.department.name.toLowerCase();
-    return (
-      deptName.includes("スノーボード") ||
-      deptName.includes("snowboard") ||
-      deptName.includes("ボード")
-    );
+    const deptCode = cert.department.code.toLowerCase();
+    return deptCode === "snowboard";
   });
 }
 
@@ -180,13 +176,13 @@ function InstructorRow({ instructor, onOpenModal }: InstructorRowProps) {
           {skiCertified ? (
             <DepartmentIcon
               className="h-4 w-4 text-ski-600 dark:text-ski-400"
-              type="ski"
+              code="SKI"
             />
           ) : null}
           {snowboardCertified ? (
             <DepartmentIcon
               className="h-4 w-4 text-snowboard-600 dark:text-snowboard-400"
-              type="snowboard"
+              code="SNOWBOARD"
             />
           ) : null}
           {skiCertified || snowboardCertified ? null : (
@@ -217,7 +213,7 @@ function InstructorRow({ instructor, onOpenModal }: InstructorRowProps) {
           {instructor.certifications.length > 0 ? (
             instructor.certifications.map((cert) => (
               <CertificationBadge
-                departmentName={cert.department.name || ""}
+                departmentCode={cert.department.code}
                 key={cert.id}
                 shortName={cert.shortName || cert.name}
               />
@@ -346,7 +342,7 @@ export default function InstructorsContent({
               <div className="flex items-center gap-2 px-4 py-1">
                 <DepartmentIcon
                   className="h-4 w-4 text-ski-600 dark:text-ski-400"
-                  type="ski"
+                  code="SKI"
                 />
                 <div className="font-bold text-base text-ski-600 dark:text-ski-400">
                   {stats.skiInstructors}
@@ -356,7 +352,7 @@ export default function InstructorsContent({
               <div className="flex items-center gap-2 px-4 py-1">
                 <DepartmentIcon
                   className="h-4 w-4 text-snowboard-600 dark:text-snowboard-400"
-                  type="snowboard"
+                  code="SNOWBOARD"
                 />
                 <div className="font-bold text-base text-snowboard-600 dark:text-snowboard-400">
                   {stats.snowboardInstructors}

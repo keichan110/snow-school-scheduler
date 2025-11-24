@@ -1,11 +1,7 @@
-import type { Department, DepartmentType } from "./types";
-
-// Performance optimization: pre-compiled regex patterns
-const SKI_PATTERN = /スキー/;
-const SNOWBOARD_PATTERN = /スノーボード/;
+import type { Department } from "./types";
 
 // Cache for department lookups
-const departmentCache = new Map<number, DepartmentType>();
+const departmentCache = new Map<number, string>();
 
 // シフト種別の短縮名マッピング (type-safe Record)
 const SHIFT_TYPE_SHORT_MAP: Record<string, string> = {
@@ -18,10 +14,9 @@ const SHIFT_TYPE_SHORT_MAP: Record<string, string> = {
 } as const;
 
 // 部門背景クラスのマッピング (immutable)
-const DEPARTMENT_BG_CLASS_MAP = new Map<DepartmentType, string>([
+const DEPARTMENT_BG_CLASS_MAP = new Map<string, string>([
   ["ski", "bg-ski-200 dark:bg-ski-800"],
   ["snowboard", "bg-snowboard-200 dark:bg-snowboard-800"],
-  ["mixed", "bg-gray-200 dark:bg-gray-800"],
 ] as const);
 
 // Weekday cache for performance
@@ -35,12 +30,15 @@ export function getShiftTypeShort(type: string): string {
 }
 
 /**
- * 部門タイプに応じた背景クラスを取得 (optimized with Map)
+ * 部門コードに応じた背景クラスを取得 (optimized with Map)
  */
-export function getDepartmentBgClass(department: DepartmentType): string {
-  return (
-    DEPARTMENT_BG_CLASS_MAP.get(department) ?? "bg-gray-200 dark:bg-gray-800"
-  );
+export function getDepartmentBgClass(departmentCode: string): string {
+  const normalized = departmentCode.toLowerCase();
+  const bgClass = DEPARTMENT_BG_CLASS_MAP.get(normalized);
+  if (!bgClass) {
+    return "bg-gray-200 dark:bg-gray-800";
+  }
+  return bgClass;
 }
 
 /**
@@ -53,27 +51,12 @@ export function formatDate(year: number, month: number, day: number): string {
 }
 
 /**
- * 部門名から部門タイプを判定 (optimized with regex)
+ * 部門IDから部門コードを取得 (cached for performance)
  */
-export function determineDepartmentType(
-  departmentName: string
-): DepartmentType {
-  if (SKI_PATTERN.test(departmentName)) {
-    return "ski";
-  }
-  if (SNOWBOARD_PATTERN.test(departmentName)) {
-    return "snowboard";
-  }
-  return "mixed";
-}
-
-/**
- * 部門IDから部門タイプを判定 (cached for performance)
- */
-export function getDepartmentTypeById(
+export function getDepartmentCodeById(
   departmentId: number,
   departments: readonly Department[]
-): DepartmentType {
+): string {
   // Check cache first
   if (departmentCache.has(departmentId)) {
     const cachedValue = departmentCache.get(departmentId);
@@ -84,11 +67,13 @@ export function getDepartmentTypeById(
   }
 
   const department = departments.find((d) => d.id === departmentId);
-  const type = department ? determineDepartmentType(department.name) : "mixed";
+  const code = department ? department.code.toLowerCase() : "";
 
   // Cache the result
-  departmentCache.set(departmentId, type);
-  return type;
+  if (code) {
+    departmentCache.set(departmentId, code);
+  }
+  return code;
 }
 
 /**

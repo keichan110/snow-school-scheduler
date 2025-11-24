@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { getDepartmentTypeById } from "./shift-utils";
+import { getDepartmentCodeById } from "./shift-utils";
 import type {
   AssignedInstructor,
   Department,
@@ -22,7 +22,7 @@ export function useShiftDataTransformation() {
           stats[date] = { shifts: [] };
         }
 
-        const departmentType = getDepartmentTypeById(
+        const departmentCode = getDepartmentCodeById(
           shift.departmentId,
           departments
         );
@@ -40,7 +40,7 @@ export function useShiftDataTransformation() {
         // 同じ部門・シフト種別の組み合わせが既に存在するかチェック
         const existingShift = stats[date].shifts.find(
           (s) =>
-            s.type === shift.shiftType.name && s.department === departmentType
+            s.type === shift.shiftType.name && s.department === departmentCode
         );
 
         if (existingShift) {
@@ -55,7 +55,7 @@ export function useShiftDataTransformation() {
           // 新しいシフトエントリを追加
           stats[date].shifts.push({
             type: shift.shiftType.name,
-            department: departmentType,
+            department: departmentCode as "ski" | "snowboard",
             count: shift.assignedCount,
             assignedInstructors,
           });

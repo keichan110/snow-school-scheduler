@@ -1,7 +1,6 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { getDepartmentType } from "@/lib/utils/department-type";
 
 export type CertificationBadgeProps = {
   /**
@@ -9,10 +8,9 @@ export type CertificationBadgeProps = {
    */
   shortName: string;
   /**
-   * 部門名（色分けの判定に使用）
-   * TODO: 将来的にはdepartmentCodeを受け取るように変更する
+   * 部門コード（色分けの判定に使用）
    */
-  departmentName: string;
+  departmentCode: string;
   /**
    * 追加のCSSクラス
    */
@@ -26,23 +24,21 @@ export type CertificationBadgeProps = {
  * - スキー部門: 青系統
  * - スノーボード部門: オレンジ系統
  *
- * TODO: departmentCodeベースに変更して判定ロジックを簡略化する
- *
  * @example
  * ```tsx
  * <CertificationBadge
  *   shortName="指導員"
- *   departmentName="スキー部門"
+ *   departmentCode="SKI"
  * />
  * ```
  */
 export function CertificationBadge({
   shortName,
-  departmentName,
+  departmentCode,
   className,
 }: CertificationBadgeProps) {
-  const deptType = getDepartmentType(departmentName);
-  const badgeClass = deptType === "ski" ? "badge-ski" : "badge-snowboard";
+  const normalizedCode = departmentCode.toLowerCase();
+  const badgeClass = normalizedCode === "ski" ? "badge-ski" : "badge-snowboard";
 
   return (
     <span

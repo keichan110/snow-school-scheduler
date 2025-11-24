@@ -66,7 +66,6 @@ export const ShiftDayCard = React.memo<ShiftDayCardProps>(
         departments: {
           ski: dayData.shifts.filter((s) => s.department === "ski"),
           snowboard: dayData.shifts.filter((s) => s.department === "snowboard"),
-          mixed: dayData.shifts.filter((s) => s.department === "mixed"),
         },
       };
     }, [dayData.shifts]);

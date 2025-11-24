@@ -9,13 +9,13 @@ jest.mock("@/lib/utils", () => ({
 }));
 
 jest.mock("@/app/(member)/_components/department-icon", () => ({
-  DepartmentIcon: jest.fn(({ type, className }) => (
+  DepartmentIcon: jest.fn(({ code, className }) => (
     <div
       data-classname={className}
-      data-department={type}
+      data-department={code}
       data-testid="department-icon"
     >
-      {type}-icon
+      {code}-icon
     </div>
   )),
 }));
@@ -61,7 +61,7 @@ describe("BaseShiftMobileList", () => {
         },
         {
           type: "午後レッスン",
-          department: "mixed",
+          department: "ski",
           count: 1,
         },
       ],
@@ -160,12 +160,8 @@ describe("BaseShiftMobileList", () => {
       const snowboardIcons = departmentIcons.filter(
         (icon) => icon.getAttribute("data-department") === "snowboard"
       );
-      const mixedIcons = departmentIcons.filter(
-        (icon) => icon.getAttribute("data-department") === "mixed"
-      );
 
       expect(snowboardIcons.length).toBeGreaterThanOrEqual(1);
-      expect(mixedIcons.length).toBeGreaterThanOrEqual(1);
     });
 
     it("シフトがない日に「シフトなし」が表示される", () => {
@@ -373,7 +369,7 @@ describe("BaseShiftMobileList", () => {
               { type: "早朝", department: "ski" as const, count: 1 },
               { type: "午前", department: "ski" as const, count: 2 },
               { type: "午後", department: "snowboard" as const, count: 1 },
-              { type: "夕方", department: "mixed" as const, count: 1 },
+              { type: "夕方", department: "snowboard" as const, count: 1 },
             ],
           },
         },

@@ -21,6 +21,7 @@ export const getInstructors = cache(
                 department: {
                   select: {
                     id: true,
+                    code: true,
                     name: true,
                   },
                 },

@@ -27,7 +27,6 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
-import { getDepartmentType } from "@/lib/utils/department-type";
 import type { InstructorFormData, InstructorModalProps } from "../_lib/types";
 
 export default function InstructorModal({
@@ -60,7 +59,7 @@ export default function InstructorModal({
       name: string;
       shortName: string | null;
       organization: string;
-      department: { name: string };
+      department: { code: string; name: string };
     }[]
   >([]);
 
@@ -163,8 +162,8 @@ export default function InstructorModal({
     }
 
     return availableCertifications.filter((cert) => {
-      const deptType = getDepartmentType(cert.department.name);
-      return deptType === selectedDepartment;
+      const deptCode = cert.department.code.toLowerCase();
+      return deptCode === selectedDepartment;
     });
   };
 
@@ -194,7 +193,10 @@ export default function InstructorModal({
       name: certificationToAdd.name,
       shortName: certificationToAdd.shortName,
       organization: certificationToAdd.organization,
-      department: { name: certificationToAdd.department.name },
+      department: {
+        code: certificationToAdd.department.code,
+        name: certificationToAdd.department.name,
+      },
     };
 
     setAssignedCertifications((prev) => [...prev, newCertification]);
@@ -480,7 +482,7 @@ export default function InstructorModal({
                 <div className="space-y-2">
                   {assignedCertifications.length > 0 ? (
                     assignedCertifications.map((cert) => {
-                      const deptType = getDepartmentType(cert.department.name);
+                      const deptCode = cert.department.code.toLowerCase();
 
                       return (
                         <div
@@ -490,11 +492,11 @@ export default function InstructorModal({
                           <div className="flex items-center gap-3">
                             <DepartmentIcon
                               className={`h-4 w-4 ${
-                                deptType === "ski"
+                                deptCode === "ski"
                                   ? "text-ski-600 dark:text-ski-400"
                                   : "text-snowboard-600 dark:text-snowboard-400"
                               }`}
-                              type={deptType}
+                              code={cert.department.code}
                             />
                             <div>
                               <div className="font-medium text-sm">

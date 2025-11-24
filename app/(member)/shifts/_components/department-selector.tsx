@@ -3,7 +3,7 @@
 import { cn } from "@/lib/utils";
 import { DEPARTMENT_STYLES } from "../_lib/constants";
 import { getDepartmentIcon } from "../_lib/shift-components";
-import type { DepartmentMinimal, DepartmentType } from "../_lib/types";
+import type { DepartmentMinimal } from "../_lib/types";
 
 type DepartmentSelectorProps = {
   departments: DepartmentMinimal[];
@@ -12,18 +12,6 @@ type DepartmentSelectorProps = {
   error?: string | undefined;
   isLoading?: boolean;
 };
-
-// 部門名から部門タイプを判定
-function getDepartmentTypeFromName(name: string): DepartmentType {
-  const lowerName = name.toLowerCase();
-  if (lowerName.includes("スキー") || lowerName.includes("ski")) {
-    return "ski";
-  }
-  if (lowerName.includes("スノーボード") || lowerName.includes("snowboard")) {
-    return "snowboard";
-  }
-  return "mixed";
-}
 
 export function DepartmentSelector({
   departments,
@@ -42,7 +30,9 @@ export function DepartmentSelector({
       ) : (
         <div className="flex gap-4">
           {departments.map((department) => {
-            const departmentType = getDepartmentTypeFromName(department.name);
+            const departmentType = department.code.toLowerCase() as
+              | "ski"
+              | "snowboard";
             const styles = DEPARTMENT_STYLES[departmentType];
             const isSelected = selectedId === department.id;
             const iconElement = getDepartmentIcon(

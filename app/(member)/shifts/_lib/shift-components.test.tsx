@@ -38,12 +38,6 @@ const mockShifts: ShiftSummary[] = [
     count: 1,
     assignedInstructors: mockAssignedInstructors.slice(0, 1),
   },
-  {
-    type: "共通受付",
-    department: "mixed",
-    count: 1,
-    assignedInstructors: [],
-  },
 ];
 
 const mockEmptyShifts: ShiftSummary[] = [];
@@ -160,7 +154,19 @@ describe("shiftComponents", () => {
     });
 
     it("インストラクターが未配置の場合にメッセージを表示する", () => {
-      const section = createDepartmentSection("mixed", mockShifts, mockIcon);
+      const shiftsWithoutInstructors: ShiftSummary[] = [
+        {
+          type: "初級レッスン",
+          department: "ski",
+          count: 2,
+          assignedInstructors: [],
+        },
+      ];
+      const section = createDepartmentSection(
+        "ski",
+        shiftsWithoutInstructors,
+        mockIcon
+      );
       render(<div>{section}</div>);
 
       expect(
@@ -185,7 +191,6 @@ describe("shiftComponents", () => {
 
       expect(screen.getByText("スキー")).toBeInTheDocument();
       expect(screen.getByText("スノーボード")).toBeInTheDocument();
-      expect(screen.getByText("共通")).toBeInTheDocument();
     });
 
     it("シフトがない部門のセクションは生成されない", () => {

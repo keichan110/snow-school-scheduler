@@ -24,6 +24,7 @@ type UpcomingShiftsSectionProps = {
     id: number;
     date: Date;
     department: {
+      code: string;
       name: string;
     };
     shiftType: {
