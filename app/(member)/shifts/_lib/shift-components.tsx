@@ -1,12 +1,8 @@
 "use client";
 
-import {
-  Calendar,
-  PersonSimpleSki,
-  PersonSimpleSnowboard,
-  User,
-} from "@phosphor-icons/react";
+import { User } from "@phosphor-icons/react";
 import type React from "react";
+import { DepartmentIcon } from "@/app/(member)/_components/department-icon";
 import { cn } from "@/lib/utils";
 import { DEPARTMENT_NAMES, DEPARTMENT_STYLES } from "./constants";
 import { getDepartmentBgClass } from "./shift-utils";
@@ -224,6 +220,7 @@ export function createDepartmentSection(
 
 /**
  * 部門別のアイコンを取得する関数
+ * @deprecated DepartmentIconコンポーネントを直接使用してください
  */
 export function getDepartmentIcon(
   departmentType: DepartmentType,
@@ -235,16 +232,7 @@ export function getDepartmentIcon(
     className
   );
 
-  switch (departmentType) {
-    case "ski":
-      return <PersonSimpleSki className={iconClass} weight="fill" />;
-    case "snowboard":
-      return <PersonSimpleSnowboard className={iconClass} weight="fill" />;
-    case "mixed":
-      return <Calendar className={iconClass} weight="fill" />;
-    default:
-      return <Calendar className={iconClass} weight="fill" />;
-  }
+  return <DepartmentIcon className={iconClass} type={departmentType} />;
 }
 
 /**

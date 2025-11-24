@@ -1,14 +1,10 @@
 "use client";
 
-import {
-  FileText,
-  Info,
-  PersonSimpleSki,
-  PersonSimpleSnowboard,
-} from "@phosphor-icons/react";
+import { FileText, Info } from "@phosphor-icons/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useNotification } from "@/app/_providers/notifications";
+import { DepartmentIcon } from "@/app/(member)/_components/department-icon";
 import { Button } from "@/components/ui/button";
 import {
   Drawer,
@@ -251,7 +247,7 @@ export default function CertificationModal({
                         className="flex cursor-pointer items-center gap-2"
                         htmlFor="ski"
                       >
-                        <PersonSimpleSki className="h-5 w-5" weight="regular" />
+                        <DepartmentIcon className="h-5 w-5" type="ski" />
                         <span className="font-medium">スキー</span>
                       </Label>
                     </div>
@@ -261,10 +257,7 @@ export default function CertificationModal({
                         className="flex cursor-pointer items-center gap-2"
                         htmlFor="snowboard"
                       >
-                        <PersonSimpleSnowboard
-                          className="h-5 w-5"
-                          weight="regular"
-                        />
+                        <DepartmentIcon className="h-5 w-5" type="snowboard" />
                         <span className="font-medium">スノーボード</span>
                       </Label>
                     </div>

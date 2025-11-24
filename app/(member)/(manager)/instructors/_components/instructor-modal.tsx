@@ -2,8 +2,6 @@
 
 import {
   Info,
-  PersonSimpleSki,
-  PersonSimpleSnowboard,
   SealCheck,
   User,
   UserGear,
@@ -11,6 +9,7 @@ import {
 } from "@phosphor-icons/react";
 import { useCallback, useEffect, useState } from "react";
 import { useNotification } from "@/app/_providers/notifications";
+import { DepartmentIcon } from "@/app/(member)/_components/department-icon";
 import { getCertificationsAction } from "@/app/(member)/(manager)/certifications/_lib/actions";
 import type { CertificationWithDepartment } from "@/app/(member)/(manager)/certifications/_lib/types";
 import { Button } from "@/components/ui/button";
@@ -482,10 +481,6 @@ export default function InstructorModal({
                   {assignedCertifications.length > 0 ? (
                     assignedCertifications.map((cert) => {
                       const deptType = getDepartmentType(cert.department.name);
-                      const DeptIcon =
-                        deptType === "ski"
-                          ? PersonSimpleSki
-                          : PersonSimpleSnowboard;
 
                       return (
                         <div
@@ -493,13 +488,13 @@ export default function InstructorModal({
                           key={cert.id}
                         >
                           <div className="flex items-center gap-3">
-                            <DeptIcon
+                            <DepartmentIcon
                               className={`h-4 w-4 ${
                                 deptType === "ski"
                                   ? "text-ski-600 dark:text-ski-400"
                                   : "text-snowboard-600 dark:text-snowboard-400"
                               }`}
-                              weight="regular"
+                              type={deptType}
                             />
                             <div>
                               <div className="font-medium text-sm">

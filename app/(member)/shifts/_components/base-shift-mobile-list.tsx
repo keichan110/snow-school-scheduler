@@ -1,6 +1,6 @@
 "use client";
 
-import { DepartmentIcon } from "@/app/(member)/shifts/_components/department-icon";
+import { DepartmentIcon } from "@/app/(member)/_components/department-icon";
 import { ShiftBadge } from "@/app/(member)/shifts/_components/shift-badge";
 import { cn } from "@/lib/utils";
 import type { BaseShiftDisplayProps, DepartmentType } from "./types";
@@ -100,7 +100,10 @@ export function BaseShiftMobileList({
                     key={`${date}-${shift.department}-${shift.type}`}
                   >
                     <div className="flex items-center gap-2">
-                      <DepartmentIcon department={shift.department} size="md" />
+                      <DepartmentIcon
+                        className="h-4 w-4"
+                        type={shift.department}
+                      />
                       <span className="font-medium text-foreground text-sm">
                         {getShiftTypeShort(shift.type)}
                       </span>

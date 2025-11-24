@@ -1,8 +1,5 @@
-import {
-  PersonSimpleSki,
-  PersonSimpleSnowboard,
-  SealCheck,
-} from "@phosphor-icons/react/dist/ssr";
+import { SealCheck } from "@phosphor-icons/react/dist/ssr";
+import { DepartmentIcon } from "@/app/(member)/_components/department-icon";
 import { Card, CardContent } from "@/components/ui/card";
 
 /**
@@ -54,9 +51,9 @@ export function CertificationStats({ stats }: CertificationStatsProps) {
             </div>
 
             <div className="flex items-center gap-2 px-4 py-1">
-              <PersonSimpleSki
+              <DepartmentIcon
                 className="h-4 w-4 text-blue-600 dark:text-blue-400"
-                weight="regular"
+                type="ski"
               />
               <div className="font-bold text-base text-blue-600 dark:text-blue-400">
                 {stats.ski}
@@ -64,9 +61,9 @@ export function CertificationStats({ stats }: CertificationStatsProps) {
             </div>
 
             <div className="flex items-center gap-2 px-4 py-1">
-              <PersonSimpleSnowboard
+              <DepartmentIcon
                 className="h-4 w-4 text-amber-600 dark:text-amber-400"
-                weight="regular"
+                type="snowboard"
               />
               <div className="font-bold text-amber-600 text-base dark:text-amber-400">
                 {stats.snowboard}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { DepartmentIcon } from "@/app/(member)/shifts/_components/department-icon";
+import { DepartmentIcon } from "@/app/(member)/_components/department-icon";
 import { ShiftBadge } from "@/app/(member)/shifts/_components/shift-badge";
 import { cn } from "@/lib/utils";
 import type { DayData } from "../_lib/types";
@@ -193,7 +193,10 @@ export function MonthlyCalendarWithDetails({
                   key={`${shift.department}-${shift.type}-${idx}`}
                 >
                   <div className="flex items-center gap-2">
-                    <DepartmentIcon department={shift.department} size="sm" />
+                    <DepartmentIcon
+                      className="h-3 w-3"
+                      type={shift.department}
+                    />
                     <span className="font-medium text-foreground text-xs">
                       {getShiftTypeShort(shift.type)}
                     </span>

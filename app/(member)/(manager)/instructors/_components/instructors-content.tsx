@@ -1,14 +1,10 @@
 "use client";
 
-import {
-  PersonSimpleSki,
-  PersonSimpleSnowboard,
-  Plus,
-  SealCheck,
-} from "@phosphor-icons/react";
+import { Plus, SealCheck } from "@phosphor-icons/react";
 import { useRouter } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
 import { CertificationBadge } from "@/app/_components/certification-badge";
+import { DepartmentIcon } from "@/app/(member)/_components/department-icon";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -182,15 +178,15 @@ function InstructorRow({ instructor, onOpenModal }: InstructorRowProps) {
       <TableCell>
         <div className="flex items-center gap-1">
           {skiCertified ? (
-            <PersonSimpleSki
+            <DepartmentIcon
               className="h-4 w-4 text-ski-600 dark:text-ski-400"
-              weight="regular"
+              type="ski"
             />
           ) : null}
           {snowboardCertified ? (
-            <PersonSimpleSnowboard
+            <DepartmentIcon
               className="h-4 w-4 text-snowboard-600 dark:text-snowboard-400"
-              weight="regular"
+              type="snowboard"
             />
           ) : null}
           {skiCertified || snowboardCertified ? null : (
@@ -348,9 +344,9 @@ export default function InstructorsContent({
               </div>
 
               <div className="flex items-center gap-2 px-4 py-1">
-                <PersonSimpleSki
+                <DepartmentIcon
                   className="h-4 w-4 text-ski-600 dark:text-ski-400"
-                  weight="regular"
+                  type="ski"
                 />
                 <div className="font-bold text-base text-ski-600 dark:text-ski-400">
                   {stats.skiInstructors}
@@ -358,9 +354,9 @@ export default function InstructorsContent({
               </div>
 
               <div className="flex items-center gap-2 px-4 py-1">
-                <PersonSimpleSnowboard
+                <DepartmentIcon
                   className="h-4 w-4 text-snowboard-600 dark:text-snowboard-400"
-                  weight="regular"
+                  type="snowboard"
                 />
                 <div className="font-bold text-base text-snowboard-600 dark:text-snowboard-400">
                   {stats.snowboardInstructors}

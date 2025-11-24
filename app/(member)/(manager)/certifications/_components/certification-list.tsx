@@ -1,11 +1,8 @@
 "use client";
 
-import {
-  PersonSimpleSki,
-  PersonSimpleSnowboard,
-  Plus,
-} from "@phosphor-icons/react/dist/ssr";
+import { Plus } from "@phosphor-icons/react/dist/ssr";
 import { useState } from "react";
+import { DepartmentIcon } from "@/app/(member)/_components/department-icon";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -66,7 +63,6 @@ function CertificationRow({
   onOpenModal,
 }: CertificationRowProps) {
   const deptType = getDepartmentType(certification.department.name);
-  const DeptIcon = deptType === "ski" ? PersonSimpleSki : PersonSimpleSnowboard;
 
   const departmentStyles = {
     ski: {
@@ -90,9 +86,9 @@ function CertificationRow({
       onClick={() => onOpenModal(certification)}
     >
       <TableCell>
-        <DeptIcon
+        <DepartmentIcon
           className={`h-5 w-5 ${departmentStyles.icon}`}
-          weight="regular"
+          type={deptType}
         />
       </TableCell>
       <TableCell>
