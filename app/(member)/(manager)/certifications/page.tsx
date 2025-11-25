@@ -29,25 +29,6 @@ function getSearchParam(
 }
 
 /**
- * 部門名から部門タイプを判定するヘルパー関数
- *
- * @param departmentName - 判定する部門名
- * @returns 部門タイプ（"ski" | "snowboard" | "other"）
- */
-function getDepartmentType(
-  departmentName: string
-): "ski" | "snowboard" | "other" {
-  const name = departmentName.toLowerCase();
-  if (name.includes("スキー") || name.includes("ski")) {
-    return "ski";
-  }
-  if (name.includes("スノーボード") || name.includes("snowboard")) {
-    return "snowboard";
-  }
-  return "other";
-}
-
-/**
  * 資格管理ページのプロパティ
  */
 type CertificationsPageProps = {
@@ -96,8 +77,9 @@ async function CertificationsPageContent({
   const where: {
     isActive?: boolean;
     department?: {
-      name: {
-        contains: string;
+      code?: {
+        equals: string;
+        mode: "insensitive";
       };
     };
   } = {};
@@ -110,8 +92,9 @@ async function CertificationsPageContent({
   // 部門フィルター
   if (department !== "all") {
     where.department = {
-      name: {
-        contains: department === "ski" ? "スキー" : "スノーボード",
+      code: {
+        equals: department === "ski" ? "SKI" : "SNOWBOARD",
+        mode: "insensitive",
       },
     };
   }
@@ -123,6 +106,7 @@ async function CertificationsPageContent({
       department: {
         select: {
           id: true,
+          code: true,
           name: true,
         },
       },
@@ -138,11 +122,10 @@ async function CertificationsPageContent({
   const stats = {
     total: certifications.length,
     active: certifications.filter((c) => c.isActive).length,
-    ski: certifications.filter(
-      (c) => getDepartmentType(c.department.name) === "ski"
-    ).length,
+    ski: certifications.filter((c) => c.department.code.toLowerCase() === "ski")
+      .length,
     snowboard: certifications.filter(
-      (c) => getDepartmentType(c.department.name) === "snowboard"
+      (c) => c.department.code.toLowerCase() === "snowboard"
     ).length,
   };
 

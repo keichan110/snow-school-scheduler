@@ -1,14 +1,10 @@
 "use client";
 
-import {
-  PersonSimpleSki,
-  PersonSimpleSnowboard,
-  Plus,
-  SealCheck,
-} from "@phosphor-icons/react";
+import { Plus, SealCheck } from "@phosphor-icons/react";
 import { useRouter } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
 import { CertificationBadge } from "@/app/_components/certification-badge";
+import { DepartmentIcon } from "@/app/(member)/_components/department-icon";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -69,8 +65,8 @@ function hasSkiCertification(
   instructor: InstructorWithCertifications
 ): boolean {
   return instructor.certifications.some((cert) => {
-    const deptName = cert.department.name.toLowerCase();
-    return deptName.includes("スキー") || deptName.includes("ski");
+    const deptCode = cert.department.code.toLowerCase();
+    return deptCode === "ski";
   });
 }
 
@@ -78,12 +74,8 @@ function hasSnowboardCertification(
   instructor: InstructorWithCertifications
 ): boolean {
   return instructor.certifications.some((cert) => {
-    const deptName = cert.department.name.toLowerCase();
-    return (
-      deptName.includes("スノーボード") ||
-      deptName.includes("snowboard") ||
-      deptName.includes("ボード")
-    );
+    const deptCode = cert.department.code.toLowerCase();
+    return deptCode === "snowboard";
   });
 }
 
@@ -182,15 +174,15 @@ function InstructorRow({ instructor, onOpenModal }: InstructorRowProps) {
       <TableCell>
         <div className="flex items-center gap-1">
           {skiCertified ? (
-            <PersonSimpleSki
+            <DepartmentIcon
               className="h-4 w-4 text-ski-600 dark:text-ski-400"
-              weight="regular"
+              code="SKI"
             />
           ) : null}
           {snowboardCertified ? (
-            <PersonSimpleSnowboard
+            <DepartmentIcon
               className="h-4 w-4 text-snowboard-600 dark:text-snowboard-400"
-              weight="regular"
+              code="SNOWBOARD"
             />
           ) : null}
           {skiCertified || snowboardCertified ? null : (
@@ -221,7 +213,7 @@ function InstructorRow({ instructor, onOpenModal }: InstructorRowProps) {
           {instructor.certifications.length > 0 ? (
             instructor.certifications.map((cert) => (
               <CertificationBadge
-                departmentName={cert.department.name || ""}
+                departmentCode={cert.department.code}
                 key={cert.id}
                 shortName={cert.shortName || cert.name}
               />
@@ -348,9 +340,9 @@ export default function InstructorsContent({
               </div>
 
               <div className="flex items-center gap-2 px-4 py-1">
-                <PersonSimpleSki
+                <DepartmentIcon
                   className="h-4 w-4 text-ski-600 dark:text-ski-400"
-                  weight="regular"
+                  code="SKI"
                 />
                 <div className="font-bold text-base text-ski-600 dark:text-ski-400">
                   {stats.skiInstructors}
@@ -358,9 +350,9 @@ export default function InstructorsContent({
               </div>
 
               <div className="flex items-center gap-2 px-4 py-1">
-                <PersonSimpleSnowboard
+                <DepartmentIcon
                   className="h-4 w-4 text-snowboard-600 dark:text-snowboard-400"
-                  weight="regular"
+                  code="SNOWBOARD"
                 />
                 <div className="font-bold text-base text-snowboard-600 dark:text-snowboard-400">
                   {stats.snowboardInstructors}

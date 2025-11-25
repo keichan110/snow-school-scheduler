@@ -242,8 +242,8 @@ describe("ShiftMobileList", () => {
         "2024-01-17": {
           shifts: [
             {
-              type: "共通受付",
-              department: "mixed",
+              type: "午前レッスン",
+              department: "ski",
               count: 1,
               assignedInstructors: [
                 {

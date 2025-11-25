@@ -3,6 +3,7 @@
 import {
   CalendarDots,
   Certificate,
+  House,
   type Icon,
   LinkSimple,
   List,
@@ -58,6 +59,13 @@ export function HeaderMenuDrawer({ user }: HeaderMenuDrawerProps) {
   );
 
   const allMenuItems: MenuItem[] = [
+    {
+      href: "/dashboard",
+      icon: House,
+      label: "ダッシュボード",
+      description: "システムの概要とお知らせを確認",
+      requiredRole: "MEMBER",
+    },
     {
       href: shiftsLink,
       icon: CalendarDots,
@@ -138,9 +146,7 @@ export function HeaderMenuDrawer({ user }: HeaderMenuDrawerProps) {
         side="left"
       >
         <div className="p-6">
-          <SheetTitle className="mb-4 font-bold text-lg">
-            管理メニュー
-          </SheetTitle>
+          <SheetTitle className="mb-4 font-bold text-lg">メニュー</SheetTitle>
           <div className="grid gap-3">
             {visibleMenuItems.map((item) => {
               const IconComponent = item.icon;

@@ -14,7 +14,7 @@ export const getCertifications = cache(
       where: { isActive: true },
       include: {
         department: {
-          select: { id: true, name: true },
+          select: { id: true, code: true, name: true },
         },
       },
       orderBy: { name: "asc" },

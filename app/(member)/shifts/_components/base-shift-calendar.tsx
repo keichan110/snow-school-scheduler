@@ -1,6 +1,6 @@
 "use client";
 
-import { DepartmentIcon } from "@/app/(member)/shifts/_components/department-icon";
+import { DepartmentIcon } from "@/app/(member)/_components/department-icon";
 import { ShiftBadge } from "@/app/(member)/shifts/_components/shift-badge";
 import { cn } from "@/lib/utils";
 import type { BaseShiftDisplayProps, DepartmentType } from "./types";
@@ -126,8 +126,8 @@ export function BaseShiftCalendar({
                       >
                         <div className="flex items-center gap-2">
                           <DepartmentIcon
-                            department={shift.department}
-                            size="sm"
+                            className="h-3 w-3"
+                            code={shift.department}
                           />
                           <span className="font-medium text-foreground text-xs">
                             {getShiftTypeShort(shift.type)}

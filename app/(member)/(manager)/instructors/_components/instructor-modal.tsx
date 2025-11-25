@@ -2,8 +2,6 @@
 
 import {
   Info,
-  PersonSimpleSki,
-  PersonSimpleSnowboard,
   SealCheck,
   User,
   UserGear,
@@ -11,6 +9,7 @@ import {
 } from "@phosphor-icons/react";
 import { useCallback, useEffect, useState } from "react";
 import { useNotification } from "@/app/_providers/notifications";
+import { DepartmentIcon } from "@/app/(member)/_components/department-icon";
 import { getCertificationsAction } from "@/app/(member)/(manager)/certifications/_lib/actions";
 import type { CertificationWithDepartment } from "@/app/(member)/(manager)/certifications/_lib/types";
 import { Button } from "@/components/ui/button";
@@ -28,7 +27,6 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
-import { getDepartmentType } from "@/lib/utils/department-type";
 import type { InstructorFormData, InstructorModalProps } from "../_lib/types";
 
 export default function InstructorModal({
@@ -61,7 +59,7 @@ export default function InstructorModal({
       name: string;
       shortName: string | null;
       organization: string;
-      department: { name: string };
+      department: { code: string; name: string };
     }[]
   >([]);
 
@@ -164,8 +162,8 @@ export default function InstructorModal({
     }
 
     return availableCertifications.filter((cert) => {
-      const deptType = getDepartmentType(cert.department.name);
-      return deptType === selectedDepartment;
+      const deptCode = cert.department.code.toLowerCase();
+      return deptCode === selectedDepartment;
     });
   };
 
@@ -195,7 +193,10 @@ export default function InstructorModal({
       name: certificationToAdd.name,
       shortName: certificationToAdd.shortName,
       organization: certificationToAdd.organization,
-      department: { name: certificationToAdd.department.name },
+      department: {
+        code: certificationToAdd.department.code,
+        name: certificationToAdd.department.name,
+      },
     };
 
     setAssignedCertifications((prev) => [...prev, newCertification]);
@@ -481,11 +482,7 @@ export default function InstructorModal({
                 <div className="space-y-2">
                   {assignedCertifications.length > 0 ? (
                     assignedCertifications.map((cert) => {
-                      const deptType = getDepartmentType(cert.department.name);
-                      const DeptIcon =
-                        deptType === "ski"
-                          ? PersonSimpleSki
-                          : PersonSimpleSnowboard;
+                      const deptCode = cert.department.code.toLowerCase();
 
                       return (
                         <div
@@ -493,13 +490,13 @@ export default function InstructorModal({
                           key={cert.id}
                         >
                           <div className="flex items-center gap-3">
-                            <DeptIcon
+                            <DepartmentIcon
                               className={`h-4 w-4 ${
-                                deptType === "ski"
+                                deptCode === "ski"
                                   ? "text-ski-600 dark:text-ski-400"
                                   : "text-snowboard-600 dark:text-snowboard-400"
                               }`}
-                              weight="regular"
+                              code={cert.department.code}
                             />
                             <div>
                               <div className="font-medium text-sm">

@@ -15,6 +15,7 @@ export interface InstructorWithCertifications
     organization: string;
     department: {
       id: number;
+      code: string;
       name: string;
     };
   }[];

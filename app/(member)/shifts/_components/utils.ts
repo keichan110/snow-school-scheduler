@@ -14,7 +14,6 @@ const SHIFT_TYPE_SHORT_MAP: Record<string, string> = {
 const DEPARTMENT_BG_CLASS_MAP = new Map<DepartmentType, string>([
   ["ski", "bg-ski-200 dark:bg-ski-800"],
   ["snowboard", "bg-snowboard-200 dark:bg-snowboard-800"],
-  ["mixed", "bg-gray-200 dark:bg-gray-800"],
 ] as const);
 
 // Weekday cache for performance

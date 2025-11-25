@@ -8,14 +8,14 @@ jest.mock("@/lib/utils", () => ({
   cn: jest.fn((...classes) => classes.filter(Boolean).join(" ")),
 }));
 
-jest.mock("@/app/(member)/shifts/_components/department-icon", () => ({
-  DepartmentIcon: jest.fn(({ department, size }) => (
+jest.mock("@/app/(member)/_components/department-icon", () => ({
+  DepartmentIcon: jest.fn(({ code, className }) => (
     <div
-      data-department={department}
-      data-size={size}
+      data-classname={className}
+      data-department={code}
       data-testid="department-icon"
     >
-      {department}-icon
+      {code}-icon
     </div>
   )),
 }));
@@ -63,8 +63,8 @@ describe("BaseShiftCalendar", () => {
     "2024-01-20": {
       shifts: [
         {
-          type: "共通受付",
-          department: "mixed",
+          type: "初級レッスン",
+          department: "ski",
           count: 1,
         },
       ],

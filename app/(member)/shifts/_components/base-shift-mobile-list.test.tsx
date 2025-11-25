@@ -8,14 +8,14 @@ jest.mock("@/lib/utils", () => ({
   cn: jest.fn((...classes) => classes.filter(Boolean).join(" ")),
 }));
 
-jest.mock("@/app/(member)/shifts/_components/department-icon", () => ({
-  DepartmentIcon: jest.fn(({ department, size }) => (
+jest.mock("@/app/(member)/_components/department-icon", () => ({
+  DepartmentIcon: jest.fn(({ code, className }) => (
     <div
-      data-department={department}
-      data-size={size}
+      data-classname={className}
+      data-department={code}
       data-testid="department-icon"
     >
-      {department}-icon-{size}
+      {code}-icon
     </div>
   )),
 }));
@@ -61,7 +61,7 @@ describe("BaseShiftMobileList", () => {
         },
         {
           type: "午後レッスン",
-          department: "mixed",
+          department: "ski",
           count: 1,
         },
       ],
@@ -144,11 +144,12 @@ describe("BaseShiftMobileList", () => {
       const departmentIcons = screen.getAllByTestId("department-icon");
       expect(departmentIcons.length).toBeGreaterThan(0);
 
-      // モバイル表示では「md」サイズが使用される
-      const mdSizeIcons = departmentIcons.filter(
-        (icon) => icon.getAttribute("data-size") === "md"
-      );
-      expect(mdSizeIcons.length).toBe(departmentIcons.length);
+      // モバイル表示では「h-4 w-4」サイズが使用される
+      const correctSizeIcons = departmentIcons.filter((icon) => {
+        const className = icon.getAttribute("data-classname") || "";
+        return className.includes("h-4") && className.includes("w-4");
+      });
+      expect(correctSizeIcons.length).toBe(departmentIcons.length);
     });
 
     it("複数のシフトがある日に全て表示される", () => {
@@ -159,12 +160,8 @@ describe("BaseShiftMobileList", () => {
       const snowboardIcons = departmentIcons.filter(
         (icon) => icon.getAttribute("data-department") === "snowboard"
       );
-      const mixedIcons = departmentIcons.filter(
-        (icon) => icon.getAttribute("data-department") === "mixed"
-      );
 
       expect(snowboardIcons.length).toBeGreaterThanOrEqual(1);
-      expect(mixedIcons.length).toBeGreaterThanOrEqual(1);
     });
 
     it("シフトがない日に「シフトなし」が表示される", () => {
@@ -372,7 +369,7 @@ describe("BaseShiftMobileList", () => {
               { type: "早朝", department: "ski" as const, count: 1 },
               { type: "午前", department: "ski" as const, count: 2 },
               { type: "午後", department: "snowboard" as const, count: 1 },
-              { type: "夕方", department: "mixed" as const, count: 1 },
+              { type: "夕方", department: "snowboard" as const, count: 1 },
             ],
           },
         },

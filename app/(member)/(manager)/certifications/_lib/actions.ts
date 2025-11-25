@@ -30,7 +30,7 @@ export async function createCertificationAction(
       data: validated,
       include: {
         department: {
-          select: { id: true, name: true },
+          select: { id: true, code: true, name: true },
         },
       },
     });
@@ -65,7 +65,7 @@ export async function updateCertificationAction(
       data: validated,
       include: {
         department: {
-          select: { id: true, name: true },
+          select: { id: true, code: true, name: true },
         },
       },
     });

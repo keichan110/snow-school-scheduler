@@ -1,9 +1,69 @@
+import { Suspense } from "react";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { authenticate } from "@/lib/auth/auth";
 import {
   getAvailableInstructors,
   getInstructorProfile,
 } from "@/lib/data/instructor";
+import { getUpcomingShifts } from "@/lib/data/shift";
 import { InstructorLinkageSection } from "./_components/instructor-linkage-section";
+import { UpcomingShiftsSection } from "./_components/upcoming-shifts-section";
+
+/**
+ * 今後のシフトとして表示する最大件数
+ */
+const MAX_UPCOMING_SHIFTS_DISPLAY = 5;
+
+/**
+ * 今後のシフトセクションの非同期コンポーネント
+ */
+async function UpcomingShiftsAsync({ instructorId }: { instructorId: number }) {
+  const upcomingShifts = await getUpcomingShifts(
+    instructorId,
+    MAX_UPCOMING_SHIFTS_DISPLAY
+  );
+
+  return <UpcomingShiftsSection shifts={upcomingShifts} />;
+}
+
+/**
+ * 今後のシフトセクションのスケルトン
+ */
+function UpcomingShiftsSkeleton() {
+  return (
+    <Card>
+      <CardHeader>
+        <div className="flex items-center gap-2">
+          <Skeleton className="h-5 w-5" />
+          <Skeleton className="h-6 w-32" />
+        </div>
+        <Skeleton className="mt-1 h-4 w-64" />
+      </CardHeader>
+      <CardContent>
+        <div className="w-full px-12">
+          <div className="-ml-2 md:-ml-4 flex">
+            {/* biome-ignore-start lint/suspicious/noArrayIndexKey: スケルトンは静的表示のため順序変更なし */}
+            {Array.from({ length: MAX_UPCOMING_SHIFTS_DISPLAY }, (_, i) => (
+              <div
+                className="basis-full pl-2 md:basis-1/5 md:pl-4"
+                key={`skeleton-shift-${i}`}
+              >
+                <div className="h-full rounded-lg border p-4">
+                  <div className="flex h-full flex-col items-center justify-center space-y-3">
+                    <Skeleton className="h-8 w-20" />
+                    <Skeleton className="h-6 w-24 rounded-full" />
+                  </div>
+                </div>
+              </div>
+            ))}
+            {/* biome-ignore-end lint/suspicious/noArrayIndexKey: スケルトン表示範囲の終了 */}
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
 
 /**
  * ダッシュボードページ
@@ -24,11 +84,14 @@ export default async function DashboardPage() {
   }
 
   // インストラクター情報取得（React.cacheでメモ化されているため、layout.tsxと重複してもDBクエリは1回のみ）
+  // 今後のシフトはSuspenseで遅延読み込みするため、ここでは取得しない
   const [instructorProfile, availableInstructors] = await Promise.all([
     user.instructorId ? getInstructorProfile(user.instructorId) : null,
     // 未紐付けの場合でもHeaderで使用するため、常に取得する
     getAvailableInstructors(),
-  ]);
+  ]).catch(() => {
+    throw new Error("ダッシュボードデータの取得に失敗しました");
+  });
 
   return (
     <div className="space-y-6">
@@ -44,6 +107,13 @@ export default async function DashboardPage() {
         availableInstructors={availableInstructors}
         instructorProfile={instructorProfile}
       />
+
+      {/* 今後のシフト（インストラクター紐付け済みの場合のみ表示） */}
+      {user.instructorId && (
+        <Suspense fallback={<UpcomingShiftsSkeleton />}>
+          <UpcomingShiftsAsync instructorId={user.instructorId} />
+        </Suspense>
+      )}
 
       {/* 今後追加される他のダッシュボードコンテンツ */}
     </div>

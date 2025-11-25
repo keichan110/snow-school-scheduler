@@ -1,12 +1,8 @@
 "use client";
 
-import {
-  Calendar,
-  PersonSimpleSki,
-  PersonSimpleSnowboard,
-  User,
-} from "@phosphor-icons/react";
+import { User } from "@phosphor-icons/react";
 import type React from "react";
+import { DepartmentIcon } from "@/app/(member)/_components/department-icon";
 import { cn } from "@/lib/utils";
 import { DEPARTMENT_NAMES, DEPARTMENT_STYLES } from "./constants";
 import { getDepartmentBgClass } from "./shift-utils";
@@ -224,27 +220,17 @@ export function createDepartmentSection(
 
 /**
  * 部門別のアイコンを取得する関数
+ * @deprecated DepartmentIconコンポーネントを直接使用してください
  */
-export function getDepartmentIcon(
-  departmentType: DepartmentType,
-  className?: string
-) {
+export function getDepartmentIcon(departmentCode: string, className?: string) {
   const iconClass = cn(
     "h-5 w-5",
-    DEPARTMENT_STYLES[departmentType].iconColor,
+    DEPARTMENT_STYLES[departmentCode.toLowerCase() as "ski" | "snowboard"]
+      ?.iconColor || "",
     className
   );
 
-  switch (departmentType) {
-    case "ski":
-      return <PersonSimpleSki className={iconClass} weight="fill" />;
-    case "snowboard":
-      return <PersonSimpleSnowboard className={iconClass} weight="fill" />;
-    case "mixed":
-      return <Calendar className={iconClass} weight="fill" />;
-    default:
-      return <Calendar className={iconClass} weight="fill" />;
-  }
+  return <DepartmentIcon className={iconClass} code={departmentCode} />;
 }
 
 /**
@@ -259,7 +245,7 @@ export function renderDepartmentSections(
   // スキー部門
   if (shifts.filter((s) => s.department === "ski").length > 0) {
     sections.push(
-      createDepartmentSection("ski", shifts, getDepartmentIcon("ski"), options)
+      createDepartmentSection("ski", shifts, getDepartmentIcon("SKI"), options)
     );
   }
 
@@ -269,19 +255,7 @@ export function renderDepartmentSections(
       createDepartmentSection(
         "snowboard",
         shifts,
-        getDepartmentIcon("snowboard"),
-        options
-      )
-    );
-  }
-
-  // 共通部門
-  if (shifts.filter((s) => s.department === "mixed").length > 0) {
-    sections.push(
-      createDepartmentSection(
-        "mixed",
-        shifts,
-        getDepartmentIcon("mixed"),
+        getDepartmentIcon("SNOWBOARD"),
         options
       )
     );
