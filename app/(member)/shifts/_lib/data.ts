@@ -37,6 +37,8 @@ export type MonthlyViewData = {
       hasNotes: boolean;
     };
     description: string | null;
+    /** 現在のユーザーがこのシフトにアサインされているか */
+    isMyShift?: boolean;
   }>;
   summary: {
     totalShifts: number;

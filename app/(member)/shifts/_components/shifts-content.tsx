@@ -54,6 +54,8 @@ type ServerShift = {
     hasNotes: boolean;
   };
   description: string | null;
+  /** 現在のユーザーがこのシフトにアサインされているか */
+  isMyShift?: boolean;
 };
 
 /**
