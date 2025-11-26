@@ -10,6 +10,8 @@ export type Shift = {
   shiftType: ShiftType;
   assignments: ShiftAssignment[];
   assignedCount: number;
+  /** 現在のユーザーがこのシフトにアサインされているか */
+  isMyShift?: boolean | undefined;
 };
 
 export type Department = {
@@ -70,6 +72,8 @@ export type ShiftSummary = {
   department: DepartmentType;
   count: number;
   assignedInstructors?: AssignedInstructor[]; // アサイン済みインストラクター情報
+  /** 現在のユーザーがこのシフトにアサインされているか */
+  isMyShift?: boolean | undefined;
 };
 
 export type DetailedShiftSummary = {

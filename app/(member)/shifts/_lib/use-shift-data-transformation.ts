@@ -51,6 +51,10 @@ export function useShiftDataTransformation() {
           } else {
             existingShift.assignedInstructors = assignedInstructors;
           }
+          // isMyShiftがtrueなら既存のシフトもtrueにする
+          if (shift.isMyShift) {
+            existingShift.isMyShift = true;
+          }
         } else {
           // 新しいシフトエントリを追加
           stats[date].shifts.push({
@@ -58,6 +62,7 @@ export function useShiftDataTransformation() {
             department: departmentCode as "ski" | "snowboard",
             count: shift.assignedCount,
             assignedInstructors,
+            isMyShift: shift.isMyShift,
           });
         }
       }

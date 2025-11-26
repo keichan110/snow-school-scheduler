@@ -302,6 +302,7 @@ export default function ShiftsContent({
           },
         })),
         assignedCount: shift.stats.assignedCount,
+        isMyShift: shift.isMyShift,
       };
     });
   }, [initialShifts]);
