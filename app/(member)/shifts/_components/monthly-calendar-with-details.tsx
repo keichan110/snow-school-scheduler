@@ -189,7 +189,7 @@ export function MonthlyCalendarWithDetails({
                   className={cn(
                     "flex items-center justify-between gap-2 rounded-lg px-2 py-2",
                     getDepartmentBgClass(shift.department as DepartmentType),
-                    (shift as { isMyShift?: boolean }).isMyShift &&
+                    shift.isMyShift &&
                       "border-l-[3px] border-l-green-500 pl-1.5 dark:border-l-green-400"
                   )}
                   key={`${shift.department}-${shift.type}-${idx}`}

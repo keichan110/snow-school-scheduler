@@ -5,6 +5,7 @@ import type {
   Department,
   Shift,
   ShiftStats,
+  ShiftSummary,
 } from "./types";
 
 /**
@@ -25,11 +26,7 @@ export function useShiftDataTransformation() {
 
       // 既存シフトに新しいシフト情報をマージ
       const mergeShiftData = (
-        existingShift: {
-          count: number;
-          assignedInstructors?: AssignedInstructor[];
-          isMyShift?: boolean | undefined;
-        },
+        existingShift: ShiftSummary,
         shift: Shift,
         assignedInstructors: AssignedInstructor[]
       ): void => {
