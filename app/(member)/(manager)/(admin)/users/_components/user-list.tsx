@@ -19,6 +19,7 @@ import { getRoleColor, getRoleDisplayName } from "../_lib/api";
 import type { UserFormData, UserWithDetails } from "../_lib/types";
 import UserModal from "./user-modal";
 
+/** ユーザーID表示時のプレビュー文字数 */
 const USER_ID_PREVIEW_LENGTH = 8;
 
 type UserStatusStyles = {
@@ -32,6 +33,16 @@ type UserStatusInfo = {
   Icon: typeof User | typeof Crown | typeof Star | typeof EyeSlash;
 };
 
+/**
+ * ユーザーのステータス情報を取得する関数
+ *
+ * @description
+ * ユーザーの権限ロールとアクティブ状態に基づいて、
+ * 表示スタイル（行の背景色、アイコン色）とアイコンを返します。
+ *
+ * @param user - ステータス情報を取得するユーザー
+ * @returns ステータス情報（スタイルとアイコン）
+ */
 function getUserStatusInfo(user: UserWithDetails): UserStatusInfo {
   if (!user.isActive) {
     return {
@@ -80,6 +91,17 @@ type UserRowProps = {
   onOpenModal: (user: UserWithDetails) => void;
 };
 
+/**
+ * ユーザーテーブルの1行を表示するコンポーネント
+ *
+ * @description
+ * ユーザー情報を権限ロール別に色分けされたテーブル行として表示します。
+ * 行全体がクリッカブルで、クリックすると詳細・編集モーダルが開きます。
+ * 非アクティブなユーザーは透明度を下げて表示されます。
+ *
+ * @component
+ * @internal
+ */
 function UserRow({ user, onOpenModal }: UserRowProps) {
   const { styles: statusStyles, Icon: StatusIcon } = getUserStatusInfo(user);
 
@@ -156,18 +178,25 @@ type UserListProps = {
 /**
  * ユーザー一覧テーブルコンポーネント
  *
- * @remarks
- * Client Component として実装され、モーダルの開閉状態を管理します。
- * Server Component から渡されたデータをテーブル形式で表示し、
- * 各行をクリックすることで編集モーダルを開くことができます。
+ * @description
+ * ユーザー情報をテーブル形式で表示し、編集・無効化機能を提供するClient Componentです。
+ * Server Componentから渡されたデータを表示し、モーダルの開閉状態を管理します。
+ * 各行をクリックすることで詳細・編集モーダルが開き、ユーザー情報を更新できます。
  *
- * 機能:
- * - ユーザー一覧のテーブル表示
- * - 行クリックでの編集モーダル表示
+ * 主な機能:
+ * - ユーザー一覧のテーブル表示（権限ロール別色分け）
+ * - 行クリックでの詳細・編集モーダル表示
+ * - ユーザー情報の更新（表示名、権限ロール、アクティブ状態）
+ * - ユーザーの無効化（ADMIN以外のアクティブユーザー）
+ * - Server Actionsによる更新・無効化
+ * - ページリフレッシュ（router.refresh）による最新データ取得
  * - 空状態の表示
  *
- * @param props - コンポーネントのプロパティ
- * @returns ユーザー一覧テーブルコンポーネント
+ * @component
+ * @example
+ * ```tsx
+ * <UserList users={filteredUsers} />
+ * ```
  */
 export function UserList({ users }: UserListProps) {
   const router = useRouter();

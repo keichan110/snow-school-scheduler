@@ -14,6 +14,24 @@ type InstructorLinkageSectionProps = {
   availableInstructors: InstructorBasicInfo[];
 };
 
+/**
+ * インストラクター紐付け警告セクションコンポーネント
+ *
+ * @description
+ * 認証ユーザーがインストラクター情報に紐づいていない場合に警告を表示します。
+ * スケジュール機能を利用するためにはインストラクター情報の設定が必須であることを通知し、
+ * 設定ボタン（InstructorLinkageButton）を提供します。
+ * インストラクターが既に紐づいている場合は何も表示しません（null を返します）。
+ *
+ * @component
+ * @example
+ * ```tsx
+ * <InstructorLinkageSection
+ *   instructorProfile={userInstructorProfile}
+ *   availableInstructors={instructorsList}
+ * />
+ * ```
+ */
 export function InstructorLinkageSection({
   instructorProfile,
   availableInstructors,

@@ -14,12 +14,28 @@ import {
 /**
  * 資格管理ページのテーブルヘッダーコンポーネント
  *
- * @remarks
- * URL パラメータベースのフィルタリング対応
- * instructors ページと同じレイアウト構造を使用
+ * @description
+ * 資格一覧ページのテーブルヘッダーで、タイトル表示とフィルター機能を提供するClient Componentです。
+ * URLパラメータベースのフィルタリングに対応し、フィルター変更時にURLを更新してページ遷移します。
+ * instructorsページと同じTableHeaderLayoutを使用した統一デザインです。
+ *
+ * フィルター機能:
+ * - 部門フィルター（Tabs）: すべて / スキー / スノーボード
+ * - アクティブフィルター（Switch）: アクティブのみ表示 / すべて表示
+ *
+ * URLパラメータ:
+ * - department: "all" | "ski" | "snowboard"
+ * - active: "true" | "false"
+ *
+ * @component
+ * @example
+ * ```tsx
+ * // URLパラメータ: ?department=ski&active=true
+ * <CertificationTableHeader />
+ * ```
  *
  * @note
- * 追加ボタンは CertificationList コンポーネント内で実装されているため、ここでは表示しません
+ * 追加ボタンはCertificationListコンポーネント内で実装されているため、ここでは表示しません。
  */
 export function CertificationTableHeader() {
   const router = useRouter();

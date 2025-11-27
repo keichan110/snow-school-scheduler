@@ -22,6 +22,16 @@ type ShiftBasicInfoFormProps = {
   onNotesChange: (notes: string) => void;
 };
 
+/**
+ * シフト基本情報入力フォーム
+ *
+ * @description
+ * シフト作成/編集時の基本情報（部門、シフトタイプ、ノート）を入力するフォームコンポーネント。
+ * UnifiedShiftBottomModalのステップ1で使用されます。
+ * バリデーションエラーの表示とローディング状態の管理を行います。
+ *
+ * @component
+ */
 export function ShiftBasicInfoForm({
   departments,
   shiftTypes,

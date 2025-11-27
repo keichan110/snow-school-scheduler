@@ -27,6 +27,39 @@ type UserModalProps = {
   onDeactivate?: (user: UserWithDetails) => Promise<void>;
 };
 
+/**
+ * ユーザー詳細・編集モーダルコンポーネント
+ *
+ * @description
+ * ユーザー情報の詳細表示と編集を行うDrawerモーダルコンポーネントです。
+ * Client Componentとして実装され、フォーム状態管理とバリデーションを提供します。
+ *
+ * フォーム項目:
+ * - 表示名（必須）
+ * - 権限ロール（MEMBER / MANAGER / ADMIN）
+ * - アクティブ状態（有効/無効）
+ *
+ * 主な機能:
+ * - ユーザー情報の編集
+ * - 権限ロールの変更
+ * - アクティブ状態の切り替え
+ * - ユーザーの無効化（ADMIN以外のアクティブユーザーのみ、確認ダイアログ付き）
+ * - フォームバリデーション（表示名必須）
+ * - エラーメッセージ表示
+ * - 保存中の状態表示
+ *
+ * @component
+ * @example
+ * ```tsx
+ * <UserModal
+ *   isOpen={true}
+ *   onClose={handleClose}
+ *   user={editingUser}
+ *   onSave={handleSave}
+ *   onDeactivate={handleDeactivate}
+ * />
+ * ```
+ */
 export default function UserModal({
   isOpen,
   onClose,

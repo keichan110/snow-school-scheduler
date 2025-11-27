@@ -15,12 +15,16 @@ export type TableFilterRowProps = {
 /**
  * テーブルヘッダーのフィルター行コンポーネント
  *
- * @remarks
- * 左側にカテゴリフィルター、右側にアクティブフィルターを配置します
- * レスポンシブ対応（モバイル: 縦並び、タブレット以上: 横並び）
+ * @description
+ * テーブルデータをフィルタリングするためのUI要素を配置するコンポーネントです。
+ * 左側にカテゴリフィルター（Tabs等）、右側にトグルフィルター（Switch等）を配置します。
+ * レスポンシブデザインに対応しており、モバイルでは縦並び、タブレット以上では横並びになります。
+ * 両方のフィルターが未指定の場合は何も表示しません。
  *
+ * @component
  * @example
  * ```tsx
+ * // タブとスイッチを組み合わせた使用例
  * <TableFilterRow
  *   leftFilter={
  *     <Tabs value={category} onValueChange={setCategory}>

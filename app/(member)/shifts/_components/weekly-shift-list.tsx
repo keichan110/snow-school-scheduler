@@ -20,6 +20,26 @@ type WeeklyShiftListProps = {
   canManage?: boolean;
 };
 
+/**
+ * 週次シフトリスト表示コンポーネント
+ *
+ * @description
+ * 指定された基準日を含む1週間（月曜日から日曜日）のシフトをリスト形式で表示します。
+ * 各日付のシフトカードを縦に並べて表示し、日ごとのシフト詳細を確認できます。
+ *
+ * @component
+ * @example
+ * ```tsx
+ * <WeeklyShiftList
+ *   baseDate={new Date()}
+ *   shiftStats={stats}
+ *   isHoliday={checkHoliday}
+ *   selectedDate="2024-01-15"
+ *   onDateSelect={handleDateSelect}
+ *   canManage={true}
+ * />
+ * ```
+ */
 export function WeeklyShiftList({
   baseDate,
   shiftStats,

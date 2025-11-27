@@ -28,11 +28,23 @@ const BaseShiftCalendar = dynamic(
 /**
  * 統合シフトカレンダーグリッドコンポーネント
  *
- * 管理者用・公開用のカレンダーグリッド表示を統合したコンポーネント。
- * 重複していたコンポーネントを統合し、保守性を向上させる。
+ * @description
+ * 月次カレンダーのグリッド表示を提供するコンポーネント。
+ * BaseShiftCalendarを動的にインポートし、管理者用・公開用で共通のカレンダー表示を提供します。
+ * SSRを無効化し、クライアントサイドでのみレンダリングされます。
  *
- * @param props - シフト表示に必要なプロパティ
- * @returns JSX.Element
+ * @component
+ * @example
+ * ```tsx
+ * <ShiftCalendarGrid
+ *   year={2024}
+ *   month={1}
+ *   shiftStats={stats}
+ *   isHoliday={checkHoliday}
+ *   selectedDate="2024-01-15"
+ *   onDateSelect={handleDateSelect}
+ * />
+ * ```
  */
 export function ShiftCalendarGrid(props: UnifiedShiftCalendarGridProps) {
   // variantは将来の拡張用（現在は使用せず、BaseShiftCalendarに直接委譲）

@@ -30,6 +30,33 @@ type InstructorSelectModalProps = {
   currentInstructorId?: number | null;
 };
 
+/**
+ * インストラクター選択・紐付けモーダルコンポーネント
+ *
+ * @description
+ * 認証ユーザーとインストラクターマスタを紐づけるためのモーダルダイアログです。
+ * インストラクター一覧から選択し、紐付けを実行できます。
+ * 既に紐付けられている場合は紐付け解除ボタンも表示されます。
+ *
+ * 主な機能:
+ * - インストラクターの検索・選択（姓名・かな表示）
+ * - 紐付け実行（linkMyInstructor Server Action呼び出し）
+ * - 紐付け解除（unlinkMyInstructor Server Action呼び出し）
+ * - エラーメッセージの表示
+ * - 処理中の状態管理（useTransition使用）
+ *
+ * @component
+ * @example
+ * ```tsx
+ * <InstructorSelectModal
+ *   open={isOpen}
+ *   onOpenChange={setIsOpen}
+ *   instructors={instructorList}
+ *   onSuccess={() => router.refresh()}
+ *   currentInstructorId={123}
+ * />
+ * ```
+ */
 export function InstructorSelectModal({
   open,
   onOpenChange,

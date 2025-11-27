@@ -48,6 +48,29 @@ const INITIAL_FORM_DATA: ShiftFormData = {
   selectedInstructorIds: [],
 };
 
+/**
+ * シフト作成/編集の統合ボトムシートモーダル
+ *
+ * @description
+ * シフトの作成と編集を担当する2ステップのモーダルコンポーネント。
+ * - ステップ1: 基本情報（部門、シフトタイプ、ノート）の入力
+ * - ステップ2: インストラクターの選択
+ * 既存シフトの編集にも対応し、管理者権限のチェックとバリデーションを実装しています。
+ *
+ * @component
+ * @example
+ * ```tsx
+ * <UnifiedShiftBottomModal
+ *   isOpen={true}
+ *   onOpenChange={setIsOpen}
+ *   selectedDate="2024-01-15"
+ *   dayData={dayData}
+ *   onShiftUpdated={handleUpdate}
+ *   initialStep="create-step1"
+ *   shiftFormData={masterData}
+ * />
+ * ```
+ */
 export function UnifiedShiftBottomModal({
   isOpen,
   onOpenChange,

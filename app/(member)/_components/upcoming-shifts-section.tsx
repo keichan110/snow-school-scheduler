@@ -34,13 +34,32 @@ type UpcomingShiftsSectionProps = {
 };
 
 /**
- * インストラクター向け今後のシフト表示セクション
+ * インストラクター向け今後のシフト表示セクションコンポーネント
  *
  * @description
- * 認証ユーザーに紐づくインストラクターの今後のシフトをCarousel形式で表示します。
- * Client Componentとして実装し、Carouselの状態管理を行います。
- * - デスクトップ：一度に5つのシフトを表示
- * - モバイル：一度に1つのシフトを表示
+ * 認証ユーザーに紐づくインストラクターの今後のシフトをカルーセル形式で表示します。
+ * Client Componentとして実装され、shadcn/uiのCarouselコンポーネントを使用しています。
+ * シフトがない場合は空状態メッセージを表示します。
+ *
+ * 表示形式:
+ * - デスクトップ: 一度に5つのシフトカードを表示（横並び）
+ * - モバイル: 一度に1つのシフトカードを表示（スワイプで切り替え）
+ * - 最後に「すべて表示」リンクカードを配置
+ *
+ * @component
+ * @example
+ * ```tsx
+ * <UpcomingShiftsSection
+ *   shifts={[
+ *     {
+ *       id: 1,
+ *       date: new Date('2024-01-15'),
+ *       department: { code: 'ski', name: 'スキー' },
+ *       shiftType: { name: '午前' }
+ *     }
+ *   ]}
+ * />
+ * ```
  */
 export function UpcomingShiftsSection({ shifts }: UpcomingShiftsSectionProps) {
   const shiftsLink = useShiftsLink();

@@ -11,7 +11,29 @@ export interface SkeletonTableProps extends HTMLAttributes<HTMLDivElement> {
 }
 
 /**
- * SkeletonTable mimics tabular data so list-heavy routes can keep layout stability while fetching content.
+ * テーブルローディング用スケルトンコンポーネント
+ *
+ * @description
+ * データ取得中のテーブル表示をシミュレートするスケルトンスクリーンです。
+ * リスト表示の多い管理画面でレイアウトの安定性を保ちながら、
+ * データ取得中であることを視覚的にユーザーに伝えます。
+ *
+ * 主な機能:
+ * - カスタマイズ可能な列数・行数
+ * - ヘッダー表示の切り替え
+ * - パルスアニメーション（animate-pulse）
+ * - レスポンシブ対応（モバイル: 縦並び、デスクトップ: 横並び）
+ * - 一意なキー生成（crypto.randomUUID使用）
+ *
+ * @component
+ * @example
+ * ```tsx
+ * // 5列×5行のテーブルスケルトン
+ * <SkeletonTable columns={5} rows={5} showHeader={true} />
+ *
+ * // ヘッダーなしの3列×10行
+ * <SkeletonTable columns={3} rows={10} showHeader={false} />
+ * ```
  */
 export function SkeletonTable({
   columns = 5,
