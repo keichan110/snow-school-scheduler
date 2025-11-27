@@ -54,6 +54,8 @@ export type ShiftSummary = {
   type: string;
   department: DepartmentType;
   count: number;
+  /** 現在のユーザーがこのシフトにアサインされているか */
+  isMyShift?: boolean | undefined;
 };
 
 export type ShiftStats = {
