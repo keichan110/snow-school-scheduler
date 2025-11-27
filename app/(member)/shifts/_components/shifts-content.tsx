@@ -54,6 +54,8 @@ type ServerShift = {
     hasNotes: boolean;
   };
   description: string | null;
+  /** 現在のユーザーがこのシフトにアサインされているか */
+  isMyShift?: boolean;
 };
 
 /**
@@ -300,6 +302,7 @@ export default function ShiftsContent({
           },
         })),
         assignedCount: shift.stats.assignedCount,
+        isMyShift: shift.isMyShift,
       };
     });
   }, [initialShifts]);

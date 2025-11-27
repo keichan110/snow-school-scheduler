@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import { authenticateFromCookies } from "@/lib/auth/middleware";
 import ShiftsContent from "./_components/shifts-content";
 import {
   getDepartments,
@@ -68,6 +69,11 @@ async function ShiftsPageContent({ searchParams }: ShiftsPageProps) {
   // searchParams は Promise なので await する (Next.js 15+)
   const params = await searchParams;
 
+  // 認証情報を取得して現在のインストラクターIDを取得
+  const authResult = await authenticateFromCookies();
+  const currentInstructorId =
+    authResult.success && authResult.user ? authResult.user.instructorId : null;
+
   // URLパラメータからビューモードを取得
   const viewParam = getSearchParam(params.view) as
     | "monthly"
@@ -99,6 +105,16 @@ async function ShiftsPageContent({ searchParams }: ShiftsPageProps) {
     shiftsData = await getMonthlyShifts(year, month);
   }
 
+  // 各シフトに isMyShift フラグを追加
+  const enhancedShifts = shiftsData.shifts.map((shift) => ({
+    ...shift,
+    isMyShift:
+      currentInstructorId !== null &&
+      shift.assignedInstructors.some(
+        (instructor) => instructor.id === currentInstructorId
+      ),
+  }));
+
   // 部門一覧を取得
   const departments = await getDepartments();
 
@@ -108,7 +124,7 @@ async function ShiftsPageContent({ searchParams }: ShiftsPageProps) {
   return (
     <ShiftsContent
       initialDepartments={departments}
-      initialShifts={shiftsData.shifts}
+      initialShifts={enhancedShifts}
       shiftFormData={shiftFormData}
     />
   );

@@ -5,6 +5,7 @@ import type {
   Department,
   Shift,
   ShiftStats,
+  ShiftSummary,
 } from "./types";
 
 /**
@@ -14,6 +15,32 @@ export function useShiftDataTransformation() {
   // シフトデータを統計データに変換
   const transformShiftsToStats = useCallback(
     (shifts: Shift[], departments: Department[]): ShiftStats => {
+      // アサイン済みインストラクター情報を抽出
+      const extractAssignedInstructors = (shift: Shift): AssignedInstructor[] =>
+        shift.assignments.map((assignment) => ({
+          id: assignment.instructor.id,
+          lastName: assignment.instructor.lastName,
+          firstName: assignment.instructor.firstName,
+          displayName: `${assignment.instructor.lastName} ${assignment.instructor.firstName}`,
+        }));
+
+      // 既存シフトに新しいシフト情報をマージ
+      const mergeShiftData = (
+        existingShift: ShiftSummary,
+        shift: Shift,
+        assignedInstructors: AssignedInstructor[]
+      ): void => {
+        existingShift.count += shift.assignedCount;
+        if (existingShift.assignedInstructors) {
+          existingShift.assignedInstructors.push(...assignedInstructors);
+        } else {
+          existingShift.assignedInstructors = assignedInstructors;
+        }
+        if (shift.isMyShift) {
+          existingShift.isMyShift = true;
+        }
+      };
+
       const stats: ShiftStats = {};
 
       for (const shift of shifts) {
@@ -27,15 +54,7 @@ export function useShiftDataTransformation() {
           departments
         );
 
-        // アサイン済みインストラクター情報を抽出
-        const assignedInstructors: AssignedInstructor[] = shift.assignments.map(
-          (assignment) => ({
-            id: assignment.instructor.id,
-            lastName: assignment.instructor.lastName,
-            firstName: assignment.instructor.firstName,
-            displayName: `${assignment.instructor.lastName} ${assignment.instructor.firstName}`,
-          })
-        );
+        const assignedInstructors = extractAssignedInstructors(shift);
 
         // 同じ部門・シフト種別の組み合わせが既に存在するかチェック
         const existingShift = stats[date].shifts.find(
@@ -44,13 +63,7 @@ export function useShiftDataTransformation() {
         );
 
         if (existingShift) {
-          // 既存のシフトに人数を加算し、インストラクターをマージ
-          existingShift.count += shift.assignedCount;
-          if (existingShift.assignedInstructors) {
-            existingShift.assignedInstructors.push(...assignedInstructors);
-          } else {
-            existingShift.assignedInstructors = assignedInstructors;
-          }
+          mergeShiftData(existingShift, shift, assignedInstructors);
         } else {
           // 新しいシフトエントリを追加
           stats[date].shifts.push({
@@ -58,6 +71,7 @@ export function useShiftDataTransformation() {
             department: departmentCode as "ski" | "snowboard",
             count: shift.assignedCount,
             assignedInstructors,
+            isMyShift: shift.isMyShift,
           });
         }
       }
