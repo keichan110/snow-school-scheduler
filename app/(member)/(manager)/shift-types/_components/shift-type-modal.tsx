@@ -18,6 +18,35 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Switch } from "@/components/ui/switch";
 import type { ShiftTypeFormData, ShiftTypeModalProps } from "../_lib/types";
 
+/**
+ * シフト種類の作成・編集モーダルコンポーネント
+ *
+ * @description
+ * シフト種類マスタデータの新規作成・編集を行うDrawerモーダルコンポーネントです。
+ * Client Componentとして実装され、シンプルなフォーム状態管理を提供します。
+ *
+ * フォーム項目:
+ * - シフト種類名（必須）
+ * - 有効/無効スイッチ
+ *
+ * 主な機能:
+ * - シフト種類の新規作成・編集
+ * - フォームバリデーション（必須項目チェック）
+ * - 保存中の状態管理（送信ボタン無効化）
+ * - 通知システム統合（成功/エラーメッセージ）
+ * - スクロール可能なフォームエリア（ScrollArea使用）
+ *
+ * @component
+ * @example
+ * ```tsx
+ * <ShiftTypeModal
+ *   isOpen={isModalOpen}
+ *   onClose={handleCloseModal}
+ *   shiftType={editingShiftType}
+ *   onSave={handleSave}
+ * />
+ * ```
+ */
 export default function ShiftTypeModal({
   isOpen,
   onClose,

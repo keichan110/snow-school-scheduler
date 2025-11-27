@@ -22,6 +22,37 @@ type InvitationWarningModalProps = {
   error?: string | null;
 };
 
+/**
+ * 既存招待置き換え警告モーダルコンポーネント
+ *
+ * @description
+ * 新規招待作成時に既存の有効な招待がある場合に表示される確認ダイアログです。
+ * Client Componentとして実装され、既存招待の情報を表示し、
+ * 置き換えによる影響をユーザーに明示します。
+ *
+ * 表示内容:
+ * - 既存招待の詳細情報（説明、有効期限、使用回数、作成者）
+ * - 置き換えの影響に関する警告メッセージ
+ * - エラーメッセージ（置き換え失敗時）
+ *
+ * 主な機能:
+ * - 既存招待の自動無効化の警告
+ * - 置き換え確認・キャンセル
+ * - 送信中の状態表示
+ *
+ * @component
+ * @example
+ * ```tsx
+ * <InvitationWarningModal
+ *   isOpen={true}
+ *   onClose={handleCancel}
+ *   onConfirm={handleConfirm}
+ *   existingInvitation={activeInvitation}
+ *   isSubmitting={false}
+ *   error={null}
+ * />
+ * ```
+ */
 export default function InvitationWarningModal({
   isOpen,
   onClose,

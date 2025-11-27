@@ -10,6 +10,23 @@ type ViewToggleProps = {
   pendingView?: "monthly" | "weekly" | null;
 };
 
+/**
+ * ビュー切り替えトグルボタン
+ *
+ * @description
+ * 月次表示と週次表示を切り替えるトグルボタンコンポーネント。
+ * ローディング状態の表示に対応し、切り替え中のフィードバックを提供します。
+ *
+ * @component
+ * @example
+ * ```tsx
+ * <ViewToggle
+ *   currentView="monthly"
+ *   onViewChange={handleViewChange}
+ *   isPending={false}
+ * />
+ * ```
+ */
 export function ViewToggle({
   currentView,
   onViewChange,

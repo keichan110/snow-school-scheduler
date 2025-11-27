@@ -60,19 +60,39 @@ type CertificationModalProps = {
 /**
  * 資格の作成・編集モーダルコンポーネント
  *
- * @remarks
- * Client Component として実装され、useState で送信状態を管理しながら Server Actions を呼び出します。
- * フォームデータを Server Actions の入力形式に変換して送信します。
+ * @description
+ * 資格マスタデータの新規作成・編集を行うDrawerモーダルコンポーネントです。
+ * Client Componentとして実装され、useStateで送信状態を管理しながらServer Actionsを呼び出します。
+ * フォームデータをServer Actionsの入力形式に変換して送信します。
  *
- * 機能:
- * - 資格の新規作成
- * - 既存資格の編集
- * - フォームバリデーション
- * - Server Actions による保存
- * - 保存中の UI 状態表示
+ * フォーム項目:
+ * - 部門選択（ラジオボタン）
+ * - 資格名（短縮名）
+ * - 発行組織
+ * - 正式名称
+ * - 説明・備考（任意）
+ * - 有効/無効スイッチ
  *
- * @param props - コンポーネントのプロパティ
- * @returns 資格モーダルコンポーネント
+ * 主な機能:
+ * - 資格の新規作成（onCreateCertification）
+ * - 既存資格の編集（onUpdateCertification）
+ * - フォームバリデーション（HTML5 required属性）
+ * - Server Actionsによる保存
+ * - 保存中のUI状態表示（ボタン無効化）
+ * - 通知システム統合（成功/エラーメッセージ）
+ * - ページリフレッシュ（router.refresh）
+ *
+ * @component
+ * @example
+ * ```tsx
+ * <CertificationModal
+ *   isOpen={isModalOpen}
+ *   onClose={handleCloseModal}
+ *   certification={editingCertification}
+ *   onCreateCertification={createAction}
+ *   onUpdateCertification={updateAction}
+ * />
+ * ```
  */
 export default function CertificationModal({
   isOpen,

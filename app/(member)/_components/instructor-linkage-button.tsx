@@ -10,6 +10,23 @@ type InstructorLinkageButtonProps = {
   onSuccessAction: () => void;
 };
 
+/**
+ * インストラクター紐付けモーダルを開くボタンコンポーネント
+ *
+ * @description
+ * インストラクター情報を設定するためのモーダル（InstructorSelectModal）を開くボタンを提供します。
+ * 認証ユーザーとインストラクターマスタを紐づける際に使用されます。
+ * モーダルの開閉状態を管理し、紐付け成功時にコールバックを実行します。
+ *
+ * @component
+ * @example
+ * ```tsx
+ * <InstructorLinkageButton
+ *   instructors={availableInstructors}
+ *   onSuccessAction={() => router.refresh()}
+ * />
+ * ```
+ */
 export function InstructorLinkageButton({
   instructors,
   onSuccessAction,

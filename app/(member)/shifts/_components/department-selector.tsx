@@ -13,6 +13,15 @@ type DepartmentSelectorProps = {
   isLoading?: boolean;
 };
 
+/**
+ * 部門選択コンポーネント
+ *
+ * @description
+ * スキー/スノーボード部門を選択するためのボタングループコンポーネント。
+ * 部門ごとのアイコンと色分けを提供し、視覚的に選択しやすいUIを実現します。
+ *
+ * @component
+ */
 export function DepartmentSelector({
   departments,
   selectedId,

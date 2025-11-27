@@ -28,12 +28,29 @@ type UserStatsProps = {
 /**
  * ユーザー統計表示コンポーネント
  *
- * @remarks
- * Server Component から渡された統計データを視覚的に表示します。
- * アクティブユーザー数、管理者数、マネージャー数を色分けされたカードで表示します。
+ * @description
+ * ユーザー統計情報を視覚的に表示するServer Componentです。
+ * アクティブユーザー数、管理者数、マネージャー数をアイコン付きの
+ * 色分けされたカードで横並びに表示します。
  *
- * @param props - コンポーネントのプロパティ
- * @returns 統計カードコンポーネント
+ * 表示項目:
+ * - アクティブユーザー数（緑色、UserCheckアイコン）
+ * - 管理者数（赤色、Crownアイコン）
+ * - マネージャー数（青色、Starアイコン）
+ *
+ * @component
+ * @example
+ * ```tsx
+ * <UserStats
+ *   stats={{
+ *     total: 50,
+ *     active: 45,
+ *     admins: 2,
+ *     managers: 8,
+ *     members: 40
+ *   }}
+ * />
+ * ```
  */
 export function UserStats({ stats }: UserStatsProps) {
   return (

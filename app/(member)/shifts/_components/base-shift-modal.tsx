@@ -27,6 +27,16 @@ export type BaseShiftModalProps = {
   emptyStateContent?: React.ReactNode;
 };
 
+/**
+ * シフトモーダルの基盤コンポーネント
+ *
+ * @description
+ * 管理者用（AdminShiftModal）と一般ユーザー用（PublicShiftModal）のモーダルで共通利用される
+ * ベースコンポーネント。ドロワーUIの基本構造、日付表示、空状態の表示を提供します。
+ *
+ * @component
+ * @internal - 通常はAdminShiftModalまたはPublicShiftModalを使用してください
+ */
 export function BaseShiftModal({
   isOpen,
   onOpenChange,
@@ -102,6 +112,15 @@ export type PublicShiftModalProps = {
   title?: string;
 };
 
+/**
+ * 一般ユーザー向けシフトモーダル
+ *
+ * @description
+ * 一般ユーザー（インストラクター）がシフト詳細を閲覧するためのモーダルコンポーネント。
+ * 閲覧のみでシフトの編集機能は含まれていません。
+ *
+ * @component
+ */
 export function PublicShiftModal(props: PublicShiftModalProps) {
   return <BaseShiftModal {...props} variant="public" />;
 }
@@ -118,6 +137,15 @@ export type AdminShiftModalProps = {
   emptyStateContent?: React.ReactNode;
 };
 
+/**
+ * 管理者向けシフトモーダル
+ *
+ * @description
+ * 管理者（MANAGER以上）がシフトを作成・編集するためのモーダルコンポーネント。
+ * カスタムフッターや空状態表示のカスタマイズが可能です。
+ *
+ * @component
+ */
 export function AdminShiftModal(props: AdminShiftModalProps) {
   return <BaseShiftModal {...props} variant="admin" />;
 }

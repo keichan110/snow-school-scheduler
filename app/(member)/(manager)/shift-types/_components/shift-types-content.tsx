@@ -32,6 +32,16 @@ type ShiftTypesContentProps = {
   initialShiftTypes: ShiftType[];
 };
 
+/**
+ * シフト種類を有効/無効と名前順でソートする関数
+ *
+ * @description
+ * 第一優先: 有効なシフト種類を先に表示
+ * 第二優先: 名前の日本語ロケール順
+ *
+ * @param shiftTypes - ソート対象のシフト種類配列
+ * @returns ソート済みのシフト種類配列
+ */
 function sortShiftTypes(shiftTypes: ShiftType[]): ShiftType[] {
   return [...shiftTypes].sort((a, b) => {
     if (a.isActive && !b.isActive) {
@@ -46,6 +56,16 @@ function sortShiftTypes(shiftTypes: ShiftType[]): ShiftType[] {
   });
 }
 
+/**
+ * シフト種類をアクティブフィルターでフィルタリングする関数
+ *
+ * @description
+ * アクティブフィルターがtrueの場合、有効なシフト種類のみを返します。
+ *
+ * @param shiftTypes - フィルタリング対象のシフト種類配列
+ * @param showActiveOnly - 有効なシフト種類のみ表示する場合はtrue
+ * @returns フィルタリング済みのシフト種類配列
+ */
 function filterShiftTypes(
   shiftTypes: ShiftType[],
   showActiveOnly: boolean
@@ -57,6 +77,15 @@ function filterShiftTypes(
   return [...shiftTypes];
 }
 
+/**
+ * シフト種類の統計情報を計算する関数
+ *
+ * @description
+ * シフト種類の総数と有効なシフト種類の数を計算します。
+ *
+ * @param shiftTypes - 統計対象のシフト種類配列
+ * @returns 統計情報オブジェクト
+ */
 function calculateStats(shiftTypes: ShiftType[]): ShiftTypeStats {
   return {
     total: shiftTypes.length,
@@ -64,6 +93,31 @@ function calculateStats(shiftTypes: ShiftType[]): ShiftTypeStats {
   };
 }
 
+/**
+ * シフト種類管理画面のメインコンテンツコンポーネント
+ *
+ * @description
+ * シフト種類マスタの一覧表示、フィルタリング、作成・編集機能を提供するClient Componentです。
+ * Server Componentから渡された初期データを表示し、統計情報・フィルター・テーブルを統合的に管理します。
+ *
+ * 主な機能:
+ * - シフト種類統計カードの表示（合計数、有効数）
+ * - アクティブフィルター（有効のみ表示）
+ * - シフト種類テーブルの表示（有効/無効別色分け）
+ * - 新規追加・編集モーダルの管理
+ * - Server Actionsによる作成・更新（createShiftTypeAction / updateShiftTypeAction）
+ * - ページリフレッシュ（router.refresh）による最新データ取得
+ * - useMemoによる計算結果のメモ化（パフォーマンス最適化）
+ * - レスポンシブ対応（モバイルでは作成日列を非表示）
+ *
+ * @component
+ * @example
+ * ```tsx
+ * <ShiftTypesContent
+ *   initialShiftTypes={shiftTypes}
+ * />
+ * ```
+ */
 export default function ShiftTypesContent({
   initialShiftTypes,
 }: ShiftTypesContentProps) {

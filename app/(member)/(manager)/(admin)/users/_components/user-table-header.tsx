@@ -15,10 +15,28 @@ import {
 /**
  * ユーザー管理ページのテーブルヘッダーコンポーネント
  *
- * @remarks
- * URL パラメータベースのフィルタリング対応
- * instructors ページと同じレイアウト構造を使用
- * ユーザーは LINE 連携で自動作成されるため、追加ボタンは不要
+ * @description
+ * ユーザー一覧ページのテーブルヘッダーで、タイトル表示とフィルター機能を提供するClient Componentです。
+ * URLパラメータベースのフィルタリングに対応し、フィルター変更時にURLを更新してページ遷移します。
+ * instructorsページと同じTableHeaderLayoutを使用した統一デザインです。
+ *
+ * フィルター機能:
+ * - 権限ロールフィルター（Tabs）: すべて / 管理者 / マネージャー / メンバー
+ * - アクティブフィルター（Switch）: アクティブのみ表示 / すべて表示
+ *
+ * URLパラメータ:
+ * - role: "all" | "ADMIN" | "MANAGER" | "MEMBER"
+ * - status: "active" | "all"
+ *
+ * @component
+ * @example
+ * ```tsx
+ * // URLパラメータ: ?role=MANAGER&status=active
+ * <UserTableHeader />
+ * ```
+ *
+ * @note
+ * ユーザーはLINE連携で自動作成されるため、新規追加ボタンはありません。
  */
 export function UserTableHeader() {
   const router = useRouter();

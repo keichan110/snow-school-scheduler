@@ -13,6 +13,24 @@ type WeekNavigationProps = {
   onDateSelect: (date: Date) => void;
 };
 
+/**
+ * 週のナビゲーションコンポーネント
+ *
+ * @description
+ * 週次ビューで週を移動するためのナビゲーションコンポーネント。
+ * 前週/次週への移動ボタンと、カレンダーピッカーによる日付選択を提供します。
+ * 週の範囲（月曜日〜日曜日）を表示します。
+ *
+ * @component
+ * @example
+ * ```tsx
+ * <WeekNavigation
+ *   baseDate={new Date()}
+ *   onNavigate={handleNavigate}
+ *   onDateSelect={handleDateSelect}
+ * />
+ * ```
+ */
 export function WeekNavigation({
   baseDate,
   onNavigate,

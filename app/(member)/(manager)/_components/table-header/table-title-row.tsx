@@ -15,19 +15,27 @@ export type TableTitleRowProps = {
 /**
  * テーブルヘッダーのタイトル行コンポーネント
  *
- * @remarks
- * タイトルと右側のアクション（追加ボタン等）を配置します
+ * @description
+ * テーブルのタイトルと右側のアクション要素（追加ボタン等）を配置するコンポーネントです。
+ * 左側にページタイトル、右側にアクションボタンを配置する水平レイアウトを提供します。
+ * justify-between により、左右に要素を均等配置します。
  *
+ * @component
  * @example
  * ```tsx
+ * // 追加ボタン付きタイトル行
  * <TableTitleRow
  *   title="インストラクター一覧"
  *   rightAction={
  *     <Button onClick={handleAdd}>
- *       <Plus /> 追加
+ *       <Plus className="h-4 w-4" />
+ *       追加
  *     </Button>
  *   }
  * />
+ *
+ * // タイトルのみ（アクションなし）
+ * <TableTitleRow title="シフトタイプ一覧" />
  * ```
  */
 export function TableTitleRow({

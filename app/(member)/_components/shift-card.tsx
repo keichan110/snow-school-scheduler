@@ -16,7 +16,14 @@ type ShiftCardProps = {
 };
 
 /**
- * 部門コードに応じたスタイルを返す
+ * 部門コードに応じたスタイルクラスを返すヘルパー関数
+ *
+ * @description
+ * スキー部門とスノーボード部門に対応した背景色・テキスト色・ボーダー色を返します。
+ * ライトモード・ダークモードの両方に対応しています。
+ *
+ * @param departmentCode - 部門コード（大文字・小文字を区別しない）
+ * @returns Tailwind CSSクラス名の文字列
  */
 function getDepartmentStyles(departmentCode: string) {
   const normalized = departmentCode.toLowerCase();
@@ -31,10 +38,25 @@ function getDepartmentStyles(departmentCode: string) {
 }
 
 /**
- * 個別のシフト情報を表示するカード
+ * 個別シフト情報を表示するカードコンポーネント
  *
  * @description
- * シフトの日付、部門、シフトタイプを表示する再利用可能なコンポーネント
+ * シフトの日付、部門アイコン、シフトタイプを視覚的に表示するServer Componentです。
+ * 主に「今後のシフト」セクション（UpcomingShiftsSection）内のCarouselアイテムとして使用されます。
+ * 部門コードに応じた色分けとアイコン表示を提供します。
+ *
+ * @component
+ * @example
+ * ```tsx
+ * <ShiftCard
+ *   shift={{
+ *     id: 1,
+ *     date: new Date('2024-01-15'),
+ *     department: { code: 'ski', name: 'スキー' },
+ *     shiftType: { name: '午前' }
+ *   }}
+ * />
+ * ```
  */
 export function ShiftCard({ shift }: ShiftCardProps) {
   const date = new Date(shift.date);

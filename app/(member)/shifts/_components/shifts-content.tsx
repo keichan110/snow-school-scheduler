@@ -92,11 +92,23 @@ type ShiftsContentProps = {
 };
 
 /**
- * シフトページのクライアントコンテンツコンポーネント
+ * シフト管理機能の最上位コンテナコンポーネント
  *
  * @description
+ * シフト表示機能のメインコンテナ。月次/週次ビューの切り替え、シフトデータの状態管理、
+ * シフト作成/編集モーダルの制御、日付選択とナビゲーションを担当します。
  * Server Componentから渡されたデータを受け取り、対話的な機能を提供します。
  * データの更新後は router.refresh() を呼び出してServer Componentを再実行します。
+ *
+ * @component
+ * @example
+ * ```tsx
+ * <ShiftsContent
+ *   initialShifts={shifts}
+ *   initialDepartments={departments}
+ *   shiftFormData={formData}
+ * />
+ * ```
  *
  * @param props.initialShifts - サーバーから取得したシフトデータ
  * @param props.initialDepartments - サーバーから取得した部門一覧

@@ -29,6 +29,40 @@ import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import type { InstructorFormData, InstructorModalProps } from "../_lib/types";
 
+/**
+ * インストラクターの作成・編集モーダルコンポーネント
+ *
+ * @description
+ * インストラクター情報の新規作成・編集を行うDrawerモーダルコンポーネントです。
+ * Client Componentとして実装され、複雑なフォーム状態管理と資格の動的追加・削除を提供します。
+ *
+ * フォーム項目:
+ * - 基本情報: 姓、名、セイ（カタカナ）、メイ（カタカナ）
+ * - ステータス: 有効 / 休止 / 退職（ラジオボタン）
+ * - 保有資格: 部門選択→資格選択→追加（動的な資格管理）
+ * - 備考: 特記事項のテキストエリア
+ *
+ * 主な機能:
+ * - インストラクターの新規作成・編集
+ * - アクティブ資格の動的取得（getCertificationsAction）
+ * - 部門別資格フィルタリング（スキー/スノーボード）
+ * - 資格の追加・削除（重複チェック付き）
+ * - フォームバリデーション（必須項目チェック）
+ * - 保存中の状態管理（送信ボタン無効化）
+ * - 通知システム統合（成功/エラーメッセージ）
+ * - スクロール可能なフォームエリア（ScrollArea使用）
+ *
+ * @component
+ * @example
+ * ```tsx
+ * <InstructorModal
+ *   isOpen={isModalOpen}
+ *   onClose={handleCloseModal}
+ *   instructor={editingInstructor}
+ *   onSave={handleSave}
+ * />
+ * ```
+ */
 export default function InstructorModal({
   isOpen,
   onClose,

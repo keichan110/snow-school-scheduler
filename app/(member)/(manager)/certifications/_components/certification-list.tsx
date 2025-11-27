@@ -51,12 +51,19 @@ type CertificationRowProps = {
 /**
  * 資格テーブルの1行を表示するコンポーネント
  *
- * @remarks
- * 各資格を部門別に色分けされた行として表示します。
- * クリックすることで編集モーダルを開きます。
+ * @description
+ * 資格情報を部門別に色分けされたテーブル行として表示します。
+ * 行全体がクリッカブルで、クリックすると編集モーダルが開きます。
+ * 無効な資格は透明度を下げて表示されます。
  *
- * @param props - コンポーネントのプロパティ
- * @returns テーブル行コンポーネント
+ * 表示項目:
+ * - 部門アイコン
+ * - 資格名（shortName）
+ * - 正式名称（name）と発行組織バッジ
+ * - 説明（デスクトップのみ）
+ *
+ * @component
+ * @internal
  */
 function CertificationRow({
   certification,
@@ -135,19 +142,27 @@ function CertificationRow({
 /**
  * 資格一覧テーブルコンポーネント
  *
- * @remarks
- * Client Component として実装され、モーダルの開閉状態を管理します。
- * Server Component から渡されたデータをテーブル形式で表示し、
- * 各行をクリックすることで編集モーダルを開くことができます。
+ * @description
+ * 資格マスタデータをテーブル形式で表示し、作成・編集機能を提供するClient Componentです。
+ * Server Componentから渡されたデータを表示し、モーダルの開閉状態を管理します。
+ * 各行をクリックすることで編集モーダルが開き、資格情報を更新できます。
  *
- * 機能:
- * - 資格一覧のテーブル表示
- * - 新規追加ボタン
+ * 主な機能:
+ * - 資格一覧のテーブル表示（部門別色分け）
+ * - 新規追加ボタン（モーダルを新規作成モードで開く）
  * - 行クリックでの編集モーダル表示
- * - 空状態の表示
+ * - 空状態の表示（フィルター条件に一致する資格がない場合）
+ * - レスポンシブ対応（モバイルでは説明列を非表示）
  *
- * @param props - コンポーネントのプロパティ
- * @returns 資格一覧テーブルコンポーネント
+ * @component
+ * @example
+ * ```tsx
+ * <CertificationList
+ *   certifications={certifications}
+ *   onCreateCertification={createCertificationAction}
+ *   onUpdateCertification={updateCertificationAction}
+ * />
+ * ```
  */
 export function CertificationList({
   certifications,

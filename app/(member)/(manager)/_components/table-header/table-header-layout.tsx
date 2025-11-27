@@ -15,17 +15,32 @@ export type TableHeaderLayoutProps = {
 /**
  * テーブルヘッダーの共通レイアウトコンポーネント
  *
- * @remarks
- * instructors ページのレイアウトを基準とした統一デザイン
- * - space-y-4 による2行構造
- * - border-b による区切り線
- * - p-4 による余白
+ * @description
+ * 管理画面のテーブルヘッダーで使用される統一レイアウトコンポーネントです。
+ * タイトル行（TableTitleRow）とフィルター行（TableFilterRow）を組み合わせて使用します。
+ * instructorsページのレイアウトを基準とした統一デザインを提供します。
  *
+ * レイアウト仕様:
+ * - space-y-4: 2行構造の縦間隔
+ * - border-b: 下部の区切り線
+ * - p-4: 内側の余白
+ *
+ * @component
  * @example
  * ```tsx
  * <TableHeaderLayout
- *   titleRow={<TableTitleRow title="インストラクター一覧" addButton={<Button>追加</Button>} />}
- *   filterRow={<TableFilterRow leftFilter={<Tabs>...</Tabs>} rightFilter={<Switch>...</Switch>} />}
+ *   titleRow={
+ *     <TableTitleRow
+ *       title="インストラクター一覧"
+ *       rightAction={<Button>追加</Button>}
+ *     />
+ *   }
+ *   filterRow={
+ *     <TableFilterRow
+ *       leftFilter={<Tabs>...</Tabs>}
+ *       rightFilter={<Switch>...</Switch>}
+ *     />
+ *   }
  * />
  * ```
  */

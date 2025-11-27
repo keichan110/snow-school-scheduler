@@ -15,6 +15,18 @@ import {
 
 const SATURDAY_DAY_INDEX = 6;
 
+/**
+ * 基盤シフトカレンダーコンポーネント
+ *
+ * @description
+ * 月次カレンダーグリッドの基盤実装を提供します。
+ * 日付とシフトの対応付け、曜日の色分け（土曜：青、日曜：赤）、
+ * 祝日表示などのコア機能を実装しています。
+ * このコンポーネントは直接使用せず、ShiftCalendarGridを通じて使用してください。
+ *
+ * @component
+ * @internal
+ */
 export function BaseShiftCalendar({
   year,
   month,

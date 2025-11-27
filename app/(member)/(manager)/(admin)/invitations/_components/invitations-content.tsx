@@ -38,6 +38,7 @@ import type {
 import InvitationModal from "./invitation-modal";
 import InvitationWarningModal from "./invitation-warning-modal";
 
+/** クリップボードコピー成功表示のタイムアウト（ミリ秒） */
 const CLIPBOARD_SUCCESS_TIMEOUT_MS = 2000;
 
 type InvitationsContentProps = {
@@ -51,6 +52,16 @@ type InvitationRowProps = {
   onCopyUrl: (token: string) => void;
 };
 
+/**
+ * 招待テーブルの1行を表示するコンポーネント
+ *
+ * @description
+ * 招待情報をステータス別に色分けされたテーブル行として表示します。
+ * 行をクリックすると詳細モーダルが開き、URLコピーボタンを提供します。
+ *
+ * @component
+ * @internal
+ */
 function InvitationRow({
   invitation,
   copiedToken,
@@ -155,6 +166,12 @@ function InvitationRow({
   );
 }
 
+/**
+ * 招待を作成日時の降順でソートする関数
+ *
+ * @param invitations - ソート対象の招待配列
+ * @returns ソート済みの招待配列（新しいものが先）
+ */
 function sortInvitations(
   invitations: InvitationTokenWithStats[]
 ): InvitationTokenWithStats[] {
@@ -163,6 +180,13 @@ function sortInvitations(
   );
 }
 
+/**
+ * 招待をアクティブフィルターでフィルタリングする関数
+ *
+ * @param invitations - フィルタリング対象の招待配列
+ * @param showActiveOnly - 有効な招待のみ表示する場合はtrue
+ * @returns フィルタリング済みの招待配列
+ */
 function filterInvitations(
   invitations: InvitationTokenWithStats[],
   showActiveOnly: boolean
@@ -269,6 +293,32 @@ const STATUS_STYLES = {
   { row: string; icon: string; text: string }
 >;
 
+/**
+ * 招待管理画面のメインコンテンツコンポーネント
+ *
+ * @description
+ * 招待トークンの一覧表示、作成、管理を行うClient Componentです。
+ * Server Componentから渡された初期データを表示し、統計情報・フィルター・テーブルを統合的に管理します。
+ *
+ * 主な機能:
+ * - 招待統計カードの表示（有効、期限切れ、使用済み）
+ * - アクティブフィルター（有効のみ表示）
+ * - 招待テーブルの表示（ステータス別色分け）
+ * - 新規作成モーダルの管理
+ * - 既存招待置き換え警告モーダルの管理
+ * - 招待URLのクリップボードコピー
+ * - Server Actionsによる作成・無効化
+ * - ページリフレッシュ（router.refresh）による最新データ取得
+ * - useMemoによる計算結果のメモ化（パフォーマンス最適化）
+ *
+ * @component
+ * @example
+ * ```tsx
+ * <InvitationsContent
+ *   initialData={invitations}
+ * />
+ * ```
+ */
 export default function InvitationsContent({
   initialData,
 }: InvitationsContentProps) {

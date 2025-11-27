@@ -21,7 +21,16 @@ type ShiftDayCardProps = {
 const SUNDAY_INDEX = 0;
 const SATURDAY_INDEX = 6;
 
-// 設計書に基づくメモ化コンポーネント
+/**
+ * 1日分のシフトカードコンポーネント
+ *
+ * @description
+ * 週次ビューで使用される1日分のシフト情報を表示するカードコンポーネント。
+ * 日付情報、シフト統計、部門別のシフト詳細を表示します。
+ * パフォーマンス最適化のためReact.memoを使用しています。
+ *
+ * @component
+ */
 export const ShiftDayCard = React.memo<ShiftDayCardProps>(
   function ShiftDayCardComponent({
     date,

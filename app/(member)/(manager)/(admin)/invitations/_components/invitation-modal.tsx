@@ -22,7 +22,9 @@ import type {
   InvitationTokenWithStats,
 } from "../_lib/types";
 
+/** デフォルト有効期限日数 */
 const DEFAULT_EXPIRY_DAYS = 7;
+/** 最大有効期限月数 */
 const MAX_EXPIRY_MONTHS = 1;
 
 type InvitationModalProps = {
@@ -33,6 +35,13 @@ type InvitationModalProps = {
   onDeactivate?: (token: string) => Promise<void>;
 };
 
+/**
+ * 招待フォームのバリデーション関数
+ *
+ * @param formData - バリデーション対象のフォームデータ
+ * @param isEditing - 編集モードかどうか
+ * @returns エラーメッセージ（バリデーションOKの場合はnull）
+ */
 function validateInvitationForm(
   formData: InvitationFormData,
   isEditing: boolean
@@ -57,6 +66,44 @@ function validateInvitationForm(
   return null;
 }
 
+/**
+ * 招待の作成・詳細表示モーダルコンポーネント
+ *
+ * @description
+ * 新規招待の作成と既存招待の詳細表示・無効化を行うDrawerモーダルです。
+ * Client Componentとして実装され、複雑なフォーム状態管理とバリデーションを提供します。
+ *
+ * フォーム項目（新規作成時）:
+ * - 説明（必須）: 招待の目的や対象者
+ * - 有効期限（必須）: 最大1ヶ月まで設定可能
+ *
+ * 主な機能:
+ * - 新規招待の作成
+ * - 既存招待の詳細表示（閲覧専用）
+ * - 有効な招待の無効化（確認ダイアログ付き）
+ * - バリデーション（説明必須、有効期限チェック）
+ * - エラーメッセージ表示
+ *
+ * @component
+ * @example
+ * ```tsx
+ * // 新規作成モード
+ * <InvitationModal
+ *   isOpen={true}
+ *   onClose={handleClose}
+ *   onSave={handleSave}
+ * />
+ *
+ * // 詳細表示モード
+ * <InvitationModal
+ *   isOpen={true}
+ *   onClose={handleClose}
+ *   onSave={handleSave}
+ *   invitation={existingInvitation}
+ *   onDeactivate={handleDeactivate}
+ * />
+ * ```
+ */
 export default function InvitationModal({
   isOpen,
   onClose,

@@ -27,12 +27,33 @@ type CertificationStatsProps = {
 /**
  * 資格統計表示コンポーネント
  *
- * @remarks
- * Server Component から渡された統計データを視覚的に表示します。
- * アクティブ数、スキー部門数、スノーボード部門数を色分けされたカードで表示します。
+ * @description
+ * 資格マスタの統計情報を視覚的に表示するServer Componentです。
+ * アクティブな資格数、スキー部門の資格数、スノーボード部門の資格数を
+ * アイコン付きの色分けされたカードで横並びに表示します。
  *
- * @param props - コンポーネントのプロパティ
- * @returns 統計カードコンポーネント
+ * 表示項目:
+ * - アクティブ数（緑色、SealCheckアイコン）
+ * - スキー部門数（青色、スキーアイコン）
+ * - スノーボード部門数（アンバー色、スノーボードアイコン）
+ *
+ * レイアウト:
+ * - カード形式、最大幅md（768px）
+ * - 縦の区切り線で3つの統計を区切り
+ * - 中央揃えで見やすく配置
+ *
+ * @component
+ * @example
+ * ```tsx
+ * <CertificationStats
+ *   stats={{
+ *     total: 10,
+ *     active: 8,
+ *     ski: 6,
+ *     snowboard: 4
+ *   }}
+ * />
+ * ```
  */
 export function CertificationStats({ stats }: CertificationStatsProps) {
   return (

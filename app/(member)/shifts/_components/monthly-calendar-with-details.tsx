@@ -30,6 +30,28 @@ interface MonthlyCalendarWithDetailsProps extends BaseShiftDisplayProps {
   onCreateShift?: () => void;
 }
 
+/**
+ * 月次カレンダー表示コンポーネント
+ *
+ * @description
+ * 1ヶ月分のシフトをカレンダーグリッド形式で表示します。
+ * 選択日のシフト詳細を右側（デスクトップ）または下部（モバイル）に表示します。
+ * 祝日の色分け表示と曜日による色分け（土曜：青、日曜：赤）に対応しています。
+ *
+ * @component
+ * @example
+ * ```tsx
+ * <MonthlyCalendarWithDetails
+ *   year={2024}
+ *   month={1}
+ *   shiftStats={stats}
+ *   isHoliday={checkHoliday}
+ *   selectedDate="2024-01-15"
+ *   onDateSelect={handleDateSelect}
+ *   canManage={true}
+ * />
+ * ```
+ */
 export function MonthlyCalendarWithDetails({
   year,
   month,

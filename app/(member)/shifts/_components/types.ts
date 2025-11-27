@@ -1,5 +1,13 @@
-// 共通シフト表示コンポーネント用の型定義
+/**
+ * @file シフトコンポーネント共通型定義
+ * @description
+ * app/(member)/shifts/_components 配下のコンポーネントで使用される共通型定義。
+ * シフト、部門、インストラクター、統計情報などの型を定義しています。
+ */
 
+/**
+ * シフトエンティティ
+ */
 export type Shift = {
   id: number;
   date: string;
