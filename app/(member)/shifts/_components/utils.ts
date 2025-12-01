@@ -16,6 +16,12 @@ const DEPARTMENT_BG_CLASS_MAP = new Map<DepartmentType, string>([
   ["snowboard", "bg-snowboard-200 dark:bg-snowboard-800"],
 ] as const);
 
+// 部門バッジ背景クラスのマッピング (immutable)
+const DEPARTMENT_BADGE_BG_CLASS_MAP = new Map<DepartmentType, string>([
+  ["ski", "bg-ski-500 dark:bg-ski-600"],
+  ["snowboard", "bg-snowboard-500 dark:bg-snowboard-600"],
+] as const);
+
 // Weekday cache for performance
 export const WEEKDAYS = ["日", "月", "火", "水", "木", "金", "土"] as const;
 
@@ -32,6 +38,16 @@ export function getShiftTypeShort(type: string): string {
 export function getDepartmentBgClass(department: DepartmentType): string {
   return (
     DEPARTMENT_BG_CLASS_MAP.get(department) ?? "bg-gray-200 dark:bg-gray-800"
+  );
+}
+
+/**
+ * 部門タイプに応じたバッジ背景クラスを取得 (optimized with Map)
+ */
+export function getDepartmentBadgeBgClass(department: DepartmentType): string {
+  return (
+    DEPARTMENT_BADGE_BG_CLASS_MAP.get(department) ??
+    "bg-gray-500 dark:bg-gray-600"
   );
 }
 

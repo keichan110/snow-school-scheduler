@@ -10,6 +10,7 @@ import type { BaseShiftDisplayProps, DepartmentType } from "./types";
 import {
   formatDate,
   getDaysInMonth,
+  getDepartmentBadgeBgClass,
   getDepartmentBgClass,
   getFirstDayOfWeek,
   getShiftTypeShort,
@@ -191,27 +192,31 @@ export function MonthlyCalendarWithDetails({
         {/* シフト詳細表示 */}
         <div className="flex flex-1 items-start justify-center">
           {hasShifts ? (
-            <div className="w-full space-y-1">
+            <div className="w-full space-y-2">
               {dayData.shifts.map((shift, idx) => (
                 <div
                   className={cn(
-                    "flex items-center justify-between gap-2 rounded-lg px-2 py-2",
+                    "relative overflow-visible rounded-lg px-2 py-2",
                     getDepartmentBgClass(shift.department as DepartmentType),
                     shift.isMyShift &&
-                      "border-l-[3px] border-l-green-500 pl-1.5 dark:border-l-green-400"
+                      "border-l-[3px] border-l-green-500 pl-1.5 dark:border-l-green-400",
+                    idx > 0 && "mt-2"
                   )}
                   key={`${shift.department}-${shift.type}-${idx}`}
                 >
-                  <div className="flex items-center gap-2">
-                    <DepartmentIcon
-                      className="h-3 w-3"
-                      code={shift.department}
-                    />
-                    <span className="font-medium text-foreground text-xs">
+                  <div className="flex items-center pr-4">
+                    <span className="overflow-hidden whitespace-nowrap font-medium text-foreground text-xs">
                       {getShiftTypeShort(shift.type)}
                     </span>
                   </div>
-                  <ShiftBadge count={shift.count} />
+                  <div className="-translate-y-1/2 absolute top-0 right-0 translate-x-1/2">
+                    <ShiftBadge
+                      className={getDepartmentBadgeBgClass(
+                        shift.department as DepartmentType
+                      )}
+                      count={shift.count}
+                    />
+                  </div>
                 </div>
               ))}
             </div>
