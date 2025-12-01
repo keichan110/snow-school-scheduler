@@ -80,10 +80,7 @@ export const ShiftDayCard = React.memo<ShiftDayCardProps>(
     }, [dayData.shifts]);
 
     return (
-      <Card
-        className="cursor-pointer opacity-80 transition-all duration-200 hover:shadow-md"
-        onClick={onDateSelect}
-      >
+      <Card className="opacity-80 transition-all duration-200">
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             {/* 日付エリア */}
@@ -134,8 +131,15 @@ export const ShiftDayCard = React.memo<ShiftDayCardProps>(
               <div className="py-8 text-center text-muted-foreground">
                 <div className="mt-1 text-sm">シフトなし</div>
                 {canManage && (
-                  <div className="mt-2 text-blue-600 text-xs dark:text-blue-400">
-                    タップしてシフトを作成
+                  <div className="mt-4 flex justify-center">
+                    <button
+                      className="flex items-center gap-2 rounded-md border border-gray-300 border-dashed px-3 py-2 text-muted-foreground text-sm transition-colors hover:border-blue-400 hover:text-blue-600 dark:border-gray-600 dark:hover:border-blue-500 dark:hover:text-blue-400"
+                      onClick={onDateSelect}
+                      type="button"
+                    >
+                      <span className="text-lg">+</span>
+                      新規シフト追加
+                    </button>
                   </div>
                 )}
               </div>
@@ -158,10 +162,7 @@ export const ShiftDayCard = React.memo<ShiftDayCardProps>(
                   <div className="mt-4 flex justify-center">
                     <button
                       className="flex items-center gap-2 rounded-md border border-gray-300 border-dashed px-3 py-2 text-muted-foreground text-sm transition-colors hover:border-blue-400 hover:text-blue-600 dark:border-gray-600 dark:hover:border-blue-500 dark:hover:text-blue-400"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onDateSelect();
-                      }}
+                      onClick={onDateSelect}
                       type="button"
                     >
                       <span className="text-lg">+</span>
