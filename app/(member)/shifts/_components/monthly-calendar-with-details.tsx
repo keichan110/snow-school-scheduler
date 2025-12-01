@@ -189,7 +189,7 @@ export function MonthlyCalendarWithDetails({
         </div>
 
         {/* シフト詳細表示 */}
-        <div className="flex flex-1 items-center justify-center">
+        <div className="flex flex-1 items-start justify-center">
           {hasShifts ? (
             <div className="w-full space-y-1">
               {dayData.shifts.map((shift, idx) => (
