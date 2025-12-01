@@ -156,25 +156,11 @@ export function MonthlyCalendarWithDetails({
         className={cn(
           "day-card flex min-h-[120px] cursor-pointer flex-col rounded-xl border-2 p-3 shadow-lg transition-all duration-300 md:min-h-[140px]",
           "hover:-translate-y-1 hover:transform hover:shadow-xl",
+          "bg-background",
           {
-            "border-border bg-background hover:border-blue-400": !(
-              isSelected ||
-              isHolidayDay ||
-              isSaturday ||
-              isSunday
-            ),
-            "border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/30":
-              isSaturday && !isSelected,
-            "border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950/30":
-              (isHolidayDay || isSunday) && !isSelected,
-            "-translate-y-1 transform border-blue-400 bg-blue-50 shadow-xl dark:border-blue-600 dark:bg-blue-950/30":
-              isSelected,
-            "opacity-60": !(
-              hasShifts ||
-              isHolidayDay ||
-              isSaturday ||
-              isSunday
-            ),
+            "border-border hover:border-blue-400": !isSelected,
+            "-translate-y-1 transform border-blue-400 shadow-xl": isSelected,
+            "opacity-80": !hasShifts,
           }
         )}
         key={day}
