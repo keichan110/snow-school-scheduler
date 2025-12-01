@@ -81,17 +81,7 @@ export const ShiftDayCard = React.memo<ShiftDayCardProps>(
 
     return (
       <Card
-        className={cn("cursor-pointer transition-all duration-200", {
-          "opacity-60": !dayData.shifts || dayData.shifts.length === 0,
-          "border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950/30":
-            isHoliday || dateInfo.isSunday,
-          "border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/30":
-            dateInfo.isSaturday,
-          "border-blue-400 bg-blue-100 shadow-lg dark:border-blue-600 dark:bg-blue-900/50":
-            isSelected,
-          "hover:border-gray-300 hover:shadow-md dark:hover:border-gray-600":
-            !isSelected,
-        })}
+        className="cursor-pointer opacity-80 transition-all duration-200 hover:shadow-md"
         onClick={onDateSelect}
       >
         <CardHeader className="pb-3">
@@ -121,11 +111,6 @@ export const ShiftDayCard = React.memo<ShiftDayCardProps>(
               {isHoliday && (
                 <div className="rounded-full bg-red-100 px-2 py-1 font-medium text-red-600 text-xs dark:bg-red-950/30 dark:text-red-400">
                   祝日
-                </div>
-              )}
-              {isSelected && (
-                <div className="rounded-full bg-blue-100 px-2 py-1 font-medium text-blue-600 text-xs dark:bg-blue-950/30 dark:text-blue-400">
-                  選択中
                 </div>
               )}
             </div>
