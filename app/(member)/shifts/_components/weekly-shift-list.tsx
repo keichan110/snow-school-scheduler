@@ -9,13 +9,6 @@ type WeeklyShiftListProps = {
   baseDate: Date;
   shiftStats: ShiftStats;
   isHoliday: (date: string) => boolean;
-  selectedDate?: string | null;
-  onDateSelect?: (date: string) => void;
-  onShiftDetailSelect?: (
-    date: string,
-    shiftType: string,
-    departmentType: string
-  ) => void;
   /** 管理権限があるかどうか */
   canManage?: boolean;
 };
@@ -44,9 +37,6 @@ export function WeeklyShiftList({
   baseDate,
   shiftStats,
   isHoliday,
-  selectedDate,
-  onDateSelect,
-  onShiftDetailSelect,
   canManage = false,
 }: WeeklyShiftListProps) {
   // 週の日付データを計算
@@ -83,12 +73,7 @@ export function WeeklyShiftList({
             date={date}
             dateString={dateString}
             dayData={dayData}
-            isSelected={selectedDate === dateString}
             key={dateString}
-            onDateSelect={() => onDateSelect?.(dateString)}
-            onShiftDetailSelect={(shiftType, departmentType) =>
-              onShiftDetailSelect?.(dateString, shiftType, departmentType)
-            }
           />
         ))}
       </div>

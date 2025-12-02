@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import React, { useMemo } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
@@ -10,9 +11,6 @@ type ShiftDayCardProps = {
   date: Date;
   dateString: string;
   dayData: DayData;
-  isSelected: boolean;
-  onDateSelect: () => void;
-  onShiftDetailSelect?: (shiftType: string, departmentType: string) => void;
   /** 管理権限があるかどうか */
   canManage?: boolean;
 };
@@ -34,10 +32,8 @@ const SATURDAY_INDEX = 6;
 export const ShiftDayCard = React.memo<ShiftDayCardProps>(
   function ShiftDayCardComponent({
     date,
+    dateString,
     dayData,
-    isSelected,
-    onDateSelect,
-    onShiftDetailSelect,
     canManage = false,
   }: ShiftDayCardProps) {
     // 設計書に基づく日付情報のメモ化
@@ -132,14 +128,13 @@ export const ShiftDayCard = React.memo<ShiftDayCardProps>(
                 <div className="mt-1 text-sm">シフトなし</div>
                 {canManage && (
                   <div className="mt-4 flex justify-center">
-                    <button
+                    <Link
                       className="flex items-center gap-2 rounded-md border border-gray-300 border-dashed px-3 py-2 text-muted-foreground text-sm transition-colors hover:border-blue-400 hover:text-blue-600 dark:border-gray-600 dark:hover:border-blue-500 dark:hover:text-blue-400"
-                      onClick={onDateSelect}
-                      type="button"
+                      href={`/shifts/${dateString}`}
                     >
                       <span className="text-lg">+</span>
-                      新規シフト追加
-                    </button>
+                      シフト編集
+                    </Link>
                   </div>
                 )}
               </div>
@@ -147,27 +142,21 @@ export const ShiftDayCard = React.memo<ShiftDayCardProps>(
               /* シフトがある場合 - 統合版関数を使用 */
               <>
                 {/* 部門別セクション表示（週間ビューはクリック可能） */}
-                {renderDepartmentSections(
-                  dayData.shifts,
-                  onShiftDetailSelect
-                    ? {
-                        clickable: true,
-                        onShiftClick: onShiftDetailSelect,
-                      }
-                    : undefined
-                )}
+                {renderDepartmentSections(dayData.shifts, {
+                  clickable: canManage,
+                  dateString,
+                })}
 
                 {/* 新規追加ボタン（管理権限がある場合のみ表示） */}
                 {canManage && (
                   <div className="mt-4 flex justify-center">
-                    <button
+                    <Link
                       className="flex items-center gap-2 rounded-md border border-gray-300 border-dashed px-3 py-2 text-muted-foreground text-sm transition-colors hover:border-blue-400 hover:text-blue-600 dark:border-gray-600 dark:hover:border-blue-500 dark:hover:text-blue-400"
-                      onClick={onDateSelect}
-                      type="button"
+                      href={`/shifts/${dateString}`}
                     >
                       <span className="text-lg">+</span>
-                      新規シフト追加
-                    </button>
+                      シフト編集
+                    </Link>
                   </div>
                 )}
               </>

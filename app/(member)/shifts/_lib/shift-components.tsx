@@ -40,6 +40,7 @@ export type DepartmentSectionOptions = {
   onShiftClick?: (shiftType: string, departmentType: DepartmentType) => void;
   showEditButtons?: boolean;
   isLoading?: boolean;
+  dateString?: string;
 };
 
 /**
@@ -115,25 +116,19 @@ function renderShiftCard(
   styles: (typeof DEPARTMENT_STYLES)[DepartmentType],
   options: DepartmentSectionOptions
 ) {
-  const { clickable = false, onShiftClick, isLoading = false } = options;
-  const Element = clickable ? "button" : "div";
-  const clickProps =
-    clickable && onShiftClick
-      ? {
-          onClick: () => onShiftClick(shift.type, departmentType),
-          disabled: isLoading,
-        }
-      : {};
+  const {
+    clickable = false,
+    onShiftClick,
+    isLoading = false,
+    dateString,
+  } = options;
 
   // ユニークキーを生成（部門 + シフトタイプの組み合わせ）
   const uniqueKey = `${departmentType}-${shift.type}`;
 
-  return (
-    <Element
-      className={getShiftCardClassName(clickable, isLoading)}
-      key={uniqueKey}
-      {...clickProps}
-    >
+  // カード内容のレンダリング
+  const cardContent = (
+    <>
       <div className="mb-2 flex items-center justify-between md:mb-3">
         <div
           className={getShiftTypeBadgeClassName(
@@ -160,7 +155,14 @@ function renderShiftCard(
           </div>
         )}
       </div>
-    </Element>
+    </>
+  );
+
+  // シフトカードは常にdivとして表示（クリック不可）
+  return (
+    <div className={getShiftCardClassName(false, isLoading)} key={uniqueKey}>
+      {cardContent}
+    </div>
   );
 }
 

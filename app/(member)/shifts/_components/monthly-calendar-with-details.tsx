@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo } from "react";
-import { DepartmentIcon } from "@/app/(member)/_components/department-icon";
 import { ShiftBadge } from "@/app/(member)/shifts/_components/shift-badge";
 import { cn } from "@/lib/utils";
 import type { DayData } from "../_lib/types";
@@ -25,10 +24,6 @@ const SATURDAY_INDEX = 6;
 interface MonthlyCalendarWithDetailsProps extends BaseShiftDisplayProps {
   /** 管理権限があるかどうか */
   canManage?: boolean;
-  /** シフト詳細クリック時のハンドラー */
-  onShiftDetailClick?: () => void;
-  /** 新規シフト作成ハンドラー */
-  onCreateShift?: () => void;
 }
 
 /**
@@ -61,8 +56,6 @@ export function MonthlyCalendarWithDetails({
   selectedDate,
   onDateSelect,
   canManage = false,
-  onShiftDetailClick,
-  onCreateShift,
 }: MonthlyCalendarWithDetailsProps) {
   // カレンダーのセットアップ
   const daysInMonth = getDaysInMonth(year, month);
@@ -261,19 +254,6 @@ export function MonthlyCalendarWithDetails({
                         date={new Date(selectedDate)}
                         dateString={selectedDate}
                         dayData={selectedDateInfo.dayData as DayData}
-                        isSelected={true}
-                        onDateSelect={() => {
-                          if (canManage && onCreateShift) {
-                            onCreateShift();
-                          }
-                        }}
-                        {...(canManage && onShiftDetailClick
-                          ? {
-                              onShiftDetailSelect: () => {
-                                onShiftDetailClick();
-                              },
-                            }
-                          : {})}
                       />
                     </div>
                   </div>
