@@ -3,13 +3,12 @@
 import { Check, MagnifyingGlass } from "@phosphor-icons/react";
 import { useMemo, useState } from "react";
 import { DepartmentIcon } from "@/app/(member)/_components/department-icon";
-import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import type { InstructorWithAssignment, ShiftSlot } from "../_lib/types";
 import { formatAssignmentInfo } from "../_lib/utils";
 
-type InstructorGridProps = {
+type InstructorListProps = {
   instructors: InstructorWithAssignment[];
   shiftSlots: ShiftSlot[];
   selectedInstructorIds: number[];
@@ -17,18 +16,18 @@ type InstructorGridProps = {
 };
 
 /**
- * インストラクターグリッド
+ * インストラクター一覧
  *
  * @description
- * インストラクター一覧をグリッド表示し、選択可能にします。
+ * インストラクター一覧を縦並びリスト表示し、選択可能にします。
  * 検索機能と配置状況の可視化を提供します。
  */
-export function InstructorGrid({
+export function InstructorList({
   instructors,
   shiftSlots,
   selectedInstructorIds,
   onToggleInstructor,
-}: InstructorGridProps) {
+}: InstructorListProps) {
   const [searchTerm, setSearchTerm] = useState("");
 
   // 検索フィルター
@@ -88,10 +87,10 @@ export function InstructorGrid({
         </span>
       </div>
 
-      {/* グリッド */}
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-4 lg:grid-cols-6">
+      {/* リスト表示 */}
+      <div className="space-y-2">
         {filteredInstructors.length === 0 ? (
-          <p className="col-span-full py-8 text-center text-muted-foreground">
+          <p className="py-8 text-center text-muted-foreground">
             該当するインストラクターが見つかりません
           </p>
         ) : (
@@ -103,51 +102,56 @@ export function InstructorGrid({
             );
 
             return (
-              <Card
+              <button
                 className={cn(
-                  "cursor-pointer transition-all",
-                  isSelected && "border-primary bg-primary/5",
+                  "w-full rounded-lg border bg-card p-3 text-left transition-all hover:bg-accent",
+                  isSelected &&
+                    "border-primary bg-primary/5 ring-2 ring-primary ring-offset-2",
                   isAssigned && !isSelected && "opacity-60"
                 )}
                 key={instructor.id}
                 onClick={() => onToggleInstructor(instructor.id)}
+                type="button"
               >
-                <CardContent className="p-3">
-                  <div className="mb-2 flex items-start justify-between">
-                    <div
-                      className={cn(
-                        "flex h-4 w-4 items-center justify-center rounded border",
-                        isSelected
-                          ? "border-primary bg-primary"
-                          : "border-input"
-                      )}
-                    >
-                      {isSelected && (
-                        <Check
-                          className="h-3 w-3 text-primary-foreground"
-                          weight="bold"
-                        />
-                      )}
-                    </div>
-                    <DepartmentIcon
-                      className="h-4 w-4"
-                      code={instructor.departmentCode.toLowerCase()}
-                    />
-                  </div>
-
-                  <div className="mb-1 font-medium text-sm">
-                    {instructor.displayName}
-                  </div>
-
-                  <div className="text-muted-foreground text-xs">
-                    {isAssigned ? (
-                      <span className="text-orange-600">{assignmentInfo}</span>
-                    ) : (
-                      <span className="text-green-600">利用可能</span>
+                <div className="flex items-center gap-3">
+                  {/* チェックボックス */}
+                  <div
+                    className={cn(
+                      "flex h-5 w-5 shrink-0 items-center justify-center rounded border",
+                      isSelected ? "border-primary bg-primary" : "border-input"
+                    )}
+                  >
+                    {isSelected && (
+                      <Check
+                        className="h-4 w-4 text-primary-foreground"
+                        weight="bold"
+                      />
                     )}
                   </div>
-                </CardContent>
-              </Card>
+
+                  {/* 部門アイコン */}
+                  <DepartmentIcon
+                    className="h-5 w-5 shrink-0"
+                    code={instructor.departmentCode.toLowerCase()}
+                  />
+
+                  {/* インストラクター情報 */}
+                  <div className="min-w-0 flex-1">
+                    <div className="truncate font-medium text-sm">
+                      {instructor.displayName}
+                    </div>
+                    <div className="text-xs">
+                      {isAssigned ? (
+                        <span className="text-orange-600">
+                          {assignmentInfo}
+                        </span>
+                      ) : (
+                        <span className="text-green-600">利用可能</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </button>
             );
           })
         )}

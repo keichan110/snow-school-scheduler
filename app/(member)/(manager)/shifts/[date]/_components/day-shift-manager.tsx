@@ -10,7 +10,7 @@ import {
 import type { DayShiftData, ShiftSlot } from "../_lib/types";
 import { validateShiftSlot } from "../_lib/utils";
 import { AddShiftSlotButton } from "./add-shift-slot-button";
-import { InstructorGrid } from "./instructor-grid";
+import { InstructorList } from "./instructor-list";
 import { ShiftSlotCard } from "./shift-slot-card";
 import { ShiftSlotEditor } from "./shift-slot-editor";
 
@@ -303,9 +303,9 @@ export function DayShiftManager({ initialData }: DayShiftManagerProps) {
   const selectedInstructorIds = editingSlot?.instructorIds ?? [];
 
   return (
-    <div className="space-y-8">
-      {/* 登録済みシフト */}
-      <section>
+    <div className="flex flex-col gap-6 lg:flex-row lg:gap-8">
+      {/* 左ペイン: シフトスロット一覧 */}
+      <section className="flex-1 lg:min-w-0">
         <h2 className="mb-4 border-b pb-2 font-semibold text-lg">
           登録済みシフト
         </h2>
@@ -360,19 +360,21 @@ export function DayShiftManager({ initialData }: DayShiftManagerProps) {
         </div>
       </section>
 
-      {/* インストラクター一覧 */}
-      <section>
-        <h2 className="mb-4 border-b pb-2 font-semibold text-lg">
-          インストラクター一覧
-        </h2>
+      {/* 右ペイン: インストラクター一覧（固定表示） */}
+      <aside className="lg:sticky lg:top-6 lg:h-[calc(100vh-12rem)] lg:w-96 lg:shrink-0">
+        <div className="lg:h-full lg:overflow-auto">
+          <h2 className="mb-4 border-b pb-2 font-semibold text-lg">
+            インストラクター一覧
+          </h2>
 
-        <InstructorGrid
-          instructors={initialData.availableInstructors}
-          onToggleInstructor={handleToggleInstructor}
-          selectedInstructorIds={selectedInstructorIds}
-          shiftSlots={shiftSlots}
-        />
-      </section>
+          <InstructorList
+            instructors={initialData.availableInstructors}
+            onToggleInstructor={handleToggleInstructor}
+            selectedInstructorIds={selectedInstructorIds}
+            shiftSlots={shiftSlots}
+          />
+        </div>
+      </aside>
     </div>
   );
 }
