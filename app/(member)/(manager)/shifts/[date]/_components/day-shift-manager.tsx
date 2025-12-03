@@ -361,7 +361,9 @@ export function DayShiftManager({ initialData }: DayShiftManagerProps) {
           {initialData.preselectedDepartmentId ? (
             // 部門が事前選択されている場合は直接追加
             <AddShiftSlotButton
-              onAdd={() => handleAddSlot(initialData.preselectedDepartmentId)}
+              onAdd={() =>
+                handleAddSlot(initialData.preselectedDepartmentId as number)
+              }
             />
           ) : (
             // 部門が選択されていない場合はポップオーバーで選択

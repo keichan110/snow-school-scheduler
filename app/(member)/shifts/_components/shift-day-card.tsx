@@ -52,7 +52,12 @@ export const ShiftDayCard = React.memo<ShiftDayCardProps>(
 
     // 部門選択後の遷移処理
     const handleDepartmentSelect = (departmentId: number) => {
-      router.push(`/shifts/${dateString}?department=${departmentId}`);
+      // 現在のURLパラメータを取得して returnTo に含める
+      const currentUrl = window.location.pathname + window.location.search;
+      const returnTo = encodeURIComponent(currentUrl);
+      router.push(
+        `/shifts/${dateString}?department=${departmentId}&returnTo=${returnTo}`
+      );
     };
 
     // 設計書に基づく日付情報のメモ化

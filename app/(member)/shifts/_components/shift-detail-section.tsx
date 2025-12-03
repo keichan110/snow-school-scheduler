@@ -58,7 +58,12 @@ export function ShiftDetailSection({
     if (!selectedDate) {
       return;
     }
-    router.push(`/shifts/${selectedDate}?department=${departmentId}`);
+    // 現在のURLパラメータを取得して returnTo に含める
+    const currentUrl = window.location.pathname + window.location.search;
+    const returnTo = encodeURIComponent(currentUrl);
+    router.push(
+      `/shifts/${selectedDate}?department=${departmentId}&returnTo=${returnTo}`
+    );
   };
 
   // 日付情報をメモ化

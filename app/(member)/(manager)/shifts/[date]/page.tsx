@@ -22,6 +22,7 @@ type PageProps = {
   }>;
   searchParams: Promise<{
     department?: string;
+    returnTo?: string;
   }>;
 };
 
@@ -47,7 +48,7 @@ export default async function DayShiftPage({
   searchParams,
 }: PageProps) {
   const { date } = await params;
-  const { department } = await searchParams;
+  const { department, returnTo } = await searchParams;
 
   if (!DATE_PATTERN.test(date)) {
     notFound();
@@ -81,6 +82,9 @@ export default async function DayShiftPage({
   const formattedDate = formatDateJa(date);
   const isHoliday = isDateHoliday(date);
 
+  // 戻り先のURLを決定（returnToパラメータがあればそれを使用、なければデフォルト）
+  const backUrl = returnTo ? decodeURIComponent(returnTo) : "/shifts";
+
   return (
     <div className="min-h-screen bg-background">
       {/* ヘッダー */}
@@ -88,7 +92,7 @@ export default async function DayShiftPage({
         <div className="container mx-auto px-4 py-4">
           <Link
             className="inline-flex items-center gap-2 text-muted-foreground text-sm transition-colors hover:text-foreground"
-            href="/shifts"
+            href={backUrl}
           >
             <ArrowLeft className="h-4 w-4" />
             シフト一覧に戻る
