@@ -53,10 +53,13 @@ export default async function DayShiftPage({
     notFound();
   }
 
-  // データを並列取得
+  // 部門IDを数値に変換
+  const departmentId = department ? Number.parseInt(department, 10) : undefined;
+
+  // データを並列取得（部門IDがある場合はその部門のシフトとインストラクターのみ取得）
   const [shifts, instructors, departments, shiftTypes] = await Promise.all([
-    getShiftsByDate(date),
-    getInstructorsWithAssignments(date),
+    getShiftsByDate(date, departmentId),
+    getInstructorsWithAssignments(date, departmentId),
     getDepartments(),
     getActiveShiftTypes(),
   ]);
@@ -68,9 +71,9 @@ export default async function DayShiftPage({
     availableInstructors: instructors,
     departments,
     shiftTypes,
-    // 部門IDを数値に変換（URLパラメーターから）
-    ...(department && {
-      preselectedDepartmentId: Number.parseInt(department, 10),
+    // 部門IDを渡す（既にサーバー側でフィルタリング済み）
+    ...(departmentId && {
+      preselectedDepartmentId: departmentId,
     }),
   };
 

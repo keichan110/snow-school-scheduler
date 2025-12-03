@@ -6,16 +6,19 @@ import type { InstructorWithAssignment, ShiftWithRelations } from "./types";
  * 指定日のシフト一覧を取得
  *
  * @param date - 対象日付 (YYYY-MM-DD)
+ * @param departmentId - 部門ID（指定した場合、その部門のシフトのみを取得）
  * @returns シフト一覧（部門・シフト種別の昇順）
  */
 export async function getShiftsByDate(
-  date: string
+  date: string,
+  departmentId?: number
 ): Promise<ShiftWithRelations[]> {
   const targetDate = new Date(date);
 
   const shifts = await prisma.shift.findMany({
     where: {
       date: targetDate,
+      ...(departmentId && { departmentId }),
     },
     include: {
       department: true,
@@ -36,22 +39,34 @@ export async function getShiftsByDate(
  * アクティブなインストラクター一覧を取得（指定日の配置状況も含む）
  *
  * @param date - 対象日付 (YYYY-MM-DD)
+ * @param departmentId - 部門ID（指定した場合、その部門の資格を持つインストラクターのみを取得）
  * @returns インストラクター一覧（姓名の昇順）
  */
 export async function getInstructorsWithAssignments(
-  date: string
+  date: string,
+  departmentId?: number
 ): Promise<InstructorWithAssignment[]> {
   const targetDate = new Date(date);
 
   const instructors = await prisma.instructor.findMany({
     where: {
       status: "ACTIVE",
+      ...(departmentId && {
+        certifications: {
+          some: {
+            certification: {
+              departmentId,
+            },
+          },
+        },
+      }),
     },
     include: {
       shiftAssignments: {
         where: {
           shift: {
             date: targetDate,
+            ...(departmentId && { departmentId }),
           },
         },
         include: {
@@ -63,16 +78,36 @@ export async function getInstructorsWithAssignments(
           },
         },
       },
+      certifications: {
+        include: {
+          certification: {
+            include: {
+              department: true,
+            },
+          },
+        },
+      },
     },
     orderBy: [{ lastName: "asc" }, { firstName: "asc" }],
   });
 
   return instructors.map((instructor) => {
     // 配置されているシフトから部門を判定（最初のシフトの部門を使用）
-    const firstAssignment = instructor.shiftAssignments[0];
-    const departmentCode = firstAssignment
-      ? firstAssignment.shift.department.code
-      : "SKI"; // デフォルトはスキー部門
+    // 部門IDが指定されている場合はそれを使用、なければ資格から判定
+    let departmentCode: string;
+    if (departmentId) {
+      // 指定された部門IDに対応する資格を探す
+      const targetCert = instructor.certifications.find(
+        (ic) => ic.certification.departmentId === departmentId
+      );
+      departmentCode = targetCert?.certification.department.code ?? "SKI";
+    } else {
+      const firstAssignment = instructor.shiftAssignments[0];
+      departmentCode = firstAssignment
+        ? firstAssignment.shift.department.code
+        : (instructor.certifications[0]?.certification.department.code ??
+          "SKI");
+    }
 
     return {
       id: instructor.id,

@@ -29,7 +29,8 @@ type DayShiftManagerProps = {
 export function DayShiftManager({ initialData }: DayShiftManagerProps) {
   const router = useRouter();
   const [shiftSlots, setShiftSlots] = useState<ShiftSlot[]>(() => {
-    // 事前選択された部門IDがある場合、初期状態に新規シフト枠を追加
+    // 事前選択された部門IDがある場合、新規シフト枠を追加
+    // （サーバー側で既にフィルタリング済みのため、フィルタリング不要）
     if (initialData.preselectedDepartmentId) {
       return [
         ...initialData.shiftSlots,
@@ -373,16 +374,24 @@ export function DayShiftManager({ initialData }: DayShiftManagerProps) {
             })
           )}
 
-          <DepartmentSelectionPopover
-            departments={initialData.departments}
-            onOpenChange={setIsDepartmentPopoverOpen}
-            onSelectDepartment={handleAddSlot}
-            open={isDepartmentPopoverOpen}
-          >
+          {initialData.preselectedDepartmentId ? (
+            // 部門が事前選択されている場合は直接追加
             <AddShiftSlotButton
-              onAdd={() => setIsDepartmentPopoverOpen(true)}
+              onAdd={() => handleAddSlot(initialData.preselectedDepartmentId)}
             />
-          </DepartmentSelectionPopover>
+          ) : (
+            // 部門が選択されていない場合はポップオーバーで選択
+            <DepartmentSelectionPopover
+              departments={initialData.departments}
+              onOpenChange={setIsDepartmentPopoverOpen}
+              onSelectDepartment={handleAddSlot}
+              open={isDepartmentPopoverOpen}
+            >
+              <AddShiftSlotButton
+                onAdd={() => setIsDepartmentPopoverOpen(true)}
+              />
+            </DepartmentSelectionPopover>
+          )}
         </div>
       </section>
 
