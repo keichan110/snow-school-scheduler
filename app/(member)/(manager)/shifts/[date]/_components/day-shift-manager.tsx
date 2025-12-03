@@ -28,25 +28,9 @@ type DayShiftManagerProps = {
  */
 export function DayShiftManager({ initialData }: DayShiftManagerProps) {
   const router = useRouter();
-  const [shiftSlots, setShiftSlots] = useState<ShiftSlot[]>(() => {
-    // 事前選択された部門IDがある場合、新規シフト枠を追加
-    // （サーバー側で既にフィルタリング済みのため、フィルタリング不要）
-    if (initialData.preselectedDepartmentId) {
-      return [
-        ...initialData.shiftSlots,
-        {
-          id: null,
-          departmentId: initialData.preselectedDepartmentId,
-          shiftTypeId: 0,
-          description: "",
-          instructorIds: [],
-          isEditing: true,
-          isNew: true,
-        },
-      ];
-    }
-    return initialData.shiftSlots;
-  });
+  const [shiftSlots, setShiftSlots] = useState<ShiftSlot[]>(
+    initialData.shiftSlots
+  );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDepartmentPopoverOpen, setIsDepartmentPopoverOpen] = useState(false);
 
