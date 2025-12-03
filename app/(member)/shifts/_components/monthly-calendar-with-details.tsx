@@ -21,9 +21,17 @@ const DAYS_PER_WEEK = 7;
 const SUNDAY_INDEX = 0;
 const SATURDAY_INDEX = 6;
 
+type Department = {
+  id: number;
+  name: string;
+  code: string;
+};
+
 interface MonthlyCalendarWithDetailsProps extends BaseShiftDisplayProps {
   /** 管理権限があるかどうか */
   canManage?: boolean;
+  /** 部門一覧（管理権限がある場合に必要） */
+  departments?: Department[];
 }
 
 /**
@@ -56,6 +64,7 @@ export function MonthlyCalendarWithDetails({
   selectedDate,
   onDateSelect,
   canManage = false,
+  departments = [],
 }: MonthlyCalendarWithDetailsProps) {
   // カレンダーのセットアップ
   const daysInMonth = getDaysInMonth(year, month);
@@ -254,6 +263,7 @@ export function MonthlyCalendarWithDetails({
                         date={new Date(selectedDate)}
                         dateString={selectedDate}
                         dayData={selectedDateInfo.dayData as DayData}
+                        departments={departments}
                       />
                     </div>
                   </div>

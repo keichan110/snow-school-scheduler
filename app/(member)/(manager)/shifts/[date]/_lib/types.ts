@@ -78,6 +78,9 @@ export type DayShiftData = {
 
   /** シフト種別一覧 */
   shiftTypes: ShiftTypeMinimal[];
+
+  /** 事前選択された部門ID（URLパラメーターから） */
+  preselectedDepartmentId?: number;
 };
 
 /**

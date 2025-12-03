@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { DepartmentSelectionPopover } from "@/app/(member)/shifts/_components/department-selection-popover";
 import {
   createShiftAction,
   deleteShiftAction,
@@ -27,20 +28,36 @@ type DayShiftManagerProps = {
  */
 export function DayShiftManager({ initialData }: DayShiftManagerProps) {
   const router = useRouter();
-  const [shiftSlots, setShiftSlots] = useState<ShiftSlot[]>(
-    initialData.shiftSlots
-  );
+  const [shiftSlots, setShiftSlots] = useState<ShiftSlot[]>(() => {
+    // 事前選択された部門IDがある場合、初期状態に新規シフト枠を追加
+    if (initialData.preselectedDepartmentId) {
+      return [
+        ...initialData.shiftSlots,
+        {
+          id: null,
+          departmentId: initialData.preselectedDepartmentId,
+          shiftTypeId: 0,
+          description: "",
+          instructorIds: [],
+          isEditing: true,
+          isNew: true,
+        },
+      ];
+    }
+    return initialData.shiftSlots;
+  });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDepartmentPopoverOpen, setIsDepartmentPopoverOpen] = useState(false);
 
   /**
-   * 新しいシフト枠を追加
+   * 新しいシフト枠を追加（部門IDを指定）
    */
-  const handleAddSlot = () => {
+  const handleAddSlot = (departmentId: number) => {
     setShiftSlots((prev) => [
       ...prev,
       {
         id: null,
-        departmentId: 0,
+        departmentId,
         shiftTypeId: 0,
         description: "",
         instructorIds: [],
@@ -356,7 +373,16 @@ export function DayShiftManager({ initialData }: DayShiftManagerProps) {
             })
           )}
 
-          <AddShiftSlotButton onAdd={handleAddSlot} />
+          <DepartmentSelectionPopover
+            departments={initialData.departments}
+            onOpenChange={setIsDepartmentPopoverOpen}
+            onSelectDepartment={handleAddSlot}
+            open={isDepartmentPopoverOpen}
+          >
+            <AddShiftSlotButton
+              onAdd={() => setIsDepartmentPopoverOpen(true)}
+            />
+          </DepartmentSelectionPopover>
         </div>
       </section>
 

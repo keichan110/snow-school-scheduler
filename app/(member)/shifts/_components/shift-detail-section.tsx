@@ -1,12 +1,20 @@
 "use client";
 
 import { Calendar } from "lucide-react";
-import { useMemo } from "react";
+import { useRouter } from "next/navigation";
+import { useMemo, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import type { DepartmentSectionOptions } from "../_lib/shift-components";
 import { renderDepartmentSections } from "../_lib/shift-components";
 import type { DayData } from "../_lib/types";
+import { DepartmentSelectionPopover } from "./department-selection-popover";
+
+type Department = {
+  id: number;
+  name: string;
+  code: string;
+};
 
 type ShiftDetailSectionProps = {
   /** 選択された日付 */
@@ -15,8 +23,8 @@ type ShiftDetailSectionProps = {
   dayData: DayData | null;
   /** シフト詳細クリック時のオプション（管理機能用） */
   shiftOptions?: DepartmentSectionOptions;
-  /** 新規作成ハンドラー（管理機能用） */
-  onCreateShift?: () => void;
+  /** 部門一覧（管理機能用） */
+  departments?: Department[];
   /** セクションのクラス名 */
   className?: string;
 };
@@ -39,9 +47,20 @@ export function ShiftDetailSection({
   selectedDate,
   dayData,
   shiftOptions,
-  onCreateShift,
+  departments = [],
   className,
 }: ShiftDetailSectionProps) {
+  const router = useRouter();
+  const [isDepartmentPopoverOpen, setIsDepartmentPopoverOpen] = useState(false);
+
+  // 部門選択後の遷移処理
+  const handleDepartmentSelect = (departmentId: number) => {
+    if (!selectedDate) {
+      return;
+    }
+    router.push(`/shifts/${selectedDate}?department=${departmentId}`);
+  };
+
   // 日付情報をメモ化
   const dateInfo = useMemo(() => {
     if (!(selectedDate && dayData)) {
@@ -148,15 +167,22 @@ export function ShiftDetailSection({
               </div>
 
               {/* 新規作成ボタン（管理権限がある場合） */}
-              {onCreateShift && (
-                <button
-                  className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 font-medium text-primary-foreground text-sm transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
-                  onClick={onCreateShift}
-                  type="button"
+              {departments.length > 0 && (
+                <DepartmentSelectionPopover
+                  departments={departments}
+                  onOpenChange={setIsDepartmentPopoverOpen}
+                  onSelectDepartment={handleDepartmentSelect}
+                  open={isDepartmentPopoverOpen}
                 >
-                  <span className="text-lg">+</span>
-                  新規シフト作成
-                </button>
+                  <button
+                    className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 font-medium text-primary-foreground text-sm transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+                    onClick={() => setIsDepartmentPopoverOpen(true)}
+                    type="button"
+                  >
+                    <span className="text-lg">+</span>
+                    新規シフト作成
+                  </button>
+                </DepartmentSelectionPopover>
               )}
             </div>
           ) : (
@@ -177,16 +203,23 @@ export function ShiftDetailSection({
               </div>
 
               {/* 新規作成ボタン（管理権限がある場合） */}
-              {onCreateShift && (
+              {departments.length > 0 && (
                 <div className="mt-6 flex justify-center">
-                  <button
-                    className="inline-flex items-center gap-2 rounded-lg border border-primary/50 border-dashed bg-primary/5 px-4 py-2 font-medium text-primary text-sm transition-colors hover:bg-primary/10 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
-                    onClick={onCreateShift}
-                    type="button"
+                  <DepartmentSelectionPopover
+                    departments={departments}
+                    onOpenChange={setIsDepartmentPopoverOpen}
+                    onSelectDepartment={handleDepartmentSelect}
+                    open={isDepartmentPopoverOpen}
                   >
-                    <span className="text-lg">+</span>
-                    追加でシフト作成
-                  </button>
+                    <button
+                      className="inline-flex items-center gap-2 rounded-lg border border-primary/50 border-dashed bg-primary/5 px-4 py-2 font-medium text-primary text-sm transition-colors hover:bg-primary/10 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+                      onClick={() => setIsDepartmentPopoverOpen(true)}
+                      type="button"
+                    >
+                      <span className="text-lg">+</span>
+                      追加でシフト作成
+                    </button>
+                  </DepartmentSelectionPopover>
                 </div>
               )}
             </>

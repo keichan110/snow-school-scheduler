@@ -425,6 +425,7 @@ export default function ShiftsContent({
                 <div className="hidden sm:block">
                   <MonthlyCalendarWithDetails
                     canManage={canManage}
+                    departments={convertedDepartments}
                     isHoliday={isHoliday}
                     month={currentMonth}
                     onDateSelect={handleMonthlyDateSelect}
@@ -450,6 +451,7 @@ export default function ShiftsContent({
                 <WeeklyShiftList
                   baseDate={weeklyBaseDate}
                   canManage={canManage}
+                  departments={convertedDepartments}
                   isHoliday={isHoliday}
                   shiftStats={shiftStats}
                 />

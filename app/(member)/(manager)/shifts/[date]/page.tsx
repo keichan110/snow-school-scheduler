@@ -20,6 +20,9 @@ type PageProps = {
   params: Promise<{
     date: string;
   }>;
+  searchParams: Promise<{
+    department?: string;
+  }>;
 };
 
 // 日付形式の検証（YYYY-MM-DD）
@@ -39,8 +42,12 @@ export const dynamicParams = true;
  * @route /shifts/[date]
  * @example /shifts/2024-12-15
  */
-export default async function DayShiftPage({ params }: PageProps) {
+export default async function DayShiftPage({
+  params,
+  searchParams,
+}: PageProps) {
   const { date } = await params;
+  const { department } = await searchParams;
 
   if (!DATE_PATTERN.test(date)) {
     notFound();
@@ -61,6 +68,10 @@ export default async function DayShiftPage({ params }: PageProps) {
     availableInstructors: instructors,
     departments,
     shiftTypes,
+    // 部門IDを数値に変換（URLパラメーターから）
+    ...(department && {
+      preselectedDepartmentId: Number.parseInt(department, 10),
+    }),
   };
 
   // 日付情報の整形

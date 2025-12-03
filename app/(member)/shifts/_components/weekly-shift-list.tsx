@@ -5,12 +5,20 @@ import type { DayData, ShiftStats } from "../_lib/types";
 import { formatDateToString, getWeekDates } from "../_lib/week-calculations";
 import { ShiftDayCard } from "./shift-day-card";
 
+type Department = {
+  id: number;
+  name: string;
+  code: string;
+};
+
 type WeeklyShiftListProps = {
   baseDate: Date;
   shiftStats: ShiftStats;
   isHoliday: (date: string) => boolean;
   /** 管理権限があるかどうか */
   canManage?: boolean;
+  /** 部門一覧（管理権限がある場合に必要） */
+  departments?: Department[];
 };
 
 /**
@@ -38,6 +46,7 @@ export function WeeklyShiftList({
   shiftStats,
   isHoliday,
   canManage = false,
+  departments = [],
 }: WeeklyShiftListProps) {
   // 週の日付データを計算
   const weekDays = useMemo(() => {
@@ -73,6 +82,7 @@ export function WeeklyShiftList({
             date={date}
             dateString={dateString}
             dayData={dayData}
+            departments={departments}
             key={dateString}
           />
         ))}
