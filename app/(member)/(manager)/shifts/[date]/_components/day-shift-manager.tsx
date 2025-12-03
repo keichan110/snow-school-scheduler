@@ -389,6 +389,7 @@ export function DayShiftManager({ initialData }: DayShiftManagerProps) {
           </h2>
 
           <InstructorList
+            editingShiftId={editingSlot?.id ?? null}
             instructors={initialData.availableInstructors}
             onToggleInstructor={handleToggleInstructor}
             selectedInstructorIds={selectedInstructorIds}

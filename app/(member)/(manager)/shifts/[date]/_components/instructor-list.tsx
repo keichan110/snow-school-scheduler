@@ -11,6 +11,7 @@ type InstructorListProps = {
   instructors: InstructorWithAssignment[];
   shiftSlots: ShiftSlot[];
   selectedInstructorIds: number[];
+  editingShiftId: number | null;
   onToggleInstructor: (instructorId: number) => void;
 };
 
@@ -25,6 +26,7 @@ export function InstructorList({
   instructors,
   shiftSlots,
   selectedInstructorIds,
+  editingShiftId,
   onToggleInstructor,
 }: InstructorListProps) {
   const [searchTerm, setSearchTerm] = useState("");
@@ -89,7 +91,13 @@ export function InstructorList({
         ) : (
           filteredInstructors.map((instructor) => {
             const isSelected = selectedInstructorIds.includes(instructor.id);
-            const isAssigned = instructor.assignedToShiftIds.length > 0;
+            // 編集中のシフト以外のシフトに割り当てられているかチェック
+            const otherShiftIds = instructor.assignedToShiftIds.filter(
+              (id) => id !== editingShiftId
+            );
+            // 現在選択されていない && 他のシフトに割り当てられている場合は無効化
+            const isAssignedToOtherShift =
+              !isSelected && otherShiftIds.length > 0;
 
             return (
               <button
@@ -97,10 +105,10 @@ export function InstructorList({
                   "w-full rounded-lg border bg-card p-3 text-left transition-all",
                   isSelected &&
                     "border-primary bg-primary/5 ring-2 ring-primary ring-offset-2",
-                  !isAssigned && "hover:bg-accent",
-                  isAssigned && !isSelected && "cursor-not-allowed opacity-50"
+                  !isAssignedToOtherShift && "hover:bg-accent",
+                  isAssignedToOtherShift && "cursor-not-allowed opacity-50"
                 )}
-                disabled={isAssigned && !isSelected}
+                disabled={isAssignedToOtherShift}
                 key={instructor.id}
                 onClick={() => onToggleInstructor(instructor.id)}
                 type="button"
