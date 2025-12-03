@@ -39,7 +39,8 @@ type ShiftSlotEditorProps = {
  *
  * @description
  * シフト枠の編集フォーム。
- * 部門・シフト種別・備考を編集し、インストラクターは下部のグリッドから選択します。
+ * 新規作成時は部門・シフト種別を選択可能、既存シフト編集時は変更不可。
+ * 備考を編集し、インストラクターは下部のグリッドから選択します。
  */
 export function ShiftSlotEditor({
   slot,
@@ -58,41 +59,73 @@ export function ShiftSlotEditor({
     slot.instructorIds.includes(i.id)
   );
 
+  // 既存シフトの場合、部門とシフト種別を取得
+  const selectedDepartment = departments.find(
+    (d) => d.id === slot.departmentId
+  );
+  const selectedShiftType = shiftTypes.find((t) => t.id === slot.shiftTypeId);
+
   return (
     <Card className="border-primary">
       <CardHeader>
-        <span className="font-medium text-sm">シフト枠を編集</span>
+        <span className="font-medium text-sm">
+          {slot.isNew ? "シフト枠を作成" : "シフト枠を編集"}
+        </span>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {/* 部門選択 */}
-          <DepartmentSelector
-            departments={departments}
-            onSelect={onDepartmentChange}
-            selectedId={slot.departmentId}
-          />
+          {/* 部門選択（新規作成時のみ変更可能） */}
+          {slot.isNew ? (
+            <DepartmentSelector
+              departments={departments}
+              onSelect={onDepartmentChange}
+              selectedId={slot.departmentId}
+            />
+          ) : (
+            <div>
+              <Label>部門</Label>
+              <div className="rounded-md border bg-muted px-3 py-2 text-sm">
+                {selectedDepartment?.name ?? "未選択"}
+              </div>
+              <p className="mt-1 text-muted-foreground text-xs">
+                既存シフトの部門は変更できません
+              </p>
+            </div>
+          )}
 
-          {/* シフト種別選択 */}
-          <div>
-            <Label>
-              シフト種別 <span className="text-red-500">*</span>
-            </Label>
-            <Select
-              onValueChange={(value) => onShiftTypeChange(Number(value))}
-              value={slot.shiftTypeId > 0 ? String(slot.shiftTypeId) : ""}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="シフト種別を選択" />
-              </SelectTrigger>
-              <SelectContent>
-                {shiftTypes.map((type) => (
-                  <SelectItem key={type.id} value={String(type.id)}>
-                    {type.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          {/* シフト種別選択（新規作成時のみ変更可能） */}
+          {slot.isNew ? (
+            <div>
+              <Label>
+                シフト種別 <span className="text-red-500">*</span>
+              </Label>
+              <Select
+                onValueChange={(value) => onShiftTypeChange(Number(value))}
+                value={slot.shiftTypeId > 0 ? String(slot.shiftTypeId) : ""}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="シフト種別を選択" />
+                </SelectTrigger>
+                <SelectContent>
+                  {shiftTypes.map((type) => (
+                    <SelectItem key={type.id} value={String(type.id)}>
+                      {type.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          ) : (
+            <div>
+              <Label>シフト種別</Label>
+              <div className="rounded-md border bg-muted px-3 py-2 text-sm">
+                {selectedShiftType?.name ?? "未選択"}
+              </div>
+              <p className="mt-1 text-muted-foreground text-xs">
+                既存シフトの種別は変更できません
+              </p>
+            </div>
+          )}
 
           {/* 備考 */}
           <div>
