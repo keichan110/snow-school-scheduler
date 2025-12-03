@@ -1,7 +1,8 @@
 "use client";
 
 import { X } from "@phosphor-icons/react";
-import { DepartmentSelector } from "@/app/(member)/shifts/_components/department-selector";
+import { DEPARTMENT_STYLES } from "@/app/(member)/shifts/_lib/constants";
+import { getDepartmentIcon } from "@/app/(member)/shifts/_lib/shift-components";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -13,6 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { cn } from "@/lib/utils";
 import type {
   DepartmentMinimal,
   InstructorWithAssignment,
@@ -74,24 +76,65 @@ export function ShiftSlotEditor({
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {/* 部門選択（新規作成時のみ変更可能） */}
-          {slot.isNew ? (
-            <DepartmentSelector
-              departments={departments}
-              onSelect={onDepartmentChange}
-              selectedId={slot.departmentId}
-            />
-          ) : (
-            <div>
-              <Label>部門</Label>
-              <div className="rounded-md border bg-muted px-3 py-2 text-sm">
-                {selectedDepartment?.name ?? "未選択"}
-              </div>
-              <p className="mt-1 text-muted-foreground text-xs">
-                既存シフトの部門は変更できません
-              </p>
+          {/* 部門選択（選択済み部門のみ表示） */}
+          <div className="space-y-3">
+            <div className="font-medium text-sm">
+              部門 <span className="text-red-500">*</span>
             </div>
-          )}
+            {selectedDepartment ? (
+              <div className="flex gap-4">
+                <button
+                  className={cn(
+                    "flex cursor-default items-center space-x-2 rounded-lg border p-3",
+                    (() => {
+                      const departmentType =
+                        selectedDepartment.code.toLowerCase() as
+                          | "ski"
+                          | "snowboard";
+                      const styles = DEPARTMENT_STYLES[departmentType];
+                      return `${styles.sectionBorderClass} ${styles.sectionBgClass}`;
+                    })()
+                  )}
+                  disabled
+                  type="button"
+                >
+                  {(() => {
+                    const departmentType =
+                      selectedDepartment.code.toLowerCase() as
+                        | "ski"
+                        | "snowboard";
+                    const styles = DEPARTMENT_STYLES[departmentType];
+                    return getDepartmentIcon(
+                      departmentType,
+                      cn("h-5 w-5", styles.iconColor)
+                    );
+                  })()}
+                  <span
+                    className={cn(
+                      "font-medium",
+                      (() => {
+                        const departmentType =
+                          selectedDepartment.code.toLowerCase() as
+                            | "ski"
+                            | "snowboard";
+                        const styles = DEPARTMENT_STYLES[departmentType];
+                        return styles.sectionTextClass;
+                      })()
+                    )}
+                  >
+                    {selectedDepartment.name}
+                  </span>
+                </button>
+              </div>
+            ) : (
+              <div className="text-muted-foreground text-sm">未選択</div>
+            )}
+            <p className="text-muted-foreground text-xs">
+              {slot.isNew
+                ? "部門は事前に選択されています"
+                : "既存シフトの部門は変更できません"}
+            </p>
+          </div>
 
           {/* シフト種別選択（新規作成時のみ変更可能） */}
           {slot.isNew ? (
