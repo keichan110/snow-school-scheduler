@@ -6,7 +6,6 @@ import { DepartmentIcon } from "@/app/(member)/_components/department-icon";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import type { InstructorWithAssignment, ShiftSlot } from "../_lib/types";
-import { formatAssignmentInfo } from "../_lib/utils";
 
 type InstructorListProps = {
   instructors: InstructorWithAssignment[];
@@ -77,12 +76,6 @@ export function InstructorList({
       {/* 統計 */}
       <div className="flex gap-4 text-sm">
         <span>
-          利用可能: <strong>{stats.available}名</strong>
-        </span>
-        <span>
-          配置済み: <strong>{stats.assigned}名</strong>
-        </span>
-        <span>
           合計: <strong>{stats.total}名</strong>
         </span>
       </div>
@@ -97,18 +90,17 @@ export function InstructorList({
           filteredInstructors.map((instructor) => {
             const isSelected = selectedInstructorIds.includes(instructor.id);
             const isAssigned = instructor.assignedToShiftIds.length > 0;
-            const assignmentInfo = formatAssignmentInfo(
-              instructor.assignmentInfo
-            );
 
             return (
               <button
                 className={cn(
-                  "w-full rounded-lg border bg-card p-3 text-left transition-all hover:bg-accent",
+                  "w-full rounded-lg border bg-card p-3 text-left transition-all",
                   isSelected &&
                     "border-primary bg-primary/5 ring-2 ring-primary ring-offset-2",
-                  isAssigned && !isSelected && "opacity-60"
+                  !isAssigned && "hover:bg-accent",
+                  isAssigned && !isSelected && "cursor-not-allowed opacity-50"
                 )}
+                disabled={isAssigned && !isSelected}
                 key={instructor.id}
                 onClick={() => onToggleInstructor(instructor.id)}
                 type="button"
@@ -140,14 +132,12 @@ export function InstructorList({
                     <div className="truncate font-medium text-sm">
                       {instructor.displayName}
                     </div>
-                    <div className="text-xs">
-                      {isAssigned ? (
-                        <span className="text-orange-600">
-                          {assignmentInfo}
-                        </span>
-                      ) : (
-                        <span className="text-green-600">利用可能</span>
-                      )}
+                    <div className="text-muted-foreground text-xs">
+                      {instructor.certifications.length > 0
+                        ? instructor.certifications
+                            .map((cert) => cert.certificationName)
+                            .join(", ")
+                        : "資格情報なし"}
                     </div>
                   </div>
                 </div>

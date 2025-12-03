@@ -109,6 +109,16 @@ export async function getInstructorsWithAssignments(
           "SKI");
     }
 
+    // 資格情報をフィルタリング（部門IDが指定されている場合はその部門の資格のみ）
+    const certifications = instructor.certifications
+      .filter((ic) =>
+        departmentId ? ic.certification.departmentId === departmentId : true
+      )
+      .map((ic) => ({
+        certificationName: ic.certification.shortName,
+        departmentCode: ic.certification.department.code,
+      }));
+
     return {
       id: instructor.id,
       displayName: `${instructor.lastName} ${instructor.firstName}`,
@@ -120,6 +130,7 @@ export async function getInstructorsWithAssignments(
         departmentName: a.shift.department.name,
         shiftTypeName: a.shift.shiftType.name,
       })),
+      certifications,
     };
   });
 }

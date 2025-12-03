@@ -58,6 +58,12 @@ export type InstructorWithAssignment = {
     departmentName: string;
     shiftTypeName: string;
   }>;
+
+  /** 資格情報 */
+  certifications: Array<{
+    certificationName: string;
+    departmentCode: string;
+  }>;
 };
 
 /**
