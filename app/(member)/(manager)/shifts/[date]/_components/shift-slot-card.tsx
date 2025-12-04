@@ -79,16 +79,25 @@ export function ShiftSlotCard({
           <span className="text-muted-foreground text-sm">配置: </span>
           <span className="font-medium">{slot.instructorIds.length}名</span>
         </div>
-        <div className="mb-3 flex flex-wrap gap-2">
-          {assignedInstructors.map((instructor) => (
-            <span
-              className="rounded-md bg-secondary px-2 py-1 text-secondary-foreground text-sm"
-              key={instructor.id}
-            >
-              {instructor.displayName}
-            </span>
-          ))}
-        </div>
+        {assignedInstructors.length > 0 && (
+          <ul className="mb-3 space-y-1">
+            {assignedInstructors.map((instructor) => (
+              <li className="text-sm" key={instructor.id}>
+                {instructor.displayName}
+                {instructor.certifications.length > 0 && (
+                  <span className="text-muted-foreground">
+                    {" "}
+                    (
+                    {instructor.certifications
+                      .map((c) => c.certificationName)
+                      .join(", ")}
+                    )
+                  </span>
+                )}
+              </li>
+            ))}
+          </ul>
+        )}
         {slot.description && (
           <div className="text-muted-foreground text-sm">
             備考: {slot.description}

@@ -187,23 +187,23 @@ export function ShiftSlotEditor({
               下のインストラクター一覧から選択してください
             </div>
             {selectedInstructors.length > 0 ? (
-              <div className="flex flex-wrap gap-2">
+              <ul className="space-y-1">
                 {selectedInstructors.map((instructor) => (
-                  <span
-                    className="inline-flex items-center gap-1 rounded-md bg-primary/10 px-2 py-1 text-primary text-sm"
-                    key={instructor.id}
-                  >
+                  <li className="text-sm" key={instructor.id}>
                     {instructor.displayName}
-                    <button
-                      className="rounded-full p-0.5 hover:bg-primary/20"
-                      onClick={() => onRemoveInstructor(instructor.id)}
-                      type="button"
-                    >
-                      <X className="h-3 w-3" />
-                    </button>
-                  </span>
+                    {instructor.certifications.length > 0 && (
+                      <span className="text-muted-foreground">
+                        {" "}
+                        (
+                        {instructor.certifications
+                          .map((c) => c.certificationName)
+                          .join(", ")}
+                        )
+                      </span>
+                    )}
+                  </li>
                 ))}
-              </div>
+              </ul>
             ) : (
               <p className="text-muted-foreground text-sm">
                 インストラクターが選択されていません
