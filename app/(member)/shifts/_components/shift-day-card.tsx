@@ -100,8 +100,8 @@ export const ShiftDayCard = React.memo<ShiftDayCardProps>(
     }, [dayData.shifts]);
 
     return (
-      <Card className="opacity-80 transition-all duration-200">
-        <CardHeader className="pb-3">
+      <Card className="overflow-hidden shadow-lg transition-all duration-200 hover:shadow-xl">
+        <CardHeader className="bg-gradient-to-br from-background to-muted/20 pb-3">
           <div className="flex items-center justify-between">
             {/* 日付エリア */}
             <div className="flex items-center gap-3">
@@ -117,16 +117,16 @@ export const ShiftDayCard = React.memo<ShiftDayCardProps>(
                   ),
                 })}
               >
-                <div className="font-bold text-2xl leading-none md:text-3xl">
+                <div className="font-bold text-xl leading-none tracking-tight md:text-2xl">
                   {dateInfo.day}
                 </div>
-                <div className="text-muted-foreground text-xs md:text-sm">
+                <div className="mt-0.5 text-[0.625rem] text-muted-foreground md:text-xs">
                   {dateInfo.month}月{dateInfo.dayName}
                 </div>
               </div>
               {/* 祝日表示 */}
               {isHoliday && (
-                <div className="rounded-full bg-red-100 px-2 py-1 font-medium text-red-600 text-xs dark:bg-red-950/30 dark:text-red-400">
+                <div className="rounded-full bg-red-100 px-2.5 py-1 font-semibold text-[0.625rem] text-red-600 shadow-sm dark:bg-red-950/30 dark:text-red-400">
                   祝日
                 </div>
               )}
@@ -135,8 +135,10 @@ export const ShiftDayCard = React.memo<ShiftDayCardProps>(
             {/* シフト総数 */}
             {dayData.shifts && dayData.shifts.length > 0 && (
               <div className="text-right">
-                <div className="text-muted-foreground text-sm">総シフト数</div>
-                <div className="font-bold text-lg text-primary">
+                <div className="font-medium text-[0.625rem] text-muted-foreground/80">
+                  総シフト数
+                </div>
+                <div className="font-bold text-base text-primary">
                   {shiftStats.totalCount}名
                 </div>
               </div>
@@ -144,14 +146,16 @@ export const ShiftDayCard = React.memo<ShiftDayCardProps>(
           </div>
         </CardHeader>
 
-        <CardContent className="pt-0">
+        <CardContent className="pt-4">
           <div className="space-y-4">
             {dayData.shifts.length === 0 ? (
               /* シフトなしの場合 */
-              <div className="py-8 text-center text-muted-foreground">
-                <div className="mt-1 text-sm">シフトなし</div>
+              <div className="rounded-xl bg-muted/30 py-12 text-center">
+                <div className="text-base text-muted-foreground">
+                  シフトなし
+                </div>
                 {canManage && departments.length > 0 && (
-                  <div className="mt-4 flex justify-center">
+                  <div className="mt-6 flex justify-center">
                     <DepartmentSelectionPopover
                       departments={departments}
                       onOpenChange={setIsDepartmentPopoverOpen}
@@ -159,11 +163,11 @@ export const ShiftDayCard = React.memo<ShiftDayCardProps>(
                       open={isDepartmentPopoverOpen}
                     >
                       <button
-                        className="flex items-center gap-2 rounded-md border border-gray-300 border-dashed px-3 py-2 text-muted-foreground text-sm transition-colors hover:border-blue-400 hover:text-blue-600 dark:border-gray-600 dark:hover:border-blue-500 dark:hover:text-blue-400"
+                        className="flex items-center gap-2 rounded-lg border-2 border-muted-foreground/30 border-dashed bg-background px-4 py-2.5 font-medium text-muted-foreground text-sm shadow-sm transition-all hover:border-primary/50 hover:bg-primary/5 hover:text-primary hover:shadow-md"
                         onClick={() => setIsDepartmentPopoverOpen(true)}
                         type="button"
                       >
-                        <span className="text-lg">+</span>
+                        <span className="text-xl">+</span>
                         シフト編集
                       </button>
                     </DepartmentSelectionPopover>
@@ -181,7 +185,7 @@ export const ShiftDayCard = React.memo<ShiftDayCardProps>(
 
                 {/* 新規追加ボタン（管理権限がある場合のみ表示） */}
                 {canManage && departments.length > 0 && (
-                  <div className="mt-4 flex justify-center">
+                  <div className="mt-5 flex justify-center">
                     <DepartmentSelectionPopover
                       departments={departments}
                       onOpenChange={setIsDepartmentPopoverOpen}
@@ -189,11 +193,11 @@ export const ShiftDayCard = React.memo<ShiftDayCardProps>(
                       open={isDepartmentPopoverOpen}
                     >
                       <button
-                        className="flex items-center gap-2 rounded-md border border-gray-300 border-dashed px-3 py-2 text-muted-foreground text-sm transition-colors hover:border-blue-400 hover:text-blue-600 dark:border-gray-600 dark:hover:border-blue-500 dark:hover:text-blue-400"
+                        className="flex items-center gap-2 rounded-lg border-2 border-muted-foreground/30 border-dashed bg-background px-4 py-2.5 font-medium text-muted-foreground text-sm shadow-sm transition-all hover:border-primary/50 hover:bg-primary/5 hover:text-primary hover:shadow-md"
                         onClick={() => setIsDepartmentPopoverOpen(true)}
                         type="button"
                       >
-                        <span className="text-lg">+</span>
+                        <span className="text-xl">+</span>
                         シフト編集
                       </button>
                     </DepartmentSelectionPopover>
