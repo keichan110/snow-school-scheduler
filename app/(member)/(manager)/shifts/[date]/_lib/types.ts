@@ -61,6 +61,7 @@ export type InstructorWithAssignment = {
 
   /** 資格情報 */
   certifications: Array<{
+    certificationId: number;
     certificationName: string;
     departmentCode: string;
   }>;

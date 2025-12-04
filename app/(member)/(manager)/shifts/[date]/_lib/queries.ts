@@ -115,6 +115,7 @@ export async function getInstructorsWithAssignments(
         departmentId ? ic.certification.departmentId === departmentId : true
       )
       .map((ic) => ({
+        certificationId: ic.certification.id,
         certificationName: ic.certification.shortName,
         departmentCode: ic.certification.department.code,
       }));
