@@ -156,7 +156,24 @@ function renderShiftCard(
     </>
   );
 
-  // シフトカードは常にdivとして表示（クリック不可）
+  // clickable=trueの場合はbuttonとして表示
+  if (clickable && options.onShiftClick) {
+    return (
+      <button
+        className={getShiftCardClassName(clickable, isLoading)}
+        disabled={isLoading}
+        key={uniqueKey}
+        onClick={() => {
+          options.onShiftClick?.(shift.type, departmentType);
+        }}
+        type="button"
+      >
+        {cardContent}
+      </button>
+    );
+  }
+
+  // clickable=falseの場合はdivとして表示
   return (
     <div className={getShiftCardClassName(false, isLoading)} key={uniqueKey}>
       {cardContent}
