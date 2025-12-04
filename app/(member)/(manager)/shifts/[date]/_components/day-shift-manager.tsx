@@ -305,14 +305,19 @@ export function DayShiftManager({ initialData }: DayShiftManagerProps) {
   const selectedInstructorIds = editingSlot?.instructorIds ?? [];
 
   return (
-    <div className="flex flex-col gap-6 lg:flex-row lg:gap-8">
+    <div className="flex flex-col gap-8 lg:flex-row lg:gap-10">
       {/* 左ペイン: シフトスロット一覧 */}
       <section className="flex-1 lg:min-w-0">
-        <h2 className="mb-4 border-b pb-2 font-semibold text-lg">
-          登録済みシフト
-        </h2>
+        <div className="mb-6">
+          <h2 className="font-semibold text-xl tracking-tight">
+            登録済みシフト
+          </h2>
+          <p className="mt-1 text-muted-foreground text-sm">
+            シフトを編集するには編集ボタンをクリックしてください
+          </p>
+        </div>
 
-        <div className="space-y-4">
+        <div className="space-y-3">
           {shiftSlots.length === 0 ? (
             <p className="py-8 text-center text-muted-foreground">
               シフトが登録されていません
@@ -384,9 +389,14 @@ export function DayShiftManager({ initialData }: DayShiftManagerProps) {
       {/* 右ペイン: インストラクター一覧（固定表示） */}
       <aside className="lg:sticky lg:top-6 lg:h-[calc(100vh-12rem)] lg:w-96 lg:shrink-0">
         <div className="lg:h-full lg:overflow-auto">
-          <h2 className="mb-4 border-b pb-2 font-semibold text-lg">
-            インストラクター一覧
-          </h2>
+          <div className="mb-6">
+            <h2 className="font-semibold text-xl tracking-tight">
+              インストラクター一覧
+            </h2>
+            <p className="mt-1 text-muted-foreground text-sm">
+              シフトに配置するインストラクターを選択
+            </p>
+          </div>
 
           <InstructorList
             editingShiftId={editingSlot?.id ?? null}

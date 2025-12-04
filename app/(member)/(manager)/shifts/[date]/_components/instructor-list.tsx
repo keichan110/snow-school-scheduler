@@ -66,20 +66,23 @@ export function InstructorList({
     <div className="space-y-4">
       {/* 検索 */}
       <div className="relative">
-        <MagnifyingGlass className="absolute top-2.5 left-3 h-4 w-4 text-muted-foreground" />
+        <MagnifyingGlass className="absolute top-3 left-3 h-4 w-4 text-muted-foreground" />
         <Input
-          className="pl-9"
+          className="h-11 rounded-lg border-muted pl-10 transition-all focus:border-primary"
           onChange={(e) => setSearchTerm(e.target.value)}
-          placeholder="名前で検索"
+          placeholder="名前で検索..."
           value={searchTerm}
         />
       </div>
 
       {/* 統計 */}
-      <div className="flex gap-4 text-sm">
-        <span>
-          合計: <strong>{stats.total}名</strong>
-        </span>
+      <div className="flex items-center gap-3 rounded-lg bg-muted/50 px-4 py-3">
+        <div className="flex items-center gap-2">
+          <span className="text-muted-foreground text-sm">合計:</span>
+          <span className="font-bold text-foreground text-sm">
+            {stats.total}名
+          </span>
+        </div>
       </div>
 
       {/* リスト表示 */}
@@ -102,10 +105,11 @@ export function InstructorList({
             return (
               <button
                 className={cn(
-                  "w-full rounded-lg border bg-card p-3 text-left transition-all",
+                  "group relative w-full rounded-xl border bg-card p-4 text-left transition-all",
                   isSelected &&
-                    "border-primary bg-primary/5 ring-2 ring-primary ring-offset-2",
-                  !isAssignedToOtherShift && "hover:bg-accent",
+                    "border-primary bg-primary/5 shadow-sm ring-2 ring-primary/20 ring-offset-1",
+                  !isAssignedToOtherShift &&
+                    "hover:border-primary/50 hover:bg-accent/50 hover:shadow-sm",
                   isAssignedToOtherShift && "cursor-not-allowed opacity-50"
                 )}
                 disabled={isAssignedToOtherShift}
@@ -113,17 +117,19 @@ export function InstructorList({
                 onClick={() => onToggleInstructor(instructor.id)}
                 type="button"
               >
-                <div className="flex items-center gap-3">
+                <div className="flex items-start gap-3">
                   {/* チェックボックス */}
                   <div
                     className={cn(
-                      "flex h-5 w-5 shrink-0 items-center justify-center rounded border",
-                      isSelected ? "border-primary bg-primary" : "border-input"
+                      "mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-md border-2 transition-all",
+                      isSelected
+                        ? "border-primary bg-primary"
+                        : "border-input group-hover:border-primary/50"
                     )}
                   >
                     {isSelected && (
                       <Check
-                        className="h-4 w-4 text-primary-foreground"
+                        className="h-3.5 w-3.5 text-primary-foreground"
                         weight="bold"
                       />
                     )}
@@ -131,24 +137,40 @@ export function InstructorList({
 
                   {/* 部門アイコン */}
                   <DepartmentIcon
-                    className="h-5 w-5 shrink-0"
+                    className="mt-0.5 h-5 w-5 shrink-0"
                     code={instructor.departmentCode.toLowerCase()}
                   />
 
                   {/* インストラクター情報 */}
                   <div className="min-w-0 flex-1">
-                    <div className="truncate font-medium text-sm">
+                    <div className="mb-1 truncate font-semibold text-sm">
                       {instructor.displayName}
                     </div>
-                    <div className="text-muted-foreground text-xs">
-                      {instructor.certifications.length > 0
-                        ? instructor.certifications
-                            .map((cert) => cert.certificationName)
-                            .join(", ")
-                        : "資格情報なし"}
+                    <div className="flex flex-wrap items-center gap-1">
+                      {instructor.certifications.length > 0 ? (
+                        instructor.certifications.map((cert, index) => (
+                          <span
+                            className="inline-flex rounded-md bg-muted px-2 py-0.5 font-medium text-muted-foreground text-xs"
+                            key={index}
+                          >
+                            {cert.certificationName}
+                          </span>
+                        ))
+                      ) : (
+                        <span className="text-muted-foreground text-xs">
+                          資格情報なし
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>
+
+                {/* 他のシフトに配置されている場合の表示 */}
+                {isAssignedToOtherShift && (
+                  <div className="mt-2 rounded-md bg-muted/80 px-2 py-1 text-muted-foreground text-xs">
+                    他のシフトに配置済み
+                  </div>
+                )}
               </button>
             );
           })
