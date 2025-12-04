@@ -220,15 +220,6 @@ export function DayShiftManager({ initialData }: DayShiftManagerProps) {
   };
 
   /**
-   * シフト枠の部門変更
-   */
-  const handleUpdateSlotDepartment = (index: number, departmentId: number) => {
-    setShiftSlots((prev) =>
-      prev.map((slot, i) => (i === index ? { ...slot, departmentId } : slot))
-    );
-  };
-
-  /**
    * シフト枠のシフト種別変更
    */
   const handleUpdateSlotShiftType = (index: number, shiftTypeId: number) => {
@@ -276,30 +267,6 @@ export function DayShiftManager({ initialData }: DayShiftManagerProps) {
     );
   };
 
-  /**
-   * インストラクターの削除（編集中のシフト枠から）
-   */
-  const handleRemoveInstructor = (instructorId: number) => {
-    const editingIndex = shiftSlots.findIndex((slot) => slot.isEditing);
-
-    if (editingIndex === -1) {
-      return;
-    }
-
-    setShiftSlots((prev) =>
-      prev.map((slot, i) =>
-        i === editingIndex
-          ? {
-              ...slot,
-              instructorIds: slot.instructorIds.filter(
-                (id) => id !== instructorId
-              ),
-            }
-          : slot
-      )
-    );
-  };
-
   // 編集中のシフト枠のインストラクターID配列
   const editingSlot = shiftSlots.find((slot) => slot.isEditing);
   const selectedInstructorIds = editingSlot?.instructorIds ?? [];
@@ -335,13 +302,9 @@ export function DayShiftManager({ initialData }: DayShiftManagerProps) {
                   isSubmitting={isSubmitting}
                   key={uniqueKey}
                   onCancel={() => handleCancelEdit(index)}
-                  onDepartmentChange={(departmentId) =>
-                    handleUpdateSlotDepartment(index, departmentId)
-                  }
                   onDescriptionChange={(description) =>
                     handleUpdateSlotDescription(index, description)
                   }
-                  onRemoveInstructor={handleRemoveInstructor}
                   onSave={() => handleSaveSlot(index)}
                   onShiftTypeChange={(shiftTypeId) =>
                     handleUpdateSlotShiftType(index, shiftTypeId)

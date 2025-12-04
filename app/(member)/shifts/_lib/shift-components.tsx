@@ -117,12 +117,7 @@ function renderShiftCard(
   styles: (typeof DEPARTMENT_STYLES)[DepartmentType],
   options: DepartmentSectionOptions
 ) {
-  const {
-    clickable = false,
-    onShiftClick,
-    isLoading = false,
-    dateString,
-  } = options;
+  const { clickable = false, isLoading = false } = options;
 
   // ユニークキーを生成（部門 + シフトタイプの組み合わせ）
   const uniqueKey = `${departmentType}-${shift.type}`;

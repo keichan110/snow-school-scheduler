@@ -1,6 +1,5 @@
 "use client";
 
-import { X } from "@phosphor-icons/react";
 import { DEPARTMENT_STYLES } from "@/app/(member)/shifts/_lib/constants";
 import { getDepartmentIcon } from "@/app/(member)/shifts/_lib/shift-components";
 import { Button } from "@/components/ui/button";
@@ -28,10 +27,8 @@ type ShiftSlotEditorProps = {
   shiftTypes: ShiftTypeMinimal[];
   instructors: InstructorWithAssignment[];
   isSubmitting: boolean;
-  onDepartmentChange: (departmentId: number) => void;
   onShiftTypeChange: (shiftTypeId: number) => void;
   onDescriptionChange: (description: string) => void;
-  onRemoveInstructor: (instructorId: number) => void;
   onSave: () => void;
   onCancel: () => void;
 };
@@ -50,10 +47,8 @@ export function ShiftSlotEditor({
   shiftTypes,
   instructors,
   isSubmitting,
-  onDepartmentChange,
   onShiftTypeChange,
   onDescriptionChange,
-  onRemoveInstructor,
   onSave,
   onCancel,
 }: ShiftSlotEditorProps) {

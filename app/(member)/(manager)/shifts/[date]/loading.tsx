@@ -38,6 +38,7 @@ export default function Loading() {
           <Skeleton className="mb-4 h-10 w-full" />
           <div className="grid grid-cols-2 gap-3 md:grid-cols-4 lg:grid-cols-6">
             {Array.from({ length: 12 }).map((_, i) => (
+              // biome-ignore lint/suspicious/noArrayIndexKey: 静的なスケルトン表示で順序が変わらないため問題なし
               <Skeleton className="h-24 w-full" key={`skeleton-${i}`} />
             ))}
           </div>

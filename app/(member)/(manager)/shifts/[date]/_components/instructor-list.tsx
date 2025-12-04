@@ -148,10 +148,10 @@ export function InstructorList({
                     </div>
                     <div className="flex flex-wrap items-center gap-1">
                       {instructor.certifications.length > 0 ? (
-                        instructor.certifications.map((cert, index) => (
+                        instructor.certifications.map((cert) => (
                           <span
                             className="inline-flex rounded-md bg-muted px-2 py-0.5 font-medium text-muted-foreground text-xs"
-                            key={index}
+                            key={cert.certificationId}
                           >
                             {cert.certificationName}
                           </span>
