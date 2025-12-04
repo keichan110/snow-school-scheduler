@@ -347,7 +347,7 @@ export default function ShiftsContent({
 
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
 
-  const handleMonthlyDateSelect = useCallback((date: string) => {
+  const handleMonthlyDateSelect = useCallback((date: string | null) => {
     setSelectedDate(date);
   }, []);
 

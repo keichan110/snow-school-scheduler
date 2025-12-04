@@ -167,7 +167,14 @@ export function MonthlyCalendarWithDetails({
           }
         )}
         key={day}
-        onClick={() => onDateSelect(date)}
+        onClick={() => {
+          // 同じ日付をクリックした場合はトグル（閉じる）
+          if (isSelected) {
+            onDateSelect(null);
+          } else {
+            onDateSelect(date);
+          }
+        }}
         type="button"
       >
         {/* 日付表示 */}
@@ -256,8 +263,30 @@ export function MonthlyCalendarWithDetails({
               {selectedDateInfo &&
                 selectedDateInfo.weekIndex === weekIndex &&
                 selectedDate && (
-                  <div className="slide-in-from-top-2 animate-in duration-300">
-                    <div className="mx-auto max-w-4xl">
+                  <div
+                    className="slide-in-from-top-2 animate-in duration-300"
+                    onClick={(e) => {
+                      // 背景クリックで選択解除
+                      if (e.target === e.currentTarget) {
+                        onDateSelect(null);
+                      }
+                    }}
+                    onKeyDown={(e) => {
+                      // Escapeキーで選択解除
+                      if (e.key === "Escape") {
+                        onDateSelect(null);
+                      }
+                    }}
+                    role="button"
+                    tabIndex={0}
+                  >
+                    <div
+                      className="mx-auto max-w-4xl"
+                      onClick={(e) => {
+                        // カード内のクリックは伝播させない
+                        e.stopPropagation();
+                      }}
+                    >
                       <ShiftDayCard
                         canManage={canManage}
                         date={new Date(selectedDate)}
