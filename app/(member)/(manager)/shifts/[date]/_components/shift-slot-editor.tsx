@@ -62,6 +62,15 @@ export function ShiftSlotEditor({
   );
   const selectedShiftType = shiftTypes.find((t) => t.id === slot.shiftTypeId);
 
+  // 部門スタイルを事前計算
+  const departmentType = selectedDepartment?.code.toLowerCase() as
+    | "ski"
+    | "snowboard"
+    | undefined;
+  const departmentStyles = departmentType
+    ? DEPARTMENT_STYLES[departmentType]
+    : undefined;
+
   return (
     <Card className="border-primary">
       <CardHeader>
@@ -76,45 +85,24 @@ export function ShiftSlotEditor({
             <div className="font-medium text-sm">
               部門 <span className="text-red-500">*</span>
             </div>
-            {selectedDepartment ? (
+            {selectedDepartment && departmentStyles ? (
               <div className="flex gap-4">
                 <button
                   className={cn(
                     "flex cursor-default items-center space-x-2 rounded-lg border p-3",
-                    (() => {
-                      const departmentType =
-                        selectedDepartment.code.toLowerCase() as
-                          | "ski"
-                          | "snowboard";
-                      const styles = DEPARTMENT_STYLES[departmentType];
-                      return `${styles.sectionBorderClass} ${styles.sectionBgClass}`;
-                    })()
+                    `${departmentStyles.sectionBorderClass} ${departmentStyles.sectionBgClass}`
                   )}
                   disabled
                   type="button"
                 >
-                  {(() => {
-                    const departmentType =
-                      selectedDepartment.code.toLowerCase() as
-                        | "ski"
-                        | "snowboard";
-                    const styles = DEPARTMENT_STYLES[departmentType];
-                    return getDepartmentIcon(
-                      departmentType,
-                      cn("h-5 w-5", styles.iconColor)
-                    );
-                  })()}
+                  {getDepartmentIcon(
+                    departmentType,
+                    cn("h-5 w-5", departmentStyles.iconColor)
+                  )}
                   <span
                     className={cn(
                       "font-medium",
-                      (() => {
-                        const departmentType =
-                          selectedDepartment.code.toLowerCase() as
-                            | "ski"
-                            | "snowboard";
-                        const styles = DEPARTMENT_STYLES[departmentType];
-                        return styles.sectionTextClass;
-                      })()
+                      departmentStyles.sectionTextClass
                     )}
                   >
                     {selectedDepartment.name}
