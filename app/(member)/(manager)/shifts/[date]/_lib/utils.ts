@@ -85,9 +85,6 @@ export function formatAssignmentInfo(
   }
 
   const firstAssignment = assignmentInfo[0];
-  if (!firstAssignment) {
-    return "利用可能";
-  }
 
   if (assignmentInfo.length === 1) {
     return firstAssignment.shiftTypeName;
