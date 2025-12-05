@@ -14,12 +14,11 @@ import { Button } from "@/components/ui/button";
 import { MOBILE_BREAKPOINT } from "@/constants";
 import { hasManagePermission } from "@/lib/auth/permissions";
 import { isHoliday } from "../_lib/constants";
-import type { DayData, ShiftStats } from "../_lib/types";
+import type { ShiftStats } from "../_lib/types";
 import { useShiftDataTransformation } from "../_lib/use-shift-data-transformation";
 import { formatDateToString } from "../_lib/week-calculations";
 import { MonthlyCalendarWithDetails } from "./monthly-calendar-with-details";
 import { ShiftMobileList } from "./shift-mobile-list";
-import { UnifiedShiftBottomModal } from "./unified-shift-bottom-modal";
 import { ViewToggle } from "./view-toggle";
 import { WeekNavigation } from "./week-navigation";
 import { WeeklyShiftList } from "./weekly-shift-list";
@@ -67,15 +66,6 @@ type ServerDepartment = {
   code: string;
 };
 
-/**
- * シフトフォーム用のマスターデータの型
- */
-type ShiftFormData = {
-  departments: Array<{ id: number; name: string; code: string }>;
-  shiftTypes: Array<{ id: number; name: string }>;
-  stats: { activeInstructorCount: number };
-};
-
 type ShiftsContentProps = {
   /**
    * サーバーから取得したシフトデータ
@@ -85,10 +75,6 @@ type ShiftsContentProps = {
    * サーバーから取得した部門一覧
    */
   initialDepartments: ServerDepartment[];
-  /**
-   * シフトフォーム用のマスターデータ
-   */
-  shiftFormData: ShiftFormData;
 };
 
 /**
@@ -112,12 +98,10 @@ type ShiftsContentProps = {
  *
  * @param props.initialShifts - サーバーから取得したシフトデータ
  * @param props.initialDepartments - サーバーから取得した部門一覧
- * @param props.shiftFormData - シフトフォーム用のマスターデータ
  */
 export default function ShiftsContent({
   initialShifts,
   initialDepartments,
-  shiftFormData,
 }: ShiftsContentProps) {
   const user = useRequireAuth();
   const router = useRouter();
@@ -126,11 +110,6 @@ export default function ShiftsContent({
   // 画面サイズの状態管理
   const [isMobile, setIsMobile] = useState(false);
   const [pendingView, setPendingView] = useState<ViewMode | null>(null);
-  const [selectedDate, setSelectedDate] = useState<string | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [modalInitialStep, setModalInitialStep] = useState<
-    "create-step1" | "create-step2"
-  >("create-step1");
   const [isPending, startTransition] = useTransition();
 
   const canManage = hasManagePermission(user, "shifts");
@@ -366,63 +345,11 @@ export default function ShiftsContent({
     [router, viewMode, weeklyBaseDate, currentYear, currentMonth]
   );
 
-  const handleMonthlyDateSelect = useCallback((date: string) => {
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+
+  const handleMonthlyDateSelect = useCallback((date: string | null) => {
     setSelectedDate(date);
   }, []);
-
-  const handleWeeklyDateSelect = useCallback((date: string) => {
-    setSelectedDate(date);
-    setModalInitialStep("create-step1");
-    setIsModalOpen(true);
-  }, []);
-
-  const handleWeeklyShiftDetailSelect = useCallback((date: string) => {
-    setSelectedDate(date);
-    setModalInitialStep("create-step2");
-    setIsModalOpen(true);
-  }, []);
-
-  const handleCreateShift = useCallback(() => {
-    if (!(canManage && selectedDate)) {
-      return;
-    }
-    setModalInitialStep("create-step1");
-    setIsModalOpen(true);
-  }, [canManage, selectedDate]);
-
-  const handleShiftDetailClick = useCallback(() => {
-    if (!(canManage && selectedDate)) {
-      return;
-    }
-    setModalInitialStep("create-step2");
-    setIsModalOpen(true);
-  }, [canManage, selectedDate]);
-
-  const handleModalOpenChange = useCallback((open: boolean) => {
-    setIsModalOpen(open);
-    if (!open) {
-      setModalInitialStep("create-step1");
-    }
-  }, []);
-
-  const handleShiftUpdated = useCallback(() => {
-    // ★重要★ Server Componentを再実行してサーバーから最新データを取得
-    router.refresh();
-  }, [router]);
-
-  const dayData = useMemo<DayData | null>(() => {
-    if (!selectedDate) {
-      return null;
-    }
-
-    const shiftsForDate = shiftStats[selectedDate]?.shifts || [];
-
-    return {
-      date: selectedDate,
-      shifts: shiftsForDate,
-      isHoliday: isHoliday(selectedDate),
-    };
-  }, [selectedDate, shiftStats]);
 
   useEffect(() => {
     if (!isPending) {
@@ -498,11 +425,10 @@ export default function ShiftsContent({
                 <div className="hidden sm:block">
                   <MonthlyCalendarWithDetails
                     canManage={canManage}
+                    departments={convertedDepartments}
                     isHoliday={isHoliday}
                     month={currentMonth}
-                    onCreateShift={handleCreateShift}
                     onDateSelect={handleMonthlyDateSelect}
-                    onShiftDetailClick={handleShiftDetailClick}
                     selectedDate={selectedDate}
                     shiftStats={shiftStats}
                     year={currentYear}
@@ -525,10 +451,8 @@ export default function ShiftsContent({
                 <WeeklyShiftList
                   baseDate={weeklyBaseDate}
                   canManage={canManage}
+                  departments={convertedDepartments}
                   isHoliday={isHoliday}
-                  onDateSelect={handleWeeklyDateSelect}
-                  onShiftDetailSelect={handleWeeklyShiftDetailSelect}
-                  selectedDate={selectedDate}
                   shiftStats={shiftStats}
                 />
               </div>
@@ -536,16 +460,6 @@ export default function ShiftsContent({
           </div>
         </div>
       </div>
-
-      <UnifiedShiftBottomModal
-        dayData={dayData}
-        initialStep={modalInitialStep}
-        isOpen={isModalOpen}
-        onOpenChange={handleModalOpenChange}
-        onShiftUpdated={handleShiftUpdated}
-        selectedDate={selectedDate}
-        shiftFormData={shiftFormData}
-      />
     </div>
   );
 }

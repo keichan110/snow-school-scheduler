@@ -1,20 +1,27 @@
 "use client";
 
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { renderDepartmentSections } from "../_lib/shift-components";
 import type { DayData } from "../_lib/types";
+import { useShiftNavigation } from "../_lib/use-shift-navigation";
+import { DepartmentSelectionPopover } from "./department-selection-popover";
+
+type Department = {
+  id: number;
+  name: string;
+  code: string;
+};
 
 type ShiftDayCardProps = {
   date: Date;
   dateString: string;
   dayData: DayData;
-  isSelected: boolean;
-  onDateSelect: () => void;
-  onShiftDetailSelect?: (shiftType: string, departmentType: string) => void;
   /** 管理権限があるかどうか */
   canManage?: boolean;
+  /** 部門一覧（管理権限がある場合に必要） */
+  departments?: Department[];
 };
 
 // 曜日インデックス定数
@@ -34,12 +41,30 @@ const SATURDAY_INDEX = 6;
 export const ShiftDayCard = React.memo<ShiftDayCardProps>(
   function ShiftDayCardComponent({
     date,
+    dateString,
     dayData,
-    isSelected,
-    onDateSelect,
-    onShiftDetailSelect,
     canManage = false,
+    departments = [],
   }: ShiftDayCardProps) {
+    const { navigateToShiftEdit } = useShiftNavigation();
+    const [isDepartmentPopoverOpen, setIsDepartmentPopoverOpen] =
+      useState(false);
+
+    // 今日の日付を判定
+    const isToday = useMemo(() => {
+      const today = new Date();
+      return (
+        date.getFullYear() === today.getFullYear() &&
+        date.getMonth() === today.getMonth() &&
+        date.getDate() === today.getDate()
+      );
+    }, [date]);
+
+    // 部門選択後の遷移処理
+    const handleDepartmentSelect = (departmentId: number) => {
+      navigateToShiftEdit(dateString, departmentId);
+    };
+
     // 設計書に基づく日付情報のメモ化
     const dateInfo = useMemo(() => {
       const dayNames = ["日", "月", "火", "水", "木", "金", "土"];
@@ -81,20 +106,14 @@ export const ShiftDayCard = React.memo<ShiftDayCardProps>(
 
     return (
       <Card
-        className={cn("cursor-pointer transition-all duration-200", {
-          "opacity-60": !dayData.shifts || dayData.shifts.length === 0,
-          "border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950/30":
-            isHoliday || dateInfo.isSunday,
-          "border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/30":
-            dateInfo.isSaturday,
-          "border-blue-400 bg-blue-100 shadow-lg dark:border-blue-600 dark:bg-blue-900/50":
-            isSelected,
-          "hover:border-gray-300 hover:shadow-md dark:hover:border-gray-600":
-            !isSelected,
-        })}
-        onClick={onDateSelect}
+        className={cn(
+          "overflow-hidden shadow-lg transition-all duration-200 hover:shadow-xl",
+          {
+            "ring-2 ring-emerald-400 dark:ring-emerald-500": isToday,
+          }
+        )}
       >
-        <CardHeader className="pb-3">
+        <CardHeader className="bg-gradient-to-br from-background to-muted/20 pb-3">
           <div className="flex items-center justify-between">
             {/* 日付エリア */}
             <div className="flex items-center gap-3">
@@ -110,22 +129,17 @@ export const ShiftDayCard = React.memo<ShiftDayCardProps>(
                   ),
                 })}
               >
-                <div className="font-bold text-2xl leading-none md:text-3xl">
+                <div className="font-bold text-xl leading-none tracking-tight md:text-2xl">
                   {dateInfo.day}
                 </div>
-                <div className="text-muted-foreground text-xs md:text-sm">
+                <div className="mt-0.5 text-[0.625rem] text-muted-foreground md:text-xs">
                   {dateInfo.month}月{dateInfo.dayName}
                 </div>
               </div>
               {/* 祝日表示 */}
               {isHoliday && (
-                <div className="rounded-full bg-red-100 px-2 py-1 font-medium text-red-600 text-xs dark:bg-red-950/30 dark:text-red-400">
+                <div className="rounded-full bg-red-100 px-2.5 py-1 font-semibold text-[0.625rem] text-red-600 shadow-sm dark:bg-red-950/30 dark:text-red-400">
                   祝日
-                </div>
-              )}
-              {isSelected && (
-                <div className="rounded-full bg-blue-100 px-2 py-1 font-medium text-blue-600 text-xs dark:bg-blue-950/30 dark:text-blue-400">
-                  選択中
                 </div>
               )}
             </div>
@@ -133,8 +147,10 @@ export const ShiftDayCard = React.memo<ShiftDayCardProps>(
             {/* シフト総数 */}
             {dayData.shifts && dayData.shifts.length > 0 && (
               <div className="text-right">
-                <div className="text-muted-foreground text-sm">総シフト数</div>
-                <div className="font-bold text-lg text-primary">
+                <div className="font-medium text-[0.625rem] text-muted-foreground/80">
+                  総シフト数
+                </div>
+                <div className="font-bold text-base text-primary">
                   {shiftStats.totalCount}名
                 </div>
               </div>
@@ -142,46 +158,58 @@ export const ShiftDayCard = React.memo<ShiftDayCardProps>(
           </div>
         </CardHeader>
 
-        <CardContent className="pt-0">
+        <CardContent className="pt-4">
           <div className="space-y-4">
             {dayData.shifts.length === 0 ? (
               /* シフトなしの場合 */
-              <div className="py-8 text-center text-muted-foreground">
-                <div className="mt-1 text-sm">シフトなし</div>
-                {canManage && (
-                  <div className="mt-2 text-blue-600 text-xs dark:text-blue-400">
-                    タップしてシフトを作成
+              <div className="rounded-xl bg-muted/30 py-12 text-center">
+                <div className="text-base text-muted-foreground">
+                  シフトなし
+                </div>
+                {canManage && departments.length > 0 && (
+                  <div className="mt-6 flex justify-center">
+                    <DepartmentSelectionPopover
+                      departments={departments}
+                      onOpenChange={setIsDepartmentPopoverOpen}
+                      onSelectDepartment={handleDepartmentSelect}
+                      open={isDepartmentPopoverOpen}
+                    >
+                      <button
+                        className="flex items-center gap-2 rounded-lg border-2 border-muted-foreground/30 border-dashed bg-background px-4 py-2.5 font-medium text-muted-foreground text-sm shadow-sm transition-all hover:border-primary/50 hover:bg-primary/5 hover:text-primary hover:shadow-md"
+                        onClick={() => setIsDepartmentPopoverOpen(true)}
+                        type="button"
+                      >
+                        <span className="text-xl">+</span>
+                        シフト編集
+                      </button>
+                    </DepartmentSelectionPopover>
                   </div>
                 )}
               </div>
             ) : (
               /* シフトがある場合 - 統合版関数を使用 */
               <>
-                {/* 部門別セクション表示（週間ビューはクリック可能） */}
-                {renderDepartmentSections(
-                  dayData.shifts,
-                  onShiftDetailSelect
-                    ? {
-                        clickable: true,
-                        onShiftClick: onShiftDetailSelect,
-                      }
-                    : undefined
-                )}
+                {/* 部門別セクション表示（表示専用） */}
+                {renderDepartmentSections(dayData.shifts)}
 
                 {/* 新規追加ボタン（管理権限がある場合のみ表示） */}
-                {canManage && (
-                  <div className="mt-4 flex justify-center">
-                    <button
-                      className="flex items-center gap-2 rounded-md border border-gray-300 border-dashed px-3 py-2 text-muted-foreground text-sm transition-colors hover:border-blue-400 hover:text-blue-600 dark:border-gray-600 dark:hover:border-blue-500 dark:hover:text-blue-400"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onDateSelect();
-                      }}
-                      type="button"
+                {canManage && departments.length > 0 && (
+                  <div className="mt-5 flex justify-center">
+                    <DepartmentSelectionPopover
+                      departments={departments}
+                      onOpenChange={setIsDepartmentPopoverOpen}
+                      onSelectDepartment={handleDepartmentSelect}
+                      open={isDepartmentPopoverOpen}
                     >
-                      <span className="text-lg">+</span>
-                      新規シフト追加
-                    </button>
+                      <button
+                        className="flex items-center gap-2 rounded-lg border-2 border-muted-foreground/30 border-dashed bg-background px-4 py-2.5 font-medium text-muted-foreground text-sm shadow-sm transition-all hover:border-primary/50 hover:bg-primary/5 hover:text-primary hover:shadow-md"
+                        onClick={() => setIsDepartmentPopoverOpen(true)}
+                        type="button"
+                      >
+                        <span className="text-xl">+</span>
+                        シフト編集
+                      </button>
+                    </DepartmentSelectionPopover>
                   </div>
                 )}
               </>

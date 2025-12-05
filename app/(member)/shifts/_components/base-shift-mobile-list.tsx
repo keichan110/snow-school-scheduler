@@ -66,7 +66,14 @@ export function BaseShiftMobileList({
               }
             )}
             key={day}
-            onClick={() => onDateSelect(date)}
+            onClick={() => {
+              // 同じ日付をクリックした場合はトグル（閉じる）
+              if (isSelected) {
+                onDateSelect(null);
+              } else {
+                onDateSelect(date);
+              }
+            }}
             type="button"
           >
             {/* 日付ヘッダー */}

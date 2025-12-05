@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo } from "react";
-import { DepartmentIcon } from "@/app/(member)/_components/department-icon";
 import { ShiftBadge } from "@/app/(member)/shifts/_components/shift-badge";
 import { cn } from "@/lib/utils";
 import type { DayData } from "../_lib/types";
@@ -10,6 +9,7 @@ import type { BaseShiftDisplayProps, DepartmentType } from "./types";
 import {
   formatDate,
   getDaysInMonth,
+  getDepartmentBadgeBgClass,
   getDepartmentBgClass,
   getFirstDayOfWeek,
   getShiftTypeShort,
@@ -21,13 +21,17 @@ const DAYS_PER_WEEK = 7;
 const SUNDAY_INDEX = 0;
 const SATURDAY_INDEX = 6;
 
+type Department = {
+  id: number;
+  name: string;
+  code: string;
+};
+
 interface MonthlyCalendarWithDetailsProps extends BaseShiftDisplayProps {
   /** 管理権限があるかどうか */
   canManage?: boolean;
-  /** シフト詳細クリック時のハンドラー */
-  onShiftDetailClick?: () => void;
-  /** 新規シフト作成ハンドラー */
-  onCreateShift?: () => void;
+  /** 部門一覧(管理権限がある場合に必要) */
+  departments?: Department[];
 }
 
 /**
@@ -35,8 +39,8 @@ interface MonthlyCalendarWithDetailsProps extends BaseShiftDisplayProps {
  *
  * @description
  * 1ヶ月分のシフトをカレンダーグリッド形式で表示します。
- * 選択日のシフト詳細を右側（デスクトップ）または下部（モバイル）に表示します。
- * 祝日の色分け表示と曜日による色分け（土曜：青、日曜：赤）に対応しています。
+ * 選択日のシフト詳細を右側(デスクトップ)または下部(モバイル)に表示します。
+ * 祝日の色分け表示と曜日による色分け(土曜:青、日曜:赤)に対応しています。
  *
  * @component
  * @example
@@ -60,12 +64,19 @@ export function MonthlyCalendarWithDetails({
   selectedDate,
   onDateSelect,
   canManage = false,
-  onShiftDetailClick,
-  onCreateShift,
+  departments = [],
 }: MonthlyCalendarWithDetailsProps) {
   // カレンダーのセットアップ
   const daysInMonth = getDaysInMonth(year, month);
   const firstDayOfWeek = getFirstDayOfWeek(year, month);
+
+  // 今日の日付を取得
+  const today = new Date();
+  const todayDate = formatDate(
+    today.getFullYear(),
+    today.getMonth() + 1,
+    today.getDate()
+  );
 
   // 選択された日付の週と位置を計算
   const selectedDateInfo = useMemo(() => {
@@ -145,6 +156,7 @@ export function MonthlyCalendarWithDetails({
     const dayData = shiftStats[date];
     const isHolidayDay = checkIsHoliday(date);
     const isSelected = selectedDate === date;
+    const isToday = date === todayDate;
     const hasShifts = dayData && dayData.shifts.length > 0;
     const dayOfWeekIndex = new Date(year, month - 1, day).getDay();
     const dayOfWeek = WEEKDAYS[dayOfWeekIndex];
@@ -156,29 +168,27 @@ export function MonthlyCalendarWithDetails({
         className={cn(
           "day-card flex min-h-[120px] cursor-pointer flex-col rounded-xl border-2 p-3 shadow-lg transition-all duration-300 md:min-h-[140px]",
           "hover:-translate-y-1 hover:transform hover:shadow-xl",
+          "bg-background",
           {
-            "border-border bg-background hover:border-blue-400": !(
-              isSelected ||
-              isHolidayDay ||
-              isSaturday ||
-              isSunday
-            ),
-            "border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/30":
-              isSaturday && !isSelected,
-            "border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950/30":
-              (isHolidayDay || isSunday) && !isSelected,
-            "-translate-y-1 transform border-blue-400 bg-blue-50 shadow-xl dark:border-blue-600 dark:bg-blue-950/30":
-              isSelected,
-            "opacity-60": !(
-              hasShifts ||
-              isHolidayDay ||
-              isSaturday ||
-              isSunday
-            ),
+            "border-border hover:border-blue-400": !(isSelected || isToday),
+            "-translate-y-1 transform border-blue-400 shadow-xl":
+              isSelected && !isToday,
+            "border-border ring-2 ring-emerald-400 dark:ring-emerald-500":
+              isToday && !isSelected,
+            "-translate-y-1 transform border-blue-400 shadow-xl ring-2 ring-emerald-400 dark:ring-emerald-500":
+              isToday && isSelected,
+            "opacity-80": !(hasShifts || isToday),
           }
         )}
         key={day}
-        onClick={() => onDateSelect(date)}
+        onClick={() => {
+          // 同じ日付をクリックした場合はトグル(閉じる)
+          if (isSelected) {
+            onDateSelect(null);
+          } else {
+            onDateSelect(date);
+          }
+        }}
         type="button"
       >
         {/* 日付表示 */}
@@ -203,29 +213,33 @@ export function MonthlyCalendarWithDetails({
         </div>
 
         {/* シフト詳細表示 */}
-        <div className="flex flex-1 items-center justify-center">
+        <div className="flex flex-1 items-start justify-center">
           {hasShifts ? (
-            <div className="w-full space-y-1">
+            <div className="w-full space-y-2">
               {dayData.shifts.map((shift, idx) => (
                 <div
                   className={cn(
-                    "flex items-center justify-between gap-2 rounded-lg px-2 py-2",
+                    "relative overflow-visible rounded-lg px-2 py-2",
                     getDepartmentBgClass(shift.department as DepartmentType),
                     shift.isMyShift &&
-                      "border-l-[3px] border-l-green-500 pl-1.5 dark:border-l-green-400"
+                      "border-l-[3px] border-l-green-500 pl-1.5 dark:border-l-green-400",
+                    idx > 0 && "mt-2"
                   )}
                   key={`${shift.department}-${shift.type}-${idx}`}
                 >
-                  <div className="flex items-center gap-2">
-                    <DepartmentIcon
-                      className="h-3 w-3"
-                      code={shift.department}
-                    />
-                    <span className="font-medium text-foreground text-xs">
+                  <div className="flex items-center pr-4">
+                    <span className="overflow-hidden whitespace-nowrap font-medium text-foreground text-xs">
                       {getShiftTypeShort(shift.type)}
                     </span>
                   </div>
-                  <ShiftBadge count={shift.count} />
+                  <div className="-translate-y-1/2 absolute top-0 right-0 translate-x-1/2">
+                    <ShiftBadge
+                      className={getDepartmentBadgeBgClass(
+                        shift.department as DepartmentType
+                      )}
+                      count={shift.count}
+                    />
+                  </div>
                 </div>
               ))}
             </div>
@@ -259,33 +273,36 @@ export function MonthlyCalendarWithDetails({
                 )}
               </div>
 
-              {/* 選択された日付の詳細表示（該当する週の下に表示） */}
+              {/* 選択された日付の詳細表示(該当する週の下に表示) */}
               {selectedDateInfo &&
                 selectedDateInfo.weekIndex === weekIndex &&
                 selectedDate && (
-                  <div className="slide-in-from-top-2 animate-in duration-300">
+                  <button
+                    className="slide-in-from-top-2 block w-full animate-in cursor-default text-left duration-300"
+                    onClick={(e) => {
+                      // 背景クリックで選択解除
+                      if (e.target === e.currentTarget) {
+                        onDateSelect(null);
+                      }
+                    }}
+                    onKeyDown={(e) => {
+                      // Escapeキーで選択解除
+                      if (e.key === "Escape") {
+                        onDateSelect(null);
+                      }
+                    }}
+                    type="button"
+                  >
                     <div className="mx-auto max-w-4xl">
                       <ShiftDayCard
                         canManage={canManage}
                         date={new Date(selectedDate)}
                         dateString={selectedDate}
                         dayData={selectedDateInfo.dayData as DayData}
-                        isSelected={true}
-                        onDateSelect={() => {
-                          if (canManage && onCreateShift) {
-                            onCreateShift();
-                          }
-                        }}
-                        {...(canManage && onShiftDetailClick
-                          ? {
-                              onShiftDetailSelect: () => {
-                                onShiftDetailClick();
-                              },
-                            }
-                          : {})}
+                        departments={departments}
                       />
                     </div>
-                  </div>
+                  </button>
                 )}
             </div>
           );

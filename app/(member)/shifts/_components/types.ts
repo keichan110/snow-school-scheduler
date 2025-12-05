@@ -79,7 +79,7 @@ export type BaseShiftDisplayProps = {
   shiftStats: ShiftStats;
   isHoliday: (date: string) => boolean;
   selectedDate: string | null;
-  onDateSelect: (date: string) => void;
+  onDateSelect: (date: string | null) => void;
 };
 
 /**

@@ -21,12 +21,12 @@ export function generateInstructorChips(
   return assignedInstructors.map((instructor) => (
     <div
       className={cn(
-        "inline-flex cursor-pointer items-center gap-1 rounded-full border px-3 py-1 font-medium text-xs transition-all duration-200 hover:scale-105",
+        "inline-flex cursor-pointer items-center gap-1 rounded-full border px-2.5 py-1 font-medium text-xs transition-all duration-200 hover:scale-105 hover:shadow-md",
         chipClass
       )}
       key={instructor.id}
     >
-      <User className="h-3 w-3" weight="fill" />
+      <User className="h-3.5 w-3.5" weight="fill" />
       {instructor.displayName}
     </div>
   ));
@@ -40,6 +40,7 @@ export type DepartmentSectionOptions = {
   onShiftClick?: (shiftType: string, departmentType: DepartmentType) => void;
   showEditButtons?: boolean;
   isLoading?: boolean;
+  dateString?: string;
 };
 
 /**
@@ -47,15 +48,15 @@ export type DepartmentSectionOptions = {
  */
 function getShiftCardClassName(clickable: boolean, isLoading: boolean): string {
   const baseClass =
-    "rounded-lg border border-border bg-background p-3 transition-all duration-200";
+    "rounded-xl border bg-card p-3 shadow-sm transition-all duration-200";
 
   if (!clickable) {
-    return cn(baseClass, "hover:shadow-sm");
+    return cn(baseClass, "border-border/60 hover:shadow-md");
   }
 
   return cn(baseClass, [
-    "w-full cursor-pointer text-left",
-    "hover:scale-[1.02] hover:bg-accent/50 hover:shadow-md",
+    "w-full cursor-pointer border-border/60 text-left",
+    "hover:scale-[1.02] hover:border-primary/30 hover:bg-accent/50 hover:shadow-md",
     "focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2",
     isLoading &&
       "disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100 disabled:hover:bg-background disabled:hover:shadow-sm",
@@ -70,7 +71,8 @@ function getShiftTypeBadgeClassName(
   styles: (typeof DEPARTMENT_STYLES)[DepartmentType],
   department: DepartmentType
 ): string {
-  const baseClass = "rounded-lg px-3 py-2 font-medium text-foreground text-sm";
+  const baseClass =
+    "inline-flex items-center rounded-full px-3 py-1 font-semibold text-xs shadow-sm";
 
   if (clickable) {
     return cn(baseClass, styles.chipClass, "pointer-events-none");
@@ -92,12 +94,12 @@ function renderInstructorChips(
     return instructors.map((instructor) => (
       <div
         className={cn(
-          "pointer-events-none inline-flex cursor-pointer items-center gap-1 rounded-full border px-3 py-1 font-medium text-xs",
+          "pointer-events-none inline-flex cursor-pointer items-center gap-1 rounded-full border px-2.5 py-1 font-medium text-xs hover:shadow-md",
           styles.chipClass
         )}
         key={instructor.id}
       >
-        <User className="h-3 w-3" weight="fill" />
+        <User className="h-3.5 w-3.5" weight="fill" />
         {instructor.displayName}
       </div>
     ));
@@ -115,26 +117,15 @@ function renderShiftCard(
   styles: (typeof DEPARTMENT_STYLES)[DepartmentType],
   options: DepartmentSectionOptions
 ) {
-  const { clickable = false, onShiftClick, isLoading = false } = options;
-  const Element = clickable ? "button" : "div";
-  const clickProps =
-    clickable && onShiftClick
-      ? {
-          onClick: () => onShiftClick(shift.type, departmentType),
-          disabled: isLoading,
-        }
-      : {};
+  const { clickable = false, isLoading = false } = options;
 
   // ユニークキーを生成（部門 + シフトタイプの組み合わせ）
   const uniqueKey = `${departmentType}-${shift.type}`;
 
-  return (
-    <Element
-      className={getShiftCardClassName(clickable, isLoading)}
-      key={uniqueKey}
-      {...clickProps}
-    >
-      <div className="mb-2 flex items-center justify-between md:mb-3">
+  // カード内容のレンダリング
+  const cardContent = (
+    <>
+      <div className="mb-2.5 flex items-center justify-between">
         <div
           className={getShiftTypeBadgeClassName(
             clickable,
@@ -144,9 +135,11 @@ function renderShiftCard(
         >
           {shift.type}
         </div>
-        <div className="text-muted-foreground text-xs">{shift.count}名配置</div>
+        <div className="rounded-full bg-muted/50 px-2.5 py-0.5 font-semibold text-[0.625rem] text-foreground/80">
+          {shift.count}名
+        </div>
       </div>
-      <div className="space-y-1 md:flex md:flex-wrap md:gap-2 md:space-y-0">
+      <div className="flex flex-wrap gap-1.5">
         {shift.assignedInstructors && shift.assignedInstructors.length > 0 ? (
           renderInstructorChips(
             shift.assignedInstructors,
@@ -155,12 +148,36 @@ function renderShiftCard(
             styles
           )
         ) : (
-          <div className="text-muted-foreground text-xs">
-            インストラクターが未配置です
+          <div className="w-full rounded-md bg-muted/30 py-1.5 text-center text-[0.625rem] text-muted-foreground">
+            インストラクター未配置
           </div>
         )}
       </div>
-    </Element>
+    </>
+  );
+
+  // clickable=trueの場合はbuttonとして表示
+  if (clickable && options.onShiftClick) {
+    return (
+      <button
+        className={getShiftCardClassName(clickable, isLoading)}
+        disabled={isLoading}
+        key={uniqueKey}
+        onClick={() => {
+          options.onShiftClick?.(shift.type, departmentType);
+        }}
+        type="button"
+      >
+        {cardContent}
+      </button>
+    );
+  }
+
+  // clickable=falseの場合はdivとして表示
+  return (
+    <div className={getShiftCardClassName(false, isLoading)} key={uniqueKey}>
+      {cardContent}
+    </div>
   );
 }
 
@@ -189,26 +206,33 @@ export function createDepartmentSection(
   return (
     <div
       className={cn(
-        "rounded-xl border p-3 transition-all duration-300 md:p-4",
+        "rounded-2xl border-2 p-3.5 shadow-sm transition-all duration-300 md:p-4",
         bgClass,
         borderClass
       )}
       key={departmentType}
     >
-      <div className="md:flex md:items-start md:gap-4">
+      <div className="md:flex md:items-start md:gap-5">
         {/* 部門ヘッダー */}
-        <div className="mb-3 flex items-center gap-2 md:mb-0 md:w-40 md:flex-shrink-0 md:gap-3">
+        <div className="mb-3 flex items-center gap-2.5 md:mb-0 md:w-36 md:flex-shrink-0">
           {icon}
           <div>
-            <h4 className={cn("font-semibold text-base md:text-lg", textClass)}>
+            <h4
+              className={cn(
+                "font-bold text-base tracking-tight md:text-lg",
+                textClass
+              )}
+            >
               {departmentName}
             </h4>
-            <p className="text-muted-foreground text-xs">{styles.label}</p>
+            <p className="font-medium text-[0.625rem] text-muted-foreground/80 uppercase tracking-wide">
+              {styles.label}
+            </p>
           </div>
         </div>
 
         {/* シフト種類とインストラクター */}
-        <div className="flex-1 space-y-3">
+        <div className="flex-1 space-y-2.5">
           {departmentShifts.map((shift) =>
             renderShiftCard(shift, departmentType, styles, options)
           )}

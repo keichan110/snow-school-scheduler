@@ -195,12 +195,14 @@ describe("BaseShiftMobileList", () => {
 
     it("シフトがある日をクリックしても正常に動作する", () => {
       const mockOnDateSelect = jest.fn();
-      render(
-        <BaseShiftMobileList
-          {...defaultProps}
-          onDateSelect={mockOnDateSelect}
-        />
-      );
+      // selectedDateをnullにして未選択状態でテスト
+      const propsWithoutSelection = {
+        ...defaultProps,
+        selectedDate: null,
+        onDateSelect: mockOnDateSelect,
+      };
+
+      render(<BaseShiftMobileList {...propsWithoutSelection} />);
 
       // 10日（シフトがある日）をクリック
       const day10 = screen.getByText("10").closest(".mobile-day-item");

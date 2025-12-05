@@ -39,4 +39,6 @@ export type ShiftTypeMinimal = {
   id: number;
   /** シフト種別名（例: "午前", "午後"） */
   name: string;
+  /** 有効/無効フラグ */
+  isActive: boolean;
 };

@@ -105,7 +105,7 @@ describe("shiftComponents", () => {
       expect(screen.getByText("初級レッスン")).toBeInTheDocument();
       expect(screen.getByText("山田太郎")).toBeInTheDocument();
       expect(screen.getByText("鈴木花子")).toBeInTheDocument();
-      expect(screen.getByText("2名配置")).toBeInTheDocument();
+      expect(screen.getByText("2名")).toBeInTheDocument();
     });
 
     it("クリック可能モード（clickable: true）でセクションを生成する", () => {
@@ -169,9 +169,7 @@ describe("shiftComponents", () => {
       );
       render(<div>{section}</div>);
 
-      expect(
-        screen.getByText("インストラクターが未配置です")
-      ).toBeInTheDocument();
+      expect(screen.getByText("インストラクター未配置")).toBeInTheDocument();
     });
 
     it("指定された部門のシフトのみを表示する", () => {
