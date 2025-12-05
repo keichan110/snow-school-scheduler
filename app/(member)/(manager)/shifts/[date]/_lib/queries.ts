@@ -1,6 +1,68 @@
+import type {
+  Certification,
+  Department,
+  Instructor,
+  InstructorCertification,
+  Shift,
+  ShiftAssignment,
+  ShiftType,
+} from "@prisma/client";
 import { prisma } from "@/lib/db";
 import type { DepartmentMinimal, ShiftTypeMinimal } from "@/lib/types/domain";
 import type { InstructorWithAssignment, ShiftWithRelations } from "./types";
+
+type InstructorWithDetails = Instructor & {
+  shiftAssignments: (ShiftAssignment & {
+    shift: Shift & {
+      department: Department;
+      shiftType: ShiftType;
+    };
+  })[];
+  certifications: (InstructorCertification & {
+    certification: Certification & {
+      department: Department;
+    };
+  })[];
+};
+
+/**
+ * インストラクターの部門コードを決定する
+ *
+ * @param instructor - インストラクター情報
+ * @param departmentId - 部門ID（指定されている場合）
+ * @returns 部門コード
+ * @throws インストラクターが必要な資格を持っていない場合
+ */
+function determineDepartmentCode(
+  instructor: InstructorWithDetails,
+  departmentId?: number
+): string {
+  if (departmentId) {
+    // 指定された部門IDに対応する資格を探す
+    const targetCert = instructor.certifications.find(
+      (ic) => ic.certification.departmentId === departmentId
+    );
+    if (!targetCert) {
+      throw new Error(
+        `Instructor ${instructor.id} does not have certification for department ${departmentId}`
+      );
+    }
+    return targetCert.certification.department.code;
+  }
+
+  const firstAssignment = instructor.shiftAssignments[0];
+  if (firstAssignment) {
+    return firstAssignment.shift.department.code;
+  }
+
+  const firstCertification = instructor.certifications[0];
+  if (firstCertification) {
+    return firstCertification.certification.department.code;
+  }
+
+  // クエリ条件により到達不可能なはずだが、型安全性のため
+  throw new Error(`Instructor ${instructor.id} has no certifications`);
+}
 
 /**
  * 指定日のシフト一覧を取得
@@ -92,23 +154,7 @@ export async function getInstructorsWithAssignments(
   });
 
   return instructors.map((instructor) => {
-    // 配置されているシフトから部門を判定（最初のシフトの部門を使用）
-    // 部門IDが指定されている場合はそれを使用、なければ資格から判定
-    // クエリで資格保持者のみ取得しているため、通常はフォールバックに到達しない
-    let departmentCode: string;
-    if (departmentId) {
-      // 指定された部門IDに対応する資格を探す
-      const targetCert = instructor.certifications.find(
-        (ic) => ic.certification.departmentId === departmentId
-      );
-      departmentCode = targetCert?.certification.department.code ?? "ski";
-    } else {
-      const firstAssignment = instructor.shiftAssignments[0];
-      departmentCode = firstAssignment
-        ? firstAssignment.shift.department.code
-        : (instructor.certifications[0]?.certification.department.code ??
-          "ski");
-    }
+    const departmentCode = determineDepartmentCode(instructor, departmentId);
 
     // 資格情報をフィルタリング（部門IDが指定されている場合はその部門の資格のみ）
     const certifications = instructor.certifications
