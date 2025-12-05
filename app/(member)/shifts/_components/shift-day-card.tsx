@@ -1,11 +1,11 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import React, { useMemo, useState } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { renderDepartmentSections } from "../_lib/shift-components";
 import type { DayData } from "../_lib/types";
+import { useShiftNavigation } from "../_lib/use-shift-navigation";
 import { DepartmentSelectionPopover } from "./department-selection-popover";
 
 type Department = {
@@ -46,7 +46,7 @@ export const ShiftDayCard = React.memo<ShiftDayCardProps>(
     canManage = false,
     departments = [],
   }: ShiftDayCardProps) {
-    const router = useRouter();
+    const { navigateToShiftEdit } = useShiftNavigation();
     const [isDepartmentPopoverOpen, setIsDepartmentPopoverOpen] =
       useState(false);
 
@@ -62,12 +62,7 @@ export const ShiftDayCard = React.memo<ShiftDayCardProps>(
 
     // 部門選択後の遷移処理
     const handleDepartmentSelect = (departmentId: number) => {
-      // 現在のURLパラメータを取得して returnTo に含める
-      const currentUrl = window.location.pathname + window.location.search;
-      const returnTo = encodeURIComponent(currentUrl);
-      router.push(
-        `/shifts/${dateString}?department=${departmentId}&returnTo=${returnTo}`
-      );
+      navigateToShiftEdit(dateString, departmentId);
     };
 
     // 設計書に基づく日付情報のメモ化

@@ -1,13 +1,13 @@
 "use client";
 
 import { Calendar } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import type { DepartmentSectionOptions } from "../_lib/shift-components";
 import { renderDepartmentSections } from "../_lib/shift-components";
 import type { DayData } from "../_lib/types";
+import { useShiftNavigation } from "../_lib/use-shift-navigation";
 import { DepartmentSelectionPopover } from "./department-selection-popover";
 
 type Department = {
@@ -50,7 +50,7 @@ export function ShiftDetailSection({
   departments = [],
   className,
 }: ShiftDetailSectionProps) {
-  const router = useRouter();
+  const { navigateToShiftEdit } = useShiftNavigation();
   const [isDepartmentPopoverOpen, setIsDepartmentPopoverOpen] = useState(false);
 
   // 部門選択後の遷移処理
@@ -58,12 +58,7 @@ export function ShiftDetailSection({
     if (!selectedDate) {
       return;
     }
-    // 現在のURLパラメータを取得して returnTo に含める
-    const currentUrl = window.location.pathname + window.location.search;
-    const returnTo = encodeURIComponent(currentUrl);
-    router.push(
-      `/shifts/${selectedDate}?department=${departmentId}&returnTo=${returnTo}`
-    );
+    navigateToShiftEdit(selectedDate, departmentId);
   };
 
   // 日付情報をメモ化
