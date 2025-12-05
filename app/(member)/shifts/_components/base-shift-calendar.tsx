@@ -135,7 +135,7 @@ export function BaseShiftCalendar({
           const isHolidayDay = checkIsHoliday(date);
           const isSelected = selectedDate === date;
           const isToday = date === todayDate;
-          const hasShifts = dayData && dayData.shifts.length > 0;
+          const hasShifts = Boolean(dayData && dayData.shifts.length > 0);
           const dayOfWeekIndex = new Date(year, month - 1, day).getDay();
           const dayOfWeek = WEEKDAYS[dayOfWeekIndex];
           const isSaturday = dayOfWeekIndex === SATURDAY_DAY_INDEX;
@@ -186,7 +186,7 @@ export function BaseShiftCalendar({
               <div className="flex flex-1 items-center justify-center">
                 {hasShifts ? (
                   <div className="w-full space-y-1">
-                    {dayData.shifts.map((shift) => (
+                    {dayData?.shifts.map((shift) => (
                       <div
                         className={cn(
                           "flex items-center justify-between gap-2 rounded-lg px-2 py-2",
