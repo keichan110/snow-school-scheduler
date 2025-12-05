@@ -75,7 +75,7 @@ export function DayShiftManager({ initialData }: DayShiftManagerProps) {
    */
   const handleEditSlot = (index: number) => {
     setShiftSlots((prev) =>
-      prev.map((slot, i) => (i === index ? { ...slot, isEditing: true } : slot))
+      prev.map((slot, i) => ({ ...slot, isEditing: i === index }))
     );
   };
 
