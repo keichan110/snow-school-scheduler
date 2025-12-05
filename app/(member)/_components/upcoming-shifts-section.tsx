@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRight, Calendar } from "lucide-react";
+import { Calendar } from "lucide-react";
 import Link from "next/link";
 import {
   Card,
@@ -110,22 +110,20 @@ export function UpcomingShiftsSection({ shifts }: UpcomingShiftsSectionProps) {
                 <ShiftCard shift={shift} />
               </CarouselItem>
             ))}
-            {/* すべてのシフトを見るリンクカード */}
-            <CarouselItem className="basis-full pl-2 md:basis-1/5 md:pl-4">
-              <Link className="block h-full" href={shiftsLink}>
-                <div className="flex h-full flex-col items-center justify-center rounded-lg border border-primary border-dashed bg-primary/5 p-4 transition-all hover:bg-primary/10">
-                  <Calendar className="mb-2 h-8 w-8 text-primary" />
-                  <span className="mb-1 font-medium text-primary text-sm">
-                    すべて表示
-                  </span>
-                  <ArrowRight className="h-4 w-4 text-primary" />
-                </div>
-              </Link>
-            </CarouselItem>
           </CarouselContent>
           <CarouselPrevious className="left-0" />
           <CarouselNext className="right-0" />
         </Carousel>
+        {/* すべてのシフトを見るリンク */}
+        <div className="px-12">
+          <Link
+            className="mt-4 flex items-center justify-center gap-2 rounded-lg bg-muted px-4 py-2 text-muted-foreground text-sm transition-colors hover:bg-muted/80 hover:text-primary"
+            href={shiftsLink}
+          >
+            <Calendar className="h-4 w-4" />
+            すべて表示
+          </Link>
+        </div>
       </CardContent>
     </Card>
   );
