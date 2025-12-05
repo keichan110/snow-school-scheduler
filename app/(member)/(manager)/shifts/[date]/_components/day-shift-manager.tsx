@@ -1,13 +1,26 @@
 "use client";
 
+import { AlertTriangle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useNotification } from "@/app/_providers/notifications";
 import { DepartmentSelectionPopover } from "@/app/(member)/shifts/_components/department-selection-popover";
 import {
   createShiftAction,
   deleteShiftAction,
   updateShiftAction,
 } from "@/app/(member)/shifts/_lib/actions";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { secureLog } from "@/lib/utils/logging";
 import type { DayShiftData, ShiftSlot } from "../_lib/types";
 import { validateShiftSlot } from "../_lib/utils";
 import { AddShiftSlotButton } from "./add-shift-slot-button";
@@ -28,11 +41,16 @@ type DayShiftManagerProps = {
  */
 export function DayShiftManager({ initialData }: DayShiftManagerProps) {
   const router = useRouter();
+  const { showNotification } = useNotification();
   const [shiftSlots, setShiftSlots] = useState<ShiftSlot[]>(
     initialData.shiftSlots
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDepartmentPopoverOpen, setIsDepartmentPopoverOpen] = useState(false);
+  const [deleteConfirmation, setDeleteConfirmation] = useState<{
+    isOpen: boolean;
+    shiftId: number | null;
+  }>({ isOpen: false, shiftId: null });
 
   /**
    * 新しいシフト枠を追加（部門IDを指定）
@@ -104,8 +122,7 @@ export function DayShiftManager({ initialData }: DayShiftManagerProps) {
       throw new Error(result.error || "シフトの作成に失敗しました");
     }
 
-    // biome-ignore lint/suspicious/noAlert: 一時的な実装、後でtoast UIを追加予定
-    alert("シフトを作成しました");
+    showNotification("シフトを作成しました", "success");
   };
 
   /**
@@ -125,8 +142,7 @@ export function DayShiftManager({ initialData }: DayShiftManagerProps) {
       throw new Error(result.error || "シフトの更新に失敗しました");
     }
 
-    // biome-ignore lint/suspicious/noAlert: 一時的な実装、後でtoast UIを追加予定
-    alert("シフトを更新しました");
+    showNotification("シフトを更新しました", "success");
   };
 
   /**
@@ -142,8 +158,7 @@ export function DayShiftManager({ initialData }: DayShiftManagerProps) {
     // バリデーション
     const errors = validateShiftSlot(slot);
     if (errors.length > 0) {
-      // biome-ignore lint/suspicious/noAlert: 一時的な実装、後でtoast UIを追加予定
-      alert(errors.join("\n"));
+      showNotification(errors.join("\n"), "error");
       return;
     }
 
@@ -159,8 +174,14 @@ export function DayShiftManager({ initialData }: DayShiftManagerProps) {
       // データ再取得
       router.refresh();
     } catch (error) {
-      // biome-ignore lint/suspicious/noAlert: 一時的な実装、後でtoast UIを追加予定
-      alert(error instanceof Error ? error.message : "保存に失敗しました");
+      const errorMessage =
+        error instanceof Error ? error.message : "保存に失敗しました";
+      showNotification(errorMessage, "error");
+      secureLog("error", "Failed to save shift slot", {
+        error: errorMessage,
+        slotId: slot.id ?? "new",
+        departmentId: slot.departmentId,
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -182,38 +203,38 @@ export function DayShiftManager({ initialData }: DayShiftManagerProps) {
       return;
     }
 
-    // 確認
-    // biome-ignore lint/suspicious/noAlert: 一時的な実装、後でダイアログUIを追加予定
-    const confirmed = confirm(
-      "このシフト枠を削除しますか？\n配置されているインストラクターの割り当ても解除されます。"
-    );
-
-    if (!confirmed) {
-      return;
-    }
-
-    executeDeleteSlot(slot.id);
+    // 確認ダイアログを表示
+    setDeleteConfirmation({ isOpen: true, shiftId: slot.id });
   };
 
   /**
    * シフト枠の削除実行
    */
-  const executeDeleteSlot = async (shiftId: number) => {
+  const executeDeleteSlot = async () => {
+    if (!deleteConfirmation.shiftId) {
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
-      const result = await deleteShiftAction(shiftId);
+      const result = await deleteShiftAction(deleteConfirmation.shiftId);
 
       if (!result.success) {
         throw new Error(result.error || "シフトの削除に失敗しました");
       }
 
-      // biome-ignore lint/suspicious/noAlert: 一時的な実装、後でtoast UIを追加予定
-      alert("シフトを削除しました");
+      showNotification("シフトを削除しました", "success");
+      setDeleteConfirmation({ isOpen: false, shiftId: null });
       router.refresh();
     } catch (error) {
-      // biome-ignore lint/suspicious/noAlert: 一時的な実装、後でtoast UIを追加予定
-      alert(error instanceof Error ? error.message : "削除に失敗しました");
+      const errorMessage =
+        error instanceof Error ? error.message : "削除に失敗しました";
+      showNotification(errorMessage, "error");
+      secureLog("error", "Failed to delete shift slot", {
+        error: errorMessage,
+        shiftId: deleteConfirmation.shiftId,
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -245,8 +266,7 @@ export function DayShiftManager({ initialData }: DayShiftManagerProps) {
     const editingIndex = shiftSlots.findIndex((slot) => slot.isEditing);
 
     if (editingIndex === -1) {
-      // biome-ignore lint/suspicious/noAlert: 一時的な実装、後でtoast UIを追加予定
-      alert("シフト枠を選択してください");
+      showNotification("シフト枠を選択してください", "warning");
       return;
     }
 
@@ -272,104 +292,142 @@ export function DayShiftManager({ initialData }: DayShiftManagerProps) {
   const selectedInstructorIds = editingSlot?.instructorIds ?? [];
 
   return (
-    <div className="flex flex-col gap-8 lg:flex-row lg:gap-10">
-      {/* 左ペイン: シフトスロット一覧 */}
-      <section className="flex-1 lg:min-w-0">
-        <div className="mb-6">
-          <h2 className="font-semibold text-xl tracking-tight">
-            登録済みシフト
-          </h2>
-          <p className="mt-1 text-muted-foreground text-sm">
-            シフトを編集するには編集ボタンをクリックしてください
-          </p>
-        </div>
-
-        <div className="space-y-3">
-          {shiftSlots.length === 0 ? (
-            <p className="py-8 text-center text-muted-foreground">
-              シフトが登録されていません
-            </p>
-          ) : (
-            shiftSlots.map((slot, index) => {
-              // ユニークなキーを生成（idがある場合はそれを使用、ない場合は一時的なキーを生成）
-              const uniqueKey =
-                slot.id !== null ? `slot-${slot.id}` : `new-slot-${index}`;
-
-              return slot.isEditing ? (
-                <ShiftSlotEditor
-                  departments={initialData.departments}
-                  instructors={initialData.availableInstructors}
-                  isSubmitting={isSubmitting}
-                  key={uniqueKey}
-                  onCancel={() => handleCancelEdit(index)}
-                  onDescriptionChange={(description) =>
-                    handleUpdateSlotDescription(index, description)
-                  }
-                  onSave={() => handleSaveSlot(index)}
-                  onShiftTypeChange={(shiftTypeId) =>
-                    handleUpdateSlotShiftType(index, shiftTypeId)
-                  }
-                  shiftTypes={initialData.shiftTypes}
-                  slot={slot}
-                />
-              ) : (
-                <ShiftSlotCard
-                  departments={initialData.departments}
-                  instructors={initialData.availableInstructors}
-                  key={uniqueKey}
-                  onDelete={() => handleDeleteSlot(index)}
-                  onEdit={() => handleEditSlot(index)}
-                  shiftTypes={initialData.shiftTypes}
-                  slot={slot}
-                />
-              );
-            })
-          )}
-
-          {initialData.preselectedDepartmentId ? (
-            // 部門が事前選択されている場合は直接追加
-            <AddShiftSlotButton
-              onAdd={() =>
-                handleAddSlot(initialData.preselectedDepartmentId as number)
-              }
-            />
-          ) : (
-            // 部門が選択されていない場合はポップオーバーで選択
-            <DepartmentSelectionPopover
-              departments={initialData.departments}
-              onOpenChange={setIsDepartmentPopoverOpen}
-              onSelectDepartment={handleAddSlot}
-              open={isDepartmentPopoverOpen}
-            >
-              <AddShiftSlotButton
-                onAdd={() => setIsDepartmentPopoverOpen(true)}
-              />
-            </DepartmentSelectionPopover>
-          )}
-        </div>
-      </section>
-
-      {/* 右ペイン: インストラクター一覧（固定表示） */}
-      <aside className="lg:sticky lg:top-6 lg:h-[calc(100vh-12rem)] lg:w-96 lg:shrink-0">
-        <div className="lg:h-full lg:overflow-auto">
+    <>
+      <div className="flex flex-col gap-8 lg:flex-row lg:gap-10">
+        {/* 左ペイン: シフトスロット一覧 */}
+        <section className="flex-1 lg:min-w-0">
           <div className="mb-6">
             <h2 className="font-semibold text-xl tracking-tight">
-              インストラクター一覧
+              登録済みシフト
             </h2>
             <p className="mt-1 text-muted-foreground text-sm">
-              シフトに配置するインストラクターを選択
+              シフトを編集するには編集ボタンをクリックしてください
             </p>
           </div>
 
-          <InstructorList
-            editingShiftId={editingSlot?.id ?? null}
-            instructors={initialData.availableInstructors}
-            onToggleInstructor={handleToggleInstructor}
-            selectedInstructorIds={selectedInstructorIds}
-            shiftSlots={shiftSlots}
-          />
-        </div>
-      </aside>
-    </div>
+          <div className="space-y-3">
+            {shiftSlots.length === 0 ? (
+              <p className="py-8 text-center text-muted-foreground">
+                シフトが登録されていません
+              </p>
+            ) : (
+              shiftSlots.map((slot, index) => {
+                // ユニークなキーを生成（idがある場合はそれを使用、ない場合は一時的なキーを生成）
+                const uniqueKey =
+                  slot.id !== null ? `slot-${slot.id}` : `new-slot-${index}`;
+
+                return slot.isEditing ? (
+                  <ShiftSlotEditor
+                    departments={initialData.departments}
+                    instructors={initialData.availableInstructors}
+                    isSubmitting={isSubmitting}
+                    key={uniqueKey}
+                    onCancel={() => handleCancelEdit(index)}
+                    onDescriptionChange={(description) =>
+                      handleUpdateSlotDescription(index, description)
+                    }
+                    onSave={() => handleSaveSlot(index)}
+                    onShiftTypeChange={(shiftTypeId) =>
+                      handleUpdateSlotShiftType(index, shiftTypeId)
+                    }
+                    shiftTypes={initialData.shiftTypes}
+                    slot={slot}
+                  />
+                ) : (
+                  <ShiftSlotCard
+                    departments={initialData.departments}
+                    instructors={initialData.availableInstructors}
+                    key={uniqueKey}
+                    onDelete={() => handleDeleteSlot(index)}
+                    onEdit={() => handleEditSlot(index)}
+                    shiftTypes={initialData.shiftTypes}
+                    slot={slot}
+                  />
+                );
+              })
+            )}
+
+            {initialData.preselectedDepartmentId ? (
+              // 部門が事前選択されている場合は直接追加
+              <AddShiftSlotButton
+                onAdd={() =>
+                  handleAddSlot(initialData.preselectedDepartmentId as number)
+                }
+              />
+            ) : (
+              // 部門が選択されていない場合はポップオーバーで選択
+              <DepartmentSelectionPopover
+                departments={initialData.departments}
+                onOpenChange={setIsDepartmentPopoverOpen}
+                onSelectDepartment={handleAddSlot}
+                open={isDepartmentPopoverOpen}
+              >
+                <AddShiftSlotButton
+                  onAdd={() => setIsDepartmentPopoverOpen(true)}
+                />
+              </DepartmentSelectionPopover>
+            )}
+          </div>
+        </section>
+
+        {/* 右ペイン: インストラクター一覧（固定表示） */}
+        <aside className="lg:sticky lg:top-6 lg:h-[calc(100vh-12rem)] lg:w-96 lg:shrink-0">
+          <div className="lg:h-full lg:overflow-auto">
+            <div className="mb-6">
+              <h2 className="font-semibold text-xl tracking-tight">
+                インストラクター一覧
+              </h2>
+              <p className="mt-1 text-muted-foreground text-sm">
+                シフトに配置するインストラクターを選択
+              </p>
+            </div>
+
+            <InstructorList
+              editingShiftId={editingSlot?.id ?? null}
+              instructors={initialData.availableInstructors}
+              onToggleInstructor={handleToggleInstructor}
+              selectedInstructorIds={selectedInstructorIds}
+              shiftSlots={shiftSlots}
+            />
+          </div>
+        </aside>
+      </div>
+
+      {/* 削除確認ダイアログ */}
+      <AlertDialog
+        onOpenChange={(open) => {
+          if (!open) {
+            setDeleteConfirmation({ isOpen: false, shiftId: null });
+          }
+        }}
+        open={deleteConfirmation.isOpen}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2 text-amber-600">
+              <AlertTriangle className="h-5 w-5" />
+              シフト枠を削除しますか？
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              このシフト枠を削除すると、配置されているインストラクターの割り当ても解除されます。
+              <br />
+              この操作は取り消せません。
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isSubmitting}>
+              キャンセル
+            </AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              disabled={isSubmitting}
+              onClick={executeDeleteSlot}
+            >
+              {isSubmitting ? "削除中..." : "削除"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }

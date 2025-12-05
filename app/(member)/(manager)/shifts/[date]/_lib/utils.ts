@@ -84,7 +84,8 @@ export function formatAssignmentInfo(
     return "利用可能";
   }
 
-  const firstAssignment = assignmentInfo[0];
+  // biome-ignore lint/style/noNonNullAssertion: 配列の長さを確認済み
+  const firstAssignment = assignmentInfo[0]!;
 
   if (assignmentInfo.length === 1) {
     return firstAssignment.shiftTypeName;

@@ -85,7 +85,7 @@ export function ShiftSlotEditor({
             <div className="font-medium text-sm">
               部門 <span className="text-red-500">*</span>
             </div>
-            {selectedDepartment && departmentStyles ? (
+            {selectedDepartment && departmentStyles && departmentType ? (
               <div className="flex gap-4">
                 <button
                   className={cn(
