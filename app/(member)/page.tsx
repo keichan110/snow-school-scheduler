@@ -11,18 +11,10 @@ import { UpcomingShiftsSection } from "./_components/upcoming-shifts-section";
 import { getUpcomingShifts } from "./_lib/shift";
 
 /**
- * 今後のシフトとして表示する最大件数
- */
-const MAX_UPCOMING_SHIFTS_DISPLAY = 5;
-
-/**
  * 今後のシフトセクションの非同期コンポーネント
  */
 async function UpcomingShiftsAsync({ instructorId }: { instructorId: number }) {
-  const upcomingShifts = await getUpcomingShifts(
-    instructorId,
-    MAX_UPCOMING_SHIFTS_DISPLAY
-  );
+  const upcomingShifts = await getUpcomingShifts(instructorId);
 
   return <UpcomingShiftsSection shifts={upcomingShifts} />;
 }
@@ -44,7 +36,7 @@ function UpcomingShiftsSkeleton() {
         <div className="w-full px-12">
           <div className="-ml-2 md:-ml-4 flex">
             {/* biome-ignore-start lint/suspicious/noArrayIndexKey: スケルトンは静的表示のため順序変更なし */}
-            {Array.from({ length: MAX_UPCOMING_SHIFTS_DISPLAY }, (_, i) => (
+            {Array.from({ length: 5 }, (_, i) => (
               <div
                 className="basis-full pl-2 md:basis-1/5 md:pl-4"
                 key={`skeleton-shift-${i}`}

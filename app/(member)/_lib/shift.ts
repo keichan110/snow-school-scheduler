@@ -2,6 +2,11 @@ import { cache } from "react";
 import { prisma } from "@/lib/db";
 
 /**
+ * 今後のシフトとして取得するデフォルト件数
+ */
+const DEFAULT_UPCOMING_SHIFTS_LIMIT = 10;
+
+/**
  * インストラクター向け今後のシフト情報
  */
 export type UpcomingShift = {
@@ -24,11 +29,10 @@ export type UpcomingShift = {
  * 同一リクエスト内で複数回呼び出されても、実際のDBクエリは1回のみ実行される
  *
  * @param instructorId - インストラクターID
- * @param limit - 取得件数の上限（デフォルト: 3）
- * @returns 今後のシフト一覧（日付昇順）
+ * @returns 今後のシフト一覧（日付昇順、最大10件）
  */
 export const getUpcomingShifts = cache(
-  async (instructorId: number, limit = 3): Promise<UpcomingShift[]> => {
+  async (instructorId: number): Promise<UpcomingShift[]> => {
     // 今日の日付（時刻を00:00:00にリセット）
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -64,7 +68,7 @@ export const getUpcomingShifts = cache(
       orderBy: {
         date: "asc",
       },
-      take: limit,
+      take: DEFAULT_UPCOMING_SHIFTS_LIMIT,
     });
 
     return shifts;
