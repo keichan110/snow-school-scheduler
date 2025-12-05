@@ -194,11 +194,8 @@ export const ShiftDayCard = React.memo<ShiftDayCardProps>(
             ) : (
               /* シフトがある場合 - 統合版関数を使用 */
               <>
-                {/* 部門別セクション表示（週間ビューはクリック可能） */}
-                {renderDepartmentSections(dayData.shifts, {
-                  clickable: canManage,
-                  dateString,
-                })}
+                {/* 部門別セクション表示（表示専用） */}
+                {renderDepartmentSections(dayData.shifts)}
 
                 {/* 新規追加ボタン（管理権限がある場合のみ表示） */}
                 {canManage && departments.length > 0 && (
