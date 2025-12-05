@@ -50,6 +50,16 @@ export const ShiftDayCard = React.memo<ShiftDayCardProps>(
     const [isDepartmentPopoverOpen, setIsDepartmentPopoverOpen] =
       useState(false);
 
+    // 今日の日付を判定
+    const isToday = useMemo(() => {
+      const today = new Date();
+      return (
+        date.getFullYear() === today.getFullYear() &&
+        date.getMonth() === today.getMonth() &&
+        date.getDate() === today.getDate()
+      );
+    }, [date]);
+
     // 部門選択後の遷移処理
     const handleDepartmentSelect = (departmentId: number) => {
       // 現在のURLパラメータを取得して returnTo に含める
@@ -100,7 +110,14 @@ export const ShiftDayCard = React.memo<ShiftDayCardProps>(
     }, [dayData.shifts]);
 
     return (
-      <Card className="overflow-hidden shadow-lg transition-all duration-200 hover:shadow-xl">
+      <Card
+        className={cn(
+          "overflow-hidden shadow-lg transition-all duration-200 hover:shadow-xl",
+          {
+            "ring-2 ring-emerald-400 dark:ring-emerald-500": isToday,
+          }
+        )}
+      >
         <CardHeader className="bg-gradient-to-br from-background to-muted/20 pb-3">
           <div className="flex items-center justify-between">
             {/* 日付エリア */}

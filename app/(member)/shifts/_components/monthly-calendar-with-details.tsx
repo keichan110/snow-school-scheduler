@@ -70,6 +70,14 @@ export function MonthlyCalendarWithDetails({
   const daysInMonth = getDaysInMonth(year, month);
   const firstDayOfWeek = getFirstDayOfWeek(year, month);
 
+  // 今日の日付を取得
+  const today = new Date();
+  const todayDate = formatDate(
+    today.getFullYear(),
+    today.getMonth() + 1,
+    today.getDate()
+  );
+
   // 選択された日付の週と位置を計算
   const selectedDateInfo = useMemo(() => {
     if (!selectedDate) {
@@ -148,6 +156,7 @@ export function MonthlyCalendarWithDetails({
     const dayData = shiftStats[date];
     const isHolidayDay = checkIsHoliday(date);
     const isSelected = selectedDate === date;
+    const isToday = date === todayDate;
     const hasShifts = dayData && dayData.shifts.length > 0;
     const dayOfWeekIndex = new Date(year, month - 1, day).getDay();
     const dayOfWeek = WEEKDAYS[dayOfWeekIndex];
@@ -161,9 +170,14 @@ export function MonthlyCalendarWithDetails({
           "hover:-translate-y-1 hover:transform hover:shadow-xl",
           "bg-background",
           {
-            "border-border hover:border-blue-400": !isSelected,
-            "-translate-y-1 transform border-blue-400 shadow-xl": isSelected,
-            "opacity-80": !hasShifts,
+            "border-border hover:border-blue-400": !(isSelected || isToday),
+            "-translate-y-1 transform border-blue-400 shadow-xl":
+              isSelected && !isToday,
+            "border-border ring-2 ring-emerald-400 dark:ring-emerald-500":
+              isToday && !isSelected,
+            "-translate-y-1 transform border-blue-400 shadow-xl ring-2 ring-emerald-400 dark:ring-emerald-500":
+              isToday && isSelected,
+            "opacity-80": !(hasShifts || isToday),
           }
         )}
         key={day}

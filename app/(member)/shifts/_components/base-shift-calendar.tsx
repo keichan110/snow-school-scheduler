@@ -39,6 +39,14 @@ export function BaseShiftCalendar({
   const daysInMonth = getDaysInMonth(year, month);
   const firstDayOfWeek = getFirstDayOfWeek(year, month);
 
+  // 今日の日付を取得
+  const today = new Date();
+  const todayDate = formatDate(
+    today.getFullYear(),
+    today.getMonth() + 1,
+    today.getDate()
+  );
+
   return (
     <div className="hidden sm:block">
       {/* カレンダーグリッド */}
@@ -61,6 +69,7 @@ export function BaseShiftCalendar({
           const dayData = shiftStats[date];
           const isHolidayDay = checkIsHoliday(date);
           const isSelected = selectedDate === date;
+          const isToday = date === todayDate;
           const hasShifts = dayData && dayData.shifts.length > 0;
           const dayOfWeekIndex = new Date(year, month - 1, day).getDay();
           const dayOfWeek = WEEKDAYS[dayOfWeekIndex];
@@ -75,21 +84,27 @@ export function BaseShiftCalendar({
                 {
                   "border-border bg-background hover:border-blue-400": !(
                     isSelected ||
+                    isToday ||
                     isHolidayDay ||
                     isSaturday ||
                     isSunday
                   ),
                   "border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/30":
-                    isSaturday && !isSelected,
+                    isSaturday && !isSelected && !isToday,
                   "border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950/30":
-                    (isHolidayDay || isSunday) && !isSelected,
+                    (isHolidayDay || isSunday) && !isSelected && !isToday,
                   "-translate-y-1 transform border-blue-400 bg-blue-50 shadow-xl dark:border-blue-600 dark:bg-blue-950/30":
-                    isSelected,
+                    isSelected && !isToday,
+                  "border-emerald-500 bg-emerald-50 ring-4 ring-emerald-400 ring-offset-2 dark:border-emerald-500 dark:bg-emerald-950/30 dark:ring-emerald-600":
+                    isToday && !isSelected,
+                  "-translate-y-1 transform border-emerald-500 bg-emerald-100 shadow-xl ring-4 ring-emerald-400 ring-offset-2 dark:border-emerald-500 dark:bg-emerald-900/40 dark:ring-emerald-600":
+                    isToday && isSelected,
                   "opacity-60": !(
                     hasShifts ||
                     isHolidayDay ||
                     isSaturday ||
-                    isSunday
+                    isSunday ||
+                    isToday
                   ),
                 }
               )}
@@ -101,12 +116,15 @@ export function BaseShiftCalendar({
               <div className="mb-2 flex items-center gap-2">
                 <div
                   className={cn("font-bold text-lg", {
-                    "text-red-600 dark:text-red-400": isHolidayDay || isSunday,
-                    "text-blue-600 dark:text-blue-400": isSaturday,
+                    "text-emerald-700 dark:text-emerald-400": isToday,
+                    "text-red-600 dark:text-red-400":
+                      (isHolidayDay || isSunday) && !isToday,
+                    "text-blue-600 dark:text-blue-400": isSaturday && !isToday,
                     "text-foreground": !(
                       isHolidayDay ||
                       isSaturday ||
-                      isSunday
+                      isSunday ||
+                      isToday
                     ),
                   })}
                 >
@@ -115,7 +133,12 @@ export function BaseShiftCalendar({
                 <div className="font-medium text-muted-foreground text-xs">
                   {dayOfWeek}
                 </div>
-                {isHolidayDay && (
+                {isToday && (
+                  <div className="rounded-full bg-emerald-500 px-2 py-1 font-bold text-white text-xs shadow-md">
+                    今日
+                  </div>
+                )}
+                {isHolidayDay && !isToday && (
                   <div className="rounded-full bg-red-100 px-2 py-1 font-medium text-red-600 text-xs dark:bg-red-950/30 dark:text-red-400">
                     祝日
                   </div>
