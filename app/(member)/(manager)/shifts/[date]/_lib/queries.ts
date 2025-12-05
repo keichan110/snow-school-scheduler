@@ -51,15 +51,15 @@ export async function getInstructorsWithAssignments(
   const instructors = await prisma.instructor.findMany({
     where: {
       status: "ACTIVE",
-      ...(departmentId && {
-        certifications: {
-          some: {
-            certification: {
-              departmentId,
-            },
-          },
-        },
-      }),
+      certifications: {
+        some: departmentId
+          ? {
+              certification: {
+                departmentId,
+              },
+            }
+          : {}, // 何らかの資格を持つインストラクターのみ取得
+      },
     },
     include: {
       shiftAssignments: {
@@ -94,19 +94,20 @@ export async function getInstructorsWithAssignments(
   return instructors.map((instructor) => {
     // 配置されているシフトから部門を判定（最初のシフトの部門を使用）
     // 部門IDが指定されている場合はそれを使用、なければ資格から判定
+    // クエリで資格保持者のみ取得しているため、通常はフォールバックに到達しない
     let departmentCode: string;
     if (departmentId) {
       // 指定された部門IDに対応する資格を探す
       const targetCert = instructor.certifications.find(
         (ic) => ic.certification.departmentId === departmentId
       );
-      departmentCode = targetCert?.certification.department.code ?? "SKI";
+      departmentCode = targetCert?.certification.department.code ?? "ski";
     } else {
       const firstAssignment = instructor.shiftAssignments[0];
       departmentCode = firstAssignment
         ? firstAssignment.shift.department.code
         : (instructor.certifications[0]?.certification.department.code ??
-          "SKI");
+          "ski");
     }
 
     // 資格情報をフィルタリング（部門IDが指定されている場合はその部門の資格のみ）
