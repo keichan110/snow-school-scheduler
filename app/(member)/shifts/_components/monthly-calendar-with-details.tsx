@@ -277,7 +277,7 @@ export function MonthlyCalendarWithDetails({
               {selectedDateInfo &&
                 selectedDateInfo.weekIndex === weekIndex &&
                 selectedDate && (
-                  <button
+                  <div
                     className="slide-in-from-top-2 block w-full animate-in duration-300"
                     onClick={(e) => {
                       // 背景クリックで選択解除
@@ -291,9 +291,10 @@ export function MonthlyCalendarWithDetails({
                         onDateSelect(null);
                       }
                     }}
-                    type="button"
+                    role="button"
+                    tabIndex={0}
                   >
-                    <button
+                    <div
                       className="mx-auto max-w-4xl"
                       onClick={(e) => {
                         // カード内のクリックは伝播させない
@@ -303,7 +304,6 @@ export function MonthlyCalendarWithDetails({
                         // カード内のキーボードイベントは伝播させない
                         e.stopPropagation();
                       }}
-                      type="button"
                     >
                       <ShiftDayCard
                         canManage={canManage}
@@ -312,8 +312,8 @@ export function MonthlyCalendarWithDetails({
                         dayData={selectedDateInfo.dayData as DayData}
                         departments={departments}
                       />
-                    </button>
-                  </button>
+                    </div>
+                  </div>
                 )}
             </div>
           );
