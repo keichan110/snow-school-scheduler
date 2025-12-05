@@ -30,7 +30,7 @@ type Department = {
 interface MonthlyCalendarWithDetailsProps extends BaseShiftDisplayProps {
   /** 管理権限があるかどうか */
   canManage?: boolean;
-  /** 部門一覧（管理権限がある場合に必要） */
+  /** 部門一覧(管理権限がある場合に必要) */
   departments?: Department[];
 }
 
@@ -39,8 +39,8 @@ interface MonthlyCalendarWithDetailsProps extends BaseShiftDisplayProps {
  *
  * @description
  * 1ヶ月分のシフトをカレンダーグリッド形式で表示します。
- * 選択日のシフト詳細を右側（デスクトップ）または下部（モバイル）に表示します。
- * 祝日の色分け表示と曜日による色分け（土曜：青、日曜：赤）に対応しています。
+ * 選択日のシフト詳細を右側(デスクトップ)または下部(モバイル)に表示します。
+ * 祝日の色分け表示と曜日による色分け(土曜:青、日曜:赤)に対応しています。
  *
  * @component
  * @example
@@ -182,7 +182,7 @@ export function MonthlyCalendarWithDetails({
         )}
         key={day}
         onClick={() => {
-          // 同じ日付をクリックした場合はトグル（閉じる）
+          // 同じ日付をクリックした場合はトグル(閉じる)
           if (isSelected) {
             onDateSelect(null);
           } else {
@@ -273,12 +273,12 @@ export function MonthlyCalendarWithDetails({
                 )}
               </div>
 
-              {/* 選択された日付の詳細表示（該当する週の下に表示） */}
+              {/* 選択された日付の詳細表示(該当する週の下に表示) */}
               {selectedDateInfo &&
                 selectedDateInfo.weekIndex === weekIndex &&
                 selectedDate && (
-                  <div
-                    className="slide-in-from-top-2 block w-full animate-in duration-300"
+                  <button
+                    className="slide-in-from-top-2 block w-full animate-in cursor-default text-left duration-300"
                     onClick={(e) => {
                       // 背景クリックで選択解除
                       if (e.target === e.currentTarget) {
@@ -291,20 +291,9 @@ export function MonthlyCalendarWithDetails({
                         onDateSelect(null);
                       }
                     }}
-                    role="button"
-                    tabIndex={0}
+                    type="button"
                   >
-                    <div
-                      className="mx-auto max-w-4xl"
-                      onClick={(e) => {
-                        // カード内のクリックは伝播させない
-                        e.stopPropagation();
-                      }}
-                      onKeyDown={(e) => {
-                        // カード内のキーボードイベントは伝播させない
-                        e.stopPropagation();
-                      }}
-                    >
+                    <div className="mx-auto max-w-4xl">
                       <ShiftDayCard
                         canManage={canManage}
                         date={new Date(selectedDate)}
@@ -313,7 +302,7 @@ export function MonthlyCalendarWithDetails({
                         departments={departments}
                       />
                     </div>
-                  </div>
+                  </button>
                 )}
             </div>
           );

@@ -16,11 +16,76 @@ import {
 const SATURDAY_DAY_INDEX = 6;
 
 /**
+ * 日付セルのクラス名を計算する関数
+ */
+function getDayCellClassName(params: {
+  isSelected: boolean;
+  isToday: boolean;
+  isHolidayDay: boolean;
+  isSaturday: boolean;
+  isSunday: boolean;
+  hasShifts: boolean;
+}) {
+  const { isSelected, isToday, isHolidayDay, isSaturday, isSunday, hasShifts } =
+    params;
+
+  return cn(
+    "day-card flex min-h-[120px] cursor-pointer flex-col rounded-xl border-2 p-3 shadow-lg transition-all duration-300 md:min-h-[140px]",
+    "hover:-translate-y-1 hover:transform hover:shadow-xl",
+    {
+      "border-border bg-background hover:border-blue-400": !(
+        isSelected ||
+        isToday ||
+        isHolidayDay ||
+        isSaturday ||
+        isSunday
+      ),
+      "border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/30":
+        isSaturday && !isSelected && !isToday,
+      "border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950/30":
+        (isHolidayDay || isSunday) && !isSelected && !isToday,
+      "-translate-y-1 transform border-blue-400 bg-blue-50 shadow-xl dark:border-blue-600 dark:bg-blue-950/30":
+        isSelected && !isToday,
+      "border-emerald-500 bg-emerald-50 ring-4 ring-emerald-400 ring-offset-2 dark:border-emerald-500 dark:bg-emerald-950/30 dark:ring-emerald-600":
+        isToday && !isSelected,
+      "-translate-y-1 transform border-emerald-500 bg-emerald-100 shadow-xl ring-4 ring-emerald-400 ring-offset-2 dark:border-emerald-500 dark:bg-emerald-900/40 dark:ring-emerald-600":
+        isToday && isSelected,
+      "opacity-60": !(
+        hasShifts ||
+        isHolidayDay ||
+        isSaturday ||
+        isSunday ||
+        isToday
+      ),
+    }
+  );
+}
+
+/**
+ * 日付テキストのクラス名を計算する関数
+ */
+function getDateTextClassName(params: {
+  isToday: boolean;
+  isHolidayDay: boolean;
+  isSaturday: boolean;
+  isSunday: boolean;
+}) {
+  const { isToday, isHolidayDay, isSaturday, isSunday } = params;
+
+  return cn("font-bold text-lg", {
+    "text-emerald-700 dark:text-emerald-400": isToday,
+    "text-red-600 dark:text-red-400": (isHolidayDay || isSunday) && !isToday,
+    "text-blue-600 dark:text-blue-400": isSaturday && !isToday,
+    "text-foreground": !(isHolidayDay || isSaturday || isSunday || isToday),
+  });
+}
+
+/**
  * 基盤シフトカレンダーコンポーネント
  *
  * @description
  * 月次カレンダーグリッドの基盤実装を提供します。
- * 日付とシフトの対応付け、曜日の色分け（土曜：青、日曜：赤）、
+ * 日付とシフトの対応付け、曜日の色分け(土曜:青、日曜:赤)、
  * 祝日表示などのコア機能を実装しています。
  * このコンポーネントは直接使用せず、ShiftCalendarGridを通じて使用してください。
  *
@@ -53,7 +118,7 @@ export function BaseShiftCalendar({
       <div className="grid grid-cols-7 gap-2 md:gap-2">
         {/* 前月の空白セル */}
         {Array.from({ length: firstDayOfWeek }, (_, i) => {
-          // 空白セルに一意なキーを生成（月の前の日付として負の値を使用）
+          // 空白セルに一意なキーを生成(月の前の日付として負の値を使用)
           const emptyKey = `${year}-${month}-empty-${i - firstDayOfWeek}`;
           return (
             <div className="pointer-events-none opacity-30" key={emptyKey}>
@@ -78,36 +143,14 @@ export function BaseShiftCalendar({
 
           return (
             <button
-              className={cn(
-                "day-card flex min-h-[120px] cursor-pointer flex-col rounded-xl border-2 p-3 shadow-lg transition-all duration-300 md:min-h-[140px]",
-                "hover:-translate-y-1 hover:transform hover:shadow-xl",
-                {
-                  "border-border bg-background hover:border-blue-400": !(
-                    isSelected ||
-                    isToday ||
-                    isHolidayDay ||
-                    isSaturday ||
-                    isSunday
-                  ),
-                  "border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/30":
-                    isSaturday && !isSelected && !isToday,
-                  "border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950/30":
-                    (isHolidayDay || isSunday) && !isSelected && !isToday,
-                  "-translate-y-1 transform border-blue-400 bg-blue-50 shadow-xl dark:border-blue-600 dark:bg-blue-950/30":
-                    isSelected && !isToday,
-                  "border-emerald-500 bg-emerald-50 ring-4 ring-emerald-400 ring-offset-2 dark:border-emerald-500 dark:bg-emerald-950/30 dark:ring-emerald-600":
-                    isToday && !isSelected,
-                  "-translate-y-1 transform border-emerald-500 bg-emerald-100 shadow-xl ring-4 ring-emerald-400 ring-offset-2 dark:border-emerald-500 dark:bg-emerald-900/40 dark:ring-emerald-600":
-                    isToday && isSelected,
-                  "opacity-60": !(
-                    hasShifts ||
-                    isHolidayDay ||
-                    isSaturday ||
-                    isSunday ||
-                    isToday
-                  ),
-                }
-              )}
+              className={getDayCellClassName({
+                isSelected,
+                isToday,
+                isHolidayDay,
+                isSaturday,
+                isSunday,
+                hasShifts,
+              })}
               key={day}
               onClick={() => onDateSelect(date)}
               type="button"
@@ -115,17 +158,11 @@ export function BaseShiftCalendar({
               {/* 日付表示 */}
               <div className="mb-2 flex items-center gap-2">
                 <div
-                  className={cn("font-bold text-lg", {
-                    "text-emerald-700 dark:text-emerald-400": isToday,
-                    "text-red-600 dark:text-red-400":
-                      (isHolidayDay || isSunday) && !isToday,
-                    "text-blue-600 dark:text-blue-400": isSaturday && !isToday,
-                    "text-foreground": !(
-                      isHolidayDay ||
-                      isSaturday ||
-                      isSunday ||
-                      isToday
-                    ),
+                  className={getDateTextClassName({
+                    isToday,
+                    isHolidayDay,
+                    isSaturday,
+                    isSunday,
                   })}
                 >
                   {day}
