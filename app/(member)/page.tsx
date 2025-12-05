@@ -6,9 +6,9 @@ import {
   getAvailableInstructors,
   getInstructorProfile,
 } from "@/lib/data/instructor";
-import { getUpcomingShifts } from "@/lib/data/shift";
 import { InstructorLinkageSection } from "./_components/instructor-linkage-section";
 import { UpcomingShiftsSection } from "./_components/upcoming-shifts-section";
+import { getUpcomingShifts } from "./_lib/shift";
 
 /**
  * 今後のシフトとして表示する最大件数
