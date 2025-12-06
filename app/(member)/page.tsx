@@ -6,17 +6,36 @@ import {
   getAvailableInstructors,
   getInstructorProfile,
 } from "@/lib/data/instructor";
-import { InstructorLinkageSection } from "./_components/instructor-linkage-section";
+import type {
+  InstructorBasicInfo,
+  UserInstructorProfile,
+} from "@/types/actions";
 import { UpcomingShiftsSection } from "./_components/upcoming-shifts-section";
 import { getUpcomingShifts } from "./_lib/shift";
 
 /**
  * 今後のシフトセクションの非同期コンポーネント
  */
-async function UpcomingShiftsAsync({ instructorId }: { instructorId: number }) {
-  const upcomingShifts = await getUpcomingShifts(instructorId);
+async function UpcomingShiftsAsync({
+  instructorId,
+  instructorProfile,
+  availableInstructors,
+}: {
+  instructorId: number | null;
+  instructorProfile: UserInstructorProfile | null;
+  availableInstructors: InstructorBasicInfo[];
+}) {
+  const upcomingShifts = instructorId
+    ? await getUpcomingShifts(instructorId)
+    : [];
 
-  return <UpcomingShiftsSection shifts={upcomingShifts} />;
+  return (
+    <UpcomingShiftsSection
+      availableInstructors={availableInstructors}
+      instructorProfile={instructorProfile}
+      shifts={upcomingShifts}
+    />
+  );
 }
 
 /**
@@ -94,18 +113,14 @@ export default async function DashboardPage() {
         </p>
       </div>
 
-      {/* インストラクター紐付け状況 */}
-      <InstructorLinkageSection
-        availableInstructors={availableInstructors}
-        instructorProfile={instructorProfile}
-      />
-
-      {/* 今後のシフト（インストラクター紐付け済みの場合のみ表示） */}
-      {user.instructorId && (
-        <Suspense fallback={<UpcomingShiftsSkeleton />}>
-          <UpcomingShiftsAsync instructorId={user.instructorId} />
-        </Suspense>
-      )}
+      {/* 今後のシフト（インストラクター紐付け状況を含む） */}
+      <Suspense fallback={<UpcomingShiftsSkeleton />}>
+        <UpcomingShiftsAsync
+          availableInstructors={availableInstructors}
+          instructorId={user.instructorId}
+          instructorProfile={instructorProfile}
+        />
+      </Suspense>
 
       {/* 今後追加される他のダッシュボードコンテンツ */}
     </div>

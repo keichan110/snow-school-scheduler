@@ -29,7 +29,7 @@ jest.mock("@/app/_providers/auth", () => ({
   AuthProvider: ({ children }: { children: React.ReactNode }) => children,
 }));
 
-jest.mock("@/app/_components/header-authenticated", () => ({
+jest.mock("@/app/_components/header/header-authenticated", () => ({
   HeaderAuthenticated: () => null,
 }));
 

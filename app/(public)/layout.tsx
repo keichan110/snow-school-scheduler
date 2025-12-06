@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { HeaderPublic } from "@/app/_components/header-public";
+import { HeaderPublic } from "@/app/_components/header";
 
 /**
  * 公開ページレイアウト
