@@ -12,7 +12,7 @@ const PROGRESS_ALMOST_COMPLETE = 90;
 const PROGRESS_INCREMENT_FACTOR = 0.18;
 const PROGRESS_COMPLETE = 100;
 const PROGRESS_RESET = 0;
-const TRANSITION_COMPLETE_DELAY_MS = 100;
+const TRANSITION_COMPLETE_DELAY_MS = 500;
 
 function getTime() {
   if (typeof performance !== "undefined") {
@@ -26,8 +26,8 @@ function getTime() {
  * ヘッダープログレスインジケーター
  *
  * @remarks
- * Server Componentsへの移行により、useIsFetchingではなく
- * ページ遷移（pathname/searchParams変更）を検知してローディング表示します。
+ * リンククリックを検知してページ遷移開始を検出し、
+ * pathname/searchParams変更で遷移完了を検知します。
  */
 export function HeaderProgressIndicator() {
   const pathname = usePathname();
@@ -40,6 +40,7 @@ export function HeaderProgressIndicator() {
   const hideTimeoutRef = useRef<number | null>(null);
   const previousPathnameRef = useRef<string | null>(null);
   const previousSearchParamsRef = useRef<string | null>(null);
+  const navigationStartedRef = useRef(false);
 
   const shouldRender = visible;
 
@@ -66,39 +67,42 @@ export function HeaderProgressIndicator() {
       hideTimeoutRef.current = null;
     }
 
-    // 初回表示時の初期化
-    if (!visible) {
-      startTimeRef.current = getTime();
-      setVisible(true);
-      setProgress(PROGRESS_INITIAL);
-    }
+    // 状態をリセットして再表示
+    startTimeRef.current = getTime();
+    setVisible(true);
+    setProgress(PROGRESS_INITIAL);
+    navigationStartedRef.current = true;
 
     // プログレス更新インターバルの開始
-    if (!intervalRef.current) {
-      intervalRef.current = window.setInterval(() => {
-        setProgress((current) => {
-          if (current >= PROGRESS_ALMOST_COMPLETE) {
-            return current;
-          }
-          const delta =
-            (PROGRESS_ALMOST_COMPLETE - current) * PROGRESS_INCREMENT_FACTOR;
-          return current + delta;
-        });
-      }, PROGRESS_TICK_MS);
+    if (intervalRef.current) {
+      window.clearInterval(intervalRef.current);
     }
-  }, [visible]);
+
+    intervalRef.current = window.setInterval(() => {
+      setProgress((current) => {
+        if (current >= PROGRESS_ALMOST_COMPLETE) {
+          return current;
+        }
+        const delta =
+          (PROGRESS_ALMOST_COMPLETE - current) * PROGRESS_INCREMENT_FACTOR;
+        return current + delta;
+      });
+    }, PROGRESS_TICK_MS);
+  }, []);
 
   // ページ遷移終了時の処理
   const stopProgressTracking = useCallback(() => {
+    // ナビゲーションが開始されていない場合は何もしない
+    if (!navigationStartedRef.current) {
+      return;
+    }
+
+    navigationStartedRef.current = false;
+
     // プログレス更新インターバルの停止
     if (intervalRef.current) {
       window.clearInterval(intervalRef.current);
       intervalRef.current = null;
-    }
-
-    // 非表示状態なら早期リターン
-    if (!visible) {
-      return;
     }
 
     // 完了状態に設定
@@ -118,9 +122,39 @@ export function HeaderProgressIndicator() {
       setProgress(PROGRESS_RESET);
       hideTimeoutRef.current = null;
     }, delay);
-  }, [visible]);
+  }, []);
 
-  // pathname または searchParams の変更を監視
+  // リンククリックを監視してナビゲーション開始を検知
+  useEffect(() => {
+    const handleClick = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      const anchor = target.closest("a");
+
+      if (!anchor) return;
+
+      // 外部リンクやハッシュリンクは無視
+      const href = anchor.getAttribute("href");
+      if (!href || href.startsWith("#") || href.startsWith("http")) {
+        return;
+      }
+
+      // 同じページへのリンクは無視
+      const currentPath = `${pathname}${searchParams ? `?${searchParams.toString()}` : ""}`;
+      if (href === currentPath) {
+        return;
+      }
+
+      // ナビゲーション開始
+      startProgressTracking();
+    };
+
+    document.addEventListener("click", handleClick);
+    return () => {
+      document.removeEventListener("click", handleClick);
+    };
+  }, [pathname, searchParams, startProgressTracking]);
+
+  // pathname または searchParams の変更を監視してナビゲーション完了を検知
   useEffect(() => {
     const currentPathname = pathname;
     const currentSearchParams = searchParams?.toString() ?? "";
@@ -141,11 +175,6 @@ export function HeaderProgressIndicator() {
       previousSearchParamsRef.current !== currentSearchParams;
 
     if (hasChanged) {
-      // 遷移が検知された時点で進捗開始
-      // （Next.jsのusePathname/useSearchParamsは遷移完了後に更新されるため、
-      //  ここで開始することで少なくとも変更検知時に進捗バーが表示される）
-      startProgressTracking();
-
       // 短い遅延後に遷移完了とする
       const completeTimeout = window.setTimeout(() => {
         stopProgressTracking();
@@ -161,7 +190,7 @@ export function HeaderProgressIndicator() {
     }
 
     return;
-  }, [pathname, searchParams, startProgressTracking, stopProgressTracking]);
+  }, [pathname, searchParams, stopProgressTracking]);
 
   if (!shouldRender) {
     return null;
