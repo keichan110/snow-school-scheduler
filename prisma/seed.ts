@@ -73,7 +73,20 @@ async function main() {
   console.log(`    - アクティブ: ${statusCounts.ACTIVE || 0}名`);
   console.log(`    - 退職: ${statusCounts.RETIRED || 0}名`);
   console.log(`    - 休職: ${statusCounts.INACTIVE || 0}名`);
-  console.log(`  - シフト: ${shifts.length}件 (2025/12/20〜2026/3/1)`);
+  // シフト期間の計算
+  const shiftDates = shifts.map((s) => new Date(s.date));
+  const minDate = new Date(Math.min(...shiftDates.map((d) => d.getTime())));
+  const maxDate = new Date(Math.max(...shiftDates.map((d) => d.getTime())));
+  const formatDate = (date: Date) => {
+    const year = date.getUTCFullYear();
+    const month = date.getUTCMonth() + 1;
+    const day = date.getUTCDate();
+    return `${year}/${month}/${day}`;
+  };
+
+  console.log(
+    `  - シフト: ${shifts.length}件 (${formatDate(minDate)}〜${formatDate(maxDate)})`
+  );
   console.log("\n開発準備完了！シフト管理システムの全データが整備されました。");
 }
 
