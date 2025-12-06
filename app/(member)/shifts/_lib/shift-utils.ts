@@ -1,3 +1,4 @@
+import { WEEKDAYS } from "./constants";
 import type { Department } from "./types";
 
 // Cache for department lookups
@@ -18,9 +19,6 @@ const DEPARTMENT_BG_CLASS_MAP = new Map<string, string>([
   ["ski", "bg-ski-200 dark:bg-ski-800"],
   ["snowboard", "bg-snowboard-200 dark:bg-snowboard-800"],
 ] as const);
-
-// Weekday cache for performance
-const WEEKDAYS = ["日", "月", "火", "水", "木", "金", "土"] as const;
 
 /**
  * シフト種別名を短縮形に変換 (type-safe with Record)
