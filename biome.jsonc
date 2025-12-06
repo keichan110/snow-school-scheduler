@@ -89,7 +89,11 @@
       }
     },
     {
-      "includes": ["prisma/seed*.ts", "prisma/seeds-prod/**/*"],
+      "includes": [
+        "prisma/seed*.ts",
+        "prisma/seeds/**/*",
+        "prisma/seeds-prod/**/*"
+      ],
       "linter": {
         "rules": {
           "suspicious": {
@@ -104,6 +108,10 @@
             "useFilenamingConvention": "off",
             "noMagicNumbers": "off",
             "noNonNullAssertion": "off"
+          },
+          "nursery": {
+            "useMaxParams": "off",
+            "useConsistentTypeDefinitions": "off"
           }
         }
       }

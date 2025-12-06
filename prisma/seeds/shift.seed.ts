@@ -36,7 +36,6 @@ export async function seedShifts(
 
   // 1月の団体レッスン日を設定（1月の第2土曜日）
   const groupLessonDates: Date[] = [];
-  const januaryStart = new Date(currentYear + 1, 0, 1);
   for (let d = 1; d <= 31; d++) {
     const date = new Date(currentYear + 1, 0, d);
     const dayOfWeek = date.getDay();

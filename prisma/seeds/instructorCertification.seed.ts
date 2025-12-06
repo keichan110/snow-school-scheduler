@@ -1,4 +1,3 @@
-import { faker } from "@faker-js/faker/locale/ja";
 import type { PrismaClient } from "../../generated/prisma";
 import type { CertificationSeeds } from "./certification.seed";
 import type { InstructorSeed } from "./instructor.seed";
