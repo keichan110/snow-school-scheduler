@@ -39,11 +39,13 @@ function groupShiftsByDateAndDepartment(
   const grouped: ShiftsByDateAndDept = new Map();
 
   // 月の全ての日付を生成（1日〜月末）
+  // monthは1-12の値なので、month番目の月の0日 = month月の最終日
   const daysInMonth = new Date(year, month, 0).getDate();
   const allDates: string[] = [];
 
   for (let day = 1; day <= daysInMonth; day++) {
-    const date = new Date(year, month - 1, day);
+    // UTCを使用してタイムゾーンの影響を避ける
+    const date = new Date(Date.UTC(year, month - 1, day));
     // ISO形式の日付文字列（YYYY-MM-DD）
     const dateStr = date.toISOString().split("T")[0] || "";
     if (dateStr) {
