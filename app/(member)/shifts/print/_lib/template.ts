@@ -73,10 +73,14 @@ function groupShiftsByDateAndDepartment(
   // 実際のシフトデータを格納
   for (const shift of shifts) {
     const deptMap = grouped.get(shift.date);
-    if (!deptMap) continue;
+    if (!deptMap) {
+      continue;
+    }
 
     const deptShifts = deptMap.get(shift.department.name);
-    if (!deptShifts) continue;
+    if (!deptShifts) {
+      continue;
+    }
 
     deptShifts.push({
       shiftType: shift.shiftType.name,
@@ -139,7 +143,7 @@ export function generatePDFTemplate(
   year: number,
   month: number
 ): string {
-  const { shifts, summary } = data;
+  const { shifts } = data;
 
   // 日付・部門ごとにグループ化（月の全日付を含む）
   const shiftsByDateAndDept = groupShiftsByDateAndDepartment(
@@ -193,23 +197,26 @@ export function generatePDFTemplate(
           <tbody>
             ${Array.from(shiftsByDateAndDept.entries())
               .map(([date, deptMap]) => {
+                const SUNDAY = 0;
+                const SATURDAY = 6;
+
                 const isHolidayDate = isHoliday(date);
                 const dateObj = new Date(date);
-                const dayOfWeek = dateObj.getDay(); // 0: 日, 6: 土
+                const dayOfWeek = dateObj.getDay();
                 const dayOfMonth = dateObj.getDate();
 
                 // 日付セルのクラスを決定
                 const dateCellClasses = ["date-cell"];
                 if (isHolidayDate) {
                   dateCellClasses.push("holiday");
-                } else if (dayOfWeek === 0) {
+                } else if (dayOfWeek === SUNDAY) {
                   dateCellClasses.push("sunday");
-                } else if (dayOfWeek === 6) {
+                } else if (dayOfWeek === SATURDAY) {
                   dateCellClasses.push("saturday");
                 }
 
                 // 行のクラスを決定（偶数日）
-                const rowClasses = [];
+                const rowClasses: string[] = [];
                 if (dayOfMonth % 2 === 0) {
                   rowClasses.push("even-day");
                 }

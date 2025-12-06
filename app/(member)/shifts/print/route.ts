@@ -1,4 +1,5 @@
 import { authenticateFromCookies } from "@/lib/auth/middleware";
+import { secureLog } from "@/lib/utils/logging";
 import { getDepartments, getMonthlyShifts } from "../_lib/data";
 import { generatePDF } from "./_lib/pdf-generator";
 import { generatePDFTemplate } from "./_lib/template";
@@ -81,7 +82,7 @@ export async function GET(request: Request) {
     const html = generatePDFTemplate(data, departments, year, month);
 
     // 5. PDF生成（MVP: HTMLをそのまま返す）
-    const pdfBuffer = await generatePDF(html);
+    const pdfBuffer = generatePDF(html);
 
     // 6. レスポンス
     // MVP実装: HTMLとして返す（ブラウザで印刷機能を使用してPDF化）
@@ -101,7 +102,9 @@ export async function GET(request: Request) {
     //   },
     // });
   } catch (error) {
-    console.error("PDF generation error:", error);
+    secureLog("error", "PDF generation error:", {
+      error: error instanceof Error ? error.message : String(error),
+    });
     return new Response("Internal Server Error", { status: 500 });
   }
 }

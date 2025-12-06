@@ -24,7 +24,7 @@
  * @param html - PDF化するHTML文字列
  * @returns HTMLバイナリ（将来的にはPDFバイナリ）
  */
-export async function generatePDF(html: string): Promise<Uint8Array> {
+export function generatePDF(html: string): Uint8Array {
   // MVP実装: HTMLをそのまま返す
   // ブラウザで開いてユーザーがPDF印刷できる
   const encoder = new TextEncoder();
