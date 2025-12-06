@@ -1,4 +1,4 @@
-import { isHoliday } from "@/app/(member)/shifts/_lib/constants";
+import { isHoliday, WEEKDAYS } from "@/app/(member)/shifts/_lib/constants";
 import type { MonthlyViewData } from "@/app/(member)/shifts/_lib/data";
 import { getInlineStyles } from "./styles";
 
@@ -7,11 +7,6 @@ import { getInlineStyles } from "./styles";
  */
 const SUNDAY = 0;
 const SATURDAY = 6;
-
-/**
- * 曜日名の配列
- */
-const WEEKDAYS = ["日", "月", "火", "水", "木", "金", "土"];
 
 /**
  * 日付ごと、部門ごとにシフトをグループ化した型

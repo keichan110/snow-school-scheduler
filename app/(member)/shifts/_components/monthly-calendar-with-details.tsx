@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 import { ShiftBadge } from "@/app/(member)/shifts/_components/shift-badge";
 import { cn } from "@/lib/utils";
+import { WEEKDAYS } from "../_lib/constants";
 import type { DayData } from "../_lib/types";
 import { ShiftDayCard } from "./shift-day-card";
 import type { BaseShiftDisplayProps, DepartmentType } from "./types";
@@ -13,7 +14,6 @@ import {
   getDepartmentBgClass,
   getFirstDayOfWeek,
   getShiftTypeShort,
-  WEEKDAYS,
 } from "./utils";
 
 // カレンダー関連の定数

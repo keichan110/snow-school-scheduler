@@ -22,9 +22,6 @@ const DEPARTMENT_BADGE_BG_CLASS_MAP = new Map<DepartmentType, string>([
   ["snowboard", "bg-snowboard-500 dark:bg-snowboard-600"],
 ] as const);
 
-// Weekday cache for performance
-export const WEEKDAYS = ["日", "月", "火", "水", "木", "金", "土"] as const;
-
 /**
  * シフト種別名を短縮形に変換 (type-safe with Record)
  */
