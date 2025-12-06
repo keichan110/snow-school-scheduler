@@ -6,9 +6,9 @@ import type {
   InstructorBasicInfo,
   UserInstructorProfile,
 } from "@/types/actions";
-import { HeaderMenuDrawer } from "./header/header-menu-drawer";
-import { HeaderShell } from "./header/header-shell";
-import { HeaderUserDropdown } from "./header/header-user-dropdown";
+import { HeaderMenuDrawer } from "./header-menu-drawer";
+import { HeaderShell } from "./header-shell";
+import { HeaderUserDropdown } from "./header-user-dropdown";
 
 /**
  * 認証済みルート用Headerコンポーネント

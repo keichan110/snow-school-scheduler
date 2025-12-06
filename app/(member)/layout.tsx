@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
 
-import { HeaderAuthenticated } from "@/app/_components/header-authenticated";
+import { HeaderAuthenticated } from "@/app/_components/header";
 import { AuthProvider } from "@/app/_providers/auth";
 import {
   ACCESS_DENIED_REDIRECT,

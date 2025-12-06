@@ -130,7 +130,9 @@ export function HeaderProgressIndicator() {
       const target = event.target as HTMLElement;
       const anchor = target.closest("a");
 
-      if (!anchor) return;
+      if (!anchor) {
+        return;
+      }
 
       // 外部リンクやハッシュリンクは無視
       const href = anchor.getAttribute("href");

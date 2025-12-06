@@ -1,7 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { HeaderProgressIndicator } from "@/app/_components/header-progress-indicator";
+import { HeaderProgressIndicator } from "./header-progress-indicator";
 import { Logo } from "./logo";
 
 /**

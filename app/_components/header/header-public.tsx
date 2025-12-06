@@ -1,6 +1,6 @@
 "use client";
 
-import { HeaderShell } from "./header/header-shell";
+import { HeaderShell } from "./header-shell";
 
 /**
  * 公開ルート用Headerコンポーネント
