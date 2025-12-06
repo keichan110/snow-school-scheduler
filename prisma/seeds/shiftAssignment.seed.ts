@@ -97,56 +97,100 @@ export async function seedShiftAssignments(
     return 1; // デフォルト
   }
 
+  // 日付ごとに割り当て済みのインストラクターを追跡するマップ
+  // key: 日付文字列 (YYYY-MM-DD), value: 割り当て済みインストラクターIDのSet
+  const dailyAssignments = new Map<string, Set<number>>();
+
+  // 日付でシフトをグループ化
+  const shiftsByDate = new Map<string, ShiftSeed[]>();
+  for (const shift of shifts) {
+    const shiftDate = new Date(shift.date);
+    const dateString = shiftDate.toISOString().split("T")[0];
+    if (!dateString) {
+      continue;
+    }
+
+    if (!shiftsByDate.has(dateString)) {
+      shiftsByDate.set(dateString, []);
+    }
+    shiftsByDate.get(dateString)!.push(shift);
+  }
+
   // シフトにインストラクターを割り当て
   let assignmentCount = 0;
   let skiInstructorIndex = 0;
   let snowboardInstructorIndex = 0;
 
-  for (const shift of shifts) {
-    const requiredCount = getRequiredInstructorCount(shift);
-    const assignedInstructors: InstructorSeed[] = [];
+  // 日付ごとにシフトを処理
+  for (const [dateString, dateShifts] of shiftsByDate) {
+    // この日に割り当て済みのインストラクターを管理
+    const assignedToday = new Set<number>();
+    dailyAssignments.set(dateString, assignedToday);
 
-    // 部門に応じたインストラクタープールを取得
-    const instructorPool =
-      shift.departmentId === skiDepartment.id
-        ? skiInstructors
-        : snowboardInstructors;
+    // その日のシフトごとにインストラクターを割り当て
+    for (const shift of dateShifts) {
+      const requiredCount = getRequiredInstructorCount(shift);
+      const assignedInstructors: InstructorSeed[] = [];
 
-    if (instructorPool.length === 0) {
-      continue; // インストラクターがいない場合はスキップ
-    }
+      // 部門に応じたインストラクタープールを取得
+      const instructorPool =
+        shift.departmentId === skiDepartment.id
+          ? skiInstructors
+          : snowboardInstructors;
 
-    // 必要人数分のインストラクターを割り当て
-    for (let i = 0; i < requiredCount; i++) {
-      let instructor: InstructorSeed;
-
-      if (shift.departmentId === skiDepartment.id) {
-        instructor =
-          skiInstructors[skiInstructorIndex % skiInstructors.length]!;
-        skiInstructorIndex++;
-      } else {
-        instructor =
-          snowboardInstructors[
-            snowboardInstructorIndex % snowboardInstructors.length
-          ]!;
-        snowboardInstructorIndex++;
+      if (instructorPool.length === 0) {
+        continue; // インストラクターがいない場合はスキップ
       }
 
-      // 同じシフトに同じインストラクターを重複して割り当てないようにチェック
-      if (!assignedInstructors.some((a) => a.id === instructor.id)) {
+      // 必要人数分のインストラクターを割り当て
+      let attempts = 0;
+      const maxAttempts = instructorPool.length * 2; // 無限ループ防止
+
+      while (
+        assignedInstructors.length < requiredCount &&
+        attempts < maxAttempts
+      ) {
+        let instructor: InstructorSeed;
+
+        if (shift.departmentId === skiDepartment.id) {
+          instructor =
+            skiInstructors[skiInstructorIndex % skiInstructors.length]!;
+          skiInstructorIndex++;
+        } else {
+          instructor =
+            snowboardInstructors[
+              snowboardInstructorIndex % snowboardInstructors.length
+            ]!;
+          snowboardInstructorIndex++;
+        }
+
+        attempts++;
+
+        // 同じシフトに同じインストラクターを重複して割り当てない
+        if (assignedInstructors.some((a) => a.id === instructor.id)) {
+          continue;
+        }
+
+        // 同じ日に既に割り当てられているインストラクターはスキップ
+        if (assignedToday.has(instructor.id)) {
+          continue;
+        }
+
+        // 割り当て可能
         assignedInstructors.push(instructor);
+        assignedToday.add(instructor.id);
       }
-    }
 
-    // アサインを作成
-    for (const instructor of assignedInstructors) {
-      await prisma.shiftAssignment.create({
-        data: {
-          shiftId: shift.id,
-          instructorId: instructor.id,
-        },
-      });
-      assignmentCount++;
+      // アサインを作成
+      for (const instructor of assignedInstructors) {
+        await prisma.shiftAssignment.create({
+          data: {
+            shiftId: shift.id,
+            instructorId: instructor.id,
+          },
+        });
+        assignmentCount++;
+      }
     }
   }
 
