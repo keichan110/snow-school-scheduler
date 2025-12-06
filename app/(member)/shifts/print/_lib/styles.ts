@@ -57,7 +57,7 @@ export function getInlineStyles(): string {
     .shift-table thead th {
       background-color: #d0d0d0;
       padding: 3px 2px;
-      text-align: center;
+      text-align: left;
       border: 1px solid #999;
       font-weight: bold;
       font-size: 6pt;
