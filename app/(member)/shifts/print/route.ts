@@ -5,6 +5,14 @@ import { generatePDF } from "./_lib/pdf-generator";
 import { generatePDFTemplate } from "./_lib/template";
 
 /**
+ * バリデーション定数
+ */
+const MIN_YEAR = 2000;
+const MAX_YEAR = 2100;
+const MIN_MONTH = 1;
+const MAX_MONTH = 12;
+
+/**
  * 月間シフト表のPDFダウンロードエンドポイント
  *
  * @description
@@ -54,8 +62,6 @@ export async function GET(request: Request) {
     const month = Number.parseInt(monthParam, 10);
 
     // 年の範囲バリデーション
-    const MIN_YEAR = 2000;
-    const MAX_YEAR = 2100;
     if (Number.isNaN(year) || year < MIN_YEAR || year > MAX_YEAR) {
       return new Response(
         `Invalid year. Must be between ${MIN_YEAR} and ${MAX_YEAR}`,
@@ -64,8 +70,6 @@ export async function GET(request: Request) {
     }
 
     // 月の範囲バリデーション
-    const MIN_MONTH = 1;
-    const MAX_MONTH = 12;
     if (Number.isNaN(month) || month < MIN_MONTH || month > MAX_MONTH) {
       return new Response("Invalid month. Must be between 1 and 12", {
         status: 400,
