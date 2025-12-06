@@ -43,6 +43,75 @@ type UpcomingShiftsSectionProps = {
 };
 
 /**
+ * カルーセルコンテンツをレンダリングするヘルパー関数
+ *
+ * @description
+ * インストラクターの紐付け状態とシフトの有無に応じて、
+ * 適切なコンテンツを早期リターンパターンで返します。
+ *
+ * @returns CarouselItem要素
+ */
+function renderCarouselContent({
+  instructorProfile,
+  shifts,
+  availableInstructors,
+  onSuccess,
+}: {
+  instructorProfile: UserInstructorProfile | null;
+  shifts: UpcomingShiftsSectionProps["shifts"];
+  availableInstructors: InstructorBasicInfo[];
+  onSuccess: () => void;
+}) {
+  // インストラクター未紐付けの場合：警告カードを表示
+  if (!instructorProfile) {
+    return (
+      <CarouselItem className="basis-full pl-2 md:pl-4">
+        <Alert className="flex items-center gap-4" variant="warning">
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="h-4 w-4" />
+            <div>
+              <AlertTitle>インストラクター情報が設定されていません</AlertTitle>
+              <AlertDescription>
+                スケジュール機能を利用するには、インストラクター情報を設定してください。
+              </AlertDescription>
+            </div>
+          </div>
+          <div className="ml-auto">
+            <InstructorLinkageButton
+              instructors={availableInstructors}
+              onSuccessAction={onSuccess}
+            />
+          </div>
+        </Alert>
+      </CarouselItem>
+    );
+  }
+
+  // インストラクター紐付け済みだがシフトがない場合
+  if (shifts.length === 0) {
+    return (
+      <CarouselItem className="basis-full pl-2 md:pl-4">
+        <div className="rounded-lg border p-4">
+          <p className="text-center text-muted-foreground text-sm">
+            現在、予定されているシフトはありません
+          </p>
+        </div>
+      </CarouselItem>
+    );
+  }
+
+  // シフトがある場合：シフトカードを表示
+  return shifts.map((shift) => (
+    <CarouselItem
+      className="basis-full pl-2 md:basis-1/5 md:pl-4"
+      key={shift.id}
+    >
+      <ShiftCard shift={shift} />
+    </CarouselItem>
+  ));
+}
+
+/**
  * インストラクター向け今後のシフト表示セクションコンポーネント
  *
  * @description
@@ -105,51 +174,12 @@ export function UpcomingShiftsSection({
           }}
         >
           <CarouselContent className="-ml-2 md:-ml-4">
-            {instructorProfile ? (
-              shifts.length === 0 ? (
-                // インストラクター紐付け済みだがシフトがない場合
-                <CarouselItem className="basis-full pl-2 md:pl-4">
-                  <div className="rounded-lg border p-4">
-                    <p className="text-center text-muted-foreground text-sm">
-                      現在、予定されているシフトはありません
-                    </p>
-                  </div>
-                </CarouselItem>
-              ) : (
-                // シフトがある場合：シフトカードを表示
-                shifts.map((shift) => (
-                  <CarouselItem
-                    className="basis-full pl-2 md:basis-1/5 md:pl-4"
-                    key={shift.id}
-                  >
-                    <ShiftCard shift={shift} />
-                  </CarouselItem>
-                ))
-              )
-            ) : (
-              // インストラクター未紐付けの場合：警告カードを表示
-              <CarouselItem className="basis-full pl-2 md:pl-4">
-                <Alert className="flex items-center gap-4" variant="warning">
-                  <div className="flex items-center gap-2">
-                    <AlertTriangle className="h-4 w-4" />
-                    <div>
-                      <AlertTitle>
-                        インストラクター情報が設定されていません
-                      </AlertTitle>
-                      <AlertDescription>
-                        スケジュール機能を利用するには、インストラクター情報を設定してください。
-                      </AlertDescription>
-                    </div>
-                  </div>
-                  <div className="ml-auto">
-                    <InstructorLinkageButton
-                      instructors={availableInstructors}
-                      onSuccessAction={handleSuccess}
-                    />
-                  </div>
-                </Alert>
-              </CarouselItem>
-            )}
+            {renderCarouselContent({
+              instructorProfile,
+              shifts,
+              availableInstructors,
+              onSuccess: handleSuccess,
+            })}
           </CarouselContent>
           <CarouselPrevious className="left-0" />
           <CarouselNext className="right-0" />
