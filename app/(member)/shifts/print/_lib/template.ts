@@ -207,7 +207,7 @@ export function generatePDFTemplate(
                       const deptShifts = deptMap.get(dept.name) || [];
 
                       if (deptShifts.length === 0) {
-                        return '<td class="dept-cell empty">(シフトなし)</td>';
+                        return '<td class="dept-cell empty"></td>';
                       }
 
                       return `
