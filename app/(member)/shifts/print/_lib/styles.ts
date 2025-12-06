@@ -26,6 +26,9 @@ export function getInlineStyles(): string {
     }
 
     header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
       border-bottom: 1px solid #333;
       padding-bottom: 4px;
       margin-bottom: 8px;
@@ -34,18 +37,12 @@ export function getInlineStyles(): string {
     h1 {
       font-size: 10pt;
       font-weight: bold;
-      margin-bottom: 3px;
+      margin: 0;
     }
 
-    .meta {
-      display: flex;
-      gap: 12px;
+    .generated-at {
       font-size: 5pt;
       color: #666;
-    }
-
-    .meta p {
-      margin: 0;
     }
 
     /* メインテーブル */
@@ -155,7 +152,7 @@ export function getInlineStyles(): string {
       margin-top: 8px;
       padding-top: 4px;
       border-top: 1px solid #999;
-      text-align: center;
+      text-align: left;
       font-size: 5pt;
       color: #666;
     }

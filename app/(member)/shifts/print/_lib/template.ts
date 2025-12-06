@@ -173,10 +173,7 @@ export function generatePDFTemplate(
     <body>
       <header>
         <h1>${year}年${month}月 シフト表</h1>
-        <div class="meta">
-          <p>生成日時: ${generatedAt}</p>
-          <p>総シフト数: ${summary.totalShifts} / 総アサイン数: ${summary.totalAssignments}</p>
-        </div>
+        <div class="generated-at">生成日時: ${generatedAt}</div>
       </header>
 
       <main>
