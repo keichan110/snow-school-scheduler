@@ -62,15 +62,17 @@ async function main() {
   );
   console.log(`  - インストラクター: ${instructors.length}名`);
 
-  const activeCount = instructors.filter((i) => i.status === "ACTIVE").length;
-  const retiredCount = instructors.filter((i) => i.status === "RETIRED").length;
-  const inactiveCount = instructors.filter(
-    (i) => i.status === "INACTIVE"
-  ).length;
+  const statusCounts = instructors.reduce(
+    (acc, instructor) => {
+      acc[instructor.status] = (acc[instructor.status] || 0) + 1;
+      return acc;
+    },
+    {} as Record<string, number>
+  );
 
-  console.log(`    - アクティブ: ${activeCount}名`);
-  console.log(`    - 退職: ${retiredCount}名`);
-  console.log(`    - 休職: ${inactiveCount}名`);
+  console.log(`    - アクティブ: ${statusCounts.ACTIVE || 0}名`);
+  console.log(`    - 退職: ${statusCounts.RETIRED || 0}名`);
+  console.log(`    - 休職: ${statusCounts.INACTIVE || 0}名`);
   console.log(`  - シフト: ${shifts.length}件 (2025/12/20〜2026/3/1)`);
   console.log("\n開発準備完了！シフト管理システムの全データが整備されました。");
 }
