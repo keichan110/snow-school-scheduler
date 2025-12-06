@@ -195,10 +195,22 @@ export function generatePDFTemplate(
             ${Array.from(shiftsByDateAndDept.entries())
               .map(([date, deptMap]) => {
                 const isHolidayDate = isHoliday(date);
+                const dateObj = new Date(date);
+                const dayOfWeek = dateObj.getDay(); // 0: 日, 6: 土
+
+                // 日付セルのクラスを決定
+                const dateCellClasses = ["date-cell"];
+                if (isHolidayDate) {
+                  dateCellClasses.push("holiday");
+                } else if (dayOfWeek === 0) {
+                  dateCellClasses.push("sunday");
+                } else if (dayOfWeek === 6) {
+                  dateCellClasses.push("saturday");
+                }
 
                 return `
-                <tr class="${isHolidayDate ? "holiday-row" : ""}">
-                  <td class="date-cell">
+                <tr>
+                  <td class="${dateCellClasses.join(" ")}">
                     <div class="date-main">${formatDate(date)}</div>
                     ${isHolidayDate ? '<div class="holiday-label">祝日</div>' : ""}
                   </td>

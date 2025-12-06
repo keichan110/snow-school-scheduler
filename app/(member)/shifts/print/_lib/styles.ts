@@ -79,10 +79,6 @@ export function getInlineStyles(): string {
       page-break-inside: avoid;
     }
 
-    .shift-table tbody tr.holiday-row {
-      background-color: #f5f5f5;
-    }
-
     /* 日付セル */
     .date-cell {
       border: 1px solid #999;
@@ -95,6 +91,17 @@ export function getInlineStyles(): string {
     .date-cell .date-main {
       font-size: 9pt;
       margin-bottom: 2px;
+    }
+
+    /* 日曜日・祝日は赤色 */
+    .date-cell.sunday .date-main,
+    .date-cell.holiday .date-main {
+      color: #c00;
+    }
+
+    /* 土曜日は青色 */
+    .date-cell.saturday .date-main {
+      color: #00c;
     }
 
     .date-cell .holiday-label {
