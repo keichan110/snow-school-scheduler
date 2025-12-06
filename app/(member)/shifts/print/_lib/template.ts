@@ -9,6 +9,11 @@ const SUNDAY = 0;
 const SATURDAY = 6;
 
 /**
+ * 曜日名の配列
+ */
+const WEEKDAYS = ["日", "月", "火", "水", "木", "金", "土"];
+
+/**
  * 日付ごと、部門ごとにシフトをグループ化した型
  */
 type ShiftsByDateAndDept = Map<
@@ -105,10 +110,9 @@ function groupShiftsByDateAndDepartment(
  */
 function formatDate(dateStr: string): string {
   const date = new Date(dateStr);
-  const month = date.getMonth() + 1;
-  const day = date.getDate();
-  const weekdays = ["日", "月", "火", "水", "木", "金", "土"];
-  const weekday = weekdays[date.getDay()];
+  const month = date.getUTCMonth() + 1;
+  const day = date.getUTCDate();
+  const weekday = WEEKDAYS[date.getUTCDay()];
 
   return `${month}/${day}(${weekday})`;
 }
@@ -205,8 +209,8 @@ export function generatePDFTemplate(
               .map(([date, deptMap]) => {
                 const isHolidayDate = isHoliday(date);
                 const dateObj = new Date(date);
-                const dayOfWeek = dateObj.getDay();
-                const dayOfMonth = dateObj.getDate();
+                const dayOfWeek = dateObj.getUTCDay();
+                const dayOfMonth = dateObj.getUTCDate();
 
                 // 日付セルのクラスを決定
                 const dateCellClasses = ["date-cell"];
