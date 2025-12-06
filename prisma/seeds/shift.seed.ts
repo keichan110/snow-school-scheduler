@@ -56,7 +56,10 @@ export async function seedShifts(
     }
   }
   // 2月の第2・第4土曜日
-  for (let d = 1; d <= 28; d++) {
+  const lastDayOfFebruary = new Date(
+    Date.UTC(currentYear + 1, 2, 0)
+  ).getUTCDate(); // 3月0日 = 2月の最終日
+  for (let d = 1; d <= lastDayOfFebruary; d++) {
     const date = new Date(Date.UTC(currentYear + 1, 1, d));
     const dayOfWeek = date.getUTCDay();
     const weekOfMonth = Math.ceil(d / 7);
@@ -77,7 +80,10 @@ export async function seedShifts(
     }
   }
   // 2月の第1・第3日曜日
-  for (let d = 1; d <= 28; d++) {
+  const lastDayOfFebruary2 = new Date(
+    Date.UTC(currentYear + 1, 2, 0)
+  ).getUTCDate(); // 3月0日 = 2月の最終日
+  for (let d = 1; d <= lastDayOfFebruary2; d++) {
     const date = new Date(Date.UTC(currentYear + 1, 1, d));
     const dayOfWeek = date.getUTCDay();
     const weekOfMonth = Math.ceil(d / 7);
