@@ -60,7 +60,7 @@ export function HeaderMenuDrawer({ user }: HeaderMenuDrawerProps) {
 
   const allMenuItems: MenuItem[] = [
     {
-      href: "/dashboard",
+      href: "/",
       icon: House,
       label: "ダッシュボード",
       description: "システムの概要とお知らせを確認",
