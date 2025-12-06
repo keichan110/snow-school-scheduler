@@ -54,12 +54,19 @@ export async function seedShiftAssignments(
 
   // シフトタイプと条件に応じた必要人数を決定する関数
   function getRequiredInstructorCount(shift: ShiftSeed): number {
-    // タイムゾーンの影響を受けないように、日付文字列から直接Dateオブジェクトを作成
+    // UTC基準で日付を処理（shift.seed.tsと一貫性を保つ）
     const shiftDate = new Date(shift.date);
-    const dateString = shiftDate.toISOString().split("T")[0];
-    const checkDate = new Date(`${dateString}T00:00:00`);
-    const dayOfWeek = checkDate.getDay();
+    const dayOfWeek = shiftDate.getUTCDay();
     const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+
+    // isHoliday関数用にUTC時刻で0:00:00のDateオブジェクトを作成
+    const checkDate = new Date(
+      Date.UTC(
+        shiftDate.getUTCFullYear(),
+        shiftDate.getUTCMonth(),
+        shiftDate.getUTCDate()
+      )
+    );
     const isNationalHoliday = isHoliday(checkDate);
     const isWeekendOrHoliday = isWeekend || isNationalHoliday;
 
