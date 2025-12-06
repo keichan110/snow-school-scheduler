@@ -9,7 +9,7 @@ export function getInlineStyles(): string {
   return `
     @page {
       size: A4 portrait;
-      margin: 15mm;
+      margin: 8mm;
     }
 
     * {
@@ -20,27 +20,27 @@ export function getInlineStyles(): string {
 
     body {
       font-family: 'Noto Sans JP', 'Yu Gothic', 'Hiragino Kaku Gothic ProN', sans-serif;
-      font-size: 9pt;
+      font-size: 6pt;
       color: #000;
-      line-height: 1.4;
+      line-height: 1.2;
     }
 
     header {
-      border-bottom: 2px solid #333;
-      padding-bottom: 10px;
-      margin-bottom: 20px;
+      border-bottom: 1px solid #333;
+      padding-bottom: 4px;
+      margin-bottom: 8px;
     }
 
     h1 {
-      font-size: 16pt;
+      font-size: 10pt;
       font-weight: bold;
-      margin-bottom: 8px;
+      margin-bottom: 3px;
     }
 
     .meta {
       display: flex;
-      gap: 20px;
-      font-size: 8pt;
+      gap: 12px;
+      font-size: 5pt;
       color: #666;
     }
 
@@ -52,22 +52,22 @@ export function getInlineStyles(): string {
     .shift-table {
       width: 100%;
       border-collapse: collapse;
-      font-size: 8pt;
-      margin-bottom: 20px;
+      font-size: 5pt;
+      margin-bottom: 8px;
     }
 
     /* ヘッダー行 */
     .shift-table thead th {
       background-color: #d0d0d0;
-      padding: 8px 6px;
+      padding: 3px 2px;
       text-align: center;
       border: 1px solid #999;
       font-weight: bold;
-      font-size: 9pt;
+      font-size: 6pt;
     }
 
     .shift-table thead th.date-col {
-      width: 80px;
+      width: 45px;
     }
 
     .shift-table thead th.dept-col {
@@ -87,15 +87,15 @@ export function getInlineStyles(): string {
     /* 日付セル */
     .date-cell {
       border: 1px solid #999;
-      padding: 6px 4px;
+      padding: 2px 1px;
       text-align: center;
       vertical-align: top;
       font-weight: bold;
     }
 
     .date-cell .date-main {
-      font-size: 9pt;
-      margin-bottom: 2px;
+      font-size: 6pt;
+      margin-bottom: 1px;
     }
 
     /* 日曜日・祝日は赤色 */
@@ -110,7 +110,7 @@ export function getInlineStyles(): string {
     }
 
     .date-cell .holiday-label {
-      font-size: 7pt;
+      font-size: 4pt;
       color: #c00;
       font-weight: normal;
     }
@@ -118,19 +118,19 @@ export function getInlineStyles(): string {
     /* 部門セル */
     .dept-cell {
       border: 1px solid #ccc;
-      padding: 6px 4px;
+      padding: 2px 1px;
       vertical-align: top;
     }
 
     .dept-cell.empty {
       text-align: center;
       color: #999;
-      font-size: 7pt;
+      font-size: 4pt;
     }
 
     /* シフトグループ */
     .shift-group {
-      margin-bottom: 8px;
+      margin-bottom: 3px;
     }
 
     .shift-group:last-child {
@@ -139,24 +139,24 @@ export function getInlineStyles(): string {
 
     .shift-type {
       font-weight: bold;
-      font-size: 8pt;
-      margin-bottom: 2px;
+      font-size: 5pt;
+      margin-bottom: 1px;
       color: #333;
     }
 
     .instructor {
-      font-size: 7pt;
-      padding-left: 8px;
-      line-height: 1.3;
+      font-size: 4.5pt;
+      padding-left: 4px;
+      line-height: 1.2;
     }
 
     /* フッター */
     footer {
-      margin-top: 20px;
-      padding-top: 10px;
+      margin-top: 8px;
+      padding-top: 4px;
       border-top: 1px solid #999;
       text-align: center;
-      font-size: 7pt;
+      font-size: 5pt;
       color: #666;
     }
 
