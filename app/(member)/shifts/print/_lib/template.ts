@@ -53,10 +53,7 @@ function groupShiftsByDateAndDepartment(
     // UTCを使用してタイムゾーンの影響を避ける
     const date = new Date(Date.UTC(year, month - 1, day));
     // ISO形式の日付文字列（YYYY-MM-DD）
-    const dateStr = date.toISOString().split("T")[0] || "";
-    if (dateStr) {
-      allDates.push(dateStr);
-    }
+    allDates.push(date.toISOString().slice(0, 10));
   }
 
   // 全ての日付と部門の組み合わせを初期化
