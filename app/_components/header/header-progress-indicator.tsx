@@ -126,6 +126,25 @@ export function HeaderProgressIndicator() {
 
   // リンククリックを監視してナビゲーション開始を検知
   useEffect(() => {
+    const shouldIgnoreLink = (
+      anchor: HTMLAnchorElement,
+      currentPath: string
+    ): boolean => {
+      const href = anchor.getAttribute("href");
+
+      // 外部リンクやハッシュリンクは無視
+      if (!href || href.startsWith("#") || href.startsWith("http")) {
+        return true;
+      }
+
+      // 同じページへのリンクは無視
+      if (href === currentPath) {
+        return true;
+      }
+
+      return false;
+    };
+
     const handleClick = (event: MouseEvent) => {
       // 型ガードで Element インスタンスであることを確認
       if (!(event.target instanceof Element)) {
@@ -138,15 +157,9 @@ export function HeaderProgressIndicator() {
         return;
       }
 
-      // 外部リンクやハッシュリンクは無視
-      const href = anchor.getAttribute("href");
-      if (!href || href.startsWith("#") || href.startsWith("http")) {
-        return;
-      }
-
-      // 同じページへのリンクは無視
       const currentPath = `${pathname}${searchParams ? `?${searchParams.toString()}` : ""}`;
-      if (href === currentPath) {
+
+      if (shouldIgnoreLink(anchor, currentPath)) {
         return;
       }
 
