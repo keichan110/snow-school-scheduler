@@ -18,9 +18,8 @@ export async function seedInstructors(
 ): Promise<InstructorSeed[]> {
   console.log("インストラクターデータを作成中...");
 
-  const instructors: InstructorSeed[] = [];
-
-  for (let i = 0; i < INSTRUCTOR_COUNT; i++) {
+  // データ準備を先に行う
+  const instructorData = Array.from({ length: INSTRUCTOR_COUNT }, (_, i) => {
     // ステータスを決定
     let status: "ACTIVE" | "RETIRED" | "INACTIVE";
     const rand = Math.random();
@@ -35,19 +34,20 @@ export async function seedInstructors(
     const lastName = faker.person.lastName();
     const firstName = faker.person.firstName();
 
-    const instructor = await prisma.instructor.create({
-      data: {
-        lastName,
-        firstName,
-        lastNameKana: "セイ",
-        firstNameKana: "メイ",
-        status,
-        notes: `備考${i + 1}`,
-      },
-    });
+    return {
+      lastName,
+      firstName,
+      lastNameKana: "セイ",
+      firstNameKana: "メイ",
+      status,
+      notes: `備考${i + 1}`,
+    };
+  });
 
-    instructors.push(instructor);
-  }
+  // Promise.allで並列処理
+  const instructors = await Promise.all(
+    instructorData.map((data) => prisma.instructor.create({ data }))
+  );
 
   const activeCount = instructors.filter((i) => i.status === "ACTIVE").length;
   const retiredCount = instructors.filter((i) => i.status === "RETIRED").length;
