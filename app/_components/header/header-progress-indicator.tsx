@@ -127,8 +127,12 @@ export function HeaderProgressIndicator() {
   // リンククリックを監視してナビゲーション開始を検知
   useEffect(() => {
     const handleClick = (event: MouseEvent) => {
-      const target = event.target as HTMLElement;
-      const anchor = target.closest("a");
+      // 型ガードで Element インスタンスであることを確認
+      if (!(event.target instanceof Element)) {
+        return;
+      }
+
+      const anchor = event.target.closest("a");
 
       if (!anchor) {
         return;
