@@ -3,6 +3,12 @@ import type { MonthlyViewData } from "@/app/(member)/shifts/_lib/data";
 import { getInlineStyles } from "./styles";
 
 /**
+ * 曜日定数
+ */
+const SUNDAY = 0;
+const SATURDAY = 6;
+
+/**
  * 日付ごと、部門ごとにシフトをグループ化した型
  */
 type ShiftsByDateAndDept = Map<
@@ -197,9 +203,6 @@ export function generatePDFTemplate(
           <tbody>
             ${Array.from(shiftsByDateAndDept.entries())
               .map(([date, deptMap]) => {
-                const SUNDAY = 0;
-                const SATURDAY = 6;
-
                 const isHolidayDate = isHoliday(date);
                 const dateObj = new Date(date);
                 const dayOfWeek = dateObj.getDay();
