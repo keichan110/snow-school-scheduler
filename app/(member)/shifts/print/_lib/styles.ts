@@ -79,6 +79,11 @@ export function getInlineStyles(): string {
       page-break-inside: avoid;
     }
 
+    /* 偶数日の背景色 */
+    .shift-table tbody tr.even-day {
+      background-color: #f5f5f5;
+    }
+
     /* 日付セル */
     .date-cell {
       border: 1px solid #999;

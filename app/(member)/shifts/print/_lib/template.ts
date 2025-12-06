@@ -197,6 +197,7 @@ export function generatePDFTemplate(
                 const isHolidayDate = isHoliday(date);
                 const dateObj = new Date(date);
                 const dayOfWeek = dateObj.getDay(); // 0: 日, 6: 土
+                const dayOfMonth = dateObj.getDate();
 
                 // 日付セルのクラスを決定
                 const dateCellClasses = ["date-cell"];
@@ -208,8 +209,14 @@ export function generatePDFTemplate(
                   dateCellClasses.push("saturday");
                 }
 
+                // 行のクラスを決定（偶数日）
+                const rowClasses = [];
+                if (dayOfMonth % 2 === 0) {
+                  rowClasses.push("even-day");
+                }
+
                 return `
-                <tr>
+                <tr class="${rowClasses.join(" ")}">
                   <td class="${dateCellClasses.join(" ")}">
                     <div class="date-main">${formatDate(date)}</div>
                     ${isHolidayDate ? '<div class="holiday-label">祝日</div>' : ""}
