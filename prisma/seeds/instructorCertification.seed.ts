@@ -67,10 +67,15 @@ export async function seedInstructorCertifications(
 
   const { skiCertifications, snowboardCertifications } = certifications;
 
-  let certificationCount = 0;
   let skiOnlyCount = 0;
   let snowboardOnlyCount = 0;
   let bothCount = 0;
+
+  // 一括挿入用の配列
+  const instructorCertificationsData: {
+    instructorId: number;
+    certificationId: number;
+  }[] = [];
 
   // 全インストラクターに資格を割り当て
   for (const instructor of instructors) {
@@ -81,13 +86,10 @@ export async function seedInstructorCertifications(
       for (const certIndex of pattern.certIndices.ski) {
         const certification = skiCertifications[certIndex];
         if (certification) {
-          await prisma.instructorCertification.create({
-            data: {
-              instructorId: instructor.id,
-              certificationId: certification.id,
-            },
+          instructorCertificationsData.push({
+            instructorId: instructor.id,
+            certificationId: certification.id,
           });
-          certificationCount++;
         }
       }
     }
@@ -97,13 +99,10 @@ export async function seedInstructorCertifications(
       for (const certIndex of pattern.certIndices.snowboard) {
         const certification = snowboardCertifications[certIndex];
         if (certification) {
-          await prisma.instructorCertification.create({
-            data: {
-              instructorId: instructor.id,
-              certificationId: certification.id,
-            },
+          instructorCertificationsData.push({
+            instructorId: instructor.id,
+            certificationId: certification.id,
           });
-          certificationCount++;
         }
       }
     }
@@ -118,7 +117,14 @@ export async function seedInstructorCertifications(
     }
   }
 
-  console.log(`インストラクター資格関連: ${certificationCount}件作成完了`);
+  // 一括挿入
+  await prisma.instructorCertification.createMany({
+    data: instructorCertificationsData,
+  });
+
+  console.log(
+    `インストラクター資格関連: ${instructorCertificationsData.length}件作成完了`
+  );
   console.log(`   - スキー専門: ${skiOnlyCount}名`);
   console.log(`   - スノーボード専門: ${snowboardOnlyCount}名`);
   console.log(`   - 両方の資格保持: ${bothCount}名`);
