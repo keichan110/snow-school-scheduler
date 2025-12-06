@@ -26,8 +26,6 @@ export async function seedShifts(
     prefectureEventType,
   } = shiftTypes;
 
-  const shifts: ShiftSeed[] = [];
-
   // 実行日の年を基準に期間を設定(UTC)
   const today = new Date();
   const currentYear = today.getFullYear();
@@ -88,6 +86,9 @@ export async function seedShifts(
     }
   }
 
+  // シフト作成用のPromise配列
+  const shiftPromises: Promise<ShiftSeed>[] = [];
+
   // 日付ループ処理
   for (
     let currentDate = new Date(startDate);
@@ -111,26 +112,28 @@ export async function seedShifts(
       // === 土日・祝日のシフト ===
 
       // スキー一般レッスン（土日・祝日すべて）
-      const ski1 = await prisma.shift.create({
-        data: {
-          date: new Date(`${dateString}T00:00:00Z`),
-          departmentId: skiDepartment.id,
-          shiftTypeId: generalLessonType.id,
-          description: "スキー一般レッスン",
-        },
-      });
-      shifts.push(ski1);
+      shiftPromises.push(
+        prisma.shift.create({
+          data: {
+            date: new Date(`${dateString}T00:00:00Z`),
+            departmentId: skiDepartment.id,
+            shiftTypeId: generalLessonType.id,
+            description: "スキー一般レッスン",
+          },
+        })
+      );
 
       // スノーボード一般レッスン（土日・祝日すべて）
-      const snowboard1 = await prisma.shift.create({
-        data: {
-          date: new Date(`${dateString}T00:00:00Z`),
-          departmentId: snowboardDepartment.id,
-          shiftTypeId: generalLessonType.id,
-          description: "スノーボード一般レッスン",
-        },
-      });
-      shifts.push(snowboard1);
+      shiftPromises.push(
+        prisma.shift.create({
+          data: {
+            date: new Date(`${dateString}T00:00:00Z`),
+            departmentId: snowboardDepartment.id,
+            shiftTypeId: generalLessonType.id,
+            description: "スノーボード一般レッスン",
+          },
+        })
+      );
 
       // 団体レッスン（1月に1回のみ）
       const isGroupLessonDate = groupLessonDates.some(
@@ -138,26 +141,28 @@ export async function seedShifts(
       );
       if (isGroupLessonDate) {
         // スキー団体レッスン
-        const ski2 = await prisma.shift.create({
-          data: {
-            date: new Date(`${dateString}T00:00:00Z`),
-            departmentId: skiDepartment.id,
-            shiftTypeId: groupLessonType.id,
-            description: "スキー団体レッスン",
-          },
-        });
-        shifts.push(ski2);
+        shiftPromises.push(
+          prisma.shift.create({
+            data: {
+              date: new Date(`${dateString}T00:00:00Z`),
+              departmentId: skiDepartment.id,
+              shiftTypeId: groupLessonType.id,
+              description: "スキー団体レッスン",
+            },
+          })
+        );
 
         // スノーボード団体レッスン
-        const snowboard2 = await prisma.shift.create({
-          data: {
-            date: new Date(`${dateString}T00:00:00Z`),
-            departmentId: snowboardDepartment.id,
-            shiftTypeId: groupLessonType.id,
-            description: "スノーボード団体レッスン",
-          },
-        });
-        shifts.push(snowboard2);
+        shiftPromises.push(
+          prisma.shift.create({
+            data: {
+              date: new Date(`${dateString}T00:00:00Z`),
+              departmentId: snowboardDepartment.id,
+              shiftTypeId: groupLessonType.id,
+              description: "スノーボード団体レッスン",
+            },
+          })
+        );
       }
 
       // バッジテスト（1月・2月に各2回）
@@ -165,15 +170,16 @@ export async function seedShifts(
         (d) => d.toISOString().split("T")[0] === dateString
       );
       if (isBadgeTestDate) {
-        const badgeTest = await prisma.shift.create({
-          data: {
-            date: new Date(`${dateString}T00:00:00Z`),
-            departmentId: skiDepartment.id,
-            shiftTypeId: badgeTestType.id,
-            description: "スキーバッジテスト",
-          },
-        });
-        shifts.push(badgeTest);
+        shiftPromises.push(
+          prisma.shift.create({
+            data: {
+              date: new Date(`${dateString}T00:00:00Z`),
+              departmentId: skiDepartment.id,
+              shiftTypeId: badgeTestType.id,
+              description: "スキーバッジテスト",
+            },
+          })
+        );
       }
 
       // 県連事業（1月・2月に隔週日曜日）
@@ -181,30 +187,35 @@ export async function seedShifts(
         (d) => d.toISOString().split("T")[0] === dateString
       );
       if (isPrefectureEventDate) {
-        const prefectureEvent = await prisma.shift.create({
-          data: {
-            date: new Date(`${dateString}T00:00:00Z`),
-            departmentId: snowboardDepartment.id,
-            shiftTypeId: prefectureEventType.id,
-            description: "県連事業",
-          },
-        });
-        shifts.push(prefectureEvent);
+        shiftPromises.push(
+          prisma.shift.create({
+            data: {
+              date: new Date(`${dateString}T00:00:00Z`),
+              departmentId: snowboardDepartment.id,
+              shiftTypeId: prefectureEventType.id,
+              description: "県連事業",
+            },
+          })
+        );
       }
     } else {
       // === 平日のシフト（スキー一般レッスンのみ）===
 
-      const skiWeekday = await prisma.shift.create({
-        data: {
-          date: new Date(`${dateString}T00:00:00Z`),
-          departmentId: skiDepartment.id,
-          shiftTypeId: generalLessonType.id,
-          description: "スキー一般レッスン",
-        },
-      });
-      shifts.push(skiWeekday);
+      shiftPromises.push(
+        prisma.shift.create({
+          data: {
+            date: new Date(`${dateString}T00:00:00Z`),
+            departmentId: skiDepartment.id,
+            shiftTypeId: generalLessonType.id,
+            description: "スキー一般レッスン",
+          },
+        })
+      );
     }
   }
+
+  // すべてのシフトを並列作成
+  const shifts = await Promise.all(shiftPromises);
 
   const weekdayCount = shifts.filter((s) => {
     const dayOfWeek = new Date(s.date).getUTCDay();
