@@ -241,13 +241,7 @@ export function generatePDFTemplate(
                             (shift) => `
                           <div class="shift-group">
                             <div class="shift-type">■${escapeHtml(shift.shiftType)}</div>
-                            ${shift.instructors
-                              .map(
-                                (instructor) => `
-                              <div class="instructor">${escapeHtml(instructor)}</div>
-                            `
-                              )
-                              .join("")}
+                            <div class="instructor">${shift.instructors.map((instructor) => escapeHtml(instructor)).join("、")}</div>
                           </div>
                         `
                           )
