@@ -452,18 +452,16 @@ export default function ShiftsContent({
                   />
                 </div>
 
-                {/* PDF印刷ボタン（月間ビューのみ） */}
-                <div className="mt-8 flex justify-center">
-                  <Button
-                    className="flex items-center gap-2 px-4 py-2"
+                {/* PDF印刷リンク（月間ビューのみ） */}
+                <div className="mt-8 flex justify-end">
+                  <button
+                    className="flex items-center gap-1.5 text-muted-foreground text-sm transition-colors hover:text-foreground"
                     onClick={handlePrintPDF}
-                    variant="outline"
+                    type="button"
                   >
                     <Printer className="h-4 w-4" />
-                    <span className="font-medium text-sm">
-                      {currentYear}年{currentMonth}月のシフトを印刷
-                    </span>
-                  </Button>
+                    <span>印刷</span>
+                  </button>
                 </div>
               </>
             ) : (
