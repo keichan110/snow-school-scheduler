@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Printer } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   useCallback,
@@ -351,6 +351,12 @@ export default function ShiftsContent({
     setSelectedDate(date);
   }, []);
 
+  // PDF印刷用ページを開く
+  const handlePrintPDF = useCallback(() => {
+    const url = `/shifts/print?year=${currentYear}&month=${currentMonth}`;
+    window.open(url, "_blank");
+  }, [currentYear, currentMonth]);
+
   useEffect(() => {
     if (!isPending) {
       setPendingView(null);
@@ -444,6 +450,20 @@ export default function ShiftsContent({
                     shiftStats={shiftStats}
                     year={currentYear}
                   />
+                </div>
+
+                {/* PDF印刷ボタン（月間ビューのみ） */}
+                <div className="mt-8 flex justify-center">
+                  <Button
+                    className="flex items-center gap-2 px-4 py-2"
+                    onClick={handlePrintPDF}
+                    variant="outline"
+                  >
+                    <Printer className="h-4 w-4" />
+                    <span className="font-medium text-sm">
+                      {currentYear}年{currentMonth}月のシフトを印刷
+                    </span>
+                  </Button>
                 </div>
               </>
             ) : (
