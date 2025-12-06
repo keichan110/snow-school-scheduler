@@ -117,7 +117,8 @@ export async function seedShiftAssignments(
   }
 
   // シフトにインストラクターを割り当て
-  let assignmentCount = 0;
+  const assignmentsToCreate: Array<{ shiftId: number; instructorId: number }> =
+    [];
   let skiInstructorIndex = 0;
   let snowboardInstructorIndex = 0;
 
@@ -181,20 +182,22 @@ export async function seedShiftAssignments(
         assignedToday.add(instructor.id);
       }
 
-      // アサインを作成
+      // アサインデータを配列に追加
       for (const instructor of assignedInstructors) {
-        await prisma.shiftAssignment.create({
-          data: {
-            shiftId: shift.id,
-            instructorId: instructor.id,
-          },
+        assignmentsToCreate.push({
+          shiftId: shift.id,
+          instructorId: instructor.id,
         });
-        assignmentCount++;
       }
     }
   }
 
-  console.log(`シフトアサイン: ${assignmentCount}件作成`);
+  // 一括でシフトアサインを作成
+  await prisma.shiftAssignment.createMany({
+    data: assignmentsToCreate,
+  });
+
+  console.log(`シフトアサイン: ${assignmentsToCreate.length}件作成`);
   console.log(`   - スキー担当: ${skiInstructors.length}名`);
   console.log(`   - スノーボード担当: ${snowboardInstructors.length}名`);
 }
